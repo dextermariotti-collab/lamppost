@@ -35,8 +35,8 @@ function CreateScreen() {
 
   useEffect(() => {
     const timer = setInterval(
-      () => setProgress((p) => (p >= 100 ? 100 : p + Math.ceil((100 - p) / 6))),
-      320,
+      () => setProgress((p) => Math.min(100, p + 13)),
+      280,
     );
     return () => clearInterval(timer);
   }, []);
