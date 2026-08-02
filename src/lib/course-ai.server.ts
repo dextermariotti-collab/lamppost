@@ -1,12 +1,47 @@
-import { buildCourse, slugify, type Course, type Lesson } from "./courses";
+import {
+  briefPrompt,
+  quizCountFor,
+  type CourseBrief,
+  type CourseOutline,
+  type LessonStub,
+} from "./course-brief";
+import { buildCourse, slugify, type Lesson, type Quiz } from "./courses";
 
-export const SYSTEM = `You design short, delightful mobile mini-courses.
+export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
-{"topic":string,"tagline":string,"emoji":string,"lessons":[{"title":string,"subtitle":string,"emoji":string,"intro":string,"keyPoints":[string,string,string],"quiz":{"question":string,"options":[string,string,string],"correct":number,"explanation":string}}]}
-Rules: exactly 5 lessons ordered beginner to advanced. title max 5 words. subtitle max 6 words.
-emoji is a single emoji. intro is 2-3 warm, concrete sentences. keyPoints are 3 short strings (max 12 words each).
-quiz has exactly 3 options; "correct" is the 0-based index of the right option; explanation is one sentence.
-tagline max 60 characters. Use the exact key names above.`;
+{"topic":string,"tagline":string,"emoji":string,"lessons":[{"title":string,"subtitle":string,"emoji":string}]}
+Rules: return exactly the requested number of lessons, ordered so each one builds on the last.
+Lesson titles are specific to the subject (never "Lesson 1" or "Foundations of X"), max 6 words.
+subtitle is a concrete promise of what the learner will be able to do, max 7 words.
+emoji is a single emoji. tagline max 60 characters. Use the exact key names above.`;
+
+export const CONTENT_SYSTEM = `You write in-depth, warm, plain-language lesson content for a mobile learning app.
+Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
+{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
+Rules for every lesson:
+- "index" must repeat the index you were given.
+- "intro" is 2 sentences framing why this lesson matters.
+- "parts" has exactly 3 entries. Each "body" is 120-170 words of real teaching: explain the concept,
+  use concrete specifics, numbers and examples from the subject itself. Never filler, never generic
+  study advice. Part 1 explains the idea, part 2 shows it applied with a worked example,
+  part 3 covers common mistakes plus how to fix them. Part titles are max 5 words.
+- "keyPoints" has exactly 4 short takeaways, max 14 words each.
+- Each quiz question tests understanding of this lesson's content, has exactly 3 plausible options,
+  "correct" is the 0-based index of the right option, and "explanation" is one teaching sentence.
+Use the exact key names above.`;
+
+export function outlinePrompt(brief: CourseBrief) {
+  return `Design a course for this learner.\n${briefPrompt(brief)}\n\nReturn the outline JSON now.`;
+}
+
+export function contentPrompt(brief: CourseBrief, courseTitle: string, stubs: LessonStub[]) {
+  const list = stubs
+    .map((s) => `index ${s.index}: "${s.title}" — ${s.subtitle}`)
+    .join("\n");
+  return `Course: ${courseTitle}\n${briefPrompt(brief)}\n
+Write full content for these lessons of that course, in this order:\n${list}\n
+Each lesson needs ${quizCountFor(brief)} quiz question(s) in "quizzes". Return the JSON now.`;
+}
 
 /** Models sometimes answer in snake_case or with alternate key names. */
 function pick(obj: Record<string, unknown>, keys: string[]): unknown {
@@ -19,77 +54,170 @@ function pick(obj: Record<string, unknown>, keys: string[]): unknown {
 const str = (value: unknown, fallback = "") =>
   typeof value === "string" && value.trim() ? value.trim() : fallback;
 
-function normalizeLesson(raw: unknown, i: number, topic: string): Lesson | null {
-  if (typeof raw !== "object" || raw === null) return null;
-  const l = raw as Record<string, unknown>;
-  const quizRaw = pick(l, ["quiz", "question_block"]);
-  const q = (typeof quizRaw === "object" && quizRaw !== null ? quizRaw : {}) as Record<
-    string,
-    unknown
-  >;
-  const options = (Array.isArray(pick(q, ["options", "answers", "choices"]))
-    ? (pick(q, ["options", "answers", "choices"]) as unknown[])
-    : []
-  )
+const asObject = (value: unknown): Record<string, unknown> =>
+  typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
+
+const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+
+function extractJson(text: string): Record<string, unknown> | null {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end <= start) return null;
+  try {
+    const parsed: unknown = JSON.parse(text.slice(start, end + 1));
+    return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeQuiz(raw: unknown, lessonTitle: string): Quiz | null {
+  const q = asObject(raw);
+  const options = asArray(pick(q, ["options", "answers", "choices"]))
     .map((o) => str(o))
     .filter(Boolean)
-    .slice(0, 3);
-  const title = str(pick(l, ["title", "lesson_title", "name"]), `${topic} lesson ${i + 1}`);
-  const correctRaw = pick(q, ["correct", "correct_index", "correctIndex", "answer_index"]);
-  const points = Array.isArray(pick(l, ["keyPoints", "key_points", "takeaways", "points"]))
-    ? (pick(l, ["keyPoints", "key_points", "takeaways", "points"]) as unknown[])
-        .map((p) => str(p))
-        .filter(Boolean)
-        .slice(0, 3)
-    : [];
-
+    .slice(0, 4);
   if (options.length < 2) return null;
-
+  const correctRaw = pick(q, ["correct", "correct_index", "correctIndex", "answer_index"]);
   return {
-    title,
-    subtitle: str(pick(l, ["subtitle", "sub_title", "summary"]), "A quick step forward"),
-    emoji: str(pick(l, ["emoji", "icon"]), "✨"),
-    ...(str(pick(l, ["intro", "introduction", "content", "body"]))
-      ? { intro: str(pick(l, ["intro", "introduction", "content", "body"])) }
-      : {}),
-    ...(points.length ? { keyPoints: points } : {}),
+    question: str(pick(q, ["question", "prompt"]), `What matters most in ${lessonTitle}?`),
+    options,
+    correct: Math.min(
+      Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
+      options.length - 1,
+    ),
+    explanation: str(pick(q, ["explanation", "why", "rationale"]), "That's the key idea here."),
+  };
+}
+
+export function fallbackLesson(stub: LessonStub, topic: string): Lesson {
+  return {
+    title: stub.title,
+    subtitle: stub.subtitle,
+    emoji: stub.emoji || "✨",
+    intro: `Here's your lesson on ${stub.title.toLowerCase()} — part of your ${topic} path.`,
+    keyPoints: [
+      `${stub.title} builds directly on the lesson before it.`,
+      "Read each part slowly, then say it back in your own words.",
+      "Practise one small piece before moving on.",
+      "Mistakes here are the fastest route to understanding.",
+    ],
+    parts: [
+      {
+        title: "The core idea",
+        body: `${stub.subtitle}. Focus on building one reliable mental model of ${stub.title.toLowerCase()} that you can reuse, rather than memorising details you'll forget by tomorrow.`,
+      },
+      {
+        title: "Try it yourself",
+        body: `Spend ten focused minutes applying ${stub.title.toLowerCase()} to a real example from ${topic}. Short deliberate reps beat long unfocused sessions.`,
+      },
+    ],
     quiz: {
-      question: str(pick(q, ["question", "prompt"]), `What matters most in ${title}?`),
-      options,
-      correct: Math.min(Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0), options.length - 1),
-      explanation: str(pick(q, ["explanation", "why", "rationale"]), "That's the key idea here."),
+      question: `What's the smartest way to lock in ${stub.title.toLowerCase()}?`,
+      options: [
+        "Memorise every detail at once",
+        "Practise one small piece at a time",
+        "Wait until it feels easy",
+      ],
+      correct: 1,
+      explanation: "Small, repeated reps are what make new skills stick.",
     },
   };
 }
 
-export function parseCourse(text: string, topic: string): Course | null {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start === -1 || end <= start) return null;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text.slice(start, end + 1));
-  } catch {
-    return null;
-  }
-  if (typeof parsed !== "object" || parsed === null) return null;
-  const root = parsed as Record<string, unknown>;
-  const lessonsRaw = pick(root, ["lessons", "modules", "chapters"]);
-  if (!Array.isArray(lessonsRaw)) return null;
-
-  const lessons = lessonsRaw
-    .slice(0, 5)
-    .map((l, i) => normalizeLesson(l, i, topic))
-    .filter((l): l is Lesson => l !== null);
-
+export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
+  const root = extractJson(text);
+  if (!root) return null;
+  const lessons = asArray(pick(root, ["lessons", "modules", "chapters", "outline"]));
   if (lessons.length < 3) return null;
 
+  const stubs: LessonStub[] = lessons.slice(0, brief.lessons).map((raw, i) => {
+    const l = asObject(raw);
+    return {
+      index: i + 1,
+      title: str(pick(l, ["title", "lesson_title", "name"]), `${brief.topic} lesson ${i + 1}`),
+      subtitle: str(pick(l, ["subtitle", "sub_title", "summary", "goal"]), "A step forward"),
+      emoji: str(pick(l, ["emoji", "icon"]), "✨"),
+    };
+  });
+
   return {
-    slug: slugify(topic),
-    topic: str(pick(root, ["topic", "course_title", "courseTitle", "title"]), topic),
-    tagline: str(pick(root, ["tagline", "subtitle", "description"]), `Your personal path through ${topic}.`),
+    slug: slugify(brief.topic),
+    topic: str(pick(root, ["topic", "course_title", "courseTitle", "title"]), brief.topic),
+    tagline: str(
+      pick(root, ["tagline", "description", "summary"]),
+      `Your personal path through ${brief.topic}.`,
+    ),
     emoji: str(pick(root, ["emoji", "icon"]), "✨"),
-    lessons,
+    stubs,
   };
 }
 
+export function fallbackOutline(brief: CourseBrief): CourseOutline {
+  const base = buildCourse(brief.topic, brief.lessons);
+  return {
+    slug: base.slug,
+    topic: base.topic,
+    tagline: base.tagline,
+    emoji: base.emoji,
+    stubs: base.lessons.map((lesson, i) => ({
+      index: i + 1,
+      title: lesson.title,
+      subtitle: lesson.subtitle,
+      emoji: lesson.emoji,
+    })),
+  };
+}
+
+/** Merges AI lesson content onto the outline stubs, falling back per lesson. */
+export function parseLessonContent(
+  text: string,
+  stubs: LessonStub[],
+  topic: string,
+  quizCount: number,
+): Lesson[] {
+  const root = extractJson(text);
+  const items = root ? asArray(pick(root, ["lessons", "content", "items"])) : [];
+
+  return stubs.map((stub, position) => {
+    const match =
+      items.find((item) => Number(asObject(item)["index"]) === stub.index) ?? items[position];
+    const l = asObject(match);
+
+    const parts = asArray(pick(l, ["parts", "pages", "sections"]))
+      .map((raw, i) => {
+        const p = asObject(raw);
+        const body = str(pick(p, ["body", "text", "content"]));
+        if (!body) return null;
+        return { title: str(pick(p, ["title", "heading"]), `Part ${i + 1}`), body };
+      })
+      .filter((p): p is { title: string; body: string } => p !== null)
+      .slice(0, 4);
+
+    const keyPoints = asArray(pick(l, ["keyPoints", "key_points", "takeaways", "points"]))
+      .map((p) => str(p))
+      .filter(Boolean)
+      .slice(0, 5);
+
+    const quizzes = asArray(pick(l, ["quizzes", "quiz", "questions"]))
+      .map((raw) => normalizeQuiz(raw, stub.title))
+      .filter((q): q is Quiz => q !== null)
+      .slice(0, Math.max(quizCount, 1));
+
+    const single = quizzes.length === 0 ? normalizeQuiz(pick(l, ["quiz"]), stub.title) : null;
+    const resolvedQuizzes = quizzes.length > 0 ? quizzes : single ? [single] : [];
+
+    if (parts.length === 0 || resolvedQuizzes.length === 0) return fallbackLesson(stub, topic);
+
+    return {
+      title: stub.title,
+      subtitle: stub.subtitle,
+      emoji: stub.emoji || "✨",
+      intro: str(pick(l, ["intro", "introduction", "hook"]), stub.subtitle),
+      ...(keyPoints.length ? { keyPoints } : {}),
+      parts,
+      quiz: resolvedQuizzes[0]!,
+      quizzes: resolvedQuizzes,
+    };
+  });
+}

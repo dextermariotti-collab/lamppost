@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, RefreshCw, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { clampBrief } from "@/lib/course-brief";
 import foxMascot from "@/assets/fox-mascot.png";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { IDEAS } from "@/lib/courses";
@@ -40,7 +41,7 @@ function Home() {
   const start = (value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    navigate({ to: "/create", search: { topic: trimmed } });
+    navigate({ to: "/setup", search: clampBrief({ topic: trimmed }) });
   };
 
   return (

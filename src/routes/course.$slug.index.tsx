@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check, Lock, MoreHorizontal, Play, RotateCcw, Share2 } from "lucide-react";
 import { useEffect } from "react";
-import foxMascot from "@/assets/fox-mascot.png";
+import { clampBrief } from "@/lib/course-brief";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useStoredCourse } from "@/lib/course-store";
@@ -34,7 +34,11 @@ function CoursePath() {
   // Deep link to a course that was never generated → generate it.
   useEffect(() => {
     if (hydrated && !stored) {
-      navigate({ to: "/create", search: { topic: slug.replace(/-/g, " ") }, replace: true });
+      navigate({
+        to: "/setup",
+        search: clampBrief({ topic: slug.replace(/-/g, " ") }),
+        replace: true,
+      });
     }
   }, [hydrated, stored, slug, navigate]);
 
@@ -68,7 +72,7 @@ function CoursePath() {
           <>
             <button
               aria-label="Regenerate course"
-              onClick={() => navigate({ to: "/create", search: { topic: course.topic } })}
+              onClick={() => navigate({ to: "/setup", search: clampBrief({ topic: course.topic, ...course.brief }) })}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft transition-transform hover:rotate-90"
             >
               <RotateCcw className="h-4 w-4" />
@@ -126,14 +130,6 @@ function CoursePath() {
             <Play className="h-4 w-4" />
             {completed === 0 ? "Start" : completed >= course.lessons.length ? "Review" : "Continue"}
           </button>
-          <img
-            src={foxMascot}
-            alt=""
-            aria-hidden
-            width={816}
-            height={816}
-            className="pointer-events-none absolute -right-3 bottom-0 h-24 w-24 animate-float object-contain"
-          />
         </section>
 
         <h2 className="mt-6 text-base">Your learning path</h2>
