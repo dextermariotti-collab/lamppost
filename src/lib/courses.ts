@@ -178,23 +178,49 @@ const TEMPLATE = [
   { suffix: "In Practice", subtitle: "Hands-on drills", emoji: "🛠️" },
   { suffix: "Common Mistakes", subtitle: "What to avoid", emoji: "⚠️" },
   { suffix: "Going Further", subtitle: "Level up your skills", emoji: "🚀" },
+  { suffix: "Building Fluency", subtitle: "Make it automatic", emoji: "🔁" },
+  { suffix: "Real Projects", subtitle: "Apply it for real", emoji: "🎯" },
+  { suffix: "Troubleshooting", subtitle: "When things break", emoji: "🧰" },
+  { suffix: "Sharper Technique", subtitle: "Refine the details", emoji: "🔍" },
+  { suffix: "Speed & Flow", subtitle: "Work with confidence", emoji: "⚡" },
+  { suffix: "Advanced Moves", subtitle: "The next tier", emoji: "🏔️" },
+  { suffix: "Your Own Practice", subtitle: "Keep growing alone", emoji: "🌟" },
 ];
 
-export function buildCourse(topic: string): Course {
+/** Offline fallback course, used when AI generation is unavailable. */
+export function buildCourse(topic: string, lessonCount = 5): Course {
   const clean = topic.trim().replace(/\s+/g, " ") || "Something New";
   const slug = slugify(clean);
   const curated = CURATED[slug];
   if (curated) return { slug, ...curated };
+
+  const count = Math.min(Math.max(lessonCount, 3), TEMPLATE.length);
 
   return {
     slug,
     topic: clean.replace(/\b\w/g, (c) => c.toUpperCase()),
     tagline: `A personalized path through ${clean}.`,
     emoji: "✨",
-    lessons: TEMPLATE.map((t, i) => ({
+    lessons: TEMPLATE.slice(0, count).map((t, i) => ({
       title: `${clean} ${t.suffix}`,
       subtitle: t.subtitle,
       emoji: t.emoji,
+      intro: `This part of your ${clean} path focuses on ${t.subtitle.toLowerCase()}. Take it one idea at a time.`,
+      keyPoints: [
+        `Name the core idea behind ${t.suffix.toLowerCase()}.`,
+        "Practise it in a short, focused session.",
+        "Review what felt hard before moving on.",
+      ],
+      parts: [
+        {
+          title: "What this covers",
+          body: `In this lesson you'll look at ${clean} through the lens of ${t.subtitle.toLowerCase()}. Rather than collecting facts, aim to build one reliable mental model you can reuse. Read slowly, and try to say each idea back in your own words before moving on.`,
+        },
+        {
+          title: "Try it yourself",
+          body: `Set a timer for ten minutes and practise a single piece of ${clean} connected to ${t.suffix.toLowerCase()}. Short, deliberate reps beat long unfocused sessions, and the mistakes you make here are the fastest route to real understanding.`,
+        },
+      ],
       quiz: {
         question: `Lesson ${i + 1}: what's the smartest next step when learning ${clean}?`,
         options: [
@@ -208,6 +234,7 @@ export function buildCourse(topic: string): Course {
     })),
   };
 }
+
 
 export const IDEAS = [
   { label: "Photography", emoji: "📷", topic: "Digital Photography" },
