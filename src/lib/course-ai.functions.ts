@@ -47,7 +47,7 @@ export const generateCourse = createServerFn({ method: "POST" })
           "Each lesson: a punchy title (max 5 words), a subtitle under 6 words, one fitting emoji, an intro of 2-3 sentences " +
           "written warmly and concretely, 3 short key points (max 12 words each), and one multiple-choice quiz with exactly 3 " +
           "options, the index of the correct one, and a one-sentence explanation. Tagline max 60 characters.",
-        prompt: `Create a beginner-friendly mini-course on: ${topic}`,
+        prompt: `Create a beginner-friendly mini-course on: ${topic}. correct = the 0-based index of the correct option.`,
       });
 
       const output = (await result.output) as z.infer<typeof CourseSchema>;
