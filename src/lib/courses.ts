@@ -2,6 +2,8 @@ export type Lesson = {
   title: string;
   subtitle: string;
   emoji: string;
+  intro?: string;
+  keyPoints?: string[];
   quiz: {
     question: string;
     options: string[];
@@ -9,6 +11,7 @@ export type Lesson = {
     explanation: string;
   };
 };
+
 
 export type Course = {
   slug: string;
