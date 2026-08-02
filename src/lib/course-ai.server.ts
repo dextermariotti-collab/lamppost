@@ -79,16 +79,26 @@ function normalizeQuiz(raw: unknown, lessonTitle: string): Quiz | null {
     .slice(0, 4);
   if (options.length < 2) return null;
   const correctRaw = pick(q, ["correct", "correct_index", "correctIndex", "answer_index"]);
+  const correct = Math.min(
+    Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
+    options.length - 1,
+  );
+
+  // Models overwhelmingly put the right answer first or second, so shuffle.
+  const order = options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+
   return {
     question: str(pick(q, ["question", "prompt"]), `What matters most in ${lessonTitle}?`),
-    options,
-    correct: Math.min(
-      Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
-      options.length - 1,
-    ),
+    options: order.map((i) => options[i]!),
+    correct: order.indexOf(correct),
     explanation: str(pick(q, ["explanation", "why", "rationale"]), "That's the key idea here."),
   };
 }
+
 
 export function fallbackLesson(stub: LessonStub, topic: string): Lesson {
   return {
