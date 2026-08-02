@@ -8,7 +8,7 @@ import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/create")({
   validateSearch: (search: Record<string, unknown>) => ({
-    topic: typeof search.topic === "string" ? search.topic : "Digital Photography",
+    topic: typeof search['topic'] === "string" ? (search['topic'] as string) : "Digital Photography",
   }),
   head: () => ({
     meta: [

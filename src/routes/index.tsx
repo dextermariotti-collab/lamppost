@@ -34,7 +34,7 @@ function Home() {
   const [shuffle, setShuffle] = useState(0);
   const { state } = useProgress();
 
-  const ideas = IDEAS.map((_, i) => IDEAS[(i + shuffle) % IDEAS.length]);
+  const ideas = IDEAS.map((_, i) => IDEAS[(i + shuffle) % IDEAS.length]!);
   const continuing = Object.entries(state.courses).filter(([, c]) => c.completed < c.total);
 
   const start = (value: string) => {
