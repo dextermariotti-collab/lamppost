@@ -14,6 +14,7 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
 
@@ -42,6 +43,11 @@ const ProgressRoute = ProgressRouteImport.update({
   path: '/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CourseSlugIndexRoute = CourseSlugIndexRouteImport.update({
   id: '/course/$slug/',
   path: '/course/$slug/',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/create': typeof CreateRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
+  '/setup': typeof SetupRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/create': typeof CreateRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
+  '/setup': typeof SetupRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/create': typeof CreateRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
+  '/setup': typeof SetupRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/profile'
     | '/progress'
+    | '/setup'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/profile'
     | '/progress'
+    | '/setup'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/profile'
     | '/progress'
+    | '/setup'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   CreateRoute: typeof CreateRoute
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
+  SetupRoute: typeof SetupRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
 }
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/course/$slug/': {
       id: '/course/$slug/'
       path: '/course/$slug'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateRoute: CreateRoute,
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
+  SetupRoute: SetupRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,
 }
