@@ -7,7 +7,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { buildCourse } from "@/lib/courses";
 import { useProgress } from "@/lib/progress";
 
-export const Route = createFileRoute("/course/$slug")({
+export const Route = createFileRoute("/course/$slug/")({
   head: ({ params }) => {
     const course = buildCourse(params.slug.replace(/-/g, " "));
     return {
