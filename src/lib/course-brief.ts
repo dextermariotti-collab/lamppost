@@ -20,6 +20,14 @@ export const StubSchema = z.object({
 
 export type LessonStub = z.infer<typeof StubSchema>;
 
+export type CourseOutline = {
+  slug: string;
+  topic: string;
+  tagline: string;
+  emoji: string;
+  stubs: LessonStub[];
+};
+
 export const ChunkSchema = z.object({
   brief: BriefSchema,
   courseTitle: z.string(),

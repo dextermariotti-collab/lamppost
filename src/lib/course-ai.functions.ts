@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { BriefSchema, ChunkSchema, quizCountFor } from "./course-brief";
+import { BriefSchema, ChunkSchema, quizCountFor, type CourseOutline } from "./course-brief";
 import type { Lesson } from "./courses";
 import {
   CONTENT_SYSTEM,
@@ -10,12 +10,11 @@ import {
   outlinePrompt,
   parseLessonContent,
   parseOutline,
-  type Outline,
 } from "./course-ai.server";
 
 export const generateOutline = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => BriefSchema.parse(input))
-  .handler(async ({ data: brief }): Promise<Outline> => {
+  .handler(async ({ data: brief }): Promise<CourseOutline> => {
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return fallbackOutline(brief);
 

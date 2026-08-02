@@ -1,5 +1,11 @@
-import { briefPrompt, quizCountFor, type CourseBrief, type LessonStub } from "./course-brief";
-import { buildCourse, slugify, type Course, type Lesson, type Quiz } from "./courses";
+import {
+  briefPrompt,
+  quizCountFor,
+  type CourseBrief,
+  type CourseOutline,
+  type LessonStub,
+} from "./course-brief";
+import { buildCourse, slugify, type Lesson, type Quiz } from "./courses";
 
 export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
@@ -119,11 +125,7 @@ export function fallbackLesson(stub: LessonStub, topic: string): Lesson {
   };
 }
 
-export type Outline = Pick<Course, "slug" | "topic" | "tagline" | "emoji"> & {
-  stubs: LessonStub[];
-};
-
-export function parseOutline(text: string, brief: CourseBrief): Outline | null {
+export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
   const root = extractJson(text);
   if (!root) return null;
   const lessons = asArray(pick(root, ["lessons", "modules", "chapters", "outline"]));
@@ -151,7 +153,7 @@ export function parseOutline(text: string, brief: CourseBrief): Outline | null {
   };
 }
 
-export function fallbackOutline(brief: CourseBrief): Outline {
+export function fallbackOutline(brief: CourseBrief): CourseOutline {
   const base = buildCourse(brief.topic, brief.lessons);
   return {
     slug: base.slug,
