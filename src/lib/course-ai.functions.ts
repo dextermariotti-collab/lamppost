@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { buildCourse, type Course } from "./courses";
 import { parseCourse, SYSTEM } from "./course-ai.server";
+
+const Input = z.object({ topic: z.string() });
 
 export const generateCourse = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => Input.parse(input))
@@ -14,6 +15,7 @@ export const generateCourse = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
+      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
