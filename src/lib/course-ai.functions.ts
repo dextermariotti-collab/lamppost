@@ -1,17 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { buildCourse, type Course } from "./courses";
-import { parseCourse, SYSTEM } from "./course-ai.server";
+import { BriefSchema, ChunkSchema, quizCountFor } from "./course-brief";
+import type { Lesson } from "./courses";
+import {
+  CONTENT_SYSTEM,
+  OUTLINE_SYSTEM,
+  contentPrompt,
+  fallbackLesson,
+  fallbackOutline,
+  outlinePrompt,
+  parseLessonContent,
+  parseOutline,
+  type Outline,
+} from "./course-ai.server";
 
-const Input = z.object({ topic: z.string() });
-
-export const generateCourse = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => Input.parse(input))
-  .handler(async ({ data }): Promise<Course> => {
-    const topic = data.topic.trim().slice(0, 120) || "Something New";
-
+export const generateOutline = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => BriefSchema.parse(input))
+  .handler(async ({ data: brief }): Promise<Outline> => {
     const key = process.env["LOVABLE_API_KEY"];
-    if (!key) return buildCourse(topic);
+    if (!key) return fallbackOutline(brief);
 
     try {
       const { streamText } = await import("ai");
@@ -20,14 +26,40 @@ export const generateCourse = createServerFn({ method: "POST" })
 
       const result = streamText({
         model: gateway("google/gemini-3.6-flash"),
-        system: SYSTEM,
-        prompt: `Create a beginner-friendly mini-course on: ${topic}`,
+        system: OUTLINE_SYSTEM,
+        prompt: outlinePrompt(brief),
       });
 
-      const text = await result.text;
-      return parseCourse(text, topic) ?? buildCourse(topic);
+      return parseOutline(await result.text, brief) ?? fallbackOutline(brief);
     } catch (error) {
-      console.error("Course generation failed", error);
-      return buildCourse(topic);
+      console.error("Outline generation failed", error);
+      return fallbackOutline(brief);
+    }
+  });
+
+export const generateLessonChunk = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => ChunkSchema.parse(input))
+  .handler(async ({ data }): Promise<Lesson[]> => {
+    const { brief, courseTitle, stubs } = data;
+    const key = process.env["LOVABLE_API_KEY"];
+    if (!key || stubs.length === 0) {
+      return stubs.map((stub) => fallbackLesson(stub, courseTitle));
+    }
+
+    try {
+      const { streamText } = await import("ai");
+      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+      const gateway = createLovableAiGatewayProvider(key);
+
+      const result = streamText({
+        model: gateway("google/gemini-3.6-flash"),
+        system: CONTENT_SYSTEM,
+        prompt: contentPrompt(brief, courseTitle, stubs),
+      });
+
+      return parseLessonContent(await result.text, stubs, courseTitle, quizCountFor(brief));
+    } catch (error) {
+      console.error("Lesson generation failed", error);
+      return stubs.map((stub) => fallbackLesson(stub, courseTitle));
     }
   });
