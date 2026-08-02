@@ -14,10 +14,9 @@ const DEFAULT_STATE: ProgressState = {
   streak: 7,
   gems: 1280,
   xp: 2450,
-  courses: {
-    "digital-photography": { topic: "Digital Photography", completed: 3, total: 5 },
-  },
+  courses: {},
 };
+
 
 function read(): ProgressState {
   if (typeof window === "undefined") return DEFAULT_STATE;
