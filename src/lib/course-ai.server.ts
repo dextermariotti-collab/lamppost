@@ -1,4 +1,3 @@
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { buildCourse, slugify, type Course, type Lesson } from "./courses";
 
 export const SYSTEM = `You design short, delightful mobile mini-courses.
