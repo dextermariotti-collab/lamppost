@@ -1,11 +1,5 @@
-import {
-  briefPrompt,
-  quizCountFor,
-  type CourseBrief,
-  type CourseOutline,
-  type LessonStub,
-} from "./course-brief";
-import { buildCourse, slugify, type Lesson, type Quiz } from "./courses";
+import { briefPrompt, quizCountFor, type CourseBrief, type CourseOutline, type LessonStub } from "./course-brief";
+import { slugify, type Lesson, type Quiz } from "./courses";
 
 export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
@@ -100,41 +94,6 @@ function normalizeQuiz(raw: unknown, lessonTitle: string): Quiz | null {
 }
 
 
-export function fallbackLesson(stub: LessonStub, topic: string): Lesson {
-  return {
-    title: stub.title,
-    subtitle: stub.subtitle,
-    emoji: stub.emoji || "✨",
-    intro: `Here's your lesson on ${stub.title.toLowerCase()} — part of your ${topic} path.`,
-    keyPoints: [
-      `${stub.title} builds directly on the lesson before it.`,
-      "Read each part slowly, then say it back in your own words.",
-      "Practise one small piece before moving on.",
-      "Mistakes here are the fastest route to understanding.",
-    ],
-    parts: [
-      {
-        title: "The core idea",
-        body: `${stub.subtitle}. Focus on building one reliable mental model of ${stub.title.toLowerCase()} that you can reuse, rather than memorising details you'll forget by tomorrow.`,
-      },
-      {
-        title: "Try it yourself",
-        body: `Spend ten focused minutes applying ${stub.title.toLowerCase()} to a real example from ${topic}. Short deliberate reps beat long unfocused sessions.`,
-      },
-    ],
-    quiz: {
-      question: `What's the smartest way to lock in ${stub.title.toLowerCase()}?`,
-      options: [
-        "Memorise every detail at once",
-        "Practise one small piece at a time",
-        "Wait until it feels easy",
-      ],
-      correct: 1,
-      explanation: "Small, repeated reps are what make new skills stick.",
-    },
-  };
-}
-
 export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
   const root = extractJson(text);
   if (!root) return null;
@@ -163,33 +122,16 @@ export function parseOutline(text: string, brief: CourseBrief): CourseOutline | 
   };
 }
 
-export function fallbackOutline(brief: CourseBrief): CourseOutline {
-  const base = buildCourse(brief.topic, brief.lessons);
-  return {
-    slug: base.slug,
-    topic: base.topic,
-    tagline: base.tagline,
-    emoji: base.emoji,
-    stubs: base.lessons.map((lesson, i) => ({
-      index: i + 1,
-      title: lesson.title,
-      subtitle: lesson.subtitle,
-      emoji: lesson.emoji,
-    })),
-  };
-}
-
 /** Merges AI lesson content onto the outline stubs, falling back per lesson. */
 export function parseLessonContent(
   text: string,
   stubs: LessonStub[],
-  topic: string,
   quizCount: number,
 ): Lesson[] {
   const root = extractJson(text);
   const items = root ? asArray(pick(root, ["lessons", "content", "items"])) : [];
 
-  return stubs.map((stub, position) => {
+  const lessons = stubs.map((stub, position): Lesson | null => {
     const match =
       items.find((item) => Number(asObject(item)["index"]) === stub.index) ?? items[position];
     const l = asObject(match);
@@ -217,7 +159,7 @@ export function parseLessonContent(
     const single = quizzes.length === 0 ? normalizeQuiz(pick(l, ["quiz"]), stub.title) : null;
     const resolvedQuizzes = quizzes.length > 0 ? quizzes : single ? [single] : [];
 
-    if (parts.length === 0 || resolvedQuizzes.length === 0) return fallbackLesson(stub, topic);
+    if (parts.length === 0 || resolvedQuizzes.length === 0) return null;
 
     return {
       title: stub.title,
@@ -230,4 +172,6 @@ export function parseLessonContent(
       quizzes: resolvedQuizzes,
     };
   });
+
+  return lessons.filter((lesson): lesson is Lesson => lesson !== null);
 }

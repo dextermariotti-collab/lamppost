@@ -49,7 +49,7 @@ function CreateScreen() {
   const [outline, setOutline] = useState<CourseOutline | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [done, setDone] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const briefKey = JSON.stringify(brief);
   const registerRef = useRef(registerCourse);
@@ -61,12 +61,17 @@ function CreateScreen() {
     setOutline(null);
     setLessons([]);
     setDone(false);
-    setFailed(false);
+    setFailed(null);
 
     (async () => {
       try {
-        const nextOutline = await runOutline({ data: parsed });
+        const outlineResult = await runOutline({ data: parsed });
         if (cancelled) return;
+        if (!outlineResult.ok) {
+          setFailed(outlineResult.reason);
+          return;
+        }
+        const nextOutline = outlineResult.outline;
         setOutline(nextOutline);
 
         const written: Lesson[] = [];
@@ -79,7 +84,11 @@ function CreateScreen() {
             },
           });
           if (cancelled) return;
-          written.push(...chunk);
+          if (!chunk.ok) {
+            setFailed(chunk.reason);
+            return;
+          }
+          written.push(...chunk.lessons);
           setLessons([...written]);
         }
 
@@ -98,7 +107,9 @@ function CreateScreen() {
         }, 1100);
       } catch (error) {
         console.error(error);
-        if (!cancelled) setFailed(true);
+        if (!cancelled) {
+          setFailed("The AI tutor couldn't finish writing this course. Try again in a moment.");
+        }
       }
     })();
 
@@ -157,9 +168,7 @@ function CreateScreen() {
           <div className="animate-pop-in rounded-3xl bg-card p-5 text-center shadow-card">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
             <h2 className="mt-2 text-base">Course creation hit a snag</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The AI tutor is busy right now. Give it another try.
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{failed}</p>
             <button
               onClick={() => setAttempt((a) => a + 1)}
               className="mt-4 inline-flex items-center gap-2 rounded-full bg-hero-gradient px-5 py-2.5 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.03]"
