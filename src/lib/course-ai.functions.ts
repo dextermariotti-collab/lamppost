@@ -37,7 +37,7 @@ function describe(error: unknown): string {
   if (/429|rate.?limit/i.test(text)) {
     return "The AI tutor is rate limited right now. Wait a moment and try again.";
   }
-  return `The AI tutor couldn't finish writing this course. (${text.slice(0, 120)})`;
+  return "The AI tutor couldn't finish writing this course. Try again in a moment.";
 }
 
 export const generateOutline = createServerFn({ method: "POST" })
