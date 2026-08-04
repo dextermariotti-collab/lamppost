@@ -108,7 +108,7 @@ function CreateScreen() {
       } catch (error) {
         console.error(error);
         if (!cancelled) {
-          setFailed("The AI tutor couldn't finish writing this course. Try again in a moment.");
+          setFailed("Lost the connection to the AI tutor. Check your connection and try again.");
         }
       }
     })();
