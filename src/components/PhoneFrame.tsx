@@ -42,6 +42,7 @@ export function PhoneFrame({
               <div className="flex flex-col items-center gap-1">
                 <Link
                   to="/setup"
+                  search={clampBrief({ topic: "" })}
                   aria-label="AI Create"
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card transition-transform hover:scale-105"
                 >
