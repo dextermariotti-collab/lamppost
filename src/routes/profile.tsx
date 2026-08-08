@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, HelpCircle, Target } from "lucide-react";
-import foxMascot from "@/assets/fox-mascot.png";
+import { ChevronRight, HelpCircle, LogIn, LogOut, Sparkles, Target } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { useCompanion } from "@/lib/companion-store";
+import { companionName } from "@/lib/companions";
+import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/profile")({
@@ -20,6 +24,8 @@ export const Route = createFileRoute("/profile")({
 
 function ProfileScreen() {
   const { state } = useProgress();
+  const { companion, signedIn } = useCompanion();
+  const navigate = useNavigate();
   const rows = [
     {
       icon: Target,
@@ -36,10 +42,10 @@ function ProfileScreen() {
 
         <div className="mt-4 flex items-center gap-4 rounded-3xl bg-hero-gradient p-5 text-primary-foreground shadow-card">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-foreground/20">
-            <img src={foxMascot} alt="Your avatar" width={816} height={816} loading="lazy" className="h-14 w-14 object-contain" />
+            <CompanionAvatar companion={companion} size={56} />
           </div>
           <div>
-            <p className="text-lg font-extrabold">Curious Learner</p>
+            <p className="text-lg font-extrabold">Learning with {companionName(companion)}</p>
             <p className="text-xs opacity-85">
               {state.xp.toLocaleString()} XP · {state.streak} day streak
             </p>
@@ -59,6 +65,37 @@ function ProfileScreen() {
             </li>
           ))}
         </ul>
+
+        <Link
+          to="/onboarding"
+          className="mt-4 flex items-center gap-3 rounded-3xl bg-card px-4 py-4 shadow-soft transition-transform hover:-translate-y-0.5"
+        >
+          <CompanionAvatar companion={companion} size={40} />
+          <span className="flex-1 text-sm font-bold">Change companion</span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+
+        {signedIn ? (
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/auth", replace: true });
+            }}
+            className="mt-3 flex w-full items-center gap-3 rounded-3xl bg-card px-4 py-4 text-left shadow-soft"
+          >
+            <LogOut className="h-5 w-5 text-flame" />
+            <span className="flex-1 text-sm font-bold">Sign out</span>
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            className="mt-3 flex items-center gap-3 rounded-3xl bg-card px-4 py-4 shadow-soft"
+          >
+            <LogIn className="h-5 w-5 text-primary" />
+            <span className="flex-1 text-sm font-bold">Save my progress</span>
+            <Sparkles className="h-4 w-4 text-primary" />
+          </Link>
+        )}
       </div>
     </PhoneFrame>
   );

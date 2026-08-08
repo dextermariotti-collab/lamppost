@@ -2,7 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import aiBot from "@/assets/ai-bot.png";
-import foxMascot from "@/assets/fox-mascot.png";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { useCompanion } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { clampBrief } from "@/lib/course-brief";
@@ -34,6 +35,7 @@ function LessonScreen() {
   const { slug, index } = Route.useParams();
   const navigate = useNavigate();
   const { course, hydrated } = useStoredCourse(slug);
+  const { companion } = useCompanion();
   const { completeLesson } = useProgress();
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
@@ -235,13 +237,10 @@ function LessonScreen() {
                       {isCorrect && (
                         <p className="mt-1 text-xs font-extrabold text-primary">+50 XP · +10 💎</p>
                       )}
-                      <img
-                        src={foxMascot}
-                        alt=""
-                        aria-hidden
-                        width={816}
-                        height={816}
-                        className={`pointer-events-none absolute -right-1 -bottom-1 h-20 w-20 object-contain ${
+                      <CompanionAvatar
+                        companion={companion}
+                        size={72}
+                        className={`pointer-events-none absolute -right-1 -bottom-1 ${
                           isCorrect ? "animate-pop-in" : ""
                         }`}
                       />
