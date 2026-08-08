@@ -61,7 +61,7 @@ export const FOCUS = [
 ];
 
 export const DEFAULT_BRIEF: CourseBrief = {
-  topic: "Digital Photography",
+  topic: "",
   lessons: 8,
   difficulty: "beginner",
   experience: "new",

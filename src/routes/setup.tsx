@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Sparkles, Wand2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import aiBot from "@/assets/ai-bot.png";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -47,6 +47,11 @@ function SetupScreen() {
   const initial = Route.useSearch();
   const navigate = useNavigate();
   const [brief, setBrief] = useState<CourseBrief>(initial);
+
+  // Nothing to build a course from — send them back to enter a topic.
+  useEffect(() => {
+    if (!brief.topic.trim()) navigate({ to: "/", replace: true });
+  }, [brief.topic, navigate]);
 
   const set = <K extends keyof CourseBrief>(key: K, value: CourseBrief[K]) =>
     setBrief((prev) => ({ ...prev, [key]: value }));

@@ -29,10 +29,10 @@ export type ProgressState = {
 };
 
 const DEFAULT_STATE: ProgressState = {
-  streak: 7,
-  longestStreak: 12,
-  gems: 1280,
-  xp: 2450,
+  streak: 0,
+  longestStreak: 0,
+  gems: 0,
+  xp: 0,
   lastActiveDay: null,
   history: {},
   dailyGoal: 3,
