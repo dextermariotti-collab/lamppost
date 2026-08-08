@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Flame, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Confetti } from "@/components/Confetti";
@@ -39,12 +39,13 @@ function ProgressScreen() {
     if (!state.celebration) return;
     const next = state.celebration;
     clearCelebration();
-    if (next.big) setCelebration(next);
-    else {
-      setBurst(true);
-      const t = setTimeout(() => setBurst(false), 1400);
-      return () => clearTimeout(t);
+    if (next.big) {
+      setCelebration(next);
+      return;
     }
+    setBurst(true);
+    const t = setTimeout(() => setBurst(false), 1400);
+    return () => clearTimeout(t);
   }, [state.celebration, clearCelebration]);
 
   const insights = useMemo(() => deriveInsights(state), [state]);
@@ -167,8 +168,9 @@ function ProgressScreen() {
 
         {/* Near-miss pull */}
         {nearMiss && (
-          <button
-            onClick={() => setCelebration(null)}
+          <Link
+            to="/course/$slug"
+            params={{ slug: nearMiss.slug }}
             className="mt-4 flex w-full animate-rise-in items-center gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4 text-left shadow-soft transition-transform hover:-translate-y-0.5"
             style={{ animationDelay: "120ms" }}
           >
@@ -182,7 +184,7 @@ function ProgressScreen() {
                 You're at {nearMiss.pct}% — closer than it feels.
               </span>
             </span>
-          </button>
+          </Link>
         )}
 
         {/* Stats */}
