@@ -233,3 +233,53 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10%, 0) rotate(0deg) scale(0.9);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift, 0px), 320px, 0) rotate(var(--spin, 180deg)) scale(1);
+  }
+}
+
+@keyframes flame-flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(-1deg);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.06) rotate(2deg);
+    filter: brightness(1.12);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.12);
+  }
+}
+
+@utility animate-confetti {
+  animation: confetti-fall 1.2s cubic-bezier(0.3, 0.8, 0.5, 1) forwards;
+}
+
+@utility animate-flame {
+  animation: flame-flicker 1.8s ease-in-out infinite;
+}
+
+@utility animate-glow-pulse {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
