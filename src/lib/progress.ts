@@ -202,10 +202,34 @@ export function useProgress() {
     [update],
   );
 
+  /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
+  const recordReview = useCallback(
+    (correct: boolean) =>
+      update((prev) => {
+        const today = dayKey();
+        const streak =
+          prev.lastActiveDay === today
+            ? prev.streak
+            : prev.lastActiveDay === shiftDay(today, -1)
+              ? prev.streak + 1
+              : 1;
+        return {
+          ...prev,
+          xp: prev.xp + (correct ? 20 : 5),
+          gems: prev.gems + (correct ? 2 : 0),
+          streak,
+          longestStreak: Math.max(prev.longestStreak, streak),
+          lastActiveDay: today,
+          history: { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 },
+        };
+      }),
+    [update],
+  );
+
   const clearCelebration = useCallback(
     () => update((prev) => (prev.celebration ? { ...prev, celebration: null } : prev)),
     [update],
   );
 
-  return { state, hydrated, registerCourse, completeLesson, clearCelebration };
+  return { state, hydrated, registerCourse, completeLesson, recordReview, clearCelebration };
 }
