@@ -7,8 +7,8 @@ export type Celebration = {
   title: string;
   detail: string;
   emoji: string;
-  bonusXp?: number;
-  big?: boolean;
+  bonusXp?: number | undefined;
+  big?: boolean | undefined;
 };
 
 export type ProgressState = {
