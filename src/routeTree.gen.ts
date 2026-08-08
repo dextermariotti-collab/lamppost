@@ -16,6 +16,7 @@ import { Route as CreateRouteImport } from './routes/create'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as ReviewRouteImport } from './routes/review'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
@@ -55,6 +56,11 @@ const ProgressRoute = ProgressRouteImport.update({
   path: '/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
+  '/review': typeof ReviewRoute
   '/setup': typeof SetupRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
+  '/review': typeof ReviewRoute
   '/setup': typeof SetupRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
+  '/review': typeof ReviewRoute
   '/setup': typeof SetupRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/progress'
+    | '/review'
     | '/setup'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/progress'
+    | '/review'
     | '/setup'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/progress'
+    | '/review'
     | '/setup'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
+  ReviewRoute: typeof ReviewRoute
   SetupRoute: typeof SetupRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/setup': {
       id: '/setup'
       path: '/setup'
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
+  ReviewRoute: ReviewRoute,
   SetupRoute: SetupRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,
@@ -250,13 +271,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Sparkles, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { AnimatedBar } from "@/components/AnimatedBar";
@@ -38,19 +38,20 @@ function ReviewQueue() {
     () => Object.fromEntries(Object.entries(state.courses).map(([slug, c]) => [slug, c.completed])),
     [state.courses],
   );
-  const { items, hydrated } = useReviewQueue(completedBySlug);
-  const { grade } = useReviewQueue(completedBySlug);
+  const { items, hydrated, grade } = useReviewQueue(completedBySlug);
 
-  // The queue is frozen for the session so grading doesn't reshuffle mid-run.
-  const [queue] = useState(() => items);
-  const session = queue.length > 0 ? queue : items;
+  // Snapshot the queue once so grading doesn't reshuffle it mid-session.
+  const [session, setSession] = useState<typeof items | null>(null);
+  useEffect(() => {
+    if (hydrated && session === null) setSession(items);
+  }, [hydrated, items, session]);
 
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [right, setRight] = useState(0);
 
-  const item = session[step];
-  const done = hydrated && (session.length === 0 || step >= session.length);
+  const item = session?.[step];
+  const done = session !== null && (session.length === 0 || step >= session!.length);
 
   const answer = (index: number) => {
     if (picked !== null || !item) return;
@@ -80,9 +81,9 @@ function ReviewQueue() {
 
         {!done && item && (
           <>
-            <AnimatedBar pct={(step / session.length) * 100} className="mt-1" />
+            <AnimatedBar pct={(step / session!.length) * 100} className="mt-1" />
             <p className="mt-2 text-[11px] font-bold text-muted-foreground">
-              {step + 1} of {session.length} · {item.topic}
+              {step + 1} of {session!.length} · {item.topic}
             </p>
 
             <div className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
@@ -148,7 +149,7 @@ function ReviewQueue() {
                 }}
                 className="mt-5 w-full rounded-2xl bg-hero-gradient py-3.5 text-sm font-extrabold text-primary-foreground shadow-card transition-transform active:scale-95"
               >
-                {step + 1 >= session.length ? "Finish review" : "Next"}
+                {step + 1 >= session!.length ? "Finish review" : "Next"}
               </button>
             )}
           </>
@@ -158,12 +159,12 @@ function ReviewQueue() {
           <div className="mt-10 flex animate-pop-in flex-col items-center text-center">
             <CompanionAvatar companion={{ ...companion, expression: "excited" }} size={120} animate />
             <h1 className="mt-4 text-2xl">
-              {session.length === 0 ? "Nothing due right now" : "Review complete"}
+              {session!.length === 0 ? "Nothing due right now" : "Review complete"}
             </h1>
             <p className="mt-2 max-w-[16rem] text-sm text-muted-foreground">
-              {session.length === 0
+              {session!.length === 0
                 ? "Finish a lesson and it'll come back here tomorrow for recall practice."
-                : `${right} of ${session.length} recalled. The ones you missed return tomorrow.`}
+                : `${right} of ${session!.length} recalled. The ones you missed return tomorrow.`}
             </p>
             <button
               onClick={() => navigate({ to: "/" })}
