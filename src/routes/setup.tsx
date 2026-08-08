@@ -48,6 +48,11 @@ function SetupScreen() {
   const navigate = useNavigate();
   const [brief, setBrief] = useState<CourseBrief>(initial);
 
+  // Nothing to build a course from — send them back to enter a topic.
+  useEffect(() => {
+    if (!brief.topic.trim()) navigate({ to: "/", replace: true });
+  }, [brief.topic, navigate]);
+
   const set = <K extends keyof CourseBrief>(key: K, value: CourseBrief[K]) =>
     setBrief((prev) => ({ ...prev, [key]: value }));
 
