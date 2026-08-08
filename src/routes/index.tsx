@@ -1,10 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, RefreshCw, Send, Sparkles } from "lucide-react";
+import { ChevronRight, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import foxMascot from "@/assets/fox-mascot.png";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { IDEAS } from "@/lib/courses";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/")({
@@ -32,10 +31,8 @@ export const Route = createFileRoute("/")({
 function Home() {
   const navigate = useNavigate();
   const [topic, setTopic] = useState("");
-  const [shuffle, setShuffle] = useState(0);
   const { state } = useProgress();
 
-  const ideas = IDEAS.map((_, i) => IDEAS[(i + shuffle) % IDEAS.length]!);
   const continuing = Object.entries(state.courses).filter(([, c]) => c.completed < c.total);
 
   const start = (value: string) => {
@@ -89,45 +86,7 @@ function Home() {
             aria-label="Course topic"
             className="w-full bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground"
           />
-          <div className="mt-6 flex items-center justify-between">
-            <span className="flex items-center gap-2 text-xs font-bold text-primary">
-              <Sparkles className="h-4 w-4" />
-              AI Course Creator
-            </span>
-            <button
-              type="submit"
-              aria-label="Create course"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card transition-transform hover:scale-105 active:scale-95"
-            >
-              <Send className="h-5 w-5" />
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-6 flex items-center justify-between">
-          <h2 className="text-base">Try these ideas</h2>
-          <button
-            onClick={() => setShuffle((s) => s + 1)}
-            aria-label="Shuffle ideas"
-            className="text-muted-foreground transition-colors hover:text-primary"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          {ideas.map((idea) => (
-            <button
-              key={idea.label}
-              onClick={() => start(idea.topic)}
-              className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 text-sm font-bold shadow-soft transition-transform hover:-translate-y-0.5"
-            >
-              <span aria-hidden>{idea.emoji}</span>
-              {idea.label}
-            </button>
-          ))}
-        </div>
-
-        {continuing.length > 0 && (
+          {continuing.length > 0 && (
           <>
             <h2 className="mt-7 text-base">Continue learning</h2>
             <div className="mt-3 space-y-3">
