@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Send, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { clampBrief } from "@/lib/course-brief";
-import foxMascot from "@/assets/fox-mascot.png";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
+import { companionName } from "@/lib/companions";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/")({
@@ -32,6 +34,12 @@ function Home() {
   const navigate = useNavigate();
   const [topic, setTopic] = useState("");
   const { state } = useProgress();
+  const { companion } = useCompanion();
+
+  // First run: introduce the app and let them pick a companion.
+  useEffect(() => {
+    if (!hasSeenOnboarding()) navigate({ to: "/onboarding", replace: true });
+  }, [navigate]);
 
   const continuing = Object.entries(state.courses).filter(([, c]) => c.completed < c.total);
 
@@ -46,7 +54,7 @@ function Home() {
       <div className="px-5 pb-6">
         <div className="flex items-center gap-3 py-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft">
-            <img src={foxMascot} alt="Your Lamppost mascot" width={816} height={816} className="h-9 w-9 object-contain" />
+            <CompanionAvatar companion={companion} size={40} />
           </div>
           <div className="flex flex-1 items-center justify-between gap-2 text-center">
             <Stat value={state.streak} label="day streak" emoji="🔥" />
@@ -60,16 +68,8 @@ function Home() {
             What do you want to <span className="text-primary">learn</span> today?
           </h1>
           <p className="mt-2 max-w-[15rem] text-sm text-muted-foreground">
-            Ask AI to create a personalized course on any topic.
+            {companionName(companion)} is ready — ask AI to build a course on any topic.
           </p>
-          <img
-            src={foxMascot}
-            alt=""
-            aria-hidden
-            width={816}
-            height={816}
-            className="pointer-events-none absolute -top-2 right-0 h-32 w-32 animate-float object-contain"
-          />
         </div>
 
         <form
