@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, BookOpen, Plus, TrendingUp, User, Wifi, Signal, BatteryFull } from "lucide-react";
 import type { ReactNode } from "react";
+import { clampBrief } from "@/lib/course-brief";
 import { cn } from "@/lib/utils";
 
 const NAV = [
