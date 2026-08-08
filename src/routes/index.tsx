@@ -86,7 +86,22 @@ function Home() {
             aria-label="Course topic"
             className="w-full bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground"
           />
-          {continuing.length > 0 && (
+          <div className="mt-6 flex items-center justify-between">
+            <span className="flex items-center gap-2 text-xs font-bold text-primary">
+              <Sparkles className="h-4 w-4" />
+              AI Course Creator
+            </span>
+            <button
+              type="submit"
+              aria-label="Create course"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card transition-transform hover:scale-105 active:scale-95"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          </div>
+        </form>
+
+        {continuing.length > 0 && (
           <>
             <h2 className="mt-7 text-base">Continue learning</h2>
             <div className="mt-3 space-y-3">
