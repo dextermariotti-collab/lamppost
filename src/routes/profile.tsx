@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, ChevronRight, Globe, HelpCircle, Moon, Target } from "lucide-react";
+import { ChevronRight, HelpCircle, Target } from "lucide-react";
 import foxMascot from "@/assets/fox-mascot.png";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { useProgress } from "@/lib/progress";
@@ -18,16 +18,16 @@ export const Route = createFileRoute("/profile")({
   component: ProfileScreen,
 });
 
-const ROWS = [
-  { icon: Target, label: "Daily goal", value: "1 lesson" },
-  { icon: Bell, label: "Reminders", value: "8:00 PM" },
-  { icon: Globe, label: "Language", value: "English" },
-  { icon: Moon, label: "Appearance", value: "Light" },
-  { icon: HelpCircle, label: "Help & feedback", value: "" },
-];
-
 function ProfileScreen() {
   const { state } = useProgress();
+  const rows = [
+    {
+      icon: Target,
+      label: "Daily goal",
+      value: `${state.dailyGoal} lesson${state.dailyGoal === 1 ? "" : "s"}`,
+    },
+    { icon: HelpCircle, label: "Help & feedback", value: "" },
+  ];
 
   return (
     <PhoneFrame>
@@ -47,7 +47,7 @@ function ProfileScreen() {
         </div>
 
         <ul className="mt-5 overflow-hidden rounded-3xl bg-card shadow-soft">
-          {ROWS.map(({ icon: Icon, label, value }) => (
+          {rows.map(({ icon: Icon, label, value }) => (
             <li
               key={label}
               className="flex items-center gap-3 border-b border-border px-4 py-4 last:border-0"

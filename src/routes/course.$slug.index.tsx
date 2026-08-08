@@ -5,18 +5,21 @@ import { clampBrief } from "@/lib/course-brief";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useStoredCourse } from "@/lib/course-store";
-import { buildCourse } from "@/lib/courses";
+import { titleFromSlug } from "@/lib/courses";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/course/$slug/")({
   head: ({ params }) => {
-    const course = buildCourse(params.slug.replace(/-/g, " "));
+    const topic = titleFromSlug(params.slug);
     return {
       meta: [
-        { title: `${course.topic} learning path — Lamppost` },
-        { name: "description", content: `${course.tagline} Follow your AI-built path lesson by lesson.` },
-        { property: "og:title", content: `${course.topic} — Lamppost` },
-        { property: "og:description", content: course.tagline },
+        { title: `${topic} learning path — Lamppost` },
+        {
+          name: "description",
+          content: `Follow your AI-built ${topic} path lesson by lesson on Lamppost.`,
+        },
+        { property: "og:title", content: `${topic} — Lamppost` },
+        { property: "og:description", content: `Your personalized ${topic} course path.` },
         { property: "og:type", content: "article" },
       ],
       links: [{ rel: "canonical", href: `/course/${params.slug}` }],
