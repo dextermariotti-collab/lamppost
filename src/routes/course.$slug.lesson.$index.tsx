@@ -7,22 +7,21 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { clampBrief } from "@/lib/course-brief";
 import { useStoredCourse } from "@/lib/course-store";
-import { buildCourse, lessonQuizzes } from "@/lib/courses";
+import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
   head: ({ params }) => {
-    const course = buildCourse(params.slug.replace(/-/g, " "));
-    const lesson = course.lessons[Number(params.index) - 1] ?? course.lessons[0]!;
+    const topic = titleFromSlug(params.slug);
     return {
       meta: [
-        { title: `${lesson.title} — ${course.topic} | Lamppost` },
+        { title: `Lesson ${params.index} — ${topic} | Lamppost` },
         {
           name: "description",
-          content: `${lesson.subtitle}. An in-depth AI-written lesson with quizzes.`,
+          content: `An in-depth AI-written ${topic} lesson with quizzes on Lamppost.`,
         },
-        { property: "og:title", content: `${lesson.title} — Lamppost` },
-        { property: "og:description", content: lesson.subtitle },
+        { property: "og:title", content: `${topic} lesson ${params.index} — Lamppost` },
+        { property: "og:description", content: `Read, practise and quiz yourself on ${topic}.` },
         { property: "og:type", content: "article" },
       ],
       links: [{ rel: "canonical", href: `/course/${params.slug}/lesson/${params.index}` }],
