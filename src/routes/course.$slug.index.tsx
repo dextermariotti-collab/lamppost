@@ -114,7 +114,7 @@ function CoursePath() {
 
       <div className="px-5 pb-10">
         {/* Course header — title, blurb, segmented progress. */}
-        <CompanionPeek companion={companion} size={78} side="right">
+        <CompanionPeek companion={companion} size={72} side="right" className="mt-7">
           <section className="relative animate-rise-in rounded-3xl bg-hero-gradient p-5 text-primary-foreground shadow-card">
             <div className="max-w-[70%]">
               <h1 className="text-xl leading-tight">{course.topic}</h1>

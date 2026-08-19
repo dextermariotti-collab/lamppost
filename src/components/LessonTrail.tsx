@@ -53,9 +53,9 @@ export function LessonTrail({
     <div className="relative mt-4" style={{ height }}>
       {/* backdrop scenery */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-2 top-24 h-16 w-24 rounded-full bg-primary-soft/70 blur-[2px]" />
-        <div className="absolute right-3 top-[19rem] h-14 w-20 rounded-full bg-primary-soft/60 blur-[2px]" />
-        <div className="absolute left-6 top-[34rem] h-12 w-16 rounded-full bg-primary-soft/50 blur-[2px]" />
+        <div className="absolute left-2 top-24 h-16 w-24 rounded-full bg-primary-soft/45 blur-md" />
+        <div className="absolute right-3 top-[19rem] h-14 w-20 rounded-full bg-primary-soft/40 blur-md" />
+        <div className="absolute left-6 top-[34rem] h-12 w-16 rounded-full bg-primary-soft/35 blur-md" />
       </div>
 
       <svg
@@ -92,7 +92,7 @@ export function LessonTrail({
         const current = i === completed;
         const locked = i > completed;
         const pt = points[i]!;
-        const calloutLeft = pt.x > 50;
+        const calloutLeft = pt.x >= 50;
 
         return (
           <div
