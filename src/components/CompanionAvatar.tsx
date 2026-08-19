@@ -244,8 +244,9 @@ export function CompanionAvatar({
 
 
         {/* blush */}
-        <ellipse cx="29" cy="52" rx="5" ry="3.4" fill={p.accent} opacity="0.35" />
-        <ellipse cx="71" cy="52" rx="5" ry="3.4" fill={p.accent} opacity="0.35" />
+        <ellipse cx="33" cy="53" rx="4.6" ry="3" fill={p.accent} opacity="0.4" />
+        <ellipse cx="67" cy="53" rx="4.6" ry="3" fill={p.accent} opacity="0.4" />
+
         {accessory()}
       </>
     );
