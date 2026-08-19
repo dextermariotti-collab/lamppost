@@ -177,61 +177,71 @@ export function CompanionAvatar({
     return (
       <>
         {/* tail, behind the body */}
-        <g className={activePose === "idle" ? "" : "animate-fox-tail"} style={{ transformOrigin: "74px 74px" }}>
+        <g className={activePose === "idle" ? "" : "animate-fox-tail"} style={{ transformOrigin: "70px 74px" }}>
           <path
-            d="M74 76c14 2 20-8 18-18-1.6 8-8 11-13 9 6-5 7-13 3-18 1 9-5 14-11 15z"
+            d="M68 74c13 5 24-3 24-16 0-7-3-13-9-16 5 10 3 20-6 24-3 1.4-6 2-9 2z"
             fill={p.base}
           />
-          <path d="M88 60c3 4 4 10 1 14-2 2-5 3-8 3 5-4 7-11 7-17z" fill={p.soft} />
+          <path d="M87 44c4 4 6 10 5 16-1 5-4 9-8 11 6-8 7-19 3-27z" fill={p.soft} />
         </g>
 
         {/* ears */}
-        <g className={activePose === "idle" ? "" : "animate-fox-ear"} style={{ transformOrigin: "50px 34px" }}>
-          <path d="M23 32 29 7c6 2 12 6 17 12z" fill={p.base} />
-          <path d="M77 32 71 7c-6 2-12 6-17 12z" fill={p.base} />
-          <path d="M30 27 32.6 15c3.4 1.6 6.4 4 8.6 6.8z" fill={p.soft} />
-          <path d="M70 27 67.4 15c-3.4 1.6-6.4 4-8.6 6.8z" fill={p.soft} />
+        <g className={activePose === "idle" ? "" : "animate-fox-ear"} style={{ transformOrigin: "50px 36px" }}>
+          <path d="M25 38 27 9c7 2 14 7 19 14z" fill={p.base} />
+          <path d="M75 38 73 9c-7 2-14 7-19 14z" fill={p.base} />
+          <path d="M31 33 32.6 18c4 1.8 7.4 4.6 10 8z" fill={p.soft} />
+          <path d="M69 33 67.4 18c-4 1.8-7.4 4.6-10 8z" fill={p.soft} />
         </g>
 
-        {/* head + cheek fluff */}
+        {/* head */}
+        <ellipse cx="50" cy="52" rx="31" ry="28" fill={p.base} />
+        {/* cheek fluff */}
+        <path d="M20 47c-5 3-7 9-6 15 3-3 7-5 10-9z" fill={p.base} />
+        <path d="M80 47c5 3 7 9 6 15-3-3-7-5-10-9z" fill={p.base} />
+
+        {/* white face mask */}
         <path
-          d="M50 20c18 0 32 12 32 27 0 17-14 28-32 28S18 64 18 47c0-15 14-27 32-27z"
-          fill={p.base}
+          d="M50 33c12 0 21 8 21 18 0 12-9 21-21 21s-21-9-21-21c0-10 9-18 21-18z"
+          fill={p.soft}
         />
-        <path d="M18 50c-4 4-5 9-4 13 3-2 6-4 8-8z" fill={p.base} />
-        <path d="M82 50c4 4 5 9 4 13-3-2-6-4-8-8z" fill={p.base} />
 
-        {/* muzzle */}
-        <path d="M50 44c11 0 18 6 18 13s-8 12-18 12-18-5-18-12 7-13 18-13z" fill={p.soft} />
-        <ellipse cx="50" cy="55.5" rx="3.6" ry="2.8" fill={dark} />
-        <path d="M46.5 62c2 2.6 5 2.6 7 0" stroke={dark} strokeWidth="2.6" strokeLinecap="round" fill="none" />
-        {c.expression === "excited" && <path d="M46 62q4 6 8 0q-4 3-8 0z" fill={dark} />}
-
-        {/* brow patch */}
-        <path d="M36 30c9-4 19-4 28 0-9-1-19-1-28 0z" fill={p.soft} opacity="0.7" />
+        {/* nose + mouth */}
+        <ellipse cx="50" cy="57" rx="3.6" ry="2.8" fill={dark} />
+        {c.expression === "excited" ? (
+          <path d="M44.5 61.5q5.5 7.5 11 0q-5.5 3.5-11 0z" fill={dark} />
+        ) : (
+          <path
+            d="M45.5 61.5c2.2 3 6.8 3 9 0"
+            stroke={dark}
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+        )}
 
         {/* eyes */}
-        <g className={blink} style={{ transformOrigin: "50px 44px" }}>
+        <g className={blink} style={{ transformOrigin: "50px 46px" }}>
           {c.expression === "calm" ? (
             <>
-              <path d="M33 44c3-3.4 7.6-3.4 10.6 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
-              <path d="M56.4 44c3-3.4 7.6-3.4 10.6 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path d="M35 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path d="M55.2 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
             </>
           ) : c.expression === "wink" ? (
             <>
-              <path d="M33 44c3-3.4 7.6-3.4 10.6 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
-              <circle cx="61.5" cy="43" r={eyeR} fill={dark} />
-              <circle cx="63.2" cy="41.2" r="1.6" fill="#fff" />
+              <path d="M35 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <circle cx="60.2" cy="45.5" r={eyeR} fill={dark} />
+              <circle cx="61.9" cy="43.7" r="1.7" fill="#fff" />
             </>
           ) : (
             <>
-              <circle cx="38.5" cy="43" r={eyeR} fill={dark} />
-              <circle cx="40.2" cy="41.2" r="1.7" fill="#fff" />
-              <circle cx="61.5" cy="43" r={eyeR} fill={dark} />
-              <circle cx="63.2" cy="41.2" r="1.7" fill="#fff" />
+              <circle cx="39.8" cy="45.5" r={eyeR} fill={dark} />
+              <circle cx="41.5" cy="43.7" r="1.7" fill="#fff" />
+              <circle cx="60.2" cy="45.5" r={eyeR} fill={dark} />
+              <circle cx="61.9" cy="43.7" r="1.7" fill="#fff" />
             </>
           )}
         </g>
+
 
         {/* blush */}
         <ellipse cx="29" cy="52" rx="5" ry="3.4" fill={p.accent} opacity="0.35" />
