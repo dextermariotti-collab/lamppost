@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Lock, MoreHorizontal, Play, RotateCcw, Share2 } from "lucide-react";
+import { Flame, Lock, MoreHorizontal, Play, RotateCcw, Share2, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import { AnimatedBar } from "@/components/AnimatedBar";
@@ -80,8 +80,8 @@ function CoursePath() {
         backTo="/"
         right={
           <>
-            <StatPill emoji="🔥" value={state.streak} />
-            <StatPill emoji="⚡" value={state.xp} />
+            <StatPill icon={Flame} value={state.streak} tone="flame" />
+            <StatPill icon={Zap} value={state.xp} tone="xp" />
             <button
               aria-label="Regenerate course"
               onClick={() =>
@@ -178,7 +178,7 @@ function CoursePath() {
                 }
                 className="mt-4 w-full rounded-full bg-primary-foreground px-5 py-3 text-sm font-extrabold text-primary shadow-soft transition-transform hover:scale-[1.02] active:scale-95"
               >
-                Keep Going 🔥
+                <span className="inline-flex items-center justify-center gap-1.5">Keep Going <Flame className="h-4 w-4" /></span>
               </button>
             </section>
           </CompanionPeek>
@@ -188,10 +188,18 @@ function CoursePath() {
   );
 }
 
-function StatPill({ emoji, value }: { emoji: string; value: number }) {
+function StatPill({
+  icon: Icon,
+  value,
+  tone,
+}: {
+  icon: typeof Flame;
+  value: number;
+  tone: "flame" | "xp";
+}) {
   return (
     <span className="flex items-center gap-1 rounded-full bg-card px-2.5 py-1.5 text-[11px] font-extrabold shadow-soft">
-      <span aria-hidden>{emoji}</span>
+      <Icon className={`h-3.5 w-3.5 ${tone === "flame" ? "text-flame" : "text-xp"}`} strokeWidth={2.6} />
       {value.toLocaleString()}
     </span>
   );
