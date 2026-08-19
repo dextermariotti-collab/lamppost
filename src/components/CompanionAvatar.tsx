@@ -1,24 +1,41 @@
 import { normalizeCompanion, paletteById, presetById, type Companion } from "@/lib/companions";
 
+export type CompanionPose = "idle" | "happy" | "cheer" | "peek";
+
 /**
  * Code-drawn companion. Every visual choice is derived from the saved
  * Companion shape, so previews update instantly as options change.
+ *
+ * The fox has bespoke art (snout, cheek fluff, curled tail) plus its own idle
+ * life: breathing bob, periodic blink, tail sway and an ear twitch. `pose`
+ * chooses the behaviour so screens never hardcode animation classes.
  */
 export function CompanionAvatar({
   companion,
   size = 96,
   className,
   animate = false,
+  pose,
 }: {
   companion: { [K in keyof Companion]?: string | null | undefined } | null | undefined;
   size?: number;
   className?: string;
   animate?: boolean;
+  pose?: CompanionPose;
 }) {
   const c = normalizeCompanion(companion);
   const preset = presetById(c.preset);
   const p = paletteById(c.palette);
   const species = preset.species;
+  const activePose: CompanionPose = pose ?? (animate ? "happy" : "idle");
+
+  const bodyMotion =
+    activePose === "cheer"
+      ? "animate-fox-hop"
+      : activePose === "idle"
+        ? ""
+        : "animate-fox-bob";
+  const wrapperMotion = activePose === "peek" ? "animate-peek-in" : "";
 
   const eyes = () => {
     if (c.expression === "calm")
@@ -59,15 +76,6 @@ export function CompanionAvatar({
 
   const ears = () => {
     switch (species) {
-      case "fox":
-        return (
-          <>
-            <path d="M24 30 30 8l16 12z" fill={p.base} />
-            <path d="M76 30 70 8 54 20z" fill={p.base} />
-            <path d="M30 26 32.5 16l8.5 6z" fill={p.soft} />
-            <path d="M70 26 67.5 16 59 22z" fill={p.soft} />
-          </>
-        );
       case "cat":
         return (
           <>
@@ -111,6 +119,8 @@ export function CompanionAvatar({
             <rect x="75" y="42" width="7" height="16" rx="3.5" fill={p.base} />
           </>
         );
+      default:
+        return null;
     }
   };
 
@@ -157,28 +167,120 @@ export function CompanionAvatar({
     }
   };
 
+  /** Bespoke fox: rounder head, snout, cheek fluff, highlighted eyes, curled tail. */
+  const fox = () => {
+    const dark = "#2c2440";
+    const blink = activePose === "idle" ? "" : "animate-fox-blink";
+    const wide = c.expression === "excited";
+    const eyeR = wide ? 5 : 4.3;
+
+    return (
+      <>
+        {/* tail, behind the body */}
+        <g className={activePose === "idle" ? "" : "animate-fox-tail"} style={{ transformOrigin: "70px 74px" }}>
+          <path
+            d="M68 74c13 5 24-3 24-16 0-7-3-13-9-16 5 10 3 20-6 24-3 1.4-6 2-9 2z"
+            fill={p.base}
+          />
+          <path d="M87 44c4 4 6 10 5 16-1 5-4 9-8 11 6-8 7-19 3-27z" fill={p.soft} />
+        </g>
+
+        {/* ears */}
+        <g className={activePose === "idle" ? "" : "animate-fox-ear"} style={{ transformOrigin: "50px 36px" }}>
+          <path d="M25 38 27 9c7 2 14 7 19 14z" fill={p.base} />
+          <path d="M75 38 73 9c-7 2-14 7-19 14z" fill={p.base} />
+          <path d="M31 33 32.6 18c4 1.8 7.4 4.6 10 8z" fill={p.soft} />
+          <path d="M69 33 67.4 18c-4 1.8-7.4 4.6-10 8z" fill={p.soft} />
+        </g>
+
+        {/* head */}
+        <ellipse cx="50" cy="52" rx="31" ry="28" fill={p.base} />
+        {/* cheek fluff */}
+        <path d="M20 47c-5 3-7 9-6 15 3-3 7-5 10-9z" fill={p.base} />
+        <path d="M80 47c5 3 7 9 6 15-3-3-7-5-10-9z" fill={p.base} />
+
+        {/* white face mask */}
+        <path
+          d="M50 33c12 0 21 8 21 18 0 12-9 21-21 21s-21-9-21-21c0-10 9-18 21-18z"
+          fill={p.soft}
+        />
+
+        {/* nose + mouth */}
+        <ellipse cx="50" cy="57" rx="3.6" ry="2.8" fill={dark} />
+        {c.expression === "excited" ? (
+          <path d="M44.5 61.5q5.5 7.5 11 0q-5.5 3.5-11 0z" fill={dark} />
+        ) : (
+          <path
+            d="M45.5 61.5c2.2 3 6.8 3 9 0"
+            stroke={dark}
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+        )}
+
+        {/* eyes */}
+        <g className={blink} style={{ transformOrigin: "50px 46px" }}>
+          {c.expression === "calm" ? (
+            <>
+              <path d="M35 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path d="M55.2 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+            </>
+          ) : c.expression === "wink" ? (
+            <>
+              <path d="M35 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <circle cx="60.2" cy="45.5" r={eyeR} fill={dark} />
+              <circle cx="61.9" cy="43.7" r="1.7" fill="#fff" />
+            </>
+          ) : (
+            <>
+              <circle cx="39.8" cy="45.5" r={eyeR} fill={dark} />
+              <circle cx="41.5" cy="43.7" r="1.7" fill="#fff" />
+              <circle cx="60.2" cy="45.5" r={eyeR} fill={dark} />
+              <circle cx="61.9" cy="43.7" r="1.7" fill="#fff" />
+            </>
+          )}
+        </g>
+
+
+        {/* blush */}
+        <ellipse cx="33" cy="53" rx="4.6" ry="3" fill={p.accent} opacity="0.4" />
+        <ellipse cx="67" cy="53" rx="4.6" ry="3" fill={p.accent} opacity="0.4" />
+
+        {accessory()}
+      </>
+    );
+  };
+
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      role="img"
-      aria-label={`${preset.name}, your learning companion`}
-      className={`${animate ? "animate-float" : ""} ${className ?? ""}`}
-    >
-      {ears()}
-      {/* body / head */}
-      <ellipse cx="50" cy="52" rx="32" ry="31" fill={p.base} />
-      {face()}
-      {c.accessory !== "glasses" && eyes()}
-      {c.accessory === "glasses" && eyes()}
-      {species !== "owl" && mouth()}
-      {species !== "owl" && species !== "bot" && (
-        <ellipse cx="50" cy="54.5" rx="3.4" ry="2.6" fill="#2c2440" />
-      )}
-      <ellipse cx="32" cy="60" rx="5" ry="3.6" fill={p.accent} opacity="0.3" />
-      <ellipse cx="68" cy="60" rx="5" ry="3.6" fill={p.accent} opacity="0.3" />
-      {accessory()}
-    </svg>
+    <span className={`inline-block ${wrapperMotion} ${className ?? ""}`}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        role="img"
+        aria-label={`${preset.name}, your learning companion`}
+        className={bodyMotion}
+        style={{ overflow: "visible" }}
+      >
+        {species === "fox" ? (
+          fox()
+        ) : (
+          <>
+            {ears()}
+            <ellipse cx="50" cy="52" rx="32" ry="31" fill={p.base} />
+            {face()}
+            {eyes()}
+            {species !== "owl" && mouth()}
+            {species !== "owl" && species !== "bot" && (
+              <ellipse cx="50" cy="54.5" rx="3.4" ry="2.6" fill="#2c2440" />
+            )}
+            <ellipse cx="32" cy="60" rx="5" ry="3.6" fill={p.accent} opacity="0.3" />
+            <ellipse cx="68" cy="60" rx="5" ry="3.6" fill={p.accent} opacity="0.3" />
+            {accessory()}
+          </>
+        )}
+      </svg>
+    </span>
   );
 }

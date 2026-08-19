@@ -1,9 +1,13 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Lock, MoreHorizontal, Play, RotateCcw, Share2 } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Flame, Lock, MoreHorizontal, Play, RotateCcw, Share2, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { clampBrief } from "@/lib/course-brief";
+import { AnimatedBar } from "@/components/AnimatedBar";
+import { CompanionPeek } from "@/components/CompanionPeek";
+import { LessonTrail } from "@/components/LessonTrail";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { useCompanion } from "@/lib/companion-store";
 import { useStoredCourse } from "@/lib/course-store";
 import { titleFromSlug } from "@/lib/courses";
 import { useProgress } from "@/lib/progress";
@@ -33,6 +37,7 @@ function CoursePath() {
   const navigate = useNavigate();
   const { course: stored, hydrated } = useStoredCourse(slug);
   const { state, registerCourse } = useProgress();
+  const { companion } = useCompanion();
 
   // Deep link to a course that was never generated → generate it.
   useEffect(() => {
@@ -63,9 +68,11 @@ function CoursePath() {
   }
 
   const course = stored;
+  const total = course.lessons.length;
   const completed = state.courses[slug]?.completed ?? 0;
-  const pct = Math.round((completed / course.lessons.length) * 100);
-  const nextIndex = Math.min(completed, course.lessons.length - 1);
+  const pct = Math.round((completed / total) * 100);
+  const nextIndex = Math.min(completed, total - 1);
+  const finished = completed >= total;
 
   return (
     <PhoneFrame>
@@ -73,9 +80,13 @@ function CoursePath() {
         backTo="/"
         right={
           <>
+            <StatPill icon={Flame} value={state.streak} tone="flame" />
+            <StatPill icon={Zap} value={state.xp} tone="xp" />
             <button
               aria-label="Regenerate course"
-              onClick={() => navigate({ to: "/setup", search: clampBrief({ topic: course.topic, ...course.brief }) })}
+              onClick={() =>
+                navigate({ to: "/setup", search: clampBrief({ topic: course.topic, ...course.brief }) })
+              }
               className="flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft transition-transform hover:rotate-90"
             >
               <RotateCcw className="h-4 w-4" />
@@ -101,89 +112,95 @@ function CoursePath() {
         }
       />
 
-      <div className="px-5 pb-8">
-        <section className="relative animate-rise-in overflow-hidden rounded-3xl bg-hero-gradient p-5 text-primary-foreground shadow-card">
-          <div className="flex items-start gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary-foreground/20 text-4xl">
-              {course.emoji}
+      <div className="px-5 pb-10">
+        {/* Course header — title, blurb, segmented progress. */}
+        <CompanionPeek companion={companion} size={72} side="right" className="mt-7">
+          <section className="relative animate-rise-in rounded-3xl bg-hero-gradient p-5 text-primary-foreground shadow-card">
+            <div className="max-w-[70%]">
+              <h1 className="text-xl leading-tight">{course.topic}</h1>
+              <p className="mt-1 text-xs font-semibold opacity-85">{course.tagline}</p>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold opacity-80">{course.tagline}</p>
-              <h1 className="text-2xl leading-tight">{course.topic}</h1>
-              <div className="mt-3 flex items-center gap-2">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-primary-foreground/30">
-                  <div
-                    className="h-full rounded-full bg-primary-foreground transition-all duration-700 ease-out"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <span className="text-xs font-bold">{pct}%</span>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex flex-1 gap-1">
+                {Array.from({ length: Math.min(total, 12) }, (_, i) => {
+                  const step = Math.round((i / Math.min(total, 12)) * total);
+                  return (
+                    <span
+                      key={i}
+                      className={`h-2.5 flex-1 rounded-full transition-colors duration-500 ${
+                        step < completed ? "bg-primary-foreground" : "bg-primary-foreground/30"
+                      }`}
+                    />
+                  );
+                })}
               </div>
+              <span className="text-xs font-extrabold">{pct}%</span>
             </div>
-          </div>
-          <button
-            onClick={() =>
-              navigate({
-                to: "/course/$slug/lesson/$index",
-                params: { slug, index: String(nextIndex + 1) },
-              })
-            }
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground px-5 py-2.5 text-sm font-extrabold text-primary shadow-soft transition-transform hover:scale-[1.03] active:scale-95"
-          >
-            <Play className="h-4 w-4" />
-            {completed === 0 ? "Start" : completed >= course.lessons.length ? "Review" : "Continue"}
-          </button>
-        </section>
+            <button
+              onClick={() =>
+                navigate({
+                  to: "/course/$slug/lesson/$index",
+                  params: { slug, index: String(nextIndex + 1) },
+                })
+              }
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground px-5 py-2.5 text-sm font-extrabold text-primary shadow-soft transition-transform hover:scale-[1.03] active:scale-95"
+            >
+              <Play className="h-4 w-4" />
+              {completed === 0 ? "Start" : finished ? "Review" : "Continue"}
+            </button>
+          </section>
+        </CompanionPeek>
 
         <h2 className="mt-6 text-base">Your learning path</h2>
 
-        <ol className="mt-4 space-y-4">
-          {course.lessons.map((lesson, i) => {
-            const done = i < completed;
-            const locked = i > completed;
-            const current = i === completed;
-            return (
-              <li
-                key={lesson.title}
-                className={`animate-rise-in ${i % 2 ? "pl-8" : "pr-8"}`}
-                style={{ animationDelay: `${i * 70}ms` }}
+        <LessonTrail slug={slug} lessons={course.lessons} completed={completed} companion={companion} />
+
+        {/* Locked-unit card: the trail keeps going once this course is done. */}
+        {!finished && (
+          <CompanionPeek companion={companion} size={68} side="center" className="mt-14">
+            <section className="animate-rise-in overflow-hidden rounded-3xl bg-hero-gradient px-5 pb-5 pt-8 text-center text-primary-foreground shadow-card">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-foreground/20">
+                <Lock className="h-5 w-5" />
+              </div>
+              <h3 className="mt-3 text-lg">Next unit locked</h3>
+              <p className="mx-auto mt-1 max-w-[16rem] text-xs font-semibold opacity-85">
+                Complete all the lessons in this unit to advance and continue your learning.
+              </p>
+              <div className="mx-auto mt-4 max-w-[15rem]">
+                <AnimatedBar pct={pct} />
+              </div>
+              <button
+                onClick={() =>
+                  navigate({
+                    to: "/course/$slug/lesson/$index",
+                    params: { slug, index: String(nextIndex + 1) },
+                  })
+                }
+                className="mt-4 w-full rounded-full bg-primary-foreground px-5 py-3 text-sm font-extrabold text-primary shadow-soft transition-transform hover:scale-[1.02] active:scale-95"
               >
-                <Link
-                  to="/course/$slug/lesson/$index"
-                  params={{ slug, index: String(i + 1) }}
-                  disabled={locked}
-                  className={`flex items-center gap-3 rounded-3xl bg-card p-3 shadow-soft transition-all ${
-                    locked ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:shadow-card"
-                  } ${current ? "ring-2 ring-primary/40" : ""}`}
-                >
-                  <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${
-                      locked
-                        ? "bg-muted text-muted-foreground"
-                        : "bg-hero-gradient text-primary-foreground shadow-card"
-                    } ${current ? "animate-pulse-ring" : ""}`}
-                  >
-                    {i + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold">{lesson.title}</span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {locked ? "Coming up next" : lesson.subtitle}
-                    </span>
-                  </span>
-                  {done ? (
-                    <Check className="h-5 w-5 shrink-0 animate-pop-in rounded-full bg-success p-1 text-success-foreground" />
-                  ) : locked ? (
-                    <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  ) : (
-                    <Play className="h-4 w-4 shrink-0 text-primary" />
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ol>
+                <span className="inline-flex items-center justify-center gap-1.5">Keep Going <Flame className="h-4 w-4" /></span>
+              </button>
+            </section>
+          </CompanionPeek>
+        )}
       </div>
     </PhoneFrame>
+  );
+}
+
+function StatPill({
+  icon: Icon,
+  value,
+  tone,
+}: {
+  icon: typeof Flame;
+  value: number;
+  tone: "flame" | "xp";
+}) {
+  return (
+    <span className="flex items-center gap-1 rounded-full bg-card px-2.5 py-1.5 text-[11px] font-extrabold shadow-soft">
+      <Icon className={`h-3.5 w-3.5 ${tone === "flame" ? "text-flame" : "text-xp"}`} strokeWidth={2.6} />
+      {value.toLocaleString()}
+    </span>
   );
 }
