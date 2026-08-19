@@ -27,7 +27,7 @@ export function CompanionPeek({
       <div
         aria-hidden
         className={`pointer-events-none absolute z-10 ${position}`}
-        style={{ top: -size * 0.62 }}
+        style={{ top: -size * 0.44 }}
       >
         <CompanionAvatar companion={companion} size={size} pose="peek" />
       </div>
