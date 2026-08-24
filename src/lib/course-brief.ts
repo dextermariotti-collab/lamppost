@@ -111,6 +111,7 @@ export function clampBrief(raw: Partial<Record<keyof CourseBrief, unknown>>): Co
     topic: topic.slice(0, 120),
     lessons,
     difficulty: pickValue(DIFFICULTIES, raw.difficulty, DEFAULT_BRIEF.difficulty),
+    quizRigor: pickValue(QUIZ_RIGOR, raw.quizRigor, DEFAULT_BRIEF.quizRigor),
     experience: pickValue(EXPERIENCE, raw.experience, DEFAULT_BRIEF.experience),
     focus: pickValue(FOCUS, raw.focus, DEFAULT_BRIEF.focus),
     goal: typeof raw.goal === "string" ? raw.goal.trim().slice(0, 200) : "",
