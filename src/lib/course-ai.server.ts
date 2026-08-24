@@ -41,7 +41,9 @@ export function contentPrompt(brief: CourseBrief, courseTitle: string, stubs: Le
     .join("\n");
   return `Course: ${courseTitle}\n${briefPrompt(brief)}\n
 Write full content for these lessons of that course, in this order:\n${list}\n
-Each lesson needs ${quizCountFor(brief)} quiz question(s) in "quizzes". Return the JSON now.`;
+Each lesson needs ${quizCountFor(brief)} quiz question(s) in "quizzes".
+${quizRigorRules(brief)}
+Return the JSON now.`;
 }
 
 /** Models sometimes answer in snake_case or with alternate key names. */
