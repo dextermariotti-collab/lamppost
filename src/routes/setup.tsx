@@ -192,10 +192,12 @@ function SetupScreen() {
 function Field({
   label,
   step,
+  required,
   children,
 }: {
   label: string;
   step: number;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -204,7 +206,10 @@ function Field({
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-soft text-[11px] font-extrabold text-primary">
           {step}
         </span>
-        {label}
+        <span className="min-w-0">
+          {label}
+          {required && <span className="ml-1 text-destructive">*</span>}
+        </span>
       </h2>
       {children}
     </section>
