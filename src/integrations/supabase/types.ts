@@ -14,6 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          code: string
+          created_at: string
+          criteria: string
+          description: string
+          icon: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          criteria: string
+          description: string
+          icon: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          criteria?: string
+          description?: string
+          icon?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      daily_activity: {
+        Row: {
+          created_at: string
+          day: string
+          id: string
+          lessons_completed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          id?: string
+          lessons_completed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: string
+          lessons_completed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          accepted_at: string | null
+          addressee_id: string
+          created_at: string
+          id: string
+          requested_at: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requested_at?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requested_at?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      nudges: {
+        Row: {
+          day: string
+          from_user_id: string
+          id: string
+          read_at: string | null
+          sent_at: string
+          shared_streak_id: string | null
+          to_user_id: string
+        }
+        Insert: {
+          day?: string
+          from_user_id: string
+          id?: string
+          read_at?: string | null
+          sent_at?: string
+          shared_streak_id?: string | null
+          to_user_id: string
+        }
+        Update: {
+          day?: string
+          from_user_id?: string
+          id?: string
+          read_at?: string | null
+          sent_at?: string
+          shared_streak_id?: string | null
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nudges_shared_streak_id_fkey"
+            columns: ["shared_streak_id"]
+            isOneToOne: false
+            referencedRelation: "shared_streaks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           companion_accessory: string
@@ -21,9 +149,19 @@ export type Database = {
           companion_palette: string
           companion_preset: string
           created_at: string
+          current_streak: number
+          daily_goal: number
           display_name: string | null
+          gems: number
+          handle: string
           id: string
+          invite_code: string
+          last_active_day: string | null
+          longest_streak: number
+          notify_nudges_email: boolean
+          notify_nudges_inapp: boolean
           onboarding_completed: boolean
+          total_xp: number
           updated_at: string
         }
         Insert: {
@@ -32,9 +170,19 @@ export type Database = {
           companion_palette?: string
           companion_preset?: string
           created_at?: string
+          current_streak?: number
+          daily_goal?: number
           display_name?: string | null
+          gems?: number
+          handle: string
           id: string
+          invite_code: string
+          last_active_day?: string | null
+          longest_streak?: number
+          notify_nudges_email?: boolean
+          notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
+          total_xp?: number
           updated_at?: string
         }
         Update: {
@@ -43,19 +191,134 @@ export type Database = {
           companion_palette?: string
           companion_preset?: string
           created_at?: string
+          current_streak?: number
+          daily_goal?: number
           display_name?: string | null
+          gems?: number
+          handle?: string
           id?: string
+          invite_code?: string
+          last_active_day?: string | null
+          longest_streak?: number
+          notify_nudges_email?: boolean
+          notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
+          total_xp?: number
           updated_at?: string
         }
         Relationships: []
+      }
+      shared_streaks: {
+        Row: {
+          created_at: string
+          current_count: number
+          friendship_id: string
+          id: string
+          last_extended_day: string | null
+          proposed_by: string
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_count?: number
+          friendship_id: string
+          id?: string
+          last_extended_day?: string | null
+          proposed_by: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_count?: number
+          friendship_id?: string
+          id?: string
+          last_extended_day?: string | null
+          proposed_by?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_streaks_friendship_id_fkey"
+            columns: ["friendship_id"]
+            isOneToOne: true
+            referencedRelation: "friendships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_code: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_code: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_code?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_code_fkey"
+            columns: ["achievement_code"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["code"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      has_friend_link: { Args: { _a: string; _b: string }; Returns: boolean }
+      is_friendship_member: {
+        Args: { _friendship_id: string; _user: string }
+        Returns: boolean
+      }
+      profile_by_invite: {
+        Args: { _code: string }
+        Returns: {
+          companion_accessory: string
+          companion_expression: string
+          companion_palette: string
+          companion_preset: string
+          current_streak: number
+          display_name: string
+          handle: string
+          id: string
+        }[]
+      }
+      random_code: { Args: { len: number }; Returns: string }
+      search_profiles: {
+        Args: { _query: string }
+        Returns: {
+          companion_accessory: string
+          companion_expression: string
+          companion_palette: string
+          companion_preset: string
+          current_streak: number
+          display_name: string
+          handle: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

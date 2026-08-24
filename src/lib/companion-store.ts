@@ -55,11 +55,14 @@ const toRow = (c: Companion) => ({
 
 /** Writes the companion onto the signed-in user's profile row. */
 export async function saveCompanionForUser(userId: string, companion: Companion) {
+  // The row is created by the signup trigger (which also mints handle + invite code).
   const { error } = await supabase
     .from("profiles")
-    .upsert({ id: userId, onboarding_completed: true, ...toRow(companion) }, { onConflict: "id" });
+    .update({ onboarding_completed: true, ...toRow(companion) })
+    .eq("id", userId);
   if (error) throw error;
 }
+
 
 /** After sign-in, promotes any pre-account pick onto the account. */
 export async function syncDraftAfterSignIn(userId: string) {

@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSessionUser } from "./companion-store";
+import { getMyProfile, syncProgress } from "./profile.functions";
+
 
 const KEY = "lamppost-progress-v1";
 
@@ -105,9 +108,24 @@ export function deriveInsights(state: ProgressState) {
   };
 }
 
+export const LEAGUES: { name: string; min: number }[] = [
+  { name: "Novice", min: 0 },
+  { name: "Learning", min: 250 },
+  { name: "Proficient", min: 1000 },
+  { name: "Mastered", min: 2500 },
+];
+
+/** League tier derived from lifetime XP, reusing the mastery tier names. */
+export function leagueFor(xp: number) {
+  return [...LEAGUES].reverse().find((l) => xp >= l.min) ?? LEAGUES[0]!;
+}
+
 export function useProgress() {
   const [state, setState] = useState<ProgressState>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
+  const { userId } = useSessionUser();
+  const lastSynced = useRef("");
+  const pulled = useRef<string | null>(null);
 
   useEffect(() => {
     setState(read());
@@ -125,6 +143,44 @@ export function useProgress() {
       return next;
     });
   }, []);
+
+  // On sign-in, pull the account's numbers down so a new device isn't blank.
+  useEffect(() => {
+    if (!hydrated || !userId || pulled.current === userId) return;
+    pulled.current = userId;
+    void getMyProfile()
+      .then((profile) => {
+        if (!profile) return;
+        update((prev) => ({
+          ...prev,
+          xp: Math.max(prev.xp, profile.totalXp),
+          gems: Math.max(prev.gems, profile.gems),
+          streak: Math.max(prev.streak, profile.currentStreak),
+          longestStreak: Math.max(prev.longestStreak, profile.longestStreak),
+          lastActiveDay:
+            [prev.lastActiveDay, profile.lastActiveDay].filter(Boolean).sort().pop() ?? null,
+        }));
+      })
+      .catch(() => undefined);
+  }, [hydrated, userId, update]);
+
+  // Write-through sync: the account is the source of truth friends can see.
+  useEffect(() => {
+    if (!hydrated || !userId) return;
+    const payload = {
+      streak: state.streak,
+      longestStreak: state.longestStreak,
+      totalXp: state.xp,
+      gems: state.gems,
+      lastActiveDay: state.lastActiveDay,
+      history: state.history,
+    };
+    const signature = JSON.stringify(payload);
+    if (signature === lastSynced.current) return;
+    lastSynced.current = signature;
+    void syncProgress({ data: payload }).catch(() => undefined);
+  }, [hydrated, userId, state]);
+
 
   const registerCourse = useCallback(
     (slug: string, topic: string, total: number) =>
@@ -231,5 +287,19 @@ export function useProgress() {
     [update],
   );
 
-  return { state, hydrated, registerCourse, completeLesson, recordReview, clearCelebration };
+  const setDailyGoal = useCallback(
+    (goal: number) => update((prev) => ({ ...prev, dailyGoal: Math.min(10, Math.max(1, goal)) })),
+    [update],
+  );
+
+  return {
+    state,
+    hydrated,
+    registerCourse,
+    completeLesson,
+    recordReview,
+    clearCelebration,
+    setDailyGoal,
+  };
 }
+
