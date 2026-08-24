@@ -283,10 +283,23 @@ export function useProgress() {
   );
 
   const clearCelebration = useCallback(
-
     () => update((prev) => (prev.celebration ? { ...prev, celebration: null } : prev)),
     [update],
   );
 
-  return { state, hydrated, registerCourse, completeLesson, recordReview, clearCelebration };
+  const setDailyGoal = useCallback(
+    (goal: number) => update((prev) => ({ ...prev, dailyGoal: Math.min(10, Math.max(1, goal)) })),
+    [update],
+  );
+
+  return {
+    state,
+    hydrated,
+    registerCourse,
+    completeLesson,
+    recordReview,
+    clearCelebration,
+    setDailyGoal,
+  };
 }
+
