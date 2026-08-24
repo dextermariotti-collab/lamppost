@@ -122,8 +122,14 @@ export function briefChips(brief: CourseBrief): string[] {
   return [
     `${brief.lessons} lessons`,
     label(DIFFICULTIES, brief.difficulty, "Beginner"),
+    `${label(QUIZ_RIGOR, brief.quizRigor, "Tricky")} quizzes`,
     label(FOCUS, brief.focus, "Balanced"),
   ];
+}
+
+/** Falls back to the middle rigor level if the answer is missing. */
+export function quizRigorRules(brief: CourseBrief) {
+  return QUIZ_RIGOR_PROMPT[brief.quizRigor] ?? QUIZ_RIGOR_PROMPT["tricky"]!;
 }
 
 export function quizCountFor(brief: CourseBrief) {
