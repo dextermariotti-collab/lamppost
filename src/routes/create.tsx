@@ -17,6 +17,7 @@ export const Route = createFileRoute("/create")({
       topic: search["topic"],
       lessons: search["lessons"],
       difficulty: search["difficulty"],
+      quizRigor: search["quizRigor"],
       experience: search["experience"],
       focus: search["focus"],
       goal: search["goal"],
