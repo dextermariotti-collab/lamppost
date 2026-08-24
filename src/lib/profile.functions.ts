@@ -75,7 +75,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: Record<string, string | number | boolean | null> = {};
     if (data.displayName !== undefined) {
       const name = data.displayName.trim().slice(0, 40);
       patch['display_name'] = name.length > 0 ? name : null;
@@ -94,7 +94,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     if (data.notifyNudgesEmail !== undefined) patch['notify_nudges_email'] = data.notifyNudgesEmail;
     if (Object.keys(patch).length === 0) return { ok: true };
 
-    const { error } = await context.supabase.from("profiles").update(patch).eq("id", context.userId);
+    const { error } = await context.supabase.from("profiles").update(patch as never).eq("id", context.userId);
     if (error) {
       throw new Error(
         error.code === "23505" ? "That handle is already taken." : error.message,
