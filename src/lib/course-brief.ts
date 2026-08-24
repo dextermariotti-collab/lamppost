@@ -144,6 +144,7 @@ export function briefPrompt(brief: CourseBrief) {
     `Difficulty: ${label(DIFFICULTIES, brief.difficulty, "Beginner")}`,
     `Learner's prior experience: ${label(EXPERIENCE, brief.experience, "Total newcomer")}`,
     `Preferred style: ${label(FOCUS, brief.focus, "Balanced")}`,
+    `Quiz difficulty level: ${label(QUIZ_RIGOR, brief.quizRigor, "Tricky")} (affects question difficulty only, never course length or reading level)`,
   ];
   if (brief.goal) lines.push(`Learner's goal: ${brief.goal}`);
   return lines.join("\n");
