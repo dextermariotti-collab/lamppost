@@ -102,12 +102,6 @@ function CoursePath() {
             >
               <Share2 className="h-4 w-4" />
             </button>
-            <button
-              aria-label="More options"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
           </>
         }
       />
