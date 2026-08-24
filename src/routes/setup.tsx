@@ -159,7 +159,7 @@ function SetupScreen() {
           </div>
         </Field>
 
-        <Field label="What do you want to be able to do?" step={5}>
+        <Field label="What do you want to be able to do?" step={6}>
           <div className="rounded-3xl border-2 border-primary/30 bg-card p-4 shadow-soft focus-within:border-primary/60">
             <textarea
               value={brief.goal}
