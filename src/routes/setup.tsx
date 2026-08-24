@@ -109,7 +109,29 @@ function SetupScreen() {
           </div>
         </Field>
 
-        <Field label="Where are you starting from?" step={3}>
+        <Field label="How tough should the quiz questions be?" step={3} required>
+          <div className="space-y-2">
+            {QUIZ_RIGOR.map((option) => (
+              <Row
+                key={option.value}
+                active={brief.quizRigor === option.value}
+                label={option.label}
+                hint={option.hint}
+                onClick={() => set("quizRigor", option.value)}
+              />
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
+            This only changes how the answer choices are written — not course length or reading level.
+          </p>
+          {!brief.quizRigor && (
+            <p className="mt-1 text-[11px] font-extrabold text-destructive">
+              Pick one to build your course.
+            </p>
+          )}
+        </Field>
+
+        <Field label="Where are you starting from?" step={4}>
           <div className="space-y-2">
             {EXPERIENCE.map((option) => (
               <Row
