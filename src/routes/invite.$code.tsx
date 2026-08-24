@@ -54,7 +54,7 @@ function InviteScreen() {
               Sign in to accept the invite and start a shared streak.
             </p>
             <button
-              onClick={() => navigate({ to: "/auth", search: { next: `/invite/${code}` } })}
+              onClick={() => navigate({ to: "/auth" })}
               className="mt-5 rounded-2xl bg-hero-gradient px-6 py-3 text-sm font-bold text-primary-foreground shadow-card"
             >
               Sign in to continue
