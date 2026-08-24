@@ -1,19 +1,49 @@
-import { Link } from "@tanstack/react-router";
-import { Check, Lock, Mic, Play } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Check, Lock, Play, RotateCcw, Star } from "lucide-react";
+import { useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import type { Companion } from "@/lib/companions";
 import { cn } from "@/lib/utils";
 
-const ROW = 128;
-/** Horizontal position of each node, as a percentage, cycled down the trail. */
-const XS = [50, 24, 50, 76];
+/** Constant vertical rhythm between node centres. */
+const SPACING = 118;
+/** Extra room reserved above a unit banner. */
+const UNIT_GAP = 104;
+const TOP = 44;
+/** Node x positions cycled down the trail: right, centre, left, centre. */
+const XS = [72, 50, 28, 50];
+const LESSONS_PER_UNIT = 5;
+
+/** Per-unit accent tokens so each chapter reads distinctly while staying on-brand. */
+const UNIT_ACCENTS = ["var(--primary)", "var(--flame)", "var(--xp)", "var(--accent-foreground)"];
 
 type TrailLesson = { title: string; subtitle?: string };
 
+type Node = {
+  index: number;
+  lesson: TrailLesson;
+  x: number;
+  y: number;
+  unit: number;
+  state: "completed" | "current" | "locked";
+};
+
+type Banner = { unit: number; y: number; title: string; completed: boolean };
+
+const shortLabel = (title: string) => title.split(/\s+/).slice(0, 3).join(" ");
+
 /**
- * Winding lesson trail: a dashed curve drawn behind alternating nodes.
- * Done nodes are filled with a check, the current node carries the companion
- * plus a floating start callout, and later nodes stay locked.
+ * Winding lesson path: one circular node per lesson (never a card), a solid
+ * traveled connector up to the current node and a dashed one beyond it, with
+ * lessons grouped into units.
  */
 export function LessonTrail({
   slug,
@@ -26,153 +56,228 @@ export function LessonTrail({
   completed: number;
   companion: { [K in keyof Companion]?: string | null | undefined } | null | undefined;
 }) {
-  const points = lessons.map((_, i) => ({ x: XS[i % XS.length]!, y: 62 + i * ROW }));
-  const height = lessons.length * ROW + 24;
+  const navigate = useNavigate();
+  const [openNode, setOpenNode] = useState<Node | null>(null);
 
-  // Smooth S-curve through every node centre.
-  const d = points
-    .map((pt, i) => {
-      if (i === 0) return `M ${pt.x} ${pt.y}`;
-      const prev = points[i - 1]!;
-      const midY = (prev.y + pt.y) / 2;
-      return `C ${prev.x} ${midY}, ${pt.x} ${midY}, ${pt.x} ${pt.y}`;
-    })
-    .join(" ");
+  const nodes: Node[] = [];
+  const banners: Banner[] = [];
+  let y = TOP;
 
-  const doneD = points
-    .slice(0, Math.max(1, Math.min(completed + 1, points.length)))
-    .map((pt, i, arr) => {
-      if (i === 0) return `M ${pt.x} ${pt.y}`;
-      const prev = arr[i - 1]!;
-      const midY = (prev.y + pt.y) / 2;
-      return `C ${prev.x} ${midY}, ${pt.x} ${midY}, ${pt.x} ${pt.y}`;
-    })
-    .join(" ");
+  lessons.forEach((lesson, i) => {
+    const unit = Math.floor(i / LESSONS_PER_UNIT);
+    if (i % LESSONS_PER_UNIT === 0) {
+      if (i > 0) y += UNIT_GAP;
+      banners.push({
+        unit,
+        y: y - 58,
+        title: shortLabel(lesson.title),
+        completed: completed >= Math.min((unit + 1) * LESSONS_PER_UNIT, lessons.length),
+      });
+    } else {
+      y += SPACING;
+    }
+    nodes.push({
+      index: i,
+      lesson,
+      x: XS[i % XS.length]!,
+      y,
+      unit,
+      state: i < completed ? "completed" : i === completed ? "current" : "locked",
+    });
+  });
+
+  const height = y + 96;
+
+  const curve = (pts: Node[]) =>
+    pts
+      .map((pt, i) => {
+        if (i === 0) return `M ${pt.x} ${pt.y}`;
+        const prev = pts[i - 1]!;
+        const midY = (prev.y + pt.y) / 2;
+        return `C ${prev.x} ${midY}, ${pt.x} ${midY}, ${pt.x} ${pt.y}`;
+      })
+      .join(" ");
+
+  const currentIdx = Math.min(completed, lessons.length - 1);
+  const traveled = nodes.slice(0, currentIdx + 1);
+  const ahead = nodes.slice(Math.max(currentIdx, 0));
+
+  const startLesson = (index: number) =>
+    navigate({ to: "/course/$slug/lesson/$index", params: { slug, index: String(index + 1) } });
 
   return (
     <div className="relative mt-4" style={{ height }}>
-      {/* backdrop scenery */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-2 top-24 h-16 w-24 rounded-full bg-primary-soft/45 blur-md" />
-        <div className="absolute right-3 top-[19rem] h-14 w-20 rounded-full bg-primary-soft/40 blur-md" />
-        <div className="absolute left-6 top-[34rem] h-12 w-16 rounded-full bg-primary-soft/35 blur-md" />
-      </div>
-
       <svg
         aria-hidden
         viewBox={`0 0 100 ${height}`}
         preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full"
       >
-        <path
-          d={d}
-          fill="none"
-          stroke="var(--border)"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeDasharray="10 12"
-          vectorEffect="non-scaling-stroke"
-        />
-        {completed > 0 && (
+        {ahead.length > 1 && (
           <path
-            d={doneD}
+            d={curve(ahead)}
+            fill="none"
+            stroke="var(--border)"
+            strokeWidth="7"
+            strokeLinecap="round"
+            strokeDasharray="2 14"
+            vectorEffect="non-scaling-stroke"
+          />
+        )}
+        {traveled.length > 1 && (
+          <path
+            d={curve(traveled)}
             fill="none"
             stroke="var(--primary)"
-            strokeWidth="4"
+            strokeWidth="7"
             strokeLinecap="round"
-            strokeDasharray="10 12"
             vectorEffect="non-scaling-stroke"
-            className="animate-trail-dash opacity-80"
           />
         )}
       </svg>
 
-      {lessons.map((lesson, i) => {
-        const done = i < completed;
-        const current = i === completed;
-        const locked = i > completed;
-        const pt = points[i]!;
-        const calloutLeft = pt.x >= 50;
-
+      {banners.map((b) => {
+        const accent = UNIT_ACCENTS[b.unit % UNIT_ACCENTS.length]!;
         return (
           <div
-            key={`${lesson.title}-${i}`}
-            className="absolute animate-rise-in"
-            style={{
-              top: pt.y,
-              left: `${pt.x}%`,
-              transform: "translate(-50%, -50%)",
-              animationDelay: `${i * 70}ms`,
-            }}
+            key={`unit-${b.unit}`}
+            className="absolute left-0 right-0 animate-rise-in px-1"
+            style={{ top: b.y }}
           >
-            <div className="relative">
-              {current ? (
-                <Link
-                  to="/course/$slug/lesson/$index"
-                  params={{ slug, index: String(i + 1) }}
-                  aria-label={`Start lesson ${i + 1}: ${lesson.title}`}
-                  className="flex h-[4.5rem] w-[4.5rem] animate-pulse-ring items-center justify-center rounded-full bg-hero-gradient shadow-card ring-4 ring-primary/25 transition-transform hover:scale-105 active:scale-95"
-                >
-                  <CompanionAvatar companion={companion} size={54} pose="happy" />
-                </Link>
-              ) : (
-                <Link
-                  to="/course/$slug/lesson/$index"
-                  params={{ slug, index: String(i + 1) }}
-                  disabled={locked}
-                  aria-label={`Lesson ${i + 1}: ${lesson.title}`}
-                  className={cn(
-                    "flex h-14 w-14 items-center justify-center rounded-full text-sm font-extrabold transition-transform",
-                    done
-                      ? "bg-hero-gradient text-primary-foreground shadow-card hover:scale-105"
-                      : "cursor-not-allowed border-2 border-dashed border-border bg-muted text-muted-foreground",
-                  )}
-                >
-                  {done ? <Check className="h-6 w-6" strokeWidth={3} /> : <Lock className="h-5 w-5" />}
-                </Link>
-              )}
-
-              {/* Callout for the active lesson */}
-              {current && (
-                <div
-                  className={cn(
-                    "absolute top-1/2 w-44 -translate-y-1/2 animate-pop-in rounded-2xl bg-card p-3 text-left shadow-card",
-                    calloutLeft ? "right-[5.5rem]" : "left-[5.5rem]",
-                  )}
-                >
-                  <p className="truncate text-sm font-extrabold">{lesson.title}</p>
-                  <p className="text-[11px] font-semibold text-muted-foreground">Earn XP</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <Link
-                      to="/course/$slug/lesson/$index"
-                      params={{ slug, index: String(i + 1) }}
-                      className="flex flex-1 items-center justify-center gap-1 rounded-full bg-hero-gradient px-2 py-1.5 text-[11px] font-extrabold text-primary-foreground shadow-soft transition-transform hover:scale-[1.03]"
-                    >
-                      <Play className="h-3 w-3" />
-                      Start +50 XP
-                    </Link>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
-                      <Mic className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Titles for non-active nodes sit under the node */}
-              {!current && (
-                <p
-                  className={cn(
-                    "absolute left-1/2 top-[3.6rem] w-32 -translate-x-1/2 truncate text-center text-[11px] font-bold",
-                    done ? "text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {lesson.title}
-                </p>
-              )}
+            <div
+              className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
+              style={{
+                background: `color-mix(in oklab, ${accent} 14%, var(--card))`,
+                color: `color-mix(in oklab, ${accent} 72%, var(--foreground))`,
+                opacity: b.completed ? 0.7 : 1,
+              }}
+            >
+              {b.completed && <Check className="h-4 w-4 shrink-0" strokeWidth={3} />}
+              <p className="truncate text-xs font-extrabold uppercase tracking-wide">
+                Unit {b.unit + 1} · {b.title}
+              </p>
             </div>
           </div>
         );
       })}
+
+      {nodes.map((node) => {
+        const current = node.state === "current";
+        const size = current ? 60 : 48;
+        const calloutLeft = node.x >= 50;
+
+        return (
+          <div
+            key={node.index}
+            className="absolute animate-rise-in"
+            style={{
+              top: node.y,
+              left: `${node.x}%`,
+              transform: "translate(-50%, -50%)",
+              animationDelay: `${node.index * 60}ms`,
+            }}
+          >
+            <div className="relative">
+              {current && (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 animate-peek-in"
+                >
+                  <CompanionAvatar companion={companion} size={44} pose="happy" />
+                </div>
+              )}
+
+              <button
+                onClick={() => (current ? startLesson(node.index) : setOpenNode(node))}
+                aria-label={`Lesson ${node.index + 1}: ${node.lesson.title}`}
+                style={{ height: size, width: size }}
+                className={cn(
+                  "flex items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95",
+                  node.state === "completed" && "bg-primary text-primary-foreground shadow-soft",
+                  current && "animate-pulse-ring bg-card ring-[3px] ring-primary text-primary shadow-card",
+                  node.state === "locked" && "bg-muted text-muted-foreground",
+                )}
+              >
+                {node.state === "completed" ? (
+                  <Check className="h-5 w-5" strokeWidth={3} />
+                ) : current ? (
+                  <Play className="h-6 w-6" strokeWidth={2.6} />
+                ) : (
+                  <Lock className="h-4 w-4" strokeWidth={2.6} />
+                )}
+              </button>
+
+              {current && (
+                <button
+                  onClick={() => startLesson(node.index)}
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 animate-pop-in whitespace-nowrap rounded-full bg-primary px-3.5 py-1.5 text-xs font-extrabold text-primary-foreground shadow-card",
+                    calloutLeft ? "right-[4.5rem]" : "left-[4.5rem]",
+                  )}
+                >
+                  Start
+                </button>
+              )}
+
+              <p
+                className={cn(
+                  "absolute left-1/2 w-28 -translate-x-1/2 truncate text-center text-[11px]",
+                  current ? "font-extrabold text-foreground" : "font-semibold text-muted-foreground",
+                )}
+                style={{ top: size / 2 + 8 }}
+              >
+                {shortLabel(node.lesson.title)}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+
+      <Drawer open={!!openNode} onOpenChange={(o) => !o && setOpenNode(null)}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="flex items-center gap-2">
+              {openNode?.state === "completed" ? (
+                <Star className="h-4 w-4 text-xp" />
+              ) : (
+                <Lock className="h-4 w-4 text-muted-foreground" />
+              )}
+              {openNode?.lesson.title}
+            </DrawerTitle>
+            <DrawerDescription>
+              {openNode?.state === "completed"
+                ? "You finished this lesson. Replay it to refresh the key points."
+                : `Finish lesson ${completed + 1} to unlock this.`}
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            {openNode?.state === "completed" ? (
+              <button
+                onClick={() => {
+                  const i = openNode.index;
+                  setOpenNode(null);
+                  startLesson(i);
+                }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-hero-gradient px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-soft"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Replay lesson
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setOpenNode(null);
+                  startLesson(completed);
+                }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-hero-gradient px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-soft"
+              >
+                <Play className="h-4 w-4" />
+                Go to current lesson
+              </button>
+            )}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

@@ -108,8 +108,9 @@ function CoursePath() {
 
       <div className="px-5 pb-10">
         {/* Course header — title, blurb, segmented progress. */}
-        <CompanionPeek companion={companion} size={72} side="right" className="mt-7">
+        <div className="mt-7">
           <section className="relative animate-rise-in rounded-3xl bg-hero-gradient p-5 text-primary-foreground shadow-card">
+
             <div className="max-w-[70%]">
               <h1 className="text-xl leading-tight">{course.topic}</h1>
               <p className="mt-1 text-xs font-semibold opacity-85">{course.tagline}</p>
@@ -143,7 +144,8 @@ function CoursePath() {
               {completed === 0 ? "Start" : finished ? "Review" : "Continue"}
             </button>
           </section>
-        </CompanionPeek>
+        </div>
+
 
         <h2 className="mt-6 text-base">Your learning path</h2>
 
