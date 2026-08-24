@@ -14,12 +14,12 @@ import type { Companion } from "@/lib/companions";
 import { cn } from "@/lib/utils";
 
 /** Constant vertical rhythm between node centres. */
-const SPACING = 118;
+const SPACING = 136;
 /** Extra room reserved above a unit banner. */
-const UNIT_GAP = 104;
-const TOP = 44;
+const UNIT_GAP = 118;
+const TOP = 64;
 /** Node x positions cycled down the trail: right, centre, left, centre. */
-const XS = [72, 50, 28, 50];
+const XS = [70, 50, 30, 50];
 const LESSONS_PER_UNIT = 5;
 
 /** Per-unit accent tokens so each chapter reads distinctly while staying on-brand. */
@@ -38,7 +38,17 @@ type Node = {
 
 type Banner = { unit: number; y: number; title: string; completed: boolean };
 
-const shortLabel = (title: string) => title.split(/\s+/).slice(0, 3).join(" ");
+/** Two-line-safe label: keeps whole words, caps at ~22 characters. */
+const shortLabel = (title: string) => {
+  const words = title.split(/\s+/);
+  let out = "";
+  for (const w of words) {
+    if (out && (out + " " + w).length > 22) break;
+    out = out ? `${out} ${w}` : w;
+  }
+  return out || title.slice(0, 22);
+};
+
 
 /**
  * Winding lesson path: one circular node per lesson (never a card), a solid
