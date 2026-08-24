@@ -32,7 +32,6 @@ function ProfileScreen() {
       label: "Daily goal",
       value: `${state.dailyGoal} lesson${state.dailyGoal === 1 ? "" : "s"}`,
     },
-    { icon: HelpCircle, label: "Help & feedback", value: "" },
   ];
 
   return (
