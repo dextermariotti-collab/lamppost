@@ -1,4 +1,11 @@
-import { briefPrompt, quizCountFor, type CourseBrief, type CourseOutline, type LessonStub } from "./course-brief";
+import {
+  briefPrompt,
+  quizCountFor,
+  quizRigorRules,
+  type CourseBrief,
+  type CourseOutline,
+  type LessonStub,
+} from "./course-brief";
 import { slugify, type Lesson, type Quiz } from "./courses";
 
 export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
