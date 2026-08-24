@@ -19,6 +19,7 @@ import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
 
@@ -72,6 +73,11 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FriendsIndexRoute = FriendsIndexRouteImport.update({
+  id: '/friends/',
+  path: '/friends/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CourseSlugIndexRoute = CourseSlugIndexRouteImport.update({
   id: '/course/$slug/',
   path: '/course/$slug/',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
+  '/friends/': typeof FriendsIndexRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
+  '/friends': typeof FriendsIndexRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
+  '/friends/': typeof FriendsIndexRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/setup'
+    | '/friends/'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/setup'
+    | '/friends'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/setup'
+    | '/friends/'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
+  FriendsIndexRoute: typeof FriendsIndexRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
 }
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/friends/': {
+      id: '/friends/'
+      path: '/friends'
+      fullPath: '/friends/'
+      preLoaderRoute: typeof FriendsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/course/$slug/': {
       id: '/course/$slug/'
       path: '/course/$slug'
@@ -286,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
+  FriendsIndexRoute: FriendsIndexRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,
 }
