@@ -89,6 +89,8 @@ export const DEFAULT_BRIEF: CourseBrief = {
   topic: "",
   lessons: 8,
   difficulty: "beginner",
+  // Required question — empty means the learner hasn't answered yet.
+  quizRigor: "",
   experience: "new",
   focus: "balanced",
   goal: "",
