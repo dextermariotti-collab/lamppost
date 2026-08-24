@@ -145,7 +145,7 @@ function SetupScreen() {
           </div>
         </Field>
 
-        <Field label="How do you like to learn?" step={4}>
+        <Field label="How do you like to learn?" step={5}>
           <div className="grid grid-cols-3 gap-2">
             {FOCUS.map((option) => (
               <Choice
