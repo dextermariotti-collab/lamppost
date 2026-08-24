@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 /** Constant vertical rhythm between node centres. */
 const SPACING = 136;
 /** Extra room reserved above a unit banner. */
-const UNIT_GAP = 118;
+const UNIT_GAP = 156;
 const TOP = 64;
 /** Node x positions cycled down the trail: right, centre, left, centre. */
 const XS = [70, 50, 30, 50];
@@ -79,7 +79,7 @@ export function LessonTrail({
       if (i > 0) y += UNIT_GAP;
       banners.push({
         unit,
-        y: y - 58,
+        y: y - 78,
         title: shortLabel(lesson.title),
         completed: completed >= Math.min((unit + 1) * LESSONS_PER_UNIT, lessons.length),
       });
