@@ -5,13 +5,14 @@ import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Confetti } from "@/components/Confetti";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { useAccount, useFriends, useRefreshAccount } from "@/lib/account";
+import { useAccount, useFriends, useIncomingNudges, useRefreshAccount } from "@/lib/account";
 import { normalizeCompanion } from "@/lib/companions";
 import {
   proposeSharedStreak,
   removeFriend,
   respondToRequest,
   respondToSharedStreak,
+  markNudgesRead,
   searchPeople,
   sendFriendRequest,
   sendNudge,
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/friends/")({
 function FriendsScreen() {
   const { signedIn, sessionReady } = useAccount();
   const { data, isLoading } = useFriends();
+  const { data: nudges } = useIncomingNudges();
   const refresh = useRefreshAccount();
   const navigate = useNavigate();
 
@@ -103,6 +105,23 @@ function FriendsScreen() {
       {celebrate ? <Confetti big /> : null}
       <ScreenHeader title="Friends" backTo="/profile" />
       <div className="px-5 pb-10">
+        {(nudges?.length ?? 0) > 0 ? (
+          <div className="mb-4 flex items-start gap-3 rounded-3xl bg-flame/10 p-4">
+            <Flame className="mt-0.5 h-5 w-5 shrink-0 text-flame" />
+            <p className="flex-1 text-sm font-bold">
+              {nudges!.length === 1
+                ? `${nudges![0]!.from} nudged you — a lesson keeps your shared streak alive.`
+                : `${nudges!.length} friends nudged you today.`}
+            </p>
+            <button
+              onClick={() => void run("nudges", () => markNudgesRead())}
+              className="text-xs text-muted-foreground underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
+
         {/* Search */}
         <div className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 shadow-soft">
           <Search className="h-4 w-4 text-muted-foreground" />
