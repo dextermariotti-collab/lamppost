@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Layers, Send, Sparkles, Zap } from "lucide-react";
+import { ChevronRight, Send, Sparkles, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
@@ -153,7 +153,7 @@ function Home() {
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Create a course on Guitar Basics"
+            placeholder="What do you want to learn?"
             aria-label="Course topic"
             className="w-full bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground"
           />
@@ -213,17 +213,6 @@ function Home() {
           </>
         )}
 
-        {Object.keys(state.courses).length > 1 && (
-          <div className="mt-6 flex items-center gap-3 rounded-3xl border border-dashed border-border bg-secondary/60 p-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-              <Layers className="h-5 w-5" />
-            </div>
-            <p className="text-xs font-semibold text-muted-foreground">
-              Cross-course connections are coming — Lamppost will surface ideas that link your{" "}
-              {Object.keys(state.courses).length} courses.
-            </p>
-          </div>
-        )}
       </div>
     </PhoneFrame>
   );

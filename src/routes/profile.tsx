@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, HelpCircle, LogIn, LogOut, Sparkles, Target } from "lucide-react";
+import { ChevronRight, LogIn, LogOut, Sparkles, Target } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -32,7 +32,6 @@ function ProfileScreen() {
       label: "Daily goal",
       value: `${state.dailyGoal} lesson${state.dailyGoal === 1 ? "" : "s"}`,
     },
-    { icon: HelpCircle, label: "Help & feedback", value: "" },
   ];
 
   return (
