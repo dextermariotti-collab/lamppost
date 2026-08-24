@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, HelpCircle, LogIn, LogOut, Sparkles, Target } from "lucide-react";
+import { ChevronRight, LogIn, LogOut, Sparkles, Target } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
