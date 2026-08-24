@@ -213,17 +213,6 @@ function Home() {
           </>
         )}
 
-        {Object.keys(state.courses).length > 1 && (
-          <div className="mt-6 flex items-center gap-3 rounded-3xl border border-dashed border-border bg-secondary/60 p-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-              <Layers className="h-5 w-5" />
-            </div>
-            <p className="text-xs font-semibold text-muted-foreground">
-              Cross-course connections are coming — Lamppost will surface ideas that link your{" "}
-              {Object.keys(state.courses).length} courses.
-            </p>
-          </div>
-        )}
       </div>
     </PhoneFrame>
   );
