@@ -144,7 +144,8 @@ function CoursePath() {
               {completed === 0 ? "Start" : finished ? "Review" : "Continue"}
             </button>
           </section>
-        </CompanionPeek>
+        </div>
+
 
         <h2 className="mt-6 text-base">Your learning path</h2>
 
