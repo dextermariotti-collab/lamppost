@@ -177,10 +177,11 @@ function SetupScreen() {
 
         <button
           onClick={() => navigate({ to: "/create", search: brief })}
-          className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.02] active:scale-95"
+          disabled={!brief.quizRigor}
+          className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
         >
           <Wand2 className="h-5 w-5" />
-          Build my course
+          {brief.quizRigor ? "Build my course" : "Pick a quiz difficulty"}
           <Sparkles className="h-4 w-4" />
         </button>
       </div>
