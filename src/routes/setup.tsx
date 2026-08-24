@@ -9,6 +9,7 @@ import {
   EXPERIENCE,
   FOCUS,
   LENGTHS,
+  QUIZ_RIGOR,
   clampBrief,
   type CourseBrief,
 } from "@/lib/course-brief";
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/setup")({
       topic: search["topic"],
       lessons: search["lessons"],
       difficulty: search["difficulty"],
+      quizRigor: search["quizRigor"],
       experience: search["experience"],
       focus: search["focus"],
       goal: search["goal"],
@@ -107,7 +109,29 @@ function SetupScreen() {
           </div>
         </Field>
 
-        <Field label="Where are you starting from?" step={3}>
+        <Field label="How tough should the quiz questions be?" step={3} required>
+          <div className="space-y-2">
+            {QUIZ_RIGOR.map((option) => (
+              <Row
+                key={option.value}
+                active={brief.quizRigor === option.value}
+                label={option.label}
+                hint={option.hint}
+                onClick={() => set("quizRigor", option.value)}
+              />
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
+            This only changes how the answer choices are written — not course length or reading level.
+          </p>
+          {!brief.quizRigor && (
+            <p className="mt-1 text-[11px] font-extrabold text-destructive">
+              Pick one to build your course.
+            </p>
+          )}
+        </Field>
+
+        <Field label="Where are you starting from?" step={4}>
           <div className="space-y-2">
             {EXPERIENCE.map((option) => (
               <Row
@@ -121,7 +145,7 @@ function SetupScreen() {
           </div>
         </Field>
 
-        <Field label="How do you like to learn?" step={4}>
+        <Field label="How do you like to learn?" step={5}>
           <div className="grid grid-cols-3 gap-2">
             {FOCUS.map((option) => (
               <Choice
@@ -135,7 +159,7 @@ function SetupScreen() {
           </div>
         </Field>
 
-        <Field label="What do you want to be able to do?" step={5}>
+        <Field label="What do you want to be able to do?" step={6}>
           <div className="rounded-3xl border-2 border-primary/30 bg-card p-4 shadow-soft focus-within:border-primary/60">
             <textarea
               value={brief.goal}
@@ -153,10 +177,11 @@ function SetupScreen() {
 
         <button
           onClick={() => navigate({ to: "/create", search: brief })}
-          className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.02] active:scale-95"
+          disabled={!brief.quizRigor}
+          className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
         >
           <Wand2 className="h-5 w-5" />
-          Build my course
+          {brief.quizRigor ? "Build my course" : "Pick a quiz difficulty"}
           <Sparkles className="h-4 w-4" />
         </button>
       </div>
@@ -167,10 +192,12 @@ function SetupScreen() {
 function Field({
   label,
   step,
+  required,
   children,
 }: {
   label: string;
   step: number;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -179,7 +206,10 @@ function Field({
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-soft text-[11px] font-extrabold text-primary">
           {step}
         </span>
-        {label}
+        <span className="min-w-0">
+          {label}
+          {required && <span className="ml-1 text-destructive">*</span>}
+        </span>
       </h2>
       {children}
     </section>
