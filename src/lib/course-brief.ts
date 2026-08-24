@@ -4,6 +4,7 @@ export const BriefSchema = z.object({
   topic: z.string(),
   lessons: z.number(),
   difficulty: z.string(),
+  quizRigor: z.string(),
   experience: z.string(),
   focus: z.string(),
   goal: z.string(),
