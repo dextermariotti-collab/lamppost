@@ -153,7 +153,7 @@ function Home() {
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Create a course on Guitar Basics"
+            placeholder="What do you want to learn?"
             aria-label="Course topic"
             className="w-full bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground"
           />
