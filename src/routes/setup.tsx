@@ -9,6 +9,7 @@ import {
   EXPERIENCE,
   FOCUS,
   LENGTHS,
+  QUIZ_RIGOR,
   clampBrief,
   type CourseBrief,
 } from "@/lib/course-brief";
