@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Flame, Lock, MoreHorizontal, Play, RotateCcw, Share2, Zap } from "lucide-react";
+import { Flame, Lock, Play, RotateCcw, Share2, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import { AnimatedBar } from "@/components/AnimatedBar";
