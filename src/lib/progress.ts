@@ -283,6 +283,7 @@ export function useProgress() {
   );
 
   const clearCelebration = useCallback(
+
     () => update((prev) => (prev.celebration ? { ...prev, celebration: null } : prev)),
     [update],
   );
