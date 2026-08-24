@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSessionUser } from "./companion-store";
+import { getMyProfile, syncProgress } from "./profile.functions";
+
 
 const KEY = "lamppost-progress-v1";
 
