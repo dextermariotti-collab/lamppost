@@ -287,6 +287,7 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      has_friend_link: { Args: { _a: string; _b: string }; Returns: boolean }
       is_friendship_member: {
         Args: { _friendship_id: string; _user: string }
         Returns: boolean
