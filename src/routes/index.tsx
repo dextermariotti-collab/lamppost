@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Layers, Send, Sparkles, Zap } from "lucide-react";
+import { ChevronRight, Send, Sparkles, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
