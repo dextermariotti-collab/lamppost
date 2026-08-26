@@ -130,7 +130,7 @@ function SetupScreen() {
     return (
       <PhoneFrame showNav={false}>
         <ScreenHeader title="Course setup" backTo="/" />
-        <div className="flex flex-1 flex-col px-5 pb-8">
+        <div className="flex min-h-[calc(100%-3.75rem)] flex-col px-5 pb-8">
           <div className="flex flex-1 flex-col items-center justify-center text-center">
             <img
               src={aiBot}
@@ -156,12 +156,8 @@ function SetupScreen() {
 
   return (
     <PhoneFrame showNav={false}>
-      <ScreenHeader
-        title="Course setup"
-        backTo="/"
-        {...(step > 0 ? {} : {})}
-      />
-      <div className="flex flex-1 flex-col px-5 pb-8">
+      <ScreenHeader title="Course setup" backTo="/" />
+      <div className="flex min-h-[calc(100%-3.75rem)] flex-col px-5 pb-8">
         <StepProgress step={step} total={total} />
 
         <h2 className="mt-6 animate-rise-in text-lg font-extrabold">{current.question}</h2>
