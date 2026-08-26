@@ -45,10 +45,62 @@ export const Route = createFileRoute("/setup")({
   component: SetupScreen,
 });
 
+type OptionRow = { value: string; label: string; hint: string };
+
+type Step = {
+  key: keyof CourseBrief;
+  question: string;
+  options?: OptionRow[];
+  required: boolean;
+};
+
+const asRows = (list: { value: string | number; label: string; hint: string }[]): OptionRow[] =>
+  list.map((o) => ({ value: String(o.value), label: o.label, hint: o.hint }));
+
+const STEPS: Step[] = [
+  {
+    key: "lessons",
+    question: "How long should the course be?",
+    options: asRows(LENGTHS),
+    required: true,
+  },
+  {
+    key: "difficulty",
+    question: "How challenging should it be?",
+    options: asRows(DIFFICULTIES),
+    required: true,
+  },
+  {
+    key: "quizRigor",
+    question: "How tough should the quiz questions be?",
+    options: asRows(QUIZ_RIGOR),
+    required: true,
+  },
+  {
+    key: "experience",
+    question: "Where are you starting from?",
+    options: asRows(EXPERIENCE),
+    required: true,
+  },
+  {
+    key: "focus",
+    question: "How do you like to learn?",
+    options: asRows(FOCUS),
+    required: true,
+  },
+  {
+    key: "goal",
+    question: "What do you want to be able to do?",
+    required: false,
+  },
+];
+
 function SetupScreen() {
   const initial = Route.useSearch();
   const navigate = useNavigate();
   const [brief, setBrief] = useState<CourseBrief>(initial);
+  // -1 is the one-time intro screen; 0..STEPS.length-1 are questions.
+  const [step, setStep] = useState(-1);
 
   // Nothing to build a course from — send them back to enter a topic.
   useEffect(() => {
@@ -58,192 +110,175 @@ function SetupScreen() {
   const set = <K extends keyof CourseBrief>(key: K, value: CourseBrief[K]) =>
     setBrief((prev) => ({ ...prev, [key]: value }));
 
+  const total = STEPS.length;
+  const current = STEPS[Math.max(0, step)]!;
+  const isLast = step === total - 1;
+  const rawValue = brief[current.key];
+  const selected = typeof rawValue === "number" ? String(rawValue) : rawValue;
+  const canContinue = !current.required || Boolean(selected);
+
+  const goBack = () => setStep((s) => s - 1);
+  const finish = () => navigate({ to: "/create", search: brief });
+  const advance = () => (isLast ? finish() : setStep((s) => s + 1));
+
+  const choose = (value: string) => {
+    if (current.key === "lessons") set("lessons", Number(value));
+    else set(current.key as "difficulty", value);
+  };
+
+  if (step < 0) {
+    return (
+      <PhoneFrame showNav={false}>
+        <ScreenHeader title="Course setup" backTo="/" />
+        <div className="flex min-h-[calc(100%-3.75rem)] flex-col px-5 pb-8">
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <img
+              src={aiBot}
+              alt="Lamppost AI assistant"
+              width={816}
+              height={816}
+              className="h-28 w-28 animate-float object-contain"
+            />
+            <h2 className="mt-5 animate-rise-in text-xl font-extrabold">
+              A few quick questions first
+            </h2>
+            <p className="mt-2 max-w-[17rem] animate-rise-in text-sm font-semibold text-muted-foreground">
+              Your answers shape every lesson I write about{" "}
+              <span className="font-extrabold text-foreground">{brief.topic}</span>. Six steps, about
+              a minute.
+            </p>
+          </div>
+          <PrimaryButton onClick={() => setStep(0)} label="Continue" />
+        </div>
+      </PhoneFrame>
+    );
+  }
+
   return (
     <PhoneFrame showNav={false}>
       <ScreenHeader title="Course setup" backTo="/" />
-      <div className="px-5 pb-10">
-        <div className="flex animate-rise-in items-start gap-3 rounded-3xl bg-primary-soft p-4">
-          <img
-            src={aiBot}
-            alt="Lamppost AI assistant"
-            width={816}
-            height={816}
-            className="h-14 w-14 shrink-0 animate-float object-contain"
-          />
-          <div className="min-w-0">
-            <p className="text-sm font-extrabold text-accent-foreground">
-              A few quick questions first
-            </p>
-            <p className="mt-0.5 text-xs font-semibold text-accent-foreground/80">
-              Your answers shape every lesson I write about{" "}
-              <span className="font-extrabold">{brief.topic}</span>.
-            </p>
-          </div>
-        </div>
+      <div className="flex min-h-[calc(100%-3.75rem)] flex-col px-5 pb-8">
+        <StepProgress step={step} total={total} />
 
-        <Field label="How long should the course be?" step={1}>
-          <div className="grid grid-cols-3 gap-2">
-            {LENGTHS.map((option) => (
-              <Choice
-                key={option.value}
-                active={brief.lessons === option.value}
-                label={option.label}
-                hint={option.hint}
-                onClick={() => set("lessons", option.value)}
-              />
-            ))}
-          </div>
-        </Field>
+        <h2 className="mt-6 animate-rise-in text-lg font-extrabold">{current.question}</h2>
+        {!current.required && (
+          <p className="mt-1 text-xs font-semibold text-muted-foreground">Optional</p>
+        )}
 
-        <Field label="How challenging should it be?" step={2}>
-          <div className="space-y-2">
-            {DIFFICULTIES.map((option) => (
-              <Row
-                key={option.value}
-                active={brief.difficulty === option.value}
-                label={option.label}
-                hint={option.hint}
-                onClick={() => set("difficulty", option.value)}
-              />
-            ))}
-          </div>
-        </Field>
+        <div className="mt-4 flex-1 space-y-2">
+          {current.options?.map((option) => (
+            <Row
+              key={option.value}
+              active={selected === option.value}
+              label={option.label}
+              hint={option.hint}
+              onClick={() => choose(option.value)}
+            />
+          ))}
 
-        <Field label="How tough should the quiz questions be?" step={3} required>
-          <div className="space-y-2">
-            {QUIZ_RIGOR.map((option) => (
-              <Row
-                key={option.value}
-                active={brief.quizRigor === option.value}
-                label={option.label}
-                hint={option.hint}
-                onClick={() => set("quizRigor", option.value)}
+          {current.key === "goal" && (
+            <div className="rounded-3xl border-2 border-primary/30 bg-card p-4 shadow-soft focus-within:border-primary/60">
+              <textarea
+                value={brief.goal}
+                onChange={(e) => set("goal", e.target.value.slice(0, 200))}
+                rows={3}
+                placeholder="e.g. shoot sharp photos of my kids indoors"
+                aria-label="Your goal"
+                className="w-full resize-none bg-transparent text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
               />
-            ))}
-          </div>
-          <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
-            This only changes how the answer choices are written — not course length or reading level.
-          </p>
-          {!brief.quizRigor && (
-            <p className="mt-1 text-[11px] font-extrabold text-destructive">
-              Pick one to build your course.
+              <p className="mt-1 text-right text-[10px] font-bold text-muted-foreground">
+                {brief.goal.length}/200
+              </p>
+            </div>
+          )}
+
+          {current.key === "quizRigor" && (
+            <p className="pt-1 text-[11px] font-semibold text-muted-foreground">
+              This only changes how the answer choices are written — not course length or reading
+              level.
             </p>
           )}
-        </Field>
+        </div>
 
-        <Field label="Where are you starting from?" step={4}>
-          <div className="space-y-2">
-            {EXPERIENCE.map((option) => (
-              <Row
-                key={option.value}
-                active={brief.experience === option.value}
-                label={option.label}
-                hint={option.hint}
-                onClick={() => set("experience", option.value)}
-              />
-            ))}
+        <div className="mt-6 space-y-3">
+          <PrimaryButton
+            onClick={advance}
+            disabled={!canContinue}
+            label={isLast ? "Build my course" : "Continue"}
+            finishing={isLast}
+          />
+          <div className="flex items-center justify-center gap-6">
+            {step > 0 && (
+              <button
+                onClick={goBack}
+                className="text-xs font-extrabold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Back
+              </button>
+            )}
+            {!current.required && (
+              <button
+                onClick={() => {
+                  set("goal", "");
+                  advance();
+                }}
+                className="text-xs font-extrabold text-primary transition-opacity hover:opacity-70"
+              >
+                Skip this step
+              </button>
+            )}
           </div>
-        </Field>
-
-        <Field label="How do you like to learn?" step={5}>
-          <div className="grid grid-cols-3 gap-2">
-            {FOCUS.map((option) => (
-              <Choice
-                key={option.value}
-                active={brief.focus === option.value}
-                label={option.label}
-                hint={option.hint}
-                onClick={() => set("focus", option.value)}
-              />
-            ))}
-          </div>
-        </Field>
-
-        <Field label="What do you want to be able to do?" step={6}>
-          <div className="rounded-3xl border-2 border-primary/30 bg-card p-4 shadow-soft focus-within:border-primary/60">
-            <textarea
-              value={brief.goal}
-              onChange={(e) => set("goal", e.target.value.slice(0, 200))}
-              rows={2}
-              placeholder="Optional — e.g. shoot sharp photos of my kids indoors"
-              aria-label="Your goal"
-              className="w-full resize-none bg-transparent text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
-            />
-            <p className="mt-1 text-right text-[10px] font-bold text-muted-foreground">
-              {brief.goal.length}/200
-            </p>
-          </div>
-        </Field>
-
-        <button
-          onClick={() => navigate({ to: "/create", search: brief })}
-          disabled={!brief.quizRigor}
-          className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
-        >
-          <Wand2 className="h-5 w-5" />
-          {brief.quizRigor ? "Build my course" : "Pick a quiz difficulty"}
-          <Sparkles className="h-4 w-4" />
-        </button>
+        </div>
       </div>
     </PhoneFrame>
   );
 }
 
-function Field({
-  label,
-  step,
-  required,
-  children,
-}: {
-  label: string;
-  step: number;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
+function StepProgress({ step, total }: { step: number; total: number }) {
   return (
-    <section className="mt-6 animate-rise-in" style={{ animationDelay: `${step * 60}ms` }}>
-      <h2 className="mb-2 flex items-center gap-2 text-sm font-extrabold">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-soft text-[11px] font-extrabold text-primary">
-          {step}
-        </span>
-        <span className="min-w-0">
-          {label}
-          {required && <span className="ml-1 text-destructive">*</span>}
-        </span>
-      </h2>
-      {children}
-    </section>
+    <div className="pt-1">
+      <div className="flex gap-1.5">
+        {Array.from({ length: total }).map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+              i <= step ? "bg-hero-gradient" : "bg-muted"
+            }`}
+          />
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] font-extrabold text-muted-foreground">
+        Step {step + 1} of {total}
+      </p>
+    </div>
   );
 }
 
-const activeRing = "border-primary bg-primary-soft shadow-soft";
-
-function Choice({
-  active,
-  label,
-  hint,
+function PrimaryButton({
   onClick,
+  label,
+  disabled,
+  finishing,
 }: {
-  active: boolean;
-  label: string;
-  hint: string;
   onClick: () => void;
+  label: string;
+  disabled?: boolean;
+  finishing?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-2xl border-2 bg-card px-2 py-3 text-center transition-all hover:-translate-y-0.5 ${
-        active ? activeRing : "border-border"
-      }`}
+      disabled={disabled}
+      className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
     >
-      <span className={`block text-xs font-extrabold ${active ? "text-primary" : ""}`}>
-        {label}
-      </span>
-      <span className="mt-0.5 block text-[10px] font-semibold text-muted-foreground">{hint}</span>
+      {finishing && <Wand2 className="h-5 w-5" />}
+      {label}
+      {finishing && <Sparkles className="h-4 w-4" />}
     </button>
   );
 }
+
+const activeRing = "border-primary bg-primary-soft shadow-soft";
 
 function Row({
   active,
@@ -260,15 +295,17 @@ function Row({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`flex w-full items-center gap-3 rounded-2xl border-2 bg-card px-4 py-3 text-left transition-all hover:-translate-y-0.5 ${
+      className={`flex w-full items-center gap-3 rounded-2xl border-2 bg-card px-4 py-4 text-left transition-all hover:-translate-y-0.5 ${
         active ? activeRing : "border-border"
       }`}
     >
       <span
-        className={`h-4 w-4 shrink-0 rounded-full border-2 ${
-          active ? "border-primary bg-primary" : "border-muted-foreground/40"
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+          active ? "border-primary" : "border-muted-foreground/40"
         }`}
-      />
+      >
+        {active && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+      </span>
       <span className="min-w-0 flex-1">
         <span className={`block text-sm font-extrabold ${active ? "text-primary" : ""}`}>
           {label}
