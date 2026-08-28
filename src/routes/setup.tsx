@@ -262,6 +262,48 @@ function SetupScreen() {
   );
 }
 
+/**
+ * Fills the gap between the options and the continue button: the learner's own
+ * companion reacting to the option they just picked.
+ */
+function MascotReaction({ line, idle }: { line: string | null; idle: string }) {
+  const { companion } = useCompanion();
+  const text = line ?? idle;
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center py-6">
+      <div
+        aria-live="polite"
+        className="relative max-w-[15rem] text-center"
+        key={text}
+        style={{ animation: "bubble-in 180ms ease-out both" }}
+      >
+        <p
+          className={`rounded-2xl border-2 px-4 py-2.5 text-[13px] font-bold leading-snug ${
+            line
+              ? "border-primary/30 bg-primary-soft text-foreground"
+              : "border-border bg-card text-muted-foreground"
+          }`}
+        >
+          {text}
+        </p>
+        <span
+          className={`absolute left-1/2 top-full -mt-[7px] h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 ${
+            line ? "border-primary/30 bg-primary-soft" : "border-border bg-card"
+          }`}
+        />
+      </div>
+      <CompanionAvatar
+        companion={companion}
+        size={64}
+        className="mt-3"
+        pose={line ? "happy" : "idle"}
+      />
+    </div>
+  );
+}
+
+
 function StepProgress({ step, total }: { step: number; total: number }) {
   return (
     <div className="pt-1">
