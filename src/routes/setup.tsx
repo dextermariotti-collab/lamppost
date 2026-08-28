@@ -73,37 +73,44 @@ const STEPS: Step[] = [
     question: "How long should the course be?",
     options: asRows(LENGTHS),
     required: true,
+    idle: "Pick a length and I'll tell you what I think.",
   },
   {
     key: "difficulty",
     question: "How challenging should it be?",
     options: asRows(DIFFICULTIES),
     required: true,
+    idle: "Set the difficulty and I'll match my writing to it.",
   },
   {
     key: "quizRigor",
     question: "How tough should the quiz questions be?",
     options: asRows(QUIZ_RIGOR),
     required: true,
+    idle: "Choose how hard I should make the questions.",
   },
   {
     key: "experience",
     question: "Where are you starting from?",
     options: asRows(EXPERIENCE),
     required: true,
+    idle: "Tell me your starting point so I pitch it right.",
   },
   {
     key: "focus",
     question: "How do you like to learn?",
     options: asRows(FOCUS),
     required: true,
+    idle: "Pick a style and I'll shape the lessons around it.",
   },
   {
     key: "goal",
     question: "What do you want to be able to do?",
     required: false,
+    idle: "Name the outcome and I'll aim every lesson at it.",
   },
 ];
+
 
 function SetupScreen() {
   const initial = Route.useSearch();
