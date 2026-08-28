@@ -79,6 +79,7 @@ const PATTERNS: Array<{ category: ModerationCategory; test: RegExp }> = [
   {
     category: "medical-risk",
     test: /\b(dose|dosage|dosing|how much)\b[^.]{0,40}\b(insulin|fentanyl|oxycodone|xanax|adderall|ketamine|steroids?|tren(bolone)?|chemotherapy)\b[^.]{0,30}\b(for me|to take|myself)\b|\b(self|home)[- ]?(surgery|abortion|amputat\w*|anesthesia)\b|\b(diagnose|treat|cure)\b[^.]{0,20}\bmy (own )?(cancer|tumor|infection|depression)\b/i,
+  },
 ];
 
 /** Returns a verdict from the local pattern pass. Never throws. */
