@@ -6,6 +6,7 @@ import {
   type CourseOutline,
   type LessonStub,
 } from "./course-brief";
+import { CONTENT_POLICY_RULES } from "./moderation.server";
 import { slugify, type Lesson, type Quiz } from "./courses";
 
 export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
@@ -14,7 +15,9 @@ Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly thi
 Rules: return exactly the requested number of lessons, ordered so each one builds on the last.
 Lesson titles are specific to the subject (never "Lesson 1" or "Foundations of X"), max 6 words.
 subtitle is a concrete promise of what the learner will be able to do, max 7 words.
-emoji is a single emoji. tagline max 60 characters. Use the exact key names above.`;
+emoji is a single emoji. tagline max 60 characters. Use the exact key names above.
+
+${CONTENT_POLICY_RULES}`;
 
 export const CONTENT_SYSTEM = `You write in-depth, warm, plain-language lesson content for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
@@ -29,7 +32,9 @@ Rules for every lesson:
 - "keyPoints" has exactly 4 short takeaways, max 14 words each.
 - Each quiz question tests understanding of this lesson's content, has exactly 3 plausible options,
   "correct" is the 0-based index of the right option, and "explanation" is one teaching sentence.
-Use the exact key names above.`;
+Use the exact key names above.
+
+${CONTENT_POLICY_RULES}`;
 
 export function outlinePrompt(brief: CourseBrief) {
   return `Design a course for this learner.\n${briefPrompt(brief)}\n\nReturn the outline JSON now.`;

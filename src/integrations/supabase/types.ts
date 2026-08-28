@@ -44,6 +44,48 @@ export type Database = {
         }
         Relationships: []
       }
+      content_reports: {
+        Row: {
+          course_slug: string | null
+          course_topic: string | null
+          created_at: string
+          details: string | null
+          excerpt: string | null
+          id: string
+          lesson_index: number | null
+          lesson_title: string | null
+          reason: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          course_slug?: string | null
+          course_topic?: string | null
+          created_at?: string
+          details?: string | null
+          excerpt?: string | null
+          id?: string
+          lesson_index?: number | null
+          lesson_title?: string | null
+          reason: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          course_slug?: string | null
+          course_topic?: string | null
+          created_at?: string
+          details?: string | null
+          excerpt?: string | null
+          id?: string
+          lesson_index?: number | null
+          lesson_title?: string | null
+          reason?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       daily_activity: {
         Row: {
           created_at: string
@@ -101,6 +143,33 @@ export type Database = {
           requester_id?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      moderation_blocks: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          stage: string
+          topic: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          stage: string
+          topic: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          stage?: string
+          topic?: string
+          user_id?: string | null
         }
         Relationships: []
       }

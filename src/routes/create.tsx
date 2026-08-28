@@ -1,14 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, Check, RotateCcw } from "lucide-react";
+import { AlertTriangle, Check, RotateCcw, ShieldAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import aiBot from "@/assets/ai-bot.png";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { generateLessonChunk, generateOutline } from "@/lib/course-ai.functions";
 import { briefChips, clampBrief, type CourseBrief, type CourseOutline } from "@/lib/course-brief";
 import { saveCourse } from "@/lib/course-store";
 import type { Lesson } from "@/lib/courses";
+import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/create")({
@@ -51,6 +53,7 @@ function CreateScreen() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [done, setDone] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const briefKey = JSON.stringify(brief);
   const registerRef = useRef(registerCourse);
@@ -63,6 +66,7 @@ function CreateScreen() {
     setLessons([]);
     setDone(false);
     setFailed(null);
+    setBlocked(false);
 
     (async () => {
       try {
@@ -70,6 +74,7 @@ function CreateScreen() {
         if (cancelled) return;
         if (!outlineResult.ok) {
           setFailed(outlineResult.reason);
+          setBlocked(Boolean(outlineResult.blocked));
           return;
         }
         const nextOutline = outlineResult.outline;
@@ -87,6 +92,7 @@ function CreateScreen() {
           if (cancelled) return;
           if (!chunk.ok) {
             setFailed(chunk.reason);
+            setBlocked(Boolean(chunk.blocked));
             return;
           }
           written.push(...chunk.lessons);
@@ -165,7 +171,26 @@ function CreateScreen() {
           </div>
         </div>
 
-        {failed ? (
+        {failed && blocked ? (
+          <div className="animate-pop-in rounded-3xl bg-card p-5 text-center shadow-card">
+            <ShieldAlert className="mx-auto h-8 w-8 text-flame" />
+            <h2 className="mt-2 text-base">This topic can't be generated</h2>
+            <p className="mt-1 text-xs text-muted-foreground">{failed}</p>
+            <button
+              onClick={() => void navigate({ to: "/" })}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-hero-gradient px-5 py-2.5 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:scale-[1.03]"
+            >
+              Try another topic
+            </button>
+            <p className="mt-3 text-[11px] font-semibold text-muted-foreground">
+              Read the{" "}
+              <Link to="/legal/community" className="font-extrabold text-primary underline">
+                content rules
+              </Link>
+              .
+            </p>
+          </div>
+        ) : failed ? (
           <div className="animate-pop-in rounded-3xl bg-card p-5 text-center shadow-card">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
             <h2 className="mt-2 text-base">Course creation hit a snag</h2>
@@ -255,6 +280,7 @@ function CreateScreen() {
             <p className="mt-4 flex items-center gap-2 rounded-2xl bg-primary-soft px-3 py-3 text-xs font-semibold text-accent-foreground">
               <span aria-hidden>🤖</span> Written from scratch for your answers.
             </p>
+            <AiDisclaimer className="mt-3" fitness={needsFitnessDisclaimer(brief.topic)} />
           </div>
         )}
       </div>

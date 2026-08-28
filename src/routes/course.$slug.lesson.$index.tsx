@@ -2,13 +2,16 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import aiBot from "@/assets/ai-bot.png";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { useCompanion } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { clampBrief } from "@/lib/course-brief";
 import { useStoredCourse } from "@/lib/course-store";
 import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
+import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
@@ -267,6 +270,21 @@ function LessonScreen() {
                 : "Next page"}
             <ArrowRight className="h-4 w-4" />
           </button>
+          <AiDisclaimer
+            className="mt-4"
+            fitness={needsFitnessDisclaimer(`${course.topic} ${lesson.title}`)}
+          />
+          <ReportContentButton
+            context={{
+              courseSlug: slug,
+              courseTopic: course.topic,
+              lessonIndex: lessonNumber,
+              lessonTitle: lesson.title,
+              excerpt: onQuiz
+                ? quizzes.map((q) => `${q.question} :: ${q.options.join(" | ")}`).join("\n")
+                : (parts[page]?.body ?? lesson.intro ?? ""),
+            }}
+          />
           {!onQuiz && page > 0 && (
             <button
               onClick={() => setPage((p) => p - 1)}

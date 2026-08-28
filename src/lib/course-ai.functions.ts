@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { BriefSchema, ChunkSchema, quizCountFor, type CourseOutline } from "./course-brief";
 import type { Lesson } from "./courses";
+import { screenLocally } from "./moderation";
 import {
   CONTENT_SYSTEM,
   OUTLINE_SYSTEM,
@@ -12,9 +13,11 @@ import {
 
 export type OutlineResult =
   | { ok: true; outline: CourseOutline }
-  | { ok: false; reason: string };
+  | { ok: false; reason: string; blocked?: boolean };
 
-export type ChunkResult = { ok: true; lessons: Lesson[] } | { ok: false; reason: string };
+export type ChunkResult =
+  | { ok: true; lessons: Lesson[] }
+  | { ok: false; reason: string; blocked?: boolean };
 
 /** Turns provider errors into a short, human message for the UI. */
 function describe(error: unknown): string {
@@ -48,6 +51,22 @@ export const generateOutline = createServerFn({ method: "POST" })
       return { ok: false, reason: "AI isn't configured for this project yet." };
     }
 
+    const { screenTopicText, screenOutput, logModerationBlock } = await import(
+      "./moderation.server"
+    );
+
+    // Input pass: nothing is generated for a disallowed topic.
+    const gate = await screenTopicText(brief.topic, brief.goal, key);
+    if (!gate.allowed) {
+      void logModerationBlock({
+        topic: brief.topic,
+        category: gate.category,
+        stage: "input",
+        userId: null,
+      });
+      return { ok: false, reason: gate.message, blocked: true };
+    }
+
     try {
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
@@ -59,7 +78,21 @@ export const generateOutline = createServerFn({ method: "POST" })
         prompt: outlinePrompt(brief),
       });
 
-      const outline = parseOutline(await result.text, brief);
+      const text = await result.text;
+
+      // Output pass: never surface content the rules would have refused.
+      const output = screenOutput(text);
+      if (!output.allowed) {
+        void logModerationBlock({
+          topic: brief.topic,
+          category: output.category,
+          stage: "output",
+          userId: null,
+        });
+        return { ok: false, reason: output.message, blocked: true };
+      }
+
+      const outline = parseOutline(text, brief);
       if (!outline) {
         return { ok: false, reason: "The AI reply couldn't be read as a course outline." };
       }
@@ -78,6 +111,12 @@ export const generateLessonChunk = createServerFn({ method: "POST" })
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
     if (stubs.length === 0) return { ok: true, lessons: [] };
 
+    const { screenOutput, logModerationBlock } = await import("./moderation.server");
+    const requested = screenLocally(`${brief.topic} ${brief.goal}`);
+    if (!requested.allowed) {
+      return { ok: false, reason: requested.message, blocked: true };
+    }
+
     try {
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
@@ -89,7 +128,19 @@ export const generateLessonChunk = createServerFn({ method: "POST" })
         prompt: contentPrompt(brief, courseTitle, stubs),
       });
 
-      const lessons = parseLessonContent(await result.text, stubs, quizCountFor(brief));
+      const text = await result.text;
+      const output = screenOutput(text);
+      if (!output.allowed) {
+        void logModerationBlock({
+          topic: brief.topic,
+          category: output.category,
+          stage: "output",
+          userId: null,
+        });
+        return { ok: false, reason: output.message, blocked: true };
+      }
+
+      const lessons = parseLessonContent(text, stubs, quizCountFor(brief));
       if (lessons.length < stubs.length) {
         return { ok: false, reason: "The AI reply couldn't be read as lesson content." };
       }

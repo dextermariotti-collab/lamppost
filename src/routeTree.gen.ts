@@ -22,6 +22,14 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsHandleRouteImport } from './routes/friends.$handle'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
+import { Route as LegalAiContentRouteImport } from './routes/legal.ai-content'
+import { Route as LegalCommunityRouteImport } from './routes/legal.community'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
+import { Route as LegalHealthRouteImport } from './routes/legal.health'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
 
@@ -90,6 +98,46 @@ const InviteCodeRoute = InviteCodeRouteImport.update({
   path: '/invite/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/legal/',
+  path: '/legal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalAiContentRoute = LegalAiContentRouteImport.update({
+  id: '/legal/ai-content',
+  path: '/legal/ai-content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCommunityRoute = LegalCommunityRouteImport.update({
+  id: '/legal/community',
+  path: '/legal/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalDmcaRoute = LegalDmcaRouteImport.update({
+  id: '/legal/dmca',
+  path: '/legal/dmca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalHealthRoute = LegalHealthRouteImport.update({
+  id: '/legal/health',
+  path: '/legal/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CourseSlugIndexRoute = CourseSlugIndexRouteImport.update({
   id: '/course/$slug/',
   path: '/course/$slug/',
@@ -114,7 +162,15 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/legal/ai-content': typeof LegalAiContentRoute
+  '/legal/community': typeof LegalCommunityRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dmca': typeof LegalDmcaRoute
+  '/legal/health': typeof LegalHealthRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/friends/': typeof FriendsIndexRoute
+  '/legal/': typeof LegalIndexRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -131,7 +187,15 @@ export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/legal/ai-content': typeof LegalAiContentRoute
+  '/legal/community': typeof LegalCommunityRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dmca': typeof LegalDmcaRoute
+  '/legal/health': typeof LegalHealthRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/friends': typeof FriendsIndexRoute
+  '/legal': typeof LegalIndexRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -149,7 +213,15 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/legal/ai-content': typeof LegalAiContentRoute
+  '/legal/community': typeof LegalCommunityRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dmca': typeof LegalDmcaRoute
+  '/legal/health': typeof LegalHealthRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/friends/': typeof FriendsIndexRoute
+  '/legal/': typeof LegalIndexRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -168,7 +240,15 @@ export interface FileRouteTypes {
     | '/setup'
     | '/friends/$handle'
     | '/invite/$code'
+    | '/legal/ai-content'
+    | '/legal/community'
+    | '/legal/cookies'
+    | '/legal/dmca'
+    | '/legal/health'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/friends/'
+    | '/legal/'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesByTo: FileRoutesByTo
@@ -185,7 +265,15 @@ export interface FileRouteTypes {
     | '/setup'
     | '/friends/$handle'
     | '/invite/$code'
+    | '/legal/ai-content'
+    | '/legal/community'
+    | '/legal/cookies'
+    | '/legal/dmca'
+    | '/legal/health'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/friends'
+    | '/legal'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
   id:
@@ -202,7 +290,15 @@ export interface FileRouteTypes {
     | '/setup'
     | '/friends/$handle'
     | '/invite/$code'
+    | '/legal/ai-content'
+    | '/legal/community'
+    | '/legal/cookies'
+    | '/legal/dmca'
+    | '/legal/health'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/friends/'
+    | '/legal/'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesById: FileRoutesById
@@ -220,7 +316,15 @@ export interface RootRouteChildren {
   SetupRoute: typeof SetupRoute
   FriendsHandleRoute: typeof FriendsHandleRoute
   InviteCodeRoute: typeof InviteCodeRoute
+  LegalAiContentRoute: typeof LegalAiContentRoute
+  LegalCommunityRoute: typeof LegalCommunityRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalDmcaRoute: typeof LegalDmcaRoute
+  LegalHealthRoute: typeof LegalHealthRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
   FriendsIndexRoute: typeof FriendsIndexRoute
+  LegalIndexRoute: typeof LegalIndexRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
 }
@@ -318,6 +422,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/legal'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/ai-content': {
+      id: '/legal/ai-content'
+      path: '/legal/ai-content'
+      fullPath: '/legal/ai-content'
+      preLoaderRoute: typeof LegalAiContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/community': {
+      id: '/legal/community'
+      path: '/legal/community'
+      fullPath: '/legal/community'
+      preLoaderRoute: typeof LegalCommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/dmca': {
+      id: '/legal/dmca'
+      path: '/legal/dmca'
+      fullPath: '/legal/dmca'
+      preLoaderRoute: typeof LegalDmcaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/health': {
+      id: '/legal/health'
+      path: '/legal/health'
+      fullPath: '/legal/health'
+      preLoaderRoute: typeof LegalHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/course/$slug/': {
       id: '/course/$slug/'
       path: '/course/$slug'
@@ -348,7 +508,15 @@ const rootRouteChildren: RootRouteChildren = {
   SetupRoute: SetupRoute,
   FriendsHandleRoute: FriendsHandleRoute,
   InviteCodeRoute: InviteCodeRoute,
+  LegalAiContentRoute: LegalAiContentRoute,
+  LegalCommunityRoute: LegalCommunityRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalDmcaRoute: LegalDmcaRoute,
+  LegalHealthRoute: LegalHealthRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
   FriendsIndexRoute: FriendsIndexRoute,
+  LegalIndexRoute: LegalIndexRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,
 }
