@@ -221,14 +221,17 @@ function SetupScreen() {
         </div>
 
         <MascotReaction
+          companion={companion}
           line={
-            current.options?.find((o) => o.value === selected)?.reaction ??
-            (current.key === "goal" && brief.goal.trim()
-              ? "Good — that's the target I'll write toward."
-              : null)
+            answered[current.key]
+              ? (current.options?.find((o) => o.value === selected)?.reaction ?? null)
+              : current.key === "goal" && brief.goal.trim()
+                ? "Good — that's the target I'll write toward."
+                : null
           }
           idle={current.idle}
         />
+
 
 
         <div className="mt-6 space-y-3">
