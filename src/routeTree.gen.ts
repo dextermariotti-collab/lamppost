@@ -24,6 +24,7 @@ import { Route as FriendsHandleRouteImport } from './routes/friends.$handle'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as LegalAiContentRouteImport } from './routes/legal.ai-content'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalHealthRouteImport } from './routes/legal.health'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
@@ -105,6 +106,11 @@ const LegalAiContentRoute = LegalAiContentRouteImport.update({
   path: '/legal/ai-content',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalHealthRoute = LegalHealthRouteImport.update({
   id: '/legal/health',
   path: '/legal/health',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
+  '/legal/cookies': typeof LegalCookiesRoute
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
+  '/legal/cookies': typeof LegalCookiesRoute
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
+  '/legal/cookies': typeof LegalCookiesRoute
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
+    | '/legal/cookies'
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
+    | '/legal/cookies'
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
+    | '/legal/cookies'
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
@@ -281,6 +293,7 @@ export interface RootRouteChildren {
   FriendsHandleRoute: typeof FriendsHandleRoute
   InviteCodeRoute: typeof InviteCodeRoute
   LegalAiContentRoute: typeof LegalAiContentRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
   LegalHealthRoute: typeof LegalHealthRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalAiContentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/health': {
       id: '/legal/health'
       path: '/legal/health'
@@ -449,6 +469,7 @@ const rootRouteChildren: RootRouteChildren = {
   FriendsHandleRoute: FriendsHandleRoute,
   InviteCodeRoute: InviteCodeRoute,
   LegalAiContentRoute: LegalAiContentRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
   LegalHealthRoute: LegalHealthRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
