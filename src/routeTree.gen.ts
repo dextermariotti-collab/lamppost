@@ -26,6 +26,7 @@ import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as LegalAiContentRouteImport } from './routes/legal.ai-content'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
 import { Route as LegalHealthRouteImport } from './routes/legal.health'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
@@ -117,6 +118,11 @@ const LegalCookiesRoute = LegalCookiesRouteImport.update({
   path: '/legal/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalDmcaRoute = LegalDmcaRouteImport.update({
+  id: '/legal/dmca',
+  path: '/legal/dmca',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalHealthRoute = LegalHealthRouteImport.update({
   id: '/legal/health',
   path: '/legal/health',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/legal/ai-content': typeof LegalAiContentRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dmca': typeof LegalDmcaRoute
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/legal/ai-content': typeof LegalAiContentRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dmca': typeof LegalDmcaRoute
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/legal/ai-content': typeof LegalAiContentRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dmca': typeof LegalDmcaRoute
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/legal/ai-content'
     | '/legal/community'
     | '/legal/cookies'
+    | '/legal/dmca'
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/legal/ai-content'
     | '/legal/community'
     | '/legal/cookies'
+    | '/legal/dmca'
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/legal/ai-content'
     | '/legal/community'
     | '/legal/cookies'
+    | '/legal/dmca'
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
@@ -307,6 +319,7 @@ export interface RootRouteChildren {
   LegalAiContentRoute: typeof LegalAiContentRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalDmcaRoute: typeof LegalDmcaRoute
   LegalHealthRoute: typeof LegalHealthRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -437,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalCookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/dmca': {
+      id: '/legal/dmca'
+      path: '/legal/dmca'
+      fullPath: '/legal/dmca'
+      preLoaderRoute: typeof LegalDmcaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/health': {
       id: '/legal/health'
       path: '/legal/health'
@@ -491,6 +511,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalAiContentRoute: LegalAiContentRoute,
   LegalCommunityRoute: LegalCommunityRoute,
   LegalCookiesRoute: LegalCookiesRoute,
+  LegalDmcaRoute: LegalDmcaRoute,
   LegalHealthRoute: LegalHealthRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
