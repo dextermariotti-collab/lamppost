@@ -157,13 +157,8 @@ function SetupScreen() {
         <ScreenHeader title="Course setup" backTo="/" />
         <div className="flex min-h-[calc(100%-3.75rem)] flex-col px-5 pb-8">
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <img
-              src={aiBot}
-              alt="Lamppost AI assistant"
-              width={816}
-              height={816}
-              className="h-28 w-28 animate-float object-contain"
-            />
+            <CompanionAvatar companion={companion} size={112} className="animate-float" />
+
             <h2 className="mt-5 animate-rise-in text-xl font-extrabold">
               A few quick questions first
             </h2>
