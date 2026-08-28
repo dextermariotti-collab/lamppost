@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import aiBot from "@/assets/ai-bot.png";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useCompanion } from "@/lib/companion-store";
+import type { Companion } from "@/lib/companions";
 
 import {
   DIFFICULTIES,
@@ -121,6 +121,9 @@ function SetupScreen() {
   const [brief, setBrief] = useState<CourseBrief>(initial);
   // -1 is the one-time intro screen; 0..STEPS.length-1 are questions.
   const [step, setStep] = useState(-1);
+  // Steps the learner has actually tapped — defaults alone must not trigger a reaction.
+  const [answered, setAnswered] = useState<Partial<Record<keyof CourseBrief, boolean>>>({});
+  const { companion } = useCompanion();
 
   // Nothing to build a course from — send them back to enter a topic.
   useEffect(() => {
@@ -144,7 +147,9 @@ function SetupScreen() {
   const choose = (value: string) => {
     if (current.key === "lessons") set("lessons", Number(value));
     else set(current.key as "difficulty", value);
+    setAnswered((prev) => ({ ...prev, [current.key]: true }));
   };
+
 
   if (step < 0) {
     return (
@@ -152,13 +157,8 @@ function SetupScreen() {
         <ScreenHeader title="Course setup" backTo="/" />
         <div className="flex min-h-[calc(100%-3.75rem)] flex-col px-5 pb-8">
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <img
-              src={aiBot}
-              alt="Lamppost AI assistant"
-              width={816}
-              height={816}
-              className="h-28 w-28 animate-float object-contain"
-            />
+            <CompanionAvatar companion={companion} size={112} className="animate-float" />
+
             <h2 className="mt-5 animate-rise-in text-xl font-extrabold">
               A few quick questions first
             </h2>
@@ -221,14 +221,17 @@ function SetupScreen() {
         </div>
 
         <MascotReaction
+          companion={companion}
           line={
-            current.options?.find((o) => o.value === selected)?.reaction ??
-            (current.key === "goal" && brief.goal.trim()
-              ? "Good — that's the target I'll write toward."
-              : null)
+            answered[current.key]
+              ? (current.options?.find((o) => o.value === selected)?.reaction ?? null)
+              : current.key === "goal" && brief.goal.trim()
+                ? "Good — that's the target I'll write toward."
+                : null
           }
           idle={current.idle}
         />
+
 
 
         <div className="mt-6 space-y-3">
@@ -269,9 +272,17 @@ function SetupScreen() {
  * Fills the gap between the options and the continue button: the learner's own
  * companion reacting to the option they just picked.
  */
-function MascotReaction({ line, idle }: { line: string | null; idle: string }) {
-  const { companion } = useCompanion();
+function MascotReaction({
+  companion,
+  line,
+  idle,
+}: {
+  companion: Companion;
+  line: string | null;
+  idle: string;
+}) {
   const text = line ?? idle;
+
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-6">
