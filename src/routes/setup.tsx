@@ -121,6 +121,9 @@ function SetupScreen() {
   const [brief, setBrief] = useState<CourseBrief>(initial);
   // -1 is the one-time intro screen; 0..STEPS.length-1 are questions.
   const [step, setStep] = useState(-1);
+  // Steps the learner has actually tapped — defaults alone must not trigger a reaction.
+  const [answered, setAnswered] = useState<Partial<Record<keyof CourseBrief, boolean>>>({});
+  const { companion } = useCompanion();
 
   // Nothing to build a course from — send them back to enter a topic.
   useEffect(() => {
@@ -144,7 +147,9 @@ function SetupScreen() {
   const choose = (value: string) => {
     if (current.key === "lessons") set("lessons", Number(value));
     else set(current.key as "difficulty", value);
+    setAnswered((prev) => ({ ...prev, [current.key]: true }));
   };
+
 
   if (step < 0) {
     return (
