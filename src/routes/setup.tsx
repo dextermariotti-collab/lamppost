@@ -2,8 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import aiBot from "@/assets/ai-bot.png";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { useCompanion } from "@/lib/companion-store";
+
 import {
   DIFFICULTIES,
   EXPERIENCE,
@@ -45,17 +48,27 @@ export const Route = createFileRoute("/setup")({
   component: SetupScreen,
 });
 
-type OptionRow = { value: string; label: string; hint: string };
+type OptionRow = { value: string; label: string; hint: string; reaction: string };
 
 type Step = {
   key: keyof CourseBrief;
   question: string;
   options?: OptionRow[];
   required: boolean;
+  /** Shown before the learner picks anything on this step. */
+  idle: string;
 };
 
-const asRows = (list: { value: string | number; label: string; hint: string }[]): OptionRow[] =>
-  list.map((o) => ({ value: String(o.value), label: o.label, hint: o.hint }));
+const asRows = (
+  list: { value: string | number; label: string; hint: string; reaction: string }[],
+): OptionRow[] =>
+  list.map((o) => ({
+    value: String(o.value),
+    label: o.label,
+    hint: o.hint,
+    reaction: o.reaction,
+  }));
+
 
 const STEPS: Step[] = [
   {
@@ -63,37 +76,44 @@ const STEPS: Step[] = [
     question: "How long should the course be?",
     options: asRows(LENGTHS),
     required: true,
+    idle: "Pick a length and I'll tell you what I think.",
   },
   {
     key: "difficulty",
     question: "How challenging should it be?",
     options: asRows(DIFFICULTIES),
     required: true,
+    idle: "Set the difficulty and I'll match my writing to it.",
   },
   {
     key: "quizRigor",
     question: "How tough should the quiz questions be?",
     options: asRows(QUIZ_RIGOR),
     required: true,
+    idle: "Choose how hard I should make the questions.",
   },
   {
     key: "experience",
     question: "Where are you starting from?",
     options: asRows(EXPERIENCE),
     required: true,
+    idle: "Tell me your starting point so I pitch it right.",
   },
   {
     key: "focus",
     question: "How do you like to learn?",
     options: asRows(FOCUS),
     required: true,
+    idle: "Pick a style and I'll shape the lessons around it.",
   },
   {
     key: "goal",
     question: "What do you want to be able to do?",
     required: false,
+    idle: "Name the outcome and I'll aim every lesson at it.",
   },
 ];
+
 
 function SetupScreen() {
   const initial = Route.useSearch();
@@ -165,7 +185,7 @@ function SetupScreen() {
           <p className="mt-1 text-xs font-semibold text-muted-foreground">Optional</p>
         )}
 
-        <div className="mt-4 flex-1 space-y-2">
+        <div className="mt-4 space-y-2">
           {current.options?.map((option) => (
             <Row
               key={option.value}
@@ -200,6 +220,17 @@ function SetupScreen() {
           )}
         </div>
 
+        <MascotReaction
+          line={
+            current.options?.find((o) => o.value === selected)?.reaction ??
+            (current.key === "goal" && brief.goal.trim()
+              ? "Good — that's the target I'll write toward."
+              : null)
+          }
+          idle={current.idle}
+        />
+
+
         <div className="mt-6 space-y-3">
           <PrimaryButton
             onClick={advance}
@@ -233,6 +264,48 @@ function SetupScreen() {
     </PhoneFrame>
   );
 }
+
+/**
+ * Fills the gap between the options and the continue button: the learner's own
+ * companion reacting to the option they just picked.
+ */
+function MascotReaction({ line, idle }: { line: string | null; idle: string }) {
+  const { companion } = useCompanion();
+  const text = line ?? idle;
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center py-6">
+      <div
+        aria-live="polite"
+        className="relative max-w-[15rem] text-center"
+        key={text}
+        style={{ animation: "bubble-in 180ms ease-out both" }}
+      >
+        <p
+          className={`rounded-2xl border-2 px-4 py-2.5 text-[13px] font-bold leading-snug ${
+            line
+              ? "border-primary/30 bg-primary-soft text-foreground"
+              : "border-border bg-card text-muted-foreground"
+          }`}
+        >
+          {text}
+        </p>
+        <span
+          className={`absolute left-1/2 top-full -mt-[7px] h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 ${
+            line ? "border-primary/30 bg-primary-soft" : "border-border bg-card"
+          }`}
+        />
+      </div>
+      <CompanionAvatar
+        companion={companion}
+        size={64}
+        className="mt-3"
+        pose={line ? "happy" : "idle"}
+      />
+    </div>
+  );
+}
+
 
 function StepProgress({ step, total }: { step: number; total: number }) {
   return (

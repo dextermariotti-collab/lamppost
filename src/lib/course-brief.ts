@@ -38,15 +38,45 @@ export const ChunkSchema = z.object({
 export type ChunkInput = z.infer<typeof ChunkSchema>;
 
 export const LENGTHS = [
-  { value: 5, label: "Quick", hint: "5 lessons" },
-  { value: 8, label: "Standard", hint: "8 lessons" },
-  { value: 12, label: "Deep dive", hint: "12 lessons" },
+  {
+    value: 5,
+    label: "Quick",
+    hint: "5 lessons",
+    reaction: "Nice, we'll keep it short and to the point.",
+  },
+  {
+    value: 8,
+    label: "Standard",
+    hint: "8 lessons",
+    reaction: "Nice pick — a solid, well-paced course.",
+  },
+  {
+    value: 12,
+    label: "Deep dive",
+    hint: "12 lessons",
+    reaction: "Going deep, I like it. Buckle up.",
+  },
 ];
 
 export const DIFFICULTIES = [
-  { value: "beginner", label: "Beginner", hint: "Plain language, gentle pace" },
-  { value: "intermediate", label: "Intermediate", hint: "Assumes the basics" },
-  { value: "advanced", label: "Advanced", hint: "Nuance and edge cases" },
+  {
+    value: "beginner",
+    label: "Beginner",
+    hint: "Plain language, gentle pace",
+    reaction: "Nice pick — we'll keep things plain and easy to follow.",
+  },
+  {
+    value: "intermediate",
+    label: "Intermediate",
+    hint: "Assumes the basics",
+    reaction: "Got it, we'll build on what you already know.",
+  },
+  {
+    value: "advanced",
+    label: "Advanced",
+    hint: "Nuance and edge cases",
+    reaction: "Bring it — we'll get into the real nuance.",
+  },
 ];
 
 export const QUIZ_RIGOR = [
@@ -54,18 +84,22 @@ export const QUIZ_RIGOR = [
     value: "easy",
     label: "Easy",
     hint: "Clearly right answer, obviously wrong options",
+    reaction: "Low pressure, straightforward questions ahead.",
   },
   {
     value: "tricky",
     label: "Tricky",
     hint: "Options sound reasonable — one detail decides it",
+    reaction: "Sharp choice, you'll have to read carefully.",
   },
   {
     value: "difficult",
     label: "Difficult",
     hint: "SAT-style: every option looks right, only one is",
+    reaction: "No shortcuts here, every option's a trap.",
   },
 ];
+
 
 export const QUIZ_RIGOR_PROMPT: Record<string, string> = {
   easy: `Quiz rigor: EASY. The correct option is unambiguous and stated close to how the lesson said it. The two distractors are plainly wrong to anyone who read the lesson — no near-misses, no trick wording.`,
@@ -74,16 +108,47 @@ export const QUIZ_RIGOR_PROMPT: Record<string, string> = {
 };
 
 export const EXPERIENCE = [
-  { value: "new", label: "Total newcomer", hint: "Never touched it" },
-  { value: "some", label: "Some exposure", hint: "Dabbled a little" },
-  { value: "rusty", label: "Rusty but familiar", hint: "Knew it once" },
+  {
+    value: "new",
+    label: "Total newcomer",
+    hint: "Never touched it",
+    reaction: "Starting clean, so I'll define everything as we go.",
+  },
+  {
+    value: "some",
+    label: "Some exposure",
+    hint: "Dabbled a little",
+    reaction: "You've dabbled, so I'll skip the absolute basics.",
+  },
+  {
+    value: "rusty",
+    label: "Rusty but familiar",
+    hint: "Knew it once",
+    reaction: "Rusty is fine — I'll jog your memory first.",
+  },
 ];
 
 export const FOCUS = [
-  { value: "theory", label: "Theory first", hint: "Understand the why" },
-  { value: "balanced", label: "Balanced", hint: "A bit of both" },
-  { value: "practice", label: "Hands-on", hint: "Drills and doing" },
+  {
+    value: "theory",
+    label: "Theory first",
+    hint: "Understand the why",
+    reaction: "Then I'll explain the why before the how.",
+  },
+  {
+    value: "balanced",
+    label: "Balanced",
+    hint: "A bit of both",
+    reaction: "A little theory, a little doing. Steady mix.",
+  },
+  {
+    value: "practice",
+    label: "Hands-on",
+    hint: "Drills and doing",
+    reaction: "Less reading, more drills. Let's get to work.",
+  },
 ];
+
 
 export const DEFAULT_BRIEF: CourseBrief = {
   topic: "",
