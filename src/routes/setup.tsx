@@ -2,8 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import aiBot from "@/assets/ai-bot.png";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { useCompanion } from "@/lib/companion-store";
+
 import {
   DIFFICULTIES,
   EXPERIENCE,
