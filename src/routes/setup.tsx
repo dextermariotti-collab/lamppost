@@ -45,17 +45,27 @@ export const Route = createFileRoute("/setup")({
   component: SetupScreen,
 });
 
-type OptionRow = { value: string; label: string; hint: string };
+type OptionRow = { value: string; label: string; hint: string; reaction: string };
 
 type Step = {
   key: keyof CourseBrief;
   question: string;
   options?: OptionRow[];
   required: boolean;
+  /** Shown before the learner picks anything on this step. */
+  idle: string;
 };
 
-const asRows = (list: { value: string | number; label: string; hint: string }[]): OptionRow[] =>
-  list.map((o) => ({ value: String(o.value), label: o.label, hint: o.hint }));
+const asRows = (
+  list: { value: string | number; label: string; hint: string; reaction: string }[],
+): OptionRow[] =>
+  list.map((o) => ({
+    value: String(o.value),
+    label: o.label,
+    hint: o.hint,
+    reaction: o.reaction,
+  }));
+
 
 const STEPS: Step[] = [
   {
