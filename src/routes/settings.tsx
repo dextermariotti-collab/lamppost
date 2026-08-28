@@ -163,6 +163,8 @@ function SettingsScreen() {
                 </li>
               </ul>
             </section>
+
+            <LegalAndDataSection />
           </>
         )}
       </div>
