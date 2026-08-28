@@ -108,16 +108,47 @@ export const QUIZ_RIGOR_PROMPT: Record<string, string> = {
 };
 
 export const EXPERIENCE = [
-  { value: "new", label: "Total newcomer", hint: "Never touched it" },
-  { value: "some", label: "Some exposure", hint: "Dabbled a little" },
-  { value: "rusty", label: "Rusty but familiar", hint: "Knew it once" },
+  {
+    value: "new",
+    label: "Total newcomer",
+    hint: "Never touched it",
+    reaction: "Starting clean, so I'll define everything as we go.",
+  },
+  {
+    value: "some",
+    label: "Some exposure",
+    hint: "Dabbled a little",
+    reaction: "You've dabbled, so I'll skip the absolute basics.",
+  },
+  {
+    value: "rusty",
+    label: "Rusty but familiar",
+    hint: "Knew it once",
+    reaction: "Rusty is fine — I'll jog your memory first.",
+  },
 ];
 
 export const FOCUS = [
-  { value: "theory", label: "Theory first", hint: "Understand the why" },
-  { value: "balanced", label: "Balanced", hint: "A bit of both" },
-  { value: "practice", label: "Hands-on", hint: "Drills and doing" },
+  {
+    value: "theory",
+    label: "Theory first",
+    hint: "Understand the why",
+    reaction: "Then I'll explain the why before the how.",
+  },
+  {
+    value: "balanced",
+    label: "Balanced",
+    hint: "A bit of both",
+    reaction: "A little theory, a little doing. Steady mix.",
+  },
+  {
+    value: "practice",
+    label: "Hands-on",
+    hint: "Drills and doing",
+    reaction: "Less reading, more drills. Let's get to work.",
+  },
 ];
+
 
 export const DEFAULT_BRIEF: CourseBrief = {
   topic: "",
