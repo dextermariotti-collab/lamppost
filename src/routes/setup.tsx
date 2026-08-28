@@ -272,9 +272,17 @@ function SetupScreen() {
  * Fills the gap between the options and the continue button: the learner's own
  * companion reacting to the option they just picked.
  */
-function MascotReaction({ line, idle }: { line: string | null; idle: string }) {
-  const { companion } = useCompanion();
+function MascotReaction({
+  companion,
+  line,
+  idle,
+}: {
+  companion: Companion;
+  line: string | null;
+  idle: string;
+}) {
   const text = line ?? idle;
+
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-6">
