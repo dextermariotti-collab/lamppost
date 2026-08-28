@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, Mail, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
