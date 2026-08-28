@@ -151,6 +151,22 @@ function AuthScreen() {
           {mode === "signup" ? "Already have an account? Sign in" : "New here? Create an account"}
         </button>
 
+        <p className="mt-4 text-[11px] leading-relaxed font-semibold text-muted-foreground">
+          By continuing you agree to our{" "}
+          <Link to="/legal/terms" className="font-extrabold text-primary underline">
+            Terms
+          </Link>
+          ,{" "}
+          <Link to="/legal/privacy" className="font-extrabold text-primary underline">
+            Privacy Policy
+          </Link>{" "}
+          and{" "}
+          <Link to="/legal/ai-content" className="font-extrabold text-primary underline">
+            AI content notice
+          </Link>
+          . Lessons are AI-generated and may be wrong.
+        </p>
+
         <button
           onClick={() => navigate({ to: "/" })}
           className="mt-auto pt-6 text-xs font-bold text-muted-foreground"
