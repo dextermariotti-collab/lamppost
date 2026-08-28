@@ -182,7 +182,7 @@ function SetupScreen() {
           <p className="mt-1 text-xs font-semibold text-muted-foreground">Optional</p>
         )}
 
-        <div className="mt-4 flex-1 space-y-2">
+        <div className="mt-4 space-y-2">
           {current.options?.map((option) => (
             <Row
               key={option.value}
@@ -216,6 +216,17 @@ function SetupScreen() {
             </p>
           )}
         </div>
+
+        <MascotReaction
+          line={
+            current.options?.find((o) => o.value === selected)?.reaction ??
+            (current.key === "goal" && brief.goal.trim()
+              ? "Good — that's the target I'll write toward."
+              : null)
+          }
+          idle={current.idle}
+        />
+
 
         <div className="mt-6 space-y-3">
           <PrimaryButton
