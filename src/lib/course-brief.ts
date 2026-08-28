@@ -38,15 +38,45 @@ export const ChunkSchema = z.object({
 export type ChunkInput = z.infer<typeof ChunkSchema>;
 
 export const LENGTHS = [
-  { value: 5, label: "Quick", hint: "5 lessons" },
-  { value: 8, label: "Standard", hint: "8 lessons" },
-  { value: 12, label: "Deep dive", hint: "12 lessons" },
+  {
+    value: 5,
+    label: "Quick",
+    hint: "5 lessons",
+    reaction: "Nice, we'll keep it short and to the point.",
+  },
+  {
+    value: 8,
+    label: "Standard",
+    hint: "8 lessons",
+    reaction: "Nice pick — a solid, well-paced course.",
+  },
+  {
+    value: 12,
+    label: "Deep dive",
+    hint: "12 lessons",
+    reaction: "Going deep, I like it. Buckle up.",
+  },
 ];
 
 export const DIFFICULTIES = [
-  { value: "beginner", label: "Beginner", hint: "Plain language, gentle pace" },
-  { value: "intermediate", label: "Intermediate", hint: "Assumes the basics" },
-  { value: "advanced", label: "Advanced", hint: "Nuance and edge cases" },
+  {
+    value: "beginner",
+    label: "Beginner",
+    hint: "Plain language, gentle pace",
+    reaction: "Nice pick — we'll keep things plain and easy to follow.",
+  },
+  {
+    value: "intermediate",
+    label: "Intermediate",
+    hint: "Assumes the basics",
+    reaction: "Got it, we'll build on what you already know.",
+  },
+  {
+    value: "advanced",
+    label: "Advanced",
+    hint: "Nuance and edge cases",
+    reaction: "Bring it — we'll get into the real nuance.",
+  },
 ];
 
 export const QUIZ_RIGOR = [
@@ -54,18 +84,22 @@ export const QUIZ_RIGOR = [
     value: "easy",
     label: "Easy",
     hint: "Clearly right answer, obviously wrong options",
+    reaction: "Low pressure, straightforward questions ahead.",
   },
   {
     value: "tricky",
     label: "Tricky",
     hint: "Options sound reasonable — one detail decides it",
+    reaction: "Sharp choice, you'll have to read carefully.",
   },
   {
     value: "difficult",
     label: "Difficult",
     hint: "SAT-style: every option looks right, only one is",
+    reaction: "No shortcuts here, every option's a trap.",
   },
 ];
+
 
 export const QUIZ_RIGOR_PROMPT: Record<string, string> = {
   easy: `Quiz rigor: EASY. The correct option is unambiguous and stated close to how the lesson said it. The two distractors are plainly wrong to anyone who read the lesson — no near-misses, no trick wording.`,
