@@ -22,6 +22,7 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsHandleRouteImport } from './routes/friends.$handle'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
 
@@ -90,6 +91,11 @@ const InviteCodeRoute = InviteCodeRouteImport.update({
   path: '/invite/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/legal/',
+  path: '/legal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CourseSlugIndexRoute = CourseSlugIndexRouteImport.update({
   id: '/course/$slug/',
   path: '/course/$slug/',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/friends/': typeof FriendsIndexRoute
+  '/legal/': typeof LegalIndexRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/friends': typeof FriendsIndexRoute
+  '/legal': typeof LegalIndexRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/friends/': typeof FriendsIndexRoute
+  '/legal/': typeof LegalIndexRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/friends/$handle'
     | '/invite/$code'
     | '/friends/'
+    | '/legal/'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesByTo: FileRoutesByTo
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/friends/$handle'
     | '/invite/$code'
     | '/friends'
+    | '/legal'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
   id:
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/friends/$handle'
     | '/invite/$code'
     | '/friends/'
+    | '/legal/'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesById: FileRoutesById
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   FriendsHandleRoute: typeof FriendsHandleRoute
   InviteCodeRoute: typeof InviteCodeRoute
   FriendsIndexRoute: typeof FriendsIndexRoute
+  LegalIndexRoute: typeof LegalIndexRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
 }
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/legal'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/course/$slug/': {
       id: '/course/$slug/'
       path: '/course/$slug'
@@ -349,6 +369,7 @@ const rootRouteChildren: RootRouteChildren = {
   FriendsHandleRoute: FriendsHandleRoute,
   InviteCodeRoute: InviteCodeRoute,
   FriendsIndexRoute: FriendsIndexRoute,
+  LegalIndexRoute: LegalIndexRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,
 }
