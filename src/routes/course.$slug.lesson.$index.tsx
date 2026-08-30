@@ -278,16 +278,18 @@ function LessonScreen() {
         <div className="mt-6">
           <button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
-            disabled={onQuiz && !answeredAll}
+            disabled={(onQuiz && !answeredAll) || predictionPending}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 disabled:opacity-50"
           >
             {onQuiz
               ? lessonNumber < course.lessons.length
                 ? "Continue"
                 : "Finish course"
-              : page + 1 === parts.length
-                ? "Take the quiz"
-                : "Next page"}
+              : showPrediction
+                ? "See it in action"
+                : page + 1 === parts.length
+                  ? "Take the quiz"
+                  : "Next page"}
             <ArrowRight className="h-4 w-4" />
           </button>
           <AiDisclaimer
