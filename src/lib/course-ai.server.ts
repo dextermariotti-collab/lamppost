@@ -29,6 +29,12 @@ Rules for every lesson:
   use concrete specifics, numbers and examples from the subject itself. Never filler, never generic
   study advice. Part 1 explains the idea, part 2 shows it applied with a worked example,
   part 3 covers common mistakes plus how to fix them. Part titles are max 5 words.
+- "prediction" is a "predict before reveal" beat that closes part 1 and sets up the worked
+  example in part 2. Its "question" (max 18 words) asks the learner to predict the outcome of the
+  single most load-bearing idea or distinction from part 1. "options" has 2 or 3 short options
+  (max 12 words each) where the wrong ones are real misconceptions a learner would hold, not
+  obviously silly. "correct" is the 0-based index. "explanation" is ONE sentence saying why it is
+  correct and pointing forward to the example that follows.
 - "keyPoints" has exactly 4 short takeaways, max 14 words each.
 - Each quiz question tests understanding of this lesson's content, has exactly 3 plausible options,
   "correct" is the 0-based index of the right option, and "explanation" is one teaching sentence.
