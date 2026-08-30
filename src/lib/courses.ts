@@ -28,6 +28,8 @@ export type Lesson = {
   keyPoints?: string[];
   /** Multi-page lesson content, shown one part at a time before the quiz. */
   parts?: LessonPart[];
+  /** Optional prediction beat closing the first (reading) part. */
+  prediction?: Prediction;
   quiz: Quiz;
   /** Multiple quiz questions on longer courses; falls back to `quiz`. */
   quizzes?: Quiz[];
