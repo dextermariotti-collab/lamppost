@@ -84,6 +84,10 @@ function LessonScreen() {
   const totalPages = parts.length + 1;
   const onQuiz = page >= parts.length;
   const answeredAll = quizzes.every((_, i) => answers[i] !== undefined);
+  /** The predict-before-reveal beat closes the first reading part. */
+  const prediction = lesson.prediction;
+  const showPrediction = !onQuiz && page === 0 && parts.length > 1 && !!prediction;
+  const predictionPending = showPrediction && predictionAttempt === undefined;
 
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
