@@ -157,24 +157,25 @@ function LessonScreen() {
         )}
 
         {!onQuiz ? (
-          <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-            <p className="text-[11px] font-extrabold tracking-wide text-primary uppercase">
-              Part {page + 1} of {parts.length}
-            </p>
-            <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
-            <p className="mt-3 text-[15px] leading-relaxed font-semibold text-foreground/85">
-              {parts[page]!.body}
-            </p>
-          </article>
-        )}
-
-        {!onQuiz && showPrediction && (
-          <PredictionCard
-            prediction={lesson.prediction!}
-            companion={companion}
-            choice={predictionAttempt?.choice}
-            onPick={(i) => recordPrediction(i, i === lesson.prediction!.correct)}
-          />
+          <>
+            <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
+              <p className="text-[11px] font-extrabold tracking-wide text-primary uppercase">
+                Part {page + 1} of {parts.length}
+              </p>
+              <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
+              <p className="mt-3 text-[15px] leading-relaxed font-semibold text-foreground/85">
+                {parts[page]!.body}
+              </p>
+            </article>
+            {showPrediction && (
+              <PredictionCard
+                prediction={prediction!}
+                companion={companion}
+                choice={predictionAttempt?.choice}
+                onPick={(i) => recordPrediction(i, i === prediction!.correct)}
+              />
+            )}
+          </>
         ) : (
           <div className="mt-5 space-y-4">
             {lesson.keyPoints && lesson.keyPoints.length > 0 && (
