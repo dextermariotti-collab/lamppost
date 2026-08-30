@@ -21,7 +21,7 @@ ${CONTENT_POLICY_RULES}`;
 
 export const CONTENT_SYSTEM = `You write in-depth, warm, plain-language lesson content for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
-{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
+{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"prediction":{"question":string,"options":[string,string],"correct":number,"explanation":string},"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
 Rules for every lesson:
 - "index" must repeat the index you were given.
 - "intro" is 2 sentences framing why this lesson matters.
