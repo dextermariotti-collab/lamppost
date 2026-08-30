@@ -7,11 +7,13 @@ import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { useCompanion } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { PredictionCard } from "@/components/PredictionCard";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { clampBrief } from "@/lib/course-brief";
 import { useStoredCourse } from "@/lib/course-store";
 import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
+import { usePredictionAttempt } from "@/lib/prediction-store";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
@@ -40,6 +42,8 @@ function LessonScreen() {
   const { course, hydrated } = useStoredCourse(slug);
   const { companion } = useCompanion();
   const { completeLesson } = useProgress();
+  const lessonNo = Math.max(Number(index) || 1, 1);
+  const { attempt: prediction Attempt, record: recordPrediction } = usePredictionAttempt(slug, lessonNo);
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -162,6 +166,15 @@ function LessonScreen() {
               {parts[page]!.body}
             </p>
           </article>
+        )}
+
+        {!onQuiz && showPrediction && (
+          <PredictionCard
+            prediction={lesson.prediction!}
+            companion={companion}
+            choice={predictionAttempt?.choice}
+            onPick={(i) => recordPrediction(i, i === lesson.prediction!.correct)}
+          />
         ) : (
           <div className="mt-5 space-y-4">
             {lesson.keyPoints && lesson.keyPoints.length > 0 && (
