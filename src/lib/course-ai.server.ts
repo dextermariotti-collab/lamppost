@@ -113,6 +113,37 @@ function normalizeQuiz(raw: unknown, lessonTitle: string): Quiz | null {
   };
 }
 
+/** Optional beat — returns null so lessons still render when the model skips it. */
+function normalizePrediction(raw: unknown): Prediction | null {
+  const p = asObject(raw);
+  const question = str(pick(p, ["question", "prompt"]));
+  const options = asArray(pick(p, ["options", "answers", "choices"]))
+    .map((o) => str(o))
+    .filter(Boolean)
+    .slice(0, 3);
+  if (!question || options.length < 2) return null;
+  const correctRaw = pick(p, ["correct", "correct_index", "correctIndex", "answer_index"]);
+  const correct = Math.min(
+    Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
+    options.length - 1,
+  );
+
+  const order = options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+
+  return {
+    question,
+    options: order.map((i) => options[i]!),
+    correct: order.indexOf(correct),
+    explanation: str(
+      pick(p, ["explanation", "why", "rationale"]),
+      "Hold on to that — the next page shows it in action.",
+    ),
+  };
+}
 
 export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
   const root = extractJson(text);
