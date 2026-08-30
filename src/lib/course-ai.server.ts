@@ -7,7 +7,7 @@ import {
   type LessonStub,
 } from "./course-brief";
 import { CONTENT_POLICY_RULES } from "./moderation.server";
-import { slugify, type Lesson, type Quiz } from "./courses";
+import { slugify, type Lesson, type Prediction, type Quiz } from "./courses";
 
 export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
@@ -207,6 +207,8 @@ export function parseLessonContent(
       .filter((q): q is Quiz => q !== null)
       .slice(0, Math.max(quizCount, 1));
 
+    const prediction = normalizePrediction(pick(l, ["prediction", "predict", "predictionPrompt"]));
+
     const single = quizzes.length === 0 ? normalizeQuiz(pick(l, ["quiz"]), stub.title) : null;
     const resolvedQuizzes = quizzes.length > 0 ? quizzes : single ? [single] : [];
 
@@ -218,6 +220,7 @@ export function parseLessonContent(
       emoji: stub.emoji || "✨",
       intro: str(pick(l, ["intro", "introduction", "hook"]), stub.subtitle),
       ...(keyPoints.length ? { keyPoints } : {}),
+      ...(prediction ? { prediction } : {}),
       parts,
       quiz: resolvedQuizzes[0]!,
       quizzes: resolvedQuizzes,
