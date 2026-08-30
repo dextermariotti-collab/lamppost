@@ -12,6 +12,14 @@ export type LessonPart = {
   body: string;
 };
 
+/** Short "predict before reveal" beat shown at the end of the reading part. */
+export type Prediction = {
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+};
+
 export type Lesson = {
   title: string;
   subtitle: string;
