@@ -42,8 +42,10 @@ function LessonScreen() {
   const { course, hydrated } = useStoredCourse(slug);
   const { companion } = useCompanion();
   const { completeLesson } = useProgress();
-  const lessonNo = Math.max(Number(index) || 1, 1);
-  const { attempt: prediction Attempt, record: recordPrediction } = usePredictionAttempt(slug, lessonNo);
+  const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
+    slug,
+    Math.max(Number(index) || 1, 1),
+  );
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
