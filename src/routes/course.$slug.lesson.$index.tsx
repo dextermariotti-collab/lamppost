@@ -7,11 +7,13 @@ import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { useCompanion } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { PredictionCard } from "@/components/PredictionCard";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { clampBrief } from "@/lib/course-brief";
 import { useStoredCourse } from "@/lib/course-store";
 import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
+import { usePredictionAttempt } from "@/lib/prediction-store";
 import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
@@ -40,6 +42,10 @@ function LessonScreen() {
   const { course, hydrated } = useStoredCourse(slug);
   const { companion } = useCompanion();
   const { completeLesson } = useProgress();
+  const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
+    slug,
+    Math.max(Number(index) || 1, 1),
+  );
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -78,6 +84,10 @@ function LessonScreen() {
   const totalPages = parts.length + 1;
   const onQuiz = page >= parts.length;
   const answeredAll = quizzes.every((_, i) => answers[i] !== undefined);
+  /** The predict-before-reveal beat closes the first reading part. */
+  const prediction = lesson.prediction;
+  const showPrediction = !onQuiz && page === 0 && parts.length > 1 && !!prediction;
+  const predictionPending = showPrediction && predictionAttempt === undefined;
 
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
@@ -153,15 +163,25 @@ function LessonScreen() {
         )}
 
         {!onQuiz ? (
-          <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-            <p className="text-[11px] font-extrabold tracking-wide text-primary uppercase">
-              Part {page + 1} of {parts.length}
-            </p>
-            <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
-            <p className="mt-3 text-[15px] leading-relaxed font-semibold text-foreground/85">
-              {parts[page]!.body}
-            </p>
-          </article>
+          <>
+            <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
+              <p className="text-[11px] font-extrabold tracking-wide text-primary uppercase">
+                Part {page + 1} of {parts.length}
+              </p>
+              <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
+              <p className="mt-3 text-[15px] leading-relaxed font-semibold text-foreground/85">
+                {parts[page]!.body}
+              </p>
+            </article>
+            {showPrediction && (
+              <PredictionCard
+                prediction={prediction!}
+                companion={companion}
+                choice={predictionAttempt?.choice}
+                onPick={(i) => recordPrediction(i, i === prediction!.correct)}
+              />
+            )}
+          </>
         ) : (
           <div className="mt-5 space-y-4">
             {lesson.keyPoints && lesson.keyPoints.length > 0 && (
@@ -258,16 +278,18 @@ function LessonScreen() {
         <div className="mt-6">
           <button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
-            disabled={onQuiz && !answeredAll}
+            disabled={(onQuiz && !answeredAll) || predictionPending}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 disabled:opacity-50"
           >
             {onQuiz
               ? lessonNumber < course.lessons.length
                 ? "Continue"
                 : "Finish course"
-              : page + 1 === parts.length
-                ? "Take the quiz"
-                : "Next page"}
+              : showPrediction
+                ? "See it in action"
+                : page + 1 === parts.length
+                  ? "Take the quiz"
+                  : "Next page"}
             <ArrowRight className="h-4 w-4" />
           </button>
           <AiDisclaimer

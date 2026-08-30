@@ -7,7 +7,7 @@ import {
   type LessonStub,
 } from "./course-brief";
 import { CONTENT_POLICY_RULES } from "./moderation.server";
-import { slugify, type Lesson, type Quiz } from "./courses";
+import { slugify, type Lesson, type Prediction, type Quiz } from "./courses";
 
 export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
@@ -21,7 +21,7 @@ ${CONTENT_POLICY_RULES}`;
 
 export const CONTENT_SYSTEM = `You write in-depth, warm, plain-language lesson content for a mobile learning app.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
-{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
+{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"prediction":{"question":string,"options":[string,string],"correct":number,"explanation":string},"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
 Rules for every lesson:
 - "index" must repeat the index you were given.
 - "intro" is 2 sentences framing why this lesson matters.
@@ -29,6 +29,12 @@ Rules for every lesson:
   use concrete specifics, numbers and examples from the subject itself. Never filler, never generic
   study advice. Part 1 explains the idea, part 2 shows it applied with a worked example,
   part 3 covers common mistakes plus how to fix them. Part titles are max 5 words.
+- "prediction" is a "predict before reveal" beat that closes part 1 and sets up the worked
+  example in part 2. Its "question" (max 18 words) asks the learner to predict the outcome of the
+  single most load-bearing idea or distinction from part 1. "options" has 2 or 3 short options
+  (max 12 words each) where the wrong ones are real misconceptions a learner would hold, not
+  obviously silly. "correct" is the 0-based index. "explanation" is ONE sentence saying why it is
+  correct and pointing forward to the example that follows.
 - "keyPoints" has exactly 4 short takeaways, max 14 words each.
 - Each quiz question tests understanding of this lesson's content, has exactly 3 plausible options,
   "correct" is the 0-based index of the right option, and "explanation" is one teaching sentence.
@@ -107,6 +113,37 @@ function normalizeQuiz(raw: unknown, lessonTitle: string): Quiz | null {
   };
 }
 
+/** Optional beat — returns null so lessons still render when the model skips it. */
+function normalizePrediction(raw: unknown): Prediction | null {
+  const p = asObject(raw);
+  const question = str(pick(p, ["question", "prompt"]));
+  const options = asArray(pick(p, ["options", "answers", "choices"]))
+    .map((o) => str(o))
+    .filter(Boolean)
+    .slice(0, 3);
+  if (!question || options.length < 2) return null;
+  const correctRaw = pick(p, ["correct", "correct_index", "correctIndex", "answer_index"]);
+  const correct = Math.min(
+    Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
+    options.length - 1,
+  );
+
+  const order = options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+
+  return {
+    question,
+    options: order.map((i) => options[i]!),
+    correct: order.indexOf(correct),
+    explanation: str(
+      pick(p, ["explanation", "why", "rationale"]),
+      "Hold on to that — the next page shows it in action.",
+    ),
+  };
+}
 
 export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
   const root = extractJson(text);
@@ -170,6 +207,8 @@ export function parseLessonContent(
       .filter((q): q is Quiz => q !== null)
       .slice(0, Math.max(quizCount, 1));
 
+    const prediction = normalizePrediction(pick(l, ["prediction", "predict", "predictionPrompt"]));
+
     const single = quizzes.length === 0 ? normalizeQuiz(pick(l, ["quiz"]), stub.title) : null;
     const resolvedQuizzes = quizzes.length > 0 ? quizzes : single ? [single] : [];
 
@@ -181,6 +220,7 @@ export function parseLessonContent(
       emoji: stub.emoji || "✨",
       intro: str(pick(l, ["intro", "introduction", "hook"]), stub.subtitle),
       ...(keyPoints.length ? { keyPoints } : {}),
+      ...(prediction ? { prediction } : {}),
       parts,
       quiz: resolvedQuizzes[0]!,
       quizzes: resolvedQuizzes,

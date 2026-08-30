@@ -12,6 +12,14 @@ export type LessonPart = {
   body: string;
 };
 
+/** Short "predict before reveal" beat shown at the end of the reading part. */
+export type Prediction = {
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+};
+
 export type Lesson = {
   title: string;
   subtitle: string;
@@ -20,6 +28,8 @@ export type Lesson = {
   keyPoints?: string[];
   /** Multi-page lesson content, shown one part at a time before the quiz. */
   parts?: LessonPart[];
+  /** Optional prediction beat closing the first (reading) part. */
+  prediction?: Prediction;
   quiz: Quiz;
   /** Multiple quiz questions on longer courses; falls back to `quiz`. */
   quizzes?: Quiz[];
