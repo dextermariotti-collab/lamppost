@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, BookOpen, Plus, TrendingUp, User, Wifi, Signal, BatteryFull } from "lucide-react";
+import { Home, BookOpen, Plus, TrendingUp, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import { cn } from "@/lib/utils";
@@ -22,20 +22,11 @@ export function PhoneFrame({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas p-0 sm:p-6">
-      <div className="relative flex h-[100dvh] w-full max-w-[420px] flex-col overflow-hidden bg-background shadow-float sm:h-[860px] sm:rounded-[2.75rem] sm:border-[10px] sm:border-foreground/90">
-        <div className="flex items-center justify-between px-6 pt-4 pb-1 text-xs font-bold text-foreground">
-          <span>9:41</span>
-          <span className="flex items-center gap-1.5">
-            <Signal className="h-3.5 w-3.5" />
-            <Wifi className="h-3.5 w-3.5" />
-            <BatteryFull className="h-4 w-4" />
-          </span>
-        </div>
-
+      <div className="relative flex h-[100dvh] w-full max-w-[420px] flex-col overflow-hidden border-border bg-background sm:h-[860px] sm:rounded-[1.5rem] sm:border">
         <div className="flex-1 overflow-y-auto overscroll-contain">{children}</div>
 
         {showNav && (
-          <nav className="relative border-t border-border bg-background px-3 pt-2 pb-3">
+          <nav className="relative border-t border-border bg-background px-3 pt-3 pb-3">
             <div className="grid grid-cols-5 items-end">
               {NAV.slice(0, 2).map((item) => (
                 <NavItem key={item.to} {...item} active={pathname === item.to} />
@@ -45,7 +36,7 @@ export function PhoneFrame({
                   to="/setup"
                   search={clampBrief({ topic: "" })}
                   aria-label="AI Create"
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card transition-transform hover:scale-105"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   <Plus className="h-6 w-6" />
                 </Link>
@@ -55,7 +46,6 @@ export function PhoneFrame({
                 <NavItem key={item.to} {...item} active={pathname === item.to} />
               ))}
             </div>
-            <div className="mx-auto mt-2 h-1 w-32 rounded-full bg-foreground/80 sm:block" />
           </nav>
         )}
       </div>
@@ -78,7 +68,7 @@ function NavItem({
     <Link
       to={to}
       className={cn(
-        "flex flex-col items-center gap-1 pb-1 text-[10px] font-bold transition-colors",
+        "flex flex-col items-center gap-1 pb-1 text-[10px] font-semibold transition-colors duration-200",
         active ? "text-primary" : "text-muted-foreground",
       )}
     >
