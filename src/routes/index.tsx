@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, BookOpen, Send } from "lucide-react";
+import { ArrowRight, Flame, Send } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { clampBrief } from "@/lib/course-brief";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { AnimatedBar } from "@/components/AnimatedBar";
+import { categoryFor } from "@/lib/categories";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { deriveInsights, useProgress } from "@/lib/progress";
 import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
@@ -63,27 +64,37 @@ function Home() {
 
   return (
     <PhoneFrame>
-      <div className="px-5 pb-8">
-        <header className="border-b border-border py-5">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            Your learning journal
-          </p>
-          <div className="mt-1 flex items-end justify-between gap-4">
-            <h1 className="text-3xl italic">Lamppost</h1>
-            <Link to="/profile" aria-label="Open profile" className="shrink-0">
-              <CompanionAvatar
-                companion={{ ...companion, expression: atRisk ? "calm" : "happy" }}
-                size={44}
-              />
-            </Link>
+      <main className="journal-page min-h-full px-5 pb-10 pl-8">
+        <header className="relative min-h-44 pt-6">
+          <p className="font-note -rotate-1 text-sm text-muted-foreground">my learning journal</p>
+          <h1 className="mt-1 text-[2.15rem] italic leading-none">Lamppost</h1>
+
+          <Link to="/profile" aria-label="Open profile" className="absolute right-0 top-5 shrink-0">
+            <CompanionAvatar
+              companion={{ ...companion, expression: atRisk ? "calm" : "happy" }}
+              size={44}
+            />
+          </Link>
+
+          <div className="font-note absolute right-1 top-[5.4rem] rotate-2 text-[0.82rem] text-flame">
+            <Flame
+              aria-hidden="true"
+              className="animate-streak-settle mr-1 inline-block h-4 w-4"
+              strokeWidth={1.7}
+            />
+            {state.streak} day streak
           </div>
+          <p className="font-note absolute right-[6.5rem] top-[7.25rem] -rotate-2 text-[0.78rem] text-subject-forest">
+            {state.xp.toLocaleString()} xp earned
+          </p>
+          <p className="font-note absolute right-2 top-[8.65rem] rotate-1 text-[0.78rem] text-subject-terracotta">
+            {Object.keys(state.courses).length} courses
+          </p>
         </header>
 
-        <section className="pt-7">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            Today’s review
-          </p>
-          <h2 className="mt-2 text-[1.75rem] leading-tight">
+        <section className="pb-7 pt-4">
+          <p className="font-note -rotate-1 text-base text-primary">today’s review</p>
+          <h2 className="mt-1 max-w-[20rem] text-[1.8rem] leading-[1.22]">
             {dueItems.length === 0
               ? "Nothing due today."
               : `${dueItems.length} idea${dueItems.length === 1 ? "" : "s"} ready to revisit.`}
@@ -95,56 +106,49 @@ function Home() {
                 ? `Your oldest review is ${maxOverdue} days overdue. A short session will bring you current.`
                 : "A short recall session will help today’s learning stick."}
           </p>
-          <button
+          <Button
             onClick={() => navigate({ to: "/review" })}
-            className="mt-5 flex h-12 w-full items-center justify-between rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+            className="mt-5 h-11 w-full justify-between rounded-sm px-4 font-bold shadow-none"
           >
             <span>{dueItems.length === 0 ? "View review schedule" : "Begin today’s review"}</span>
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </section>
 
-        <div className="mt-7 grid grid-cols-3 border-y border-border py-4">
-          <JournalStat value={`${state.streak}`} label="day streak" />
-          <JournalStat value={state.xp.toLocaleString()} label="XP earned" bordered />
-          <JournalStat value={Object.keys(state.courses).length.toString()} label="courses" />
-        </div>
-
         {continuing.length > 0 && (
-          <section className="mt-7">
-            <h2 className="text-lg">Continue learning</h2>
-            <div className="mt-3 divide-y divide-border border-y border-border">
-              {continuing.map(([slug, course]) => {
-                const pct = Math.round((course.completed / course.total) * 100);
-                const left = course.total - course.completed;
+          <section className="pt-5">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-xl">Continue learning</h2>
+              <span className="font-note rotate-1 text-sm text-muted-foreground">table of contents</span>
+            </div>
+            <ol className="mt-2">
+              {continuing.map(([slug, course], index) => {
+                const accent = subjectAccent(categoryFor(course.topic).id);
                 return (
-                  <button
+                  <li key={slug} className="border-b border-border/80">
+                  <Link
                     key={slug}
-                    onClick={() => navigate({ to: "/course/$slug", params: { slug } })}
-                    className="flex w-full items-center gap-3 py-4 text-left transition-colors duration-200 hover:bg-primary-soft/40"
+                    to="/course/$slug"
+                    params={{ slug }}
+                    className="group flex min-h-20 w-full items-center gap-4 py-4 text-left"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary-soft">
-                      <BookOpen className="h-5 w-5 text-accent-foreground" />
-                    </div>
+                    <span className={`font-note w-7 shrink-0 text-xl ${accent}`}>{String(index + 1).padStart(2, "0")}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{course.topic}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {left} lesson{left === 1 ? "" : "s"} remaining
+                      <p className="truncate font-display text-base font-semibold">{course.topic}</p>
+                      <p className={`mt-1 text-xs font-bold ${accent}`}>
+                        {course.completed} of {course.total} lessons
                       </p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <AnimatedBar pct={pct} className="flex-1" />
-                        <span className="text-[11px] font-semibold text-muted-foreground">{pct}%</span>
-                      </div>
                     </div>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  </button>
+                    <ArrowRight className={`h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5 ${accent}`} />
+                  </Link>
+                  </li>
                 );
               })}
-            </div>
+            </ol>
           </section>
         )}
 
-        <section className="mt-8">
+        <section className="mt-8 border-t border-border/80 pt-6">
           <h2 className="text-lg">Begin a new subject</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Name what you want to understand. We’ll shape the course together.
@@ -154,7 +158,7 @@ function Home() {
               e.preventDefault();
               start(topic);
             }}
-            className="mt-4 rounded-lg border border-border bg-card p-3 focus-within:border-primary"
+            className="mt-4 border-b border-foreground/40 pb-2 focus-within:border-primary"
           >
             <input
               value={topic}
@@ -163,37 +167,26 @@ function Home() {
               aria-label="Course topic"
               className="w-full bg-transparent px-1 py-2 text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
             />
-            <div className="mt-2 flex justify-end border-t border-border pt-3">
-              <button
+            <div className="mt-2 flex justify-end">
+              <Button
                 type="submit"
+                size="icon"
                 aria-label="Create course"
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+                className="rounded-sm shadow-none"
               >
                 <Send className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </form>
         </section>
-      </div>
+      </main>
     </PhoneFrame>
   );
 }
 
-function JournalStat({
-  value,
-  label,
-  bordered = false,
-}: {
-  value: string;
-  label: string;
-  bordered?: boolean;
-}) {
-  return (
-    <div className={`text-center ${bordered ? "border-x border-border" : ""}`}>
-      <p className="font-display text-xl font-semibold">{value}</p>
-      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-    </div>
-  );
+function subjectAccent(category: string) {
+  if (["arts", "music", "food"].includes(category)) return "text-subject-amber";
+  if (["finance", "writing", "mind"].includes(category)) return "text-subject-forest";
+  if (["science", "health"].includes(category)) return "text-subject-terracotta";
+  return "text-subject-blue";
 }

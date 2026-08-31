@@ -39,8 +39,13 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-canvas: var(--canvas);
+  --color-subject-amber: var(--subject-amber);
+  --color-subject-forest: var(--subject-forest);
+  --color-subject-terracotta: var(--subject-terracotta);
+  --color-subject-blue: var(--subject-blue);
   --font-display: "Lora", ui-serif, Georgia, serif;
   --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-note: "Caveat", "Segoe Print", cursive;
   --shadow-soft: 0 1px 2px oklch(0.3 0.025 150 / 0.06);
   --shadow-card: 0 4px 16px -10px oklch(0.3 0.025 150 / 0.2);
   --shadow-float: 0 12px 30px -20px oklch(0.3 0.025 150 / 0.3);
@@ -76,6 +81,13 @@
   --border: oklch(0.79 0.035 135);
   --input: oklch(0.79 0.035 135);
   --ring: oklch(0.64 0.075 140);
+  --paper-rule: oklch(0.68 0.04 145 / 0.18);
+  --paper-margin: oklch(0.66 0.08 30 / 0.2);
+  --paper-grain: oklch(0.31 0.035 150 / 0.025);
+  --subject-amber: oklch(0.58 0.13 72);
+  --subject-forest: oklch(0.42 0.08 148);
+  --subject-terracotta: oklch(0.56 0.11 38);
+  --subject-blue: oklch(0.51 0.08 235);
   --gradient-hero: linear-gradient(var(--primary), var(--primary));
 }
 
@@ -100,6 +112,13 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.68 0.19 293);
+  --paper-rule: oklch(0.8 0.025 140 / 0.12);
+  --paper-margin: oklch(0.72 0.07 30 / 0.18);
+  --paper-grain: oklch(1 0 0 / 0.02);
+  --subject-amber: oklch(0.74 0.12 72);
+  --subject-forest: oklch(0.71 0.08 148);
+  --subject-terracotta: oklch(0.72 0.1 38);
+  --subject-blue: oklch(0.7 0.08 235);
 }
 
 @layer base {
@@ -126,6 +145,17 @@
 
 @utility bg-hero-gradient {
   background-image: var(--gradient-hero);
+}
+
+@utility journal-page {
+  position: relative;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 18% 24%, var(--paper-grain) 0 0.65px, transparent 0.8px),
+    radial-gradient(circle at 73% 68%, var(--paper-grain) 0 0.55px, transparent 0.75px),
+    linear-gradient(to right, transparent 0 1.18rem, var(--paper-margin) 1.18rem 1.24rem, transparent 1.24rem),
+    repeating-linear-gradient(to bottom, transparent 0 1.74rem, var(--paper-rule) 1.74rem 1.78rem);
+  background-size: 11px 13px, 17px 19px, 100% 100%, 100% 1.78rem;
 }
 
 @keyframes float {
@@ -268,6 +298,13 @@
   }
 }
 
+@keyframes streak-settle {
+  0% { transform: rotate(-7deg) scale(0.88); }
+  32% { transform: rotate(4deg) scale(1.08); }
+  58% { transform: rotate(-2deg) scale(0.98); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
 @keyframes glow-pulse {
   0%,
   100% {
@@ -286,6 +323,10 @@
 
 @utility animate-flame {
   animation: flame-flicker 1.8s ease-in-out infinite;
+}
+
+@utility animate-streak-settle {
+  animation: streak-settle 620ms ease-out 1 both;
 }
 
 @utility animate-glow-pulse {
