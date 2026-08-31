@@ -1,16 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Send, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, BookOpen, Send } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clampBrief } from "@/lib/course-brief";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
-import { StreakHero } from "@/components/StreakHero";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
-import { companionName } from "@/lib/companions";
 import { deriveInsights, useProgress } from "@/lib/progress";
 import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -66,117 +63,57 @@ function Home() {
 
   return (
     <PhoneFrame>
-      <div className="px-5 pb-6">
-        {/* Streak is the hero metric; gems and XP sit under it as support. */}
-        <div className="flex items-start justify-between gap-3 py-3">
-          <div>
-            <StreakHero streak={state.streak} atRisk={atRisk} />
-            <div className="mt-3 flex items-center gap-4">
-              <MiniStat value={state.gems.toLocaleString()} label="gems" emoji="💎" />
-              <span className="h-3 w-px bg-border" />
-              <MiniStat value={state.xp.toLocaleString()} label="XP" emoji="⭐" />
-            </div>
-          </div>
-          <Link
-            to="/profile"
-            aria-label="Your companion"
-            className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft"
-          >
-            {/* The companion reacts to streak state instead of sitting there decoratively. */}
-            <CompanionAvatar
-              companion={{ ...companion, expression: atRisk ? "calm" : "excited" }}
-              size={50}
-              animate={!atRisk}
-            />
-          </Link>
-        </div>
-
-        {/* 1 — Reviews due: the primary action on this screen. */}
-        <button
-          onClick={() => navigate({ to: "/review" })}
-          className={cn(
-            "mt-2 flex w-full animate-rise-in items-center gap-4 rounded-3xl border-2 p-4 text-left shadow-card transition-transform hover:-translate-y-0.5 active:scale-[0.99]",
-            urgency === "piling"
-              ? "border-flame/50 bg-flame/8"
-              : urgency === "clear"
-                ? "border-border bg-card"
-                : "border-primary/40 bg-card",
-          )}
-        >
-          <div
-            className={cn(
-              "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl",
-              urgency === "piling" ? "bg-flame/15 text-flame" : "bg-hero-gradient text-primary-foreground",
-            )}
-          >
-            <Zap className={cn("h-7 w-7", urgency !== "clear" && "animate-flame")} strokeWidth={2.4} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Daily review
-            </p>
-            <p className="text-lg font-extrabold leading-tight">
-              {dueItems.length === 0
-                ? "All caught up"
-                : `${dueItems.length} review${dueItems.length === 1 ? "" : "s"} due today`}
-            </p>
-            <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">
-              {dueItems.length === 0
-                ? "Finish a lesson to schedule your next recall"
-                : urgency === "piling"
-                  ? `Oldest is ${maxOverdue}d overdue — clear it in a couple of minutes`
-                  : insights.atRisk
-                    ? `Streak at risk · ${insights.hoursLeft}h left today`
-                    : "Two minutes keeps it all in memory"}
-            </p>
-          </div>
-          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-        </button>
-
-        {/* 3 — AI Course Creator, unchanged but now secondary. */}
-        <div className="relative mt-7">
-          <h1 className="max-w-[16rem] text-[1.6rem] leading-tight">
-            Learn something <span className="text-primary">new</span>?
-          </h1>
-          <p className="mt-1.5 max-w-[15rem] text-sm text-muted-foreground">
-            {companionName(companion)} is ready — ask AI to build a course on any topic.
+      <div className="px-5 pb-8">
+        <header className="border-b border-border py-5">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            Your learning journal
           </p>
+          <div className="mt-1 flex items-end justify-between gap-4">
+            <h1 className="text-3xl italic">Lamppost</h1>
+            <Link to="/profile" aria-label="Open profile" className="shrink-0">
+              <CompanionAvatar
+                companion={{ ...companion, expression: atRisk ? "calm" : "happy" }}
+                size={44}
+              />
+            </Link>
+          </div>
+        </header>
+
+        <section className="pt-7">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            Today’s review
+          </p>
+          <h2 className="mt-2 text-[1.75rem] leading-tight">
+            {dueItems.length === 0
+              ? "Nothing due today."
+              : `${dueItems.length} idea${dueItems.length === 1 ? "" : "s"} ready to revisit.`}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {dueItems.length === 0
+              ? "Finish a lesson and Lamppost will bring it back when recall matters."
+              : urgency === "piling"
+                ? `Your oldest review is ${maxOverdue} days overdue. A short session will bring you current.`
+                : "A short recall session will help today’s learning stick."}
+          </p>
+          <button
+            onClick={() => navigate({ to: "/review" })}
+            className="mt-5 flex h-12 w-full items-center justify-between rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+          >
+            <span>{dueItems.length === 0 ? "View review schedule" : "Begin today’s review"}</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </section>
+
+        <div className="mt-7 grid grid-cols-3 border-y border-border py-4">
+          <JournalStat value={`${state.streak}`} label="day streak" />
+          <JournalStat value={state.xp.toLocaleString()} label="XP earned" bordered />
+          <JournalStat value={Object.keys(state.courses).length.toString()} label="courses" />
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            start(topic);
-          }}
-          className="mt-4 rounded-3xl border-2 border-primary/25 bg-card p-4 shadow-soft"
-        >
-          <input
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            placeholder="What do you want to learn?"
-            aria-label="Course topic"
-            className="w-full bg-transparent text-base font-semibold text-foreground outline-none placeholder:text-muted-foreground"
-          />
-          <div className="mt-6 flex items-center justify-between">
-            <span className="flex items-center gap-2 text-xs font-bold text-primary">
-              <Sparkles className="h-4 w-4" />
-              AI Course Creator
-            </span>
-            <button
-              type="submit"
-              aria-label="Create course"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card transition-transform hover:scale-105 active:scale-95"
-            >
-              <Send className="h-5 w-5" />
-            </button>
-          </div>
-        </form>
-
-        {/* 5 — Continue learning, with eased fills and near-completion framing. */}
         {continuing.length > 0 && (
-          <>
-            <h2 className="mt-7 text-base">Continue learning</h2>
-            <div className="mt-3 space-y-3">
+          <section className="mt-7">
+            <h2 className="text-lg">Continue learning</h2>
+            <div className="mt-3 divide-y divide-border border-y border-border">
               {continuing.map(([slug, course]) => {
                 const pct = Math.round((course.completed / course.total) * 100);
                 const left = course.total - course.completed;
@@ -184,47 +121,79 @@ function Home() {
                   <button
                     key={slug}
                     onClick={() => navigate({ to: "/course/$slug", params: { slug } })}
-                    className="flex w-full items-center gap-3 rounded-3xl bg-card p-3 text-left shadow-soft transition-transform hover:-translate-y-0.5"
+                    className="flex w-full items-center gap-3 py-4 text-left transition-colors duration-200 hover:bg-primary-soft/40"
                   >
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-2xl">
-                      📚
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-primary-soft">
+                      <BookOpen className="h-5 w-5 text-accent-foreground" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold">{course.topic}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {left <= 2 ? (
-                          <span className="font-bold text-primary">
-                            {left} lesson{left === 1 ? "" : "s"} to finish
-                          </span>
-                        ) : (
-                          `${course.completed} of ${course.total} lessons done`
-                        )}
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {left} lesson{left === 1 ? "" : "s"} remaining
                       </p>
                       <div className="mt-2 flex items-center gap-2">
                         <AnimatedBar pct={pct} className="flex-1" />
-                        <span className="text-[11px] font-bold text-muted-foreground">{pct}%</span>
+                        <span className="text-[11px] font-semibold text-muted-foreground">{pct}%</span>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </button>
                 );
               })}
             </div>
-          </>
+          </section>
         )}
 
+        <section className="mt-8">
+          <h2 className="text-lg">Begin a new subject</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Name what you want to understand. We’ll shape the course together.
+          </p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              start(topic);
+            }}
+            className="mt-4 rounded-lg border border-border bg-card p-3 focus-within:border-primary"
+          >
+            <input
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="What do you want to learn?"
+              aria-label="Course topic"
+              className="w-full bg-transparent px-1 py-2 text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            <div className="mt-2 flex justify-end border-t border-border pt-3">
+              <button
+                type="submit"
+                aria-label="Create course"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </form>
+        </section>
       </div>
     </PhoneFrame>
   );
 }
 
-function MiniStat({ value, label, emoji }: { value: string; label: string; emoji: string }) {
+function JournalStat({
+  value,
+  label,
+  bordered = false,
+}: {
+  value: string;
+  label: string;
+  bordered?: boolean;
+}) {
   return (
-    <p className="text-xs font-bold text-muted-foreground">
-      <span aria-hidden className="mr-1">
-        {emoji}
-      </span>
-      <span className="text-foreground">{value}</span> {label}
-    </p>
+    <div className={`text-center ${bordered ? "border-x border-border" : ""}`}>
+      <p className="font-display text-xl font-semibold">{value}</p>
+      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+    </div>
   );
 }
