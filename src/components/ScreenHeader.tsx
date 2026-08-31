@@ -12,16 +12,16 @@ export function ScreenHeader({
   right?: ReactNode;
 }) {
   return (
-    <header className="flex items-center gap-3 px-5 py-3">
+    <header className="flex items-center gap-3 border-b border-border px-5 py-3.5">
       <Link
         to={backTo}
         aria-label="Go back"
-        className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground transition-colors duration-200 hover:bg-muted"
       >
         <ArrowLeft className="h-5 w-5" />
       </Link>
       {title ? (
-        <h1 className="flex-1 text-center text-lg font-bold">{title}</h1>
+        <h1 className="flex-1 text-center text-lg font-semibold">{title}</h1>
       ) : (
         <span className="flex-1" />
       )}
