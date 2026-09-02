@@ -46,31 +46,31 @@
   --font-display: "Lora", ui-serif, Georgia, serif;
   --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
   --font-note: "Caveat", "Segoe Print", cursive;
-  --shadow-soft: 0 1px 2px oklch(0.3 0.025 150 / 0.06);
-  --shadow-card: 0 4px 16px -10px oklch(0.3 0.025 150 / 0.2);
-  --shadow-float: 0 12px 30px -20px oklch(0.3 0.025 150 / 0.3);
+  --shadow-soft: 0 1px 2px oklch(0.27 0.025 290 / 0.06);
+  --shadow-card: 0 4px 16px -10px oklch(0.27 0.025 290 / 0.16);
+  --shadow-float: 0 12px 30px -20px oklch(0.27 0.025 290 / 0.24);
   --animate-float: quiet-in 200ms ease-out both;
 }
 
 :root {
   --radius: 0.625rem;
-  --canvas: oklch(0.91 0.023 135);
-  --background: oklch(0.96 0.016 82);
-  --foreground: oklch(0.31 0.035 150);
-  --card: oklch(0.98 0.01 82);
-  --card-foreground: oklch(0.31 0.035 150);
-  --popover: oklch(0.98 0.01 82);
-  --popover-foreground: oklch(0.31 0.035 150);
-  --primary: oklch(0.64 0.075 140);
-  --primary-foreground: oklch(0.98 0.01 82);
-  --primary-soft: oklch(0.9 0.035 135);
-  --primary-glow: oklch(0.64 0.075 140);
-  --secondary: oklch(0.92 0.02 83);
-  --secondary-foreground: oklch(0.31 0.035 150);
-  --muted: oklch(0.925 0.018 85);
-  --muted-foreground: oklch(0.5 0.025 145);
-  --accent: oklch(0.9 0.035 135);
-  --accent-foreground: oklch(0.31 0.035 150);
+  --canvas: oklch(0.94 0.012 291);
+  --background: oklch(0.985 0.003 95);
+  --foreground: oklch(0.25 0.025 288);
+  --card: oklch(0.995 0.002 95);
+  --card-foreground: oklch(0.25 0.025 288);
+  --popover: oklch(0.995 0.002 95);
+  --popover-foreground: oklch(0.25 0.025 288);
+  --primary: oklch(0.66 0.145 292);
+  --primary-foreground: oklch(0.99 0.004 290);
+  --primary-soft: oklch(0.94 0.025 291);
+  --primary-glow: oklch(0.66 0.145 292);
+  --secondary: oklch(0.95 0.016 291);
+  --secondary-foreground: oklch(0.3 0.04 290);
+  --muted: oklch(0.95 0.008 290);
+  --muted-foreground: oklch(0.5 0.025 288);
+  --accent: oklch(0.94 0.025 291);
+  --accent-foreground: oklch(0.32 0.055 291);
   --destructive: oklch(0.55 0.23 20);
   --destructive-foreground: oklch(0.99 0.005 292);
   --success: oklch(0.6 0.17 155);
@@ -78,9 +78,9 @@
   --flame: oklch(0.62 0.21 38);
   --gem: oklch(0.62 0.14 200);
   --xp: oklch(0.72 0.17 80);
-  --border: oklch(0.79 0.035 135);
-  --input: oklch(0.79 0.035 135);
-  --ring: oklch(0.64 0.075 140);
+  --border: oklch(0.89 0.018 291);
+  --input: oklch(0.86 0.024 291);
+  --ring: oklch(0.66 0.145 292);
   --paper-rule: oklch(0.68 0.04 145 / 0.18);
   --paper-margin: oklch(0.66 0.08 30 / 0.2);
   --paper-grain: oklch(0.31 0.035 150 / 0.025);
@@ -150,12 +150,11 @@
 @utility journal-page {
   position: relative;
   background-color: var(--background);
-  background-image:
-    radial-gradient(circle at 18% 24%, var(--paper-grain) 0 0.65px, transparent 0.8px),
-    radial-gradient(circle at 73% 68%, var(--paper-grain) 0 0.55px, transparent 0.75px),
-    linear-gradient(to right, transparent 0 1.18rem, var(--paper-margin) 1.18rem 1.24rem, transparent 1.24rem),
-    repeating-linear-gradient(to bottom, transparent 0 1.74rem, var(--paper-rule) 1.74rem 1.78rem);
-  background-size: 11px 13px, 17px 19px, 100% 100%, 100% 1.78rem;
+}
+
+@utility lamplight-glow {
+  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 32%, white) 0%, color-mix(in oklab, var(--primary-soft) 72%, transparent) 38%, transparent 72%);
+  filter: blur(10px);
 }
 
 @keyframes float {

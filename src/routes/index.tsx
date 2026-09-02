@@ -64,37 +64,37 @@ function Home() {
 
   return (
     <PhoneFrame>
-      <main className="journal-page min-h-full px-5 pb-10 pl-8">
-        <header className="relative min-h-44 pt-6">
-          <p className="font-note -rotate-1 text-sm text-muted-foreground">my learning journal</p>
-          <h1 className="mt-1 text-[2.15rem] italic leading-none">Lamppost</h1>
-
-          <Link to="/profile" aria-label="Open profile" className="absolute right-0 top-5 shrink-0">
-            <CompanionAvatar
-              companion={{ ...companion, expression: atRisk ? "calm" : "happy" }}
-              size={44}
-            />
-          </Link>
-
-          <div className="font-note absolute right-1 top-[5.4rem] rotate-2 text-[0.82rem] text-flame">
-            <Flame
-              aria-hidden="true"
-              className="animate-streak-settle mr-1 inline-block h-4 w-4"
-              strokeWidth={1.7}
-            />
-            {state.streak} day streak
+      <main className="journal-page min-h-full px-5 pb-10">
+        <header className="relative flex min-h-48 items-start justify-between gap-6 pt-7">
+          <div className="relative z-10 pt-1">
+            <h1 className="text-[2.2rem] italic leading-none">Lamppost</h1>
+            <p className="mt-3 max-w-40 text-sm leading-relaxed text-muted-foreground">
+              A little light for everything you’re learning.
+            </p>
           </div>
-          <p className="font-note absolute right-[6.5rem] top-[7.25rem] -rotate-2 text-[0.78rem] text-subject-forest">
-            {state.xp.toLocaleString()} xp earned
-          </p>
-          <p className="font-note absolute right-2 top-[8.65rem] rotate-1 text-[0.78rem] text-subject-terracotta">
-            {Object.keys(state.courses).length} courses
-          </p>
+
+          <div className="relative z-10 flex w-32 flex-col items-center text-center">
+            <span aria-hidden="true" className="lamplight-glow absolute -inset-9 -z-10 rounded-full" />
+            <Link to="/profile" aria-label="Open profile" className="shrink-0">
+              <CompanionAvatar
+                companion={{ ...companion, expression: atRisk ? "calm" : "happy" }}
+                size={58}
+              />
+            </Link>
+            <div className="mt-1 flex items-center gap-1.5 text-primary">
+              <Flame aria-hidden="true" className="animate-streak-settle h-5 w-5" strokeWidth={2} />
+              <span className="text-3xl font-extrabold leading-none">{state.streak}</span>
+            </div>
+            <p className="mt-1 text-xs font-semibold text-foreground">day streak</p>
+            <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
+              {state.xp.toLocaleString()} XP · {Object.keys(state.courses).length} courses
+            </p>
+          </div>
         </header>
 
-        <section className="pb-7 pt-4">
-          <p className="font-note -rotate-1 text-base text-primary">today’s review</p>
-          <h2 className="mt-1 max-w-[20rem] text-[1.8rem] leading-[1.22]">
+        <section className="border-t border-border pb-8 pt-6">
+          <p className="text-sm font-bold text-primary">Today’s review</p>
+          <h2 className="mt-2 max-w-[20rem] font-sans text-[1.65rem] font-bold leading-[1.25]">
             {dueItems.length === 0
               ? "Nothing due today."
               : `${dueItems.length} idea${dueItems.length === 1 ? "" : "s"} ready to revisit.`}
@@ -108,7 +108,7 @@ function Home() {
           </p>
           <Button
             onClick={() => navigate({ to: "/review" })}
-            className="mt-5 h-11 w-full justify-between rounded-sm px-4 font-bold shadow-none"
+            className="mt-5 h-11 w-full justify-between px-4 font-bold shadow-none"
           >
             <span>{dueItems.length === 0 ? "View review schedule" : "Begin today’s review"}</span>
             <ArrowRight className="h-4 w-4" />
@@ -117,10 +117,7 @@ function Home() {
 
         {continuing.length > 0 && (
           <section className="pt-5">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-xl">Continue learning</h2>
-              <span className="font-note rotate-1 text-sm text-muted-foreground">table of contents</span>
-            </div>
+            <h2 className="font-sans text-lg font-bold">Continue learning</h2>
             <ol className="mt-2">
               {continuing.map(([slug, course], index) => {
                 const accent = subjectAccent(categoryFor(course.topic).id);
@@ -132,9 +129,9 @@ function Home() {
                     params={{ slug }}
                     className="group flex min-h-20 w-full items-center gap-4 py-4 text-left"
                   >
-                    <span className={`font-note w-7 shrink-0 text-xl ${accent}`}>{String(index + 1).padStart(2, "0")}</span>
+                    <span className={`w-7 shrink-0 text-sm font-bold ${accent}`}>{String(index + 1).padStart(2, "0")}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-display text-base font-semibold">{course.topic}</p>
+                      <p className="truncate text-base font-bold">{course.topic}</p>
                       <p className={`mt-1 text-xs font-bold ${accent}`}>
                         {course.completed} of {course.total} lessons
                       </p>
@@ -149,7 +146,7 @@ function Home() {
         )}
 
         <section className="mt-8 border-t border-border/80 pt-6">
-          <h2 className="text-lg">Begin a new subject</h2>
+          <h2 className="font-sans text-lg font-bold">Begin a new subject</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Name what you want to understand. We’ll shape the course together.
           </p>
@@ -172,7 +169,7 @@ function Home() {
                 type="submit"
                 size="icon"
                 aria-label="Create course"
-                className="rounded-sm shadow-none"
+                className="shadow-none"
               >
                 <Send className="h-4 w-4" />
               </Button>
