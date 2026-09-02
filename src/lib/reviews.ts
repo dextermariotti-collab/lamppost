@@ -83,24 +83,34 @@ export type ReviewItem = {
   overdueDays: number;
 };
 
-/** Builds today's queue from stored courses + how far the learner has got. */
-function buildQueue(completedBySlug: Record<string, number>): ReviewItem[] {
+export type ScheduledItem = ReviewItem & {
+  /** Next due date (UTC day key). */
+  due: string;
+  /** Days until due; 0 = today, negative = overdue. */
+  dueInDays: number;
+  /** Leitner box, 0 = freshly reset. */
+  box: number;
+  /** Interval weighting from the lesson's prediction beat. */
+  weight: number;
+  signal: PredictionSignal;
+};
+
+/** Every completed lesson with its next due date, most urgent first. */
+function buildSchedule(completedBySlug: Record<string, number>): ScheduledItem[] {
   const log = readLog();
   const today = dayKey();
-  const items: ReviewItem[] = [];
+  const items: ScheduledItem[] = [];
 
   for (const course of listStoredCourses()) {
     const completed = completedBySlug[course.slug] ?? 0;
     for (let i = 0; i < Math.min(completed, course.lessons.length); i += 1) {
       const lesson = course.lessons[i];
       if (!lesson) continue;
-      const quizzes = lessonQuizzes(lesson);
-      const quiz = quizzes[0];
+      const quiz = lessonQuizzes(lesson)[0];
       if (!quiz) continue;
       const key = reviewKey(course.slug, i);
       // Unseen lessons are due immediately; seen ones wait for their due date.
       const due = log[key]?.due ?? today;
-      if (due > today) continue;
       items.push({
         key,
         slug: course.slug,
@@ -108,20 +118,29 @@ function buildQueue(completedBySlug: Record<string, number>): ReviewItem[] {
         lessonIndex: i,
         lessonTitle: lesson.title,
         quiz,
+        due,
+        dueInDays: daysBetween(today, due),
         overdueDays: Math.max(0, daysBetween(due, today)),
+        box: log[key]?.box ?? 0,
+        weight: predictionWeight(course.slug, i),
+        signal: predictionSignal(course.slug, i),
       });
     }
   }
 
-  // Most overdue first so nothing rots at the bottom of the pile.
-  return items.sort((a, b) => b.overdueDays - a.overdueDays);
+  // Soonest (and most overdue) first so nothing rots at the bottom of the pile.
+  return items.sort((a, b) => a.dueInDays - b.dueInDays || a.topic.localeCompare(b.topic));
 }
 
-export function useReviewQueue(completedBySlug: Record<string, number>) {
-  const [items, setItems] = useState<ReviewItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+/** Builds today's queue from stored courses + how far the learner has got. */
+function buildQueue(completedBySlug: Record<string, number>): ReviewItem[] {
+  return buildSchedule(completedBySlug)
+    .filter((item) => item.dueInDays <= 0)
+    .sort((a, b) => b.overdueDays - a.overdueDays);
+}
 
-  const slugSignature = useMemo(
+function useReviewSignature(completedBySlug: Record<string, number>) {
+  return useMemo(
     () =>
       Object.entries(completedBySlug)
         .map(([slug, n]) => `${slug}:${n}`)
@@ -129,9 +148,14 @@ export function useReviewQueue(completedBySlug: Record<string, number>) {
         .join(","),
     [completedBySlug],
   );
+}
+
+function useSynced<T>(build: () => T, signature: string, initial: T) {
+  const [value, setValue] = useState<T>(initial);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const sync = () => setItems(buildQueue(completedBySlug));
+    const sync = () => setValue(build());
     sync();
     setHydrated(true);
     window.addEventListener(EVENT, sync);
@@ -141,18 +165,46 @@ export function useReviewQueue(completedBySlug: Record<string, number>) {
       window.removeEventListener("lamppost-courses-change", sync);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slugSignature]);
+  }, [signature]);
 
-  const grade = useCallback((key: string, correct: boolean) => {
-    const log = readLog();
-    const box = log[key]?.box ?? 0;
-    const nextBox = correct ? Math.min(box + 1, INTERVALS.length - 1) : 0;
-    const gap = correct ? INTERVALS[nextBox]! : 1;
-    writeLog({ ...log, [key]: { box: nextBox, due: shiftDay(dayKey(), gap) } });
-  }, []);
+  return { value, hydrated };
+}
 
+/** Grades one item, weighting the next interval by its prediction answer. */
+export function gradeReview(key: string, correct: boolean) {
+  const [slug, indexPart] = key.split("#");
+  const lessonIndex = Number(indexPart ?? 0);
+  const log = readLog();
+  const box = log[key]?.box ?? 0;
+  const nextBox = correct ? Math.min(box + 1, INTERVALS.length - 1) : 0;
+  const base = correct ? INTERVALS[nextBox]! : 1;
+  const weight = slug ? predictionWeight(slug, lessonIndex) : 1;
+  const gap = Math.max(1, Math.round(base * weight));
+  writeLog({ ...log, [key]: { box: nextBox, due: shiftDay(dayKey(), gap) } });
+}
+
+export function useReviewQueue(completedBySlug: Record<string, number>) {
+  const signature = useReviewSignature(completedBySlug);
+  const { value: items, hydrated } = useSynced<ReviewItem[]>(
+    () => buildQueue(completedBySlug),
+    signature,
+    [],
+  );
+  const grade = useCallback((key: string, correct: boolean) => gradeReview(key, correct), []);
   return { items, hydrated, grade };
 }
+
+/** Full upcoming schedule, for the review tracker screen. */
+export function useReviewSchedule(completedBySlug: Record<string, number>) {
+  const signature = useReviewSignature(completedBySlug);
+  const { value: items, hydrated } = useSynced<ScheduledItem[]>(
+    () => buildSchedule(completedBySlug),
+    signature,
+    [],
+  );
+  return { items, hydrated };
+}
+
 
 /** Urgency band used for the home-screen reviews card. */
 export function reviewUrgency(count: number, maxOverdue: number) {
