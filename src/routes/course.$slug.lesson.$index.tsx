@@ -8,7 +8,9 @@ import { ReportContentButton } from "@/components/ReportContentButton";
 import { useCompanion } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { PredictionCard } from "@/components/PredictionCard";
+import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { Button } from "@/components/ui/button";
 import { clampBrief } from "@/lib/course-brief";
 import { useStoredCourse } from "@/lib/course-store";
 import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
@@ -49,10 +51,12 @@ function LessonScreen() {
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
     setPage(0);
     setAnswers({});
+    setCompleting(false);
   }, [index]);
 
   useEffect(() => {
@@ -94,15 +98,19 @@ function LessonScreen() {
   );
 
   const finishLesson = () => {
+    if (completing) return;
     completeLesson(slug, course.topic, lessonNumber - 1, course.lessons.length);
-    if (lessonNumber < course.lessons.length) {
-      navigate({
-        to: "/course/$slug/lesson/$index",
-        params: { slug, index: String(lessonNumber + 1) },
-      });
-    } else {
-      navigate({ to: "/course/$slug", params: { slug } });
-    }
+    setCompleting(true);
+    window.setTimeout(() => {
+      if (lessonNumber < course.lessons.length) {
+        navigate({
+          to: "/course/$slug/lesson/$index",
+          params: { slug, index: String(lessonNumber + 1) },
+        });
+      } else {
+        navigate({ to: "/course/$slug", params: { slug } });
+      }
+    }, 1450);
   };
 
   return (
@@ -228,13 +236,17 @@ function LessonScreen() {
                               ? "border-destructive bg-destructive/10 animate-wiggle"
                               : "border-border opacity-60";
                       return (
-                        <button
+                        <Button
                           key={option}
+                          type="button"
+                          variant="outline"
                           onClick={() =>
                             picked === undefined &&
                             setAnswers((prev) => ({ ...prev, [qi]: i }))
                           }
-                          className={`flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold transition-all ${state}`}
+                          className={`relative h-auto min-h-12 w-full justify-start whitespace-normal rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold shadow-none transition-all ${state} ${
+                            picked !== undefined && isAnswer ? "animate-correct-answer" : ""
+                          }`}
                         >
                           <span className="font-extrabold text-primary">
                             {String.fromCharCode(65 + i)}
@@ -246,7 +258,8 @@ function LessonScreen() {
                           {picked !== undefined && isPicked && !isAnswer && (
                             <X className="h-5 w-5 animate-pop-in rounded-full bg-destructive p-1 text-destructive-foreground" />
                           )}
-                        </button>
+                          {isPicked && isAnswer && <SuccessBurst compact />}
+                        </Button>
                       );
                     })}
                   </div>
@@ -276,10 +289,10 @@ function LessonScreen() {
         )}
 
         <div className="mt-6">
-          <button
+          <Button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
-            disabled={(onQuiz && !answeredAll) || predictionPending}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 disabled:opacity-50"
+            disabled={(onQuiz && !answeredAll) || predictionPending || completing}
+            className="h-12 w-full rounded-full bg-hero-gradient text-base font-extrabold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
           >
             {onQuiz
               ? lessonNumber < course.lessons.length
@@ -291,7 +304,7 @@ function LessonScreen() {
                   ? "Take the quiz"
                   : "Next page"}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
           <AiDisclaimer
             className="mt-4"
             fitness={needsFitnessDisclaimer(`${course.topic} ${lesson.title}`)}
@@ -317,6 +330,27 @@ function LessonScreen() {
           )}
         </div>
       </div>
+
+      {completing && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="lesson-complete-overlay absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-background/95 px-8 text-center backdrop-blur-sm"
+        >
+          <span className="lesson-complete-halo absolute h-72 w-72 rounded-full" />
+          <SuccessBurst />
+          <div className="lesson-complete-content relative z-30">
+            <CompanionAvatar
+              companion={{ ...companion, expression: "excited" }}
+              size={112}
+              pose="cheer"
+            />
+            <p className="mt-5 text-sm font-bold text-primary">Lesson complete</p>
+            <h2 className="mt-2 text-3xl leading-tight">You lit the next step.</h2>
+            <p className="mt-3 text-sm font-semibold text-muted-foreground">+100 XP · Progress saved</p>
+          </div>
+        </div>
+      )}
     </PhoneFrame>
   );
 }
