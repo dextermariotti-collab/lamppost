@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
 
 export function SuccessBurst({ compact = false }: { compact?: boolean }) {
   return (
@@ -16,7 +17,7 @@ export function SuccessBurst({ compact = false }: { compact?: boolean }) {
         <Sparkles
           key={i}
           className="success-spark absolute left-1/2 top-1/2 h-4 w-4 text-primary"
-          style={{ "--spark-angle": `${i * 60}deg` } as React.CSSProperties}
+          style={{ "--spark-angle": `${i * 60}deg` } as CSSProperties}
         />
       ))}
     </span>
