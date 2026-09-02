@@ -17,6 +17,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
@@ -71,6 +72,11 @@ const ProgressRoute = ProgressRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScheduleRoute = ScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/progress'
     | '/review'
+    | '/schedule'
     | '/settings'
     | '/setup'
     | '/friends/$handle'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/progress'
     | '/review'
+    | '/schedule'
     | '/settings'
     | '/setup'
     | '/friends/$handle'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/progress'
     | '/review'
+    | '/schedule'
     | '/settings'
     | '/setup'
     | '/friends/$handle'
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
   ReviewRoute: typeof ReviewRoute
+  ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
   FriendsHandleRoute: typeof FriendsHandleRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/schedule': {
+      id: '/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof ScheduleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -504,6 +524,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
   ReviewRoute: ReviewRoute,
+  ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
   FriendsHandleRoute: FriendsHandleRoute,
