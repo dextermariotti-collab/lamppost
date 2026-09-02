@@ -107,12 +107,22 @@ function Home() {
                 : "A short recall session will help today’s learning stick."}
           </p>
           <Button
-            onClick={() => navigate({ to: "/review" })}
+            onClick={() => navigate({ to: dueItems.length === 0 ? "/schedule" : "/review" })}
             className="mt-5 h-11 w-full justify-between px-4 font-bold shadow-none"
           >
             <span>{dueItems.length === 0 ? "View review schedule" : "Begin today’s review"}</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
+          {dueItems.length > 0 && (
+            <Link
+              to="/schedule"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary"
+            >
+              See what comes back next
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </Link>
+          )}
+
         </section>
 
         {continuing.length > 0 && (
