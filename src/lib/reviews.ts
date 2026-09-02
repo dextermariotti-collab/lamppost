@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listStoredCourses } from "./course-store";
 import { lessonQuizzes, type Quiz } from "./courses";
+import { getPredictionAttempt } from "./prediction-store";
 import { dayKey } from "./progress";
 
 /**
@@ -9,6 +10,10 @@ import { dayKey } from "./progress";
  * Every completed lesson becomes a review item. Getting it right pushes the next
  * due date further out (1 → 2 → 4 → 8 → 16 → 32 days); getting it wrong resets
  * the interval to tomorrow.
+ *
+ * The lesson's "predict before reveal" answer weights that interval: a lesson
+ * the learner predicted correctly is treated as better understood (interval
+ * stretched), while a missed prediction pulls the next review closer.
  */
 
 const KEY = "lamppost-reviews-v1";
@@ -16,10 +21,26 @@ const EVENT = "lamppost-reviews-change";
 
 const INTERVALS = [1, 2, 4, 8, 16, 32];
 
+/** Interval multiplier derived from the lesson's prediction beat. */
+export function predictionWeight(slug: string, lessonIndex: number) {
+  const attempt = getPredictionAttempt(slug, lessonIndex);
+  if (!attempt) return 1;
+  return attempt.correct ? 1.3 : 0.6;
+}
+
+export type PredictionSignal = "confident" | "shaky" | "unknown";
+
+export function predictionSignal(slug: string, lessonIndex: number): PredictionSignal {
+  const attempt = getPredictionAttempt(slug, lessonIndex);
+  if (!attempt) return "unknown";
+  return attempt.correct ? "confident" : "shaky";
+}
+
 type Entry = { due: string; box: number };
 type Log = Record<string, Entry>;
 
 export const reviewKey = (slug: string, lessonIndex: number) => `${slug}#${lessonIndex}`;
+
 
 function readLog(): Log {
   if (typeof window === "undefined") return {};
