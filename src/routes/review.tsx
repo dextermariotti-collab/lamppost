@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { AnimatedBar } from "@/components/AnimatedBar";
+import { SuccessBurst } from "@/components/SuccessBurst";
+import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
 import { useProgress } from "@/lib/progress";
 import { useReviewQueue } from "@/lib/reviews";
@@ -98,16 +100,18 @@ function ReviewQueue() {
                   const isCorrect = i === item.quiz.correct;
                   const chosen = picked === i;
                   return (
-                    <button
+                    <Button
                       key={option}
+                      type="button"
+                      variant="outline"
                       onClick={() => answer(i)}
                       disabled={picked !== null}
                       className={cn(
-                        "flex w-full items-center justify-between gap-3 rounded-2xl border-2 p-3 text-left text-sm font-bold transition-all",
+                        "relative h-auto min-h-12 w-full justify-between whitespace-normal rounded-2xl border-2 p-3 text-left text-sm font-bold shadow-none transition-all",
                         picked === null
                           ? "border-border hover:-translate-y-0.5 hover:border-primary/60"
                           : isCorrect
-                            ? "border-success bg-success/10"
+                            ? "border-success bg-success/10 animate-correct-answer"
                             : chosen
                               ? "border-destructive bg-destructive/10"
                               : "border-border opacity-60",
@@ -118,7 +122,8 @@ function ReviewQueue() {
                       {picked !== null && chosen && !isCorrect && (
                         <X className="h-4 w-4 text-destructive" />
                       )}
-                    </button>
+                      {picked !== null && chosen && isCorrect && <SuccessBurst compact />}
+                    </Button>
                   );
                 })}
               </div>
@@ -142,7 +147,7 @@ function ReviewQueue() {
             </div>
 
             {picked !== null && (
-              <button
+              <Button
                 onClick={() => {
                   setPicked(null);
                   setStep((s) => s + 1);
@@ -150,7 +155,7 @@ function ReviewQueue() {
                 className="mt-5 w-full rounded-2xl bg-hero-gradient py-3.5 text-sm font-extrabold text-primary-foreground shadow-card transition-transform active:scale-95"
               >
                 {step + 1 >= session!.length ? "Finish review" : "Next"}
-              </button>
+              </Button>
             )}
           </>
         )}
