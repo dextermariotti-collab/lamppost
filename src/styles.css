@@ -185,6 +185,8 @@
   --graph-locked: oklch(0.35429 0.02121 274.22);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
   color-scheme: dark;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-graph);
 }
 

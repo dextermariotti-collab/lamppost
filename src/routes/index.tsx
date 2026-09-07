@@ -85,17 +85,18 @@ function Home() {
 
         <section className="border-t border-border py-5">
           <p className="text-sm font-bold text-foreground">Today’s review</p>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => navigate({ to: dueItems.length === 0 ? "/schedule" : "/review" })}
-            className="mt-2 block w-full text-left text-sm leading-relaxed text-muted-foreground transition-colors hover:text-foreground"
+            className="mt-2 h-auto w-full justify-start whitespace-normal rounded-none bg-transparent p-0 text-left text-sm font-normal leading-relaxed text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground"
           >
             {dueItems.length === 0
               ? "Nothing due today. Review schedule is clear."
               : urgency === "piling"
                 ? `${dueItems.length} ideas due. Oldest is ${maxOverdue} days overdue.`
                 : `${dueItems.length} idea${dueItems.length === 1 ? "" : "s"} ready to revisit.`}
-          </button>
+          </Button>
         </section>
 
         <section className="border-t border-border pt-5">
