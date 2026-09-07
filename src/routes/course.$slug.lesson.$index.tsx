@@ -103,6 +103,22 @@ function LessonScreen() {
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
   );
 
+  /** After the quiz, the learner explains the lesson back in their own words. */
+  const showPractice = onQuiz && answeredAll && !practiceDone && !completing;
+  const practiceText = [
+    lesson.intro ?? "",
+    ...parts.map((p) => `${p.title}: ${p.body}`),
+    ...(lesson.keyPoints ?? []),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const handlePracticeDone = (close: PracticeClose | null) => {
+    if (close) recordPractice(close.verdict, close.connectionMade);
+    setPracticeDone(true);
+    finishLesson();
+  };
+
   const finishLesson = () => {
     if (completing) return;
     completeLesson(slug, course.topic, lessonNumber - 1, course.lessons.length);
@@ -308,11 +324,11 @@ function LessonScreen() {
           />
         )}
 
-        <div className={showPractice ? "mt-6 hidden" : "mt-6"}>
+        <div className="mt-6">
           <Button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
             disabled={(onQuiz && !answeredAll) || predictionPending || completing}
-            className="h-12 w-full rounded-full bg-hero-gradient text-base font-extrabold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
+            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-extrabold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 ${showPractice ? "hidden" : ""}`}
           >
             {onQuiz
               ? lessonNumber < course.lessons.length
