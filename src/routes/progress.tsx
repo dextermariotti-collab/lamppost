@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Flame, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
+import { Clock, Flame, Snowflake, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Confetti } from "@/components/Confetti";
 import { CountUp } from "@/components/CountUp";
 import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ProgressRing } from "@/components/ProgressRing";
+import { StreakFreezeCard } from "@/components/StreakFreezeCard";
 import { dayKey, deriveInsights, tierFor, useProgress, type Celebration } from "@/lib/progress";
 
 export const Route = createFileRoute("/progress")({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, hydrated, clearCelebration } = useProgress();
+  const { state, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
 
@@ -136,6 +137,30 @@ function ProgressScreen() {
             </div>
           </div>
         </section>
+
+        {state.freezeSaved && (
+          <div className="mt-4 flex animate-pop-in items-start gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4">
+            <Snowflake className="mt-0.5 h-5 w-5 shrink-0 text-primary" strokeWidth={2.2} />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-extrabold text-accent-foreground">
+                A freeze saved your streak
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                You missed {state.freezeSaved.days} day
+                {state.freezeSaved.days === 1 ? "" : "s"} and your streak carried on anyway.
+              </p>
+              <button
+                type="button"
+                onClick={clearFreezeSaved}
+                className="mt-2 text-xs font-extrabold text-primary"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        )}
+
+        <StreakFreezeCard freezes={state.freezes} gems={state.gems} onBuy={buyFreeze} />
 
         {/* Today's session */}
         <section

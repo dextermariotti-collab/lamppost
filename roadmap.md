@@ -8,8 +8,9 @@
 - [ ] /premium upgrade page (checkout wired once payments enabled)
 - [ ] Enable Paddle (Apple Pay supported at checkout) — form was dismissed; re-open with user
 
-## Phase 2 (next, separate pass) — streak forgiveness
-- Streak freeze: earnable, protects one missed day
+## Phase 2 (done) — streak forgiveness
+- [x] Streak freeze: 1 earned every 7 streak days (max 2), buyable for 60 gems
+- [x] Missed days covered automatically; "a freeze saved your streak" note on Progress
 
 ## Phase 3 — small cast
 - 2–3 extra characters mapped to celebration / correction / empty states
