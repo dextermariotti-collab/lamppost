@@ -43,8 +43,11 @@
   --color-subject-forest: var(--subject-forest);
   --color-subject-terracotta: var(--subject-terracotta);
   --color-subject-blue: var(--subject-blue);
+  --color-graph-locked: var(--graph-locked);
+  --color-graph-line: var(--graph-line);
   --font-display: "Lora", ui-serif, Georgia, serif;
   --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-graph: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-note: "Caveat", "Segoe Print", cursive;
   --shadow-soft: 0 1px 2px oklch(0.27 0.025 290 / 0.06);
   --shadow-card: 0 4px 16px -10px oklch(0.27 0.025 290 / 0.16);
@@ -88,6 +91,8 @@
   --subject-forest: oklch(0.42 0.08 148);
   --subject-terracotta: oklch(0.56 0.11 38);
   --subject-blue: oklch(0.51 0.08 235);
+  --graph-locked: oklch(0.35429 0.02121 274.22);
+  --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
   --gradient-hero: linear-gradient(var(--primary), var(--primary));
 }
 
@@ -122,6 +127,8 @@
   --subject-forest: oklch(0.71 0.08 148);
   --subject-terracotta: oklch(0.72 0.1 38);
   --subject-blue: oklch(0.7 0.08 235);
+  --graph-locked: oklch(0.35429 0.02121 274.22);
+  --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
 }
 
 @layer base {
@@ -158,6 +165,79 @@
 @utility lamplight-glow {
   background: radial-gradient(circle, color-mix(in oklab, var(--primary) 32%, white) 0%, color-mix(in oklab, var(--primary-soft) 72%, transparent) 38%, transparent 72%);
   filter: blur(10px);
+}
+
+.graph-home {
+  --background: oklch(0.19794 0.01411 278.64);
+  --foreground: oklch(0.94022 0.00702 88.64);
+  --card: oklch(0.19794 0.01411 278.64);
+  --card-foreground: oklch(0.94022 0.00702 88.64);
+  --primary: oklch(0.77634 0.1262 71.72);
+  --primary-foreground: oklch(0.19794 0.01411 278.64);
+  --primary-soft: oklch(0.77634 0.1262 71.72 / 0.12);
+  --muted: oklch(0.35429 0.02121 274.22);
+  --muted-foreground: oklch(0.63785 0.01674 273.72);
+  --accent: oklch(0.35429 0.02121 274.22);
+  --accent-foreground: oklch(0.94022 0.00702 88.64);
+  --border: oklch(0.39611 0.01126 78.19 / 0.35);
+  --input: oklch(0.39611 0.01126 78.19 / 0.45);
+  --ring: oklch(0.77634 0.1262 71.72);
+  --graph-locked: oklch(0.35429 0.02121 274.22);
+  --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
+  color-scheme: dark;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-graph);
+}
+
+.graph-home h1,
+.graph-home h2,
+.graph-home h3,
+.graph-home h4 {
+  font-family: var(--font-graph);
+}
+
+.graph-home nav {
+  font-family: var(--font-graph);
+}
+
+.knowledge-node {
+  background-color: color-mix(in oklab, var(--graph-locked) 86%, transparent);
+  border: 1px solid color-mix(in oklab, var(--graph-locked) 82%, var(--foreground));
+}
+
+.knowledge-node-active {
+  background-color: color-mix(in oklab, var(--primary) 13%, var(--background));
+  border-color: color-mix(in oklab, var(--primary) 42%, var(--graph-locked));
+  box-shadow: 0 0 24px -15px var(--primary);
+}
+
+.knowledge-node-recent {
+  background-color: color-mix(in oklab, var(--primary) 20%, var(--background));
+  border-color: color-mix(in oklab, var(--primary) 58%, var(--graph-locked));
+  box-shadow: 0 0 34px -12px var(--primary);
+}
+
+.knowledge-node-locked {
+  color: var(--muted-foreground);
+}
+
+.knowledge-progress-ring {
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--primary) 50%, transparent));
+}
+
+@keyframes connection-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+.knowledge-connection {
+  stroke: var(--graph-line);
+  stroke-width: 0.45;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: connection-draw 520ms ease-out forwards;
 }
 
 @keyframes float {
