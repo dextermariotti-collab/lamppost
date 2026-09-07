@@ -5,8 +5,9 @@ import aiBot from "@/assets/ai-bot.png";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ReportContentButton } from "@/components/ReportContentButton";
-import { useCompanion } from "@/lib/companion-store";
+import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { PracticeChat } from "@/components/PracticeChat";
 import { PredictionCard } from "@/components/PredictionCard";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -17,6 +18,7 @@ import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { usePredictionAttempt } from "@/lib/prediction-store";
 import { useProgress } from "@/lib/progress";
+import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
   head: ({ params }) => {
@@ -43,7 +45,8 @@ function LessonScreen() {
   const navigate = useNavigate();
   const { course, hydrated } = useStoredCourse(slug);
   const { companion } = useCompanion();
-  const { completeLesson } = useProgress();
+  const { completeLesson, recordPractice } = useProgress();
+  const { userId } = useSessionUser();
   const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
     slug,
     Math.max(Number(index) || 1, 1),
@@ -52,11 +55,14 @@ function LessonScreen() {
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [completing, setCompleting] = useState(false);
+  /** The explain-it-back beat closes the lesson, after the quiz. */
+  const [practiceDone, setPracticeDone] = useState(false);
 
   useEffect(() => {
     setPage(0);
     setAnswers({});
     setCompleting(false);
+    setPracticeDone(false);
   }, [index]);
 
   useEffect(() => {
