@@ -86,6 +86,12 @@ function Home() {
               <span className="text-3xl font-extrabold leading-none">{state.streak}</span>
             </div>
             <p className="mt-1 text-xs font-semibold text-foreground">day streak</p>
+            {state.freezes > 0 && (
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-extrabold text-primary">
+                <Snowflake aria-hidden="true" className="h-3 w-3" strokeWidth={2.4} />
+                {state.freezes} freeze{state.freezes === 1 ? "" : "s"}
+              </span>
+            )}
             <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
               {state.xp.toLocaleString()} XP · {Object.keys(state.courses).length} courses
             </p>
