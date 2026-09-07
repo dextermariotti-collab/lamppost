@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Flame, Send } from "lucide-react";
+import { ArrowRight, Flame, Send, Snowflake } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { clampBrief } from "@/lib/course-brief";
