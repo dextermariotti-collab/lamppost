@@ -77,7 +77,7 @@ function advanceStreak(prev: ProgressState, today: string) {
   let streak = 1;
   let freezes = prev.freezes;
   let freezeLog = prev.freezeLog;
-  let freezeSaved = prev.freezeSaved;
+  let freezeSaved: ProgressState["freezeSaved"] = null;
 
   if (prev.lastActiveDay && gap <= 0) {
     streak = prev.streak + 1;
