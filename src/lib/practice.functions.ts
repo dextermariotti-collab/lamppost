@@ -1,0 +1,268 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { screenLocally } from "./moderation";
+import { FREE_WEEKLY_PRACTICE, MAX_PRACTICE_TURNS, type PracticeTurn } from "./practice";
+
+/** Monday-start week key used for the free allowance window. */
+function weekStartIso() {
+  const now = new Date();
+  const day = (now.getUTCDay() + 6) % 7;
+  const start = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day, 0, 0, 0),
+  );
+  return start.toISOString();
+}
+
+const ContextSchema = z.object({
+  slug: z.string().min(1),
+  lessonIndex: z.number().int().min(0),
+  topic: z.string().min(1),
+  lessonTitle: z.string().min(1),
+  lessonText: z.string(),
+  earlierLessons: z.array(z.string()),
+  companionName: z.string().min(1),
+});
+
+const TurnSchema = z.object({
+  context: ContextSchema,
+  transcript: z.array(z.object({ role: z.enum(["tutor", "learner"]), text: z.string() })),
+  /** Empty on the opening turn. */
+  answer: z.string(),
+  sessionId: z.string().nullable(),
+});
+
+export type PracticeAccess = {
+  subscribed: boolean;
+  usedThisWeek: number;
+  freeAllowance: number;
+  /** Sessions left before the upgrade card appears. */
+  remaining: number;
+  canPractise: boolean;
+};
+
+export type PracticeReply =
+  | {
+      ok: true;
+      sessionId: string;
+      reply: string;
+      done: boolean;
+      verdict: "solid" | "shaky" | "revisit" | null;
+      remembered: string | null;
+      connectionMade: boolean;
+      access: PracticeAccess;
+    }
+  | { ok: false; reason: string; upgrade?: boolean; blocked?: boolean };
+
+const ReplySchema = z.object({
+  reply: z.string(),
+  done: z.boolean(),
+  verdict: z.enum(["solid", "shaky", "revisit", "none"]),
+  remembered: z.string(),
+  connectionMade: z.boolean(),
+});
+
+function describe(error: unknown): { reason: string } {
+  const text = (() => {
+    const parts: string[] = [];
+    let current: unknown = error;
+    for (let depth = 0; depth < 4 && current; depth += 1) {
+      const e = current as Record<string, unknown>;
+      for (const key of ["message", "responseBody", "statusCode", "status"]) {
+        const value = e[key];
+        if (typeof value === "string" || typeof value === "number") parts.push(String(value));
+      }
+      current = e["cause"];
+    }
+    return parts.join(" ") || String(error);
+  })();
+  console.error("Practice gateway error:", text);
+  if (/402|credit|quota|billing|payment/i.test(text)) {
+    return { reason: "Practice is unavailable right now — the AI workspace is out of credits." };
+  }
+  if (/429|rate.?limit/i.test(text)) {
+    return { reason: "Practice is busy right now. Wait a moment and tap retry." };
+  }
+  return { reason: "Practice is unavailable right now. Tap retry in a moment." };
+}
+
+type Ctx = { supabase: SupabaseLike; userId: string };
+type SupabaseLike = {
+  from: (table: string) => any;
+};
+
+async function readAccess({ supabase, userId }: Ctx): Promise<PracticeAccess> {
+  const [{ data: sub }, { count }] = await Promise.all([
+    supabase.from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle(),
+    supabase
+      .from("practice_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", weekStartIso()),
+  ]);
+
+  const status = (sub?.status ?? "none") as string;
+  const notExpired =
+    !sub?.current_period_end || new Date(sub.current_period_end).getTime() > Date.now();
+  const subscribed = ["active", "trialing", "past_due"].includes(status) && notExpired;
+  const usedThisWeek = count ?? 0;
+  const remaining = Math.max(0, FREE_WEEKLY_PRACTICE - usedThisWeek);
+
+  return {
+    subscribed,
+    usedThisWeek,
+    freeAllowance: FREE_WEEKLY_PRACTICE,
+    remaining,
+    canPractise: subscribed || remaining > 0,
+  };
+}
+
+/** Paid status + how much of the free weekly allowance is left. */
+export const getPracticeAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PracticeAccess> =>
+    readAccess(context as unknown as Ctx),
+  );
+
+/**
+ * One tutor turn. The opening turn (empty `answer`) creates the session row,
+ * which is also what the weekly allowance is counted from.
+ */
+export const practiceTurn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => TurnSchema.parse(input))
+  .handler(async ({ data, context }): Promise<PracticeReply> => {
+    const ctx = context as unknown as Ctx;
+    const { supabase, userId } = ctx;
+    const key = process.env["LOVABLE_API_KEY"];
+    if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
+
+    const opening = data.sessionId === null;
+    const access = await readAccess(ctx);
+    if (opening && !access.canPractise) {
+      return {
+        ok: false,
+        upgrade: true,
+        reason: "You've used this week's free practice sessions.",
+      };
+    }
+
+    if (!opening) {
+      const screened = screenLocally(data.answer);
+      if (!screened.allowed) return { ok: false, reason: screened.message, blocked: true };
+      if (data.answer.trim().length === 0) {
+        return { ok: false, reason: "Write a sentence or two first." };
+      }
+    }
+
+    let sessionId = data.sessionId;
+    if (opening) {
+      const { data: row, error } = await supabase
+        .from("practice_sessions")
+        .insert({
+          user_id: userId,
+          course_slug: data.context.slug,
+          course_topic: data.context.topic,
+          lesson_index: data.context.lessonIndex,
+          lesson_title: data.context.lessonTitle,
+          transcript: [],
+        })
+        .select("id")
+        .single();
+      if (error || !row) {
+        console.error("Could not open practice session", error);
+        return { ok: false, reason: "Practice couldn't start. Tap retry in a moment." };
+      }
+      sessionId = row.id as string;
+    }
+
+    const transcript: PracticeTurn[] = opening
+      ? []
+      : [...data.transcript, { role: "learner" as const, text: data.answer.trim() }];
+    const learnerTurns = transcript.filter((t) => t.role === "learner").length;
+
+    try {
+      const { streamText, Output, NoObjectGeneratedError } = await import("ai");
+      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+      const { PRACTICE_SYSTEM, openingPrompt, turnPrompt } = await import("./practice.server");
+      const gateway = createLovableAiGatewayProvider(key);
+
+      const run = () =>
+        streamText({
+          model: gateway("google/gemini-3.7-flash"),
+          system: PRACTICE_SYSTEM(data.context),
+          prompt: opening
+            ? openingPrompt(data.context)
+            : turnPrompt(data.context, transcript, learnerTurns),
+          output: Output.object({ schema: ReplySchema }),
+        });
+
+      let parsed: z.infer<typeof ReplySchema>;
+      try {
+        parsed = (await run().output) as z.infer<typeof ReplySchema>;
+      } catch (error) {
+        if (!NoObjectGeneratedError.isInstance(error)) throw error;
+        const fallback = error.text?.trim();
+        if (!fallback) throw error;
+        parsed = {
+          reply: fallback.slice(0, 600),
+          done: learnerTurns >= MAX_PRACTICE_TURNS,
+          verdict: learnerTurns >= MAX_PRACTICE_TURNS ? "shaky" : "none",
+          remembered: "",
+          connectionMade: false,
+        };
+      }
+
+      const forcedClose = learnerTurns >= MAX_PRACTICE_TURNS;
+      const done = parsed.done || forcedClose;
+      const verdict = done ? (parsed.verdict === "none" ? "shaky" : parsed.verdict) : null;
+      const nextTranscript: PracticeTurn[] = [
+        ...transcript,
+        { role: "tutor", text: parsed.reply.trim() },
+      ];
+
+      await supabase
+        .from("practice_sessions")
+        .update({
+          transcript: nextTranscript,
+          ...(done
+            ? {
+                verdict,
+                remembered: parsed.remembered.trim() || null,
+                connection_made: parsed.connectionMade,
+                completed_at: new Date().toISOString(),
+              }
+            : {}),
+        })
+        .eq("id", sessionId!)
+        .eq("user_id", userId);
+
+      return {
+        ok: true,
+        sessionId: sessionId!,
+        reply: parsed.reply.trim(),
+        done,
+        verdict,
+        remembered: done ? parsed.remembered.trim() || null : null,
+        connectionMade: done ? parsed.connectionMade : false,
+        access: opening ? await readAccess(ctx) : access,
+      };
+    } catch (error) {
+      return { ok: false, ...describe(error) };
+    }
+  });
+
+/** Recent finished sessions, for the profile/progress read-out. */
+export const listPracticeSessions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as unknown as Ctx;
+    const { data } = await supabase
+      .from("practice_sessions")
+      .select("id, course_slug, course_topic, lesson_title, verdict, remembered, connection_made, completed_at")
+      .eq("user_id", userId)
+      .not("completed_at", "is", null)
+      .order("completed_at", { ascending: false })
+      .limit(20);
+    return data ?? [];
+  });
