@@ -93,25 +93,22 @@ function ProfileScreen() {
           </Link>
         </header>
 
-        {/* Stats */}
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          <StatTile
-            icon={<Flame className="h-[18px] w-[18px] text-flame" />}
+        {/* Stats — quiet, unboxed, one hairline band */}
+        <div className="mt-5 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
+          <Stat
+            icon={<Flame className="h-4 w-4 text-primary" strokeWidth={2.2} />}
             value={String(state.streak)}
             label="Day streak"
-            muted={state.streak === 0}
           />
-          <StatTile
-            icon={<Zap className="h-[18px] w-[18px] text-xp" />}
+          <Stat
+            icon={<Zap className="h-4 w-4 text-primary" strokeWidth={2.2} />}
             value={state.xp.toLocaleString()}
             label="Total XP"
-            muted={state.xp === 0}
           />
-          <StatTile
-            icon={<Trophy className="h-[18px] w-[18px] text-primary" />}
+          <Stat
+            icon={<Trophy className="h-4 w-4 text-primary" strokeWidth={2.2} />}
             value={league.name}
             label="League"
-            muted={state.xp === 0}
           />
         </div>
 
@@ -302,28 +299,19 @@ function BadgeDetail({ badge }: { badge: Badge }) {
   );
 }
 
-function StatTile({
+function Stat({
   icon,
   value,
   label,
-  muted,
 }: {
   icon: React.ReactNode;
   value: string;
   label: string;
-  muted: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-2xl bg-card px-2 py-3 shadow-soft">
+    <div className="flex flex-col items-center gap-1 px-2">
       {icon}
-      <span
-        className={cn(
-          "text-[19px] font-bold leading-none",
-          muted ? "text-muted-foreground" : "text-foreground",
-        )}
-      >
-        {value}
-      </span>
+      <span className="text-[19px] leading-none font-bold text-foreground">{value}</span>
       <span className="text-[11px] text-muted-foreground">{label}</span>
     </div>
   );

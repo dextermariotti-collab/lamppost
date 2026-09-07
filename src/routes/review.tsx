@@ -75,7 +75,7 @@ function ReviewQueue() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-bold text-muted-foreground">
             Daily review
           </p>
           <span className="w-9" />
@@ -89,7 +89,7 @@ function ReviewQueue() {
             </p>
 
             <div className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-primary">
+              <p className="text-[11px] font-bold text-primary">
                 {item.lessonTitle}
                 {item.overdueDays > 0 && ` · ${item.overdueDays}d overdue`}
               </p>
@@ -152,7 +152,7 @@ function ReviewQueue() {
                   setPicked(null);
                   setStep((s) => s + 1);
                 }}
-                className="mt-5 w-full rounded-2xl bg-hero-gradient py-3.5 text-sm font-extrabold text-primary-foreground shadow-card transition-transform active:scale-95"
+                className="mt-5 w-full rounded-2xl bg-hero-gradient py-3.5 text-sm font-semibold text-primary-foreground shadow-card transition-transform active:scale-95"
               >
                 {step + 1 >= session!.length ? "Finish review" : "Next"}
               </Button>
@@ -173,7 +173,7 @@ function ReviewQueue() {
             </p>
             <button
               onClick={() => navigate({ to: "/" })}
-              className="mt-6 flex items-center gap-2 rounded-2xl bg-hero-gradient px-6 py-3 text-sm font-extrabold text-primary-foreground shadow-card"
+              className="mt-6 flex items-center gap-2 rounded-2xl bg-hero-gradient px-6 py-3 text-sm font-semibold text-primary-foreground shadow-card"
             >
               <Sparkles className="h-4 w-4" />
               Back to home

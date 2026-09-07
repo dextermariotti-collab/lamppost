@@ -36,9 +36,9 @@ export function StreakHero({ streak, atRisk }: { streak: number; atRisk: boolean
       <div className="leading-none">
         <CountUp
           value={streak}
-          className="font-display text-[2.75rem] font-extrabold tracking-tight text-foreground"
+          className="font-display text-[2.75rem] font-semibold tracking-tight text-foreground"
         />
-        <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <p className="mt-1 text-xs font-bold text-muted-foreground">
           day streak
         </p>
       </div>

@@ -1,4 +1,4 @@
-import { Check, Flame, Share2, Sparkles, X } from "lucide-react";
+import { Check, Crown, Flame, Share2, Sparkles, X } from "lucide-react";
 import { Confetti } from "./Confetti";
 import type { Celebration } from "@/lib/progress";
 
@@ -27,17 +27,23 @@ export function MilestoneCard({
             <X className="h-4 w-4" />
           </button>
 
-          <p className="text-[10px] font-extrabold tracking-[0.18em] uppercase opacity-80">
+          <p className="text-[10px] font-semibold opacity-80">
             Lamppost
           </p>
 
           <div
             aria-hidden
-            className={`mx-auto mt-5 flex h-24 w-24 items-center justify-center rounded-full bg-primary-foreground/20 text-5xl ${
+            className={`mx-auto mt-5 flex h-24 w-24 items-center justify-center rounded-full bg-primary-foreground/20 ${
               big ? "animate-float" : "animate-pop-in"
             }`}
           >
-            {celebration.emoji}
+            {celebration.kind === "streak" ? (
+              <Flame className="h-11 w-11" strokeWidth={2} />
+            ) : celebration.kind === "mastery" ? (
+              <Crown className="h-11 w-11" strokeWidth={2} />
+            ) : (
+              <Check className="h-11 w-11" strokeWidth={2.4} />
+            )}
           </div>
 
           <h2 className="mt-5 text-2xl leading-tight">{celebration.title}</h2>
@@ -61,13 +67,13 @@ export function MilestoneCard({
               if (navigator.share) void navigator.share({ title: "Lamppost", text });
               else void navigator.clipboard?.writeText(text);
             }}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-card px-4 py-3 text-sm font-extrabold shadow-soft transition-transform hover:-translate-y-0.5"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-card px-4 py-3 text-sm font-semibold shadow-soft transition-transform hover:-translate-y-0.5"
           >
             <Share2 className="h-4 w-4" /> Share
           </button>
           <button
             onClick={onClose}
-            className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
+            className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
           >
             <Check className="h-4 w-4" /> Nice
           </button>

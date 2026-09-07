@@ -145,7 +145,7 @@ function IntroStep({ index, onNext }: { index: number; onNext: () => void }) {
       <p className="mt-2 text-sm text-muted-foreground">{slide.body}</p>
       <button
         onClick={onNext}
-        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
+        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
       >
         {index === 2 ? "Pick my companion" : "Next"} <ArrowRight className="h-4 w-4" />
       </button>
@@ -193,7 +193,7 @@ function PickStep({
 
       <button
         onClick={onNext}
-        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
+        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
       >
         Make it mine <ArrowRight className="h-4 w-4" />
       </button>
@@ -261,7 +261,7 @@ function CustomizeStep({
 
       <button
         onClick={onDone}
-        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
+        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
       >
         <Check className="h-4 w-4" /> That's the one
       </button>
@@ -272,7 +272,7 @@ function CustomizeStep({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mt-4">
-      <p className="text-[11px] font-extrabold uppercase tracking-wide text-muted-foreground">
+      <p className="text-[11px] font-semibold text-muted-foreground">
         {label}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">{children}</div>
@@ -294,7 +294,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full px-3 py-2 text-xs font-extrabold transition-all",
+        "rounded-full px-3 py-2 text-xs font-semibold transition-all",
         active ? "bg-primary text-primary-foreground shadow-soft" : "bg-card shadow-soft",
       )}
     >
