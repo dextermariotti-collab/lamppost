@@ -299,28 +299,19 @@ function BadgeDetail({ badge }: { badge: Badge }) {
   );
 }
 
-function StatTile({
+function Stat({
   icon,
   value,
   label,
-  muted,
 }: {
   icon: React.ReactNode;
   value: string;
   label: string;
-  muted: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-2xl bg-card px-2 py-3 shadow-soft">
+    <div className="flex flex-col items-center gap-1 px-2">
       {icon}
-      <span
-        className={cn(
-          "text-[19px] font-bold leading-none",
-          muted ? "text-muted-foreground" : "text-foreground",
-        )}
-      >
-        {value}
-      </span>
+      <span className="text-[19px] leading-none font-bold text-foreground">{value}</span>
       <span className="text-[11px] text-muted-foreground">{label}</span>
     </div>
   );
