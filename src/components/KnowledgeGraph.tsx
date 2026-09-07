@@ -23,9 +23,13 @@ const POSITIONS = [
 export function KnowledgeGraph({
   courses,
   progress,
+  streak,
+  xp,
 }: {
   courses: Course[];
   progress: ProgressState["courses"];
+  streak: number;
+  xp: number;
 }) {
   const [selected, setSelected] = useState<KnowledgeConnection | null>(null);
   const graphCourses = useMemo<GraphCourse[]>(
@@ -167,8 +171,11 @@ export function KnowledgeGraph({
           );
         })}
 
-        <div className="absolute right-0 top-3 text-right text-[11px] leading-relaxed text-muted-foreground">
-          <p><span className="font-bold text-foreground">{progress === undefined ? 0 : ""}</span></p>
+        <div className="absolute right-1 top-2 text-right text-[11px] leading-relaxed text-muted-foreground">
+          <p>
+            <span className="font-bold text-foreground">{streak}</span> day streak
+          </p>
+          <p>{xp.toLocaleString()} XP</p>
         </div>
 
         {connections.length === 0 && (
