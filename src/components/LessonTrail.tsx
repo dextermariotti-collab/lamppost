@@ -187,7 +187,7 @@ export function LessonTrail({
               ) : (
                 <Star className="h-3.5 w-3.5 shrink-0" strokeWidth={2.6} />
               )}
-              <p className="truncate text-[11px] font-extrabold uppercase tracking-[0.08em]">
+              <p className="truncate text-[11px] font-semibold  ">
                 Unit {b.unit + 1} · {b.title}
               </p>
             </div>
@@ -248,7 +248,7 @@ export function LessonTrail({
                 <button
                   onClick={() => startLesson(node.index)}
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 animate-pop-in whitespace-nowrap rounded-full bg-primary px-4 py-2 text-xs font-extrabold text-primary-foreground shadow-card",
+                    "absolute top-1/2 -translate-y-1/2 animate-pop-in whitespace-nowrap rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-card",
                     calloutLeft ? "right-[5rem]" : "left-[5rem]",
                   )}
                 >
@@ -260,7 +260,7 @@ export function LessonTrail({
                 className={cn(
                   "absolute left-1/2 w-32 -translate-x-1/2 text-center text-[11px] leading-tight",
                   current
-                    ? "font-extrabold text-foreground"
+                    ? "font-semibold text-foreground"
                     : node.state === "completed"
                       ? "font-bold text-foreground/70"
                       : "font-semibold text-muted-foreground",
@@ -300,7 +300,7 @@ export function LessonTrail({
                   setOpenNode(null);
                   startLesson(i);
                 }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-hero-gradient px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-soft"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-hero-gradient px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft"
               >
                 <RotateCcw className="h-4 w-4" />
                 Replay lesson
@@ -311,7 +311,7 @@ export function LessonTrail({
                   setOpenNode(null);
                   startLesson(completed);
                 }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-hero-gradient px-5 py-3 text-sm font-extrabold text-primary-foreground shadow-soft"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-hero-gradient px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft"
               >
                 <Play className="h-4 w-4" />
                 Go to current lesson

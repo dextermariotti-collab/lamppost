@@ -166,7 +166,7 @@ function LessonScreen() {
       </div>
 
       <div className="px-5 pt-4 pb-8">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-extrabold tracking-wide text-accent-foreground uppercase">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold  text-accent-foreground ">
           <span aria-hidden>{lesson.emoji}</span> Lesson {lessonNumber}
         </span>
         <h1 className="mt-3 text-3xl leading-tight">{lesson.title}</h1>
@@ -174,7 +174,7 @@ function LessonScreen() {
 
         {page === 0 && (
           <div className="relative mt-4 animate-rise-in overflow-hidden rounded-3xl bg-primary-soft p-4">
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-extrabold text-primary-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold text-primary-foreground">
               <Sparkles className="h-3 w-3" /> Written for you
             </span>
             <p className="mt-2 max-w-[72%] text-sm font-semibold text-accent-foreground">
@@ -195,7 +195,7 @@ function LessonScreen() {
         {!onQuiz ? (
           <>
             <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-              <p className="text-[11px] font-extrabold tracking-wide text-primary uppercase">
+              <p className="text-[11px] font-semibold  text-primary ">
                 Part {page + 1} of {parts.length}
               </p>
               <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
@@ -239,7 +239,7 @@ function LessonScreen() {
                   style={{ animationDelay: `${qi * 90}ms` }}
                 >
                   <div className="flex gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-hero-gradient text-sm font-extrabold text-primary-foreground">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-hero-gradient text-sm font-semibold text-primary-foreground">
                       Q{quizzes.length > 1 ? qi + 1 : ""}
                     </span>
                     <h2 className="text-base leading-snug">{quiz.question}</h2>
@@ -270,7 +270,7 @@ function LessonScreen() {
                             picked !== undefined && isAnswer ? "animate-correct-answer" : ""
                           }`}
                         >
-                          <span className="font-extrabold text-primary">
+                          <span className="font-semibold text-primary">
                             {String.fromCharCode(65 + i)}
                           </span>
                           <span className="flex-1">{option}</span>
@@ -293,7 +293,7 @@ function LessonScreen() {
                         {quiz.explanation}
                       </p>
                       {isCorrect && (
-                        <p className="mt-1 text-xs font-extrabold text-primary">+50 XP · +10 💎</p>
+                        <p className="mt-1 text-xs font-semibold text-primary">+50 XP · +10 💎</p>
                       )}
                       <CompanionAvatar
                         companion={companion}
@@ -328,7 +328,7 @@ function LessonScreen() {
           <Button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
             disabled={(onQuiz && !answeredAll) || predictionPending || completing}
-            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-extrabold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 ${showPractice ? "hidden" : ""}`}
+            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 ${showPractice ? "hidden" : ""}`}
           >
             {onQuiz
               ? lessonNumber < course.lessons.length

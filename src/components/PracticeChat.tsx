@@ -246,7 +246,7 @@ export function PracticeChat({
 
       {phase === "closed" && close && (
         <div className="mt-4 animate-pop-in rounded-2xl bg-primary-soft p-4">
-          <p className="text-xs font-extrabold tracking-wide text-primary uppercase">
+          <p className="text-xs font-semibold  text-primary ">
             {VERDICT_COPY[close.verdict].label}
           </p>
           <p className="mt-1 text-sm font-semibold text-accent-foreground">
@@ -258,7 +258,7 @@ export function PracticeChat({
             </p>
           )}
           {close.connectionMade && (
-            <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-primary">
+            <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
               <Sparkles className="h-3.5 w-3.5" /> Connection bonus · +40 XP
             </p>
           )}
@@ -309,7 +309,7 @@ const Card = ({ children }: { children: React.ReactNode }) => (
 
 const Heading = ({ name }: { name: string }) => (
   <div>
-    <p className="text-[11px] font-extrabold tracking-wide text-primary uppercase">
+    <p className="text-[11px] font-semibold  text-primary ">
       Practice with {name}
     </p>
     <h3 className="mt-1 font-sans text-lg font-bold leading-snug">Explain it back</h3>
