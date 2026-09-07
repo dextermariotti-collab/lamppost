@@ -164,7 +164,7 @@ function ProgressScreen() {
 
         {/* Today's session */}
         <section
-          className="mt-4 flex animate-rise-in items-center gap-5 rounded-3xl bg-card p-5 shadow-soft"
+          className="mt-6 flex animate-rise-in items-center gap-5 border-t border-border pt-5"
           style={{ animationDelay: "80ms" }}
         >
           <ProgressRing pct={hydrated ? sessionPct : 0} size={104} stroke={10}>
@@ -233,7 +233,7 @@ function ProgressScreen() {
               return (
                 <li
                   key={slug}
-                  className="animate-rise-in rounded-3xl bg-card p-4 shadow-soft"
+                  className="animate-rise-in rounded-2xl bg-card p-4 shadow-soft"
                   style={{ animationDelay: `${i * 70}ms` }}
                 >
                   <div className="flex items-center gap-3">
@@ -277,7 +277,7 @@ function ProgressScreen() {
         )}
 
         {/* Week */}
-        <div className="mt-5 rounded-3xl bg-card p-5 shadow-soft">
+        <div className="mt-6 border-t border-border pt-5">
           <div className="flex items-center justify-between">
             <h2 className="text-base">This week</h2>
             <span className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">

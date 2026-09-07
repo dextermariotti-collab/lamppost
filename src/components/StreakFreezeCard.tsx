@@ -19,7 +19,7 @@ export function StreakFreezeCard({
   const affordable = gems >= FREEZE_COST;
 
   return (
-    <section className="mt-4 animate-rise-in rounded-3xl bg-card p-5 shadow-soft">
+    <section className="mt-6 animate-rise-in border-t border-border pt-5">
       <div className="flex items-center gap-4">
         <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
           <span
@@ -57,7 +57,7 @@ export function StreakFreezeCard({
         <Button
           onClick={onBuy}
           disabled={!affordable}
-          className="mt-3 h-11 w-full rounded-full text-sm font-extrabold"
+          className="mt-4 h-11 w-full rounded-full text-sm font-extrabold"
         >
           <Gem className="mr-1.5 h-4 w-4" />
           {affordable
