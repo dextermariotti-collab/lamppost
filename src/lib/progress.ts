@@ -28,7 +28,7 @@ export type ProgressState = {
   /** queued celebration, consumed by the progress screen */
   celebration: Celebration | null;
   /** slug -> number of lessons completed */
-  courses: Record<string, { topic: string; completed: number; total: number }>;
+  courses: Record<string, { topic: string; completed: number; total: number; lastActivityAt?: number }>;
   /** unused streak freezes held */
   freezes: number;
   /** YYYY-MM-DD days a freeze covered, so they're only spent once */
@@ -299,7 +299,7 @@ export function useProgress() {
           lastActiveDay: today,
           history,
           celebration,
-          courses: { ...prev.courses, [slug]: { topic, completed, total } },
+          courses: { ...prev.courses, [slug]: { topic, completed, total, lastActivityAt: Date.now() } },
         };
       }),
     [update],

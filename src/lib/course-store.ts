@@ -35,6 +35,26 @@ export function listStoredCourses(): Course[] {
   return Object.values(readStore());
 }
 
+/** Reactive list of the learner's generated courses. */
+export function useStoredCourses() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setCourses(listStoredCourses());
+    sync();
+    setHydrated(true);
+    window.addEventListener(EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  return { courses, hydrated };
+}
+
 /** Reads a stored (AI-generated) course after hydration. */
 export function useStoredCourse(slug: string) {
   const [course, setCourse] = useState<Course | undefined>(undefined);

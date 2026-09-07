@@ -14,15 +14,17 @@ const NAV = [
 export function PhoneFrame({
   children,
   showNav = true,
+  className,
 }: {
   children: ReactNode;
   showNav?: boolean;
+  className?: string;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas p-0 sm:p-6">
-      <div className="relative flex h-[100dvh] w-full max-w-[420px] flex-col overflow-hidden border-border bg-background sm:h-[860px] sm:rounded-[1.5rem] sm:border">
+      <div className={cn("relative flex h-[100dvh] w-full max-w-[420px] flex-col overflow-hidden border-border bg-background sm:h-[860px] sm:rounded-[1.5rem] sm:border", className)}>
         <div className="flex-1 overflow-y-auto overscroll-contain">{children}</div>
 
         {showNav && (

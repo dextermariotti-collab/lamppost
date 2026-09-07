@@ -1,5 +1,10 @@
 # Lamppost roadmap
 
+## Home knowledge graph
+- [x] Replace the warm-glow dashboard with a real course graph
+- [x] Derive cross-domain links only from concepts present in generated course content
+- [x] Show progress rings, recency brightness, and connection details
+
 ## Phase 1 (in progress) — the tutor moment
 - [x] practice_sessions + subscriptions tables (RLS, grants)
 - [x] Practice tutor server functions (entitlement, allowance, turn handling)
