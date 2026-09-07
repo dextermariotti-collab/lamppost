@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listStoredCourses } from "./course-store";
 import { lessonQuizzes, type Quiz } from "./courses";
+import { getPracticeResult, practiceWeight } from "./practice";
 import { getPredictionAttempt } from "./prediction-store";
 import { dayKey } from "./progress";
 
@@ -26,6 +27,22 @@ export function predictionWeight(slug: string, lessonIndex: number) {
   const attempt = getPredictionAttempt(slug, lessonIndex);
   if (!attempt) return 1;
   return attempt.correct ? 1.3 : 0.6;
+}
+
+/**
+ * Combined interval weighting. An explain-it-back session is stronger evidence
+ * of understanding than a single prediction, so it dominates when both exist.
+ */
+export function lessonWeight(slug: string, lessonIndex: number) {
+  const practice = practiceWeight(slug, lessonIndex);
+  if (practice !== 1) return practice;
+  return predictionWeight(slug, lessonIndex);
+}
+
+export type PracticeSignal = "solid" | "shaky" | "revisit" | null;
+
+export function practiceSignalFor(slug: string, lessonIndex: number): PracticeSignal {
+  return getPracticeResult(slug, lessonIndex)?.verdict ?? null;
 }
 
 export type PredictionSignal = "confident" | "shaky" | "unknown";
@@ -90,9 +107,11 @@ export type ScheduledItem = ReviewItem & {
   dueInDays: number;
   /** Leitner box, 0 = freshly reset. */
   box: number;
-  /** Interval weighting from the lesson's prediction beat. */
+  /** Interval weighting from the prediction beat and any practice session. */
   weight: number;
   signal: PredictionSignal;
+  /** The tutor's read on the learner's spoken-back explanation, if any. */
+  practice: PracticeSignal;
 };
 
 /** Every completed lesson with its next due date, most urgent first. */
@@ -122,8 +141,9 @@ function buildSchedule(completedBySlug: Record<string, number>): ScheduledItem[]
         dueInDays: daysBetween(today, due),
         overdueDays: Math.max(0, daysBetween(due, today)),
         box: log[key]?.box ?? 0,
-        weight: predictionWeight(course.slug, i),
+        weight: lessonWeight(course.slug, i),
         signal: predictionSignal(course.slug, i),
+        practice: practiceSignalFor(course.slug, i),
       });
     }
   }
@@ -178,7 +198,7 @@ export function gradeReview(key: string, correct: boolean) {
   const box = log[key]?.box ?? 0;
   const nextBox = correct ? Math.min(box + 1, INTERVALS.length - 1) : 0;
   const base = correct ? INTERVALS[nextBox]! : 1;
-  const weight = slug ? predictionWeight(slug, lessonIndex) : 1;
+  const weight = slug ? lessonWeight(slug, lessonIndex) : 1;
   const gap = Math.max(1, Math.round(base * weight));
   writeLog({ ...log, [key]: { box: nextBox, due: shiftDay(dayKey(), gap) } });
 }

@@ -282,6 +282,25 @@ export function useProgress() {
     [update],
   );
 
+  /**
+   * An explain-it-back session. XP here is paid for the explanation, and the
+   * bonus specifically for linking the idea to an earlier one — the connections
+   * engine is the moat, so that is what the reward points at.
+   */
+  const recordPractice = useCallback(
+    (verdict: "solid" | "shaky" | "revisit", connectionMade: boolean) =>
+      update((prev) => {
+        const base = verdict === "solid" ? 30 : verdict === "shaky" ? 20 : 10;
+        const bonus = connectionMade ? 40 : 0;
+        return {
+          ...prev,
+          xp: prev.xp + base + bonus,
+          gems: prev.gems + (connectionMade ? 5 : 0),
+        };
+      }),
+    [update],
+  );
+
   const clearCelebration = useCallback(
     () => update((prev) => (prev.celebration ? { ...prev, celebration: null } : prev)),
     [update],
@@ -298,6 +317,7 @@ export function useProgress() {
     registerCourse,
     completeLesson,
     recordReview,
+    recordPractice,
     clearCelebration,
     setDailyGoal,
   };

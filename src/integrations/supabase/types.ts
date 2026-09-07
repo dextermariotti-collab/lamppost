@@ -211,6 +211,54 @@ export type Database = {
           },
         ]
       }
+      practice_sessions: {
+        Row: {
+          completed_at: string | null
+          connection_made: boolean
+          course_slug: string
+          course_topic: string
+          created_at: string
+          id: string
+          lesson_index: number
+          lesson_title: string
+          remembered: string | null
+          transcript: Json
+          updated_at: string
+          user_id: string
+          verdict: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          connection_made?: boolean
+          course_slug: string
+          course_topic: string
+          created_at?: string
+          id?: string
+          lesson_index: number
+          lesson_title: string
+          remembered?: string | null
+          transcript?: Json
+          updated_at?: string
+          user_id: string
+          verdict?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          connection_made?: boolean
+          course_slug?: string
+          course_topic?: string
+          created_at?: string
+          id?: string
+          lesson_index?: number
+          lesson_title?: string
+          remembered?: string | null
+          transcript?: Json
+          updated_at?: string
+          user_id?: string
+          verdict?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           companion_accessory: string
@@ -320,6 +368,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          provider: string | null
+          provider_customer_id: string | null
+          provider_subscription_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          provider?: string | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          provider?: string | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_achievements: {
         Row: {

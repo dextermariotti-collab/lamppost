@@ -5,8 +5,9 @@ import aiBot from "@/assets/ai-bot.png";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ReportContentButton } from "@/components/ReportContentButton";
-import { useCompanion } from "@/lib/companion-store";
+import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { PracticeChat } from "@/components/PracticeChat";
 import { PredictionCard } from "@/components/PredictionCard";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -17,6 +18,7 @@ import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { usePredictionAttempt } from "@/lib/prediction-store";
 import { useProgress } from "@/lib/progress";
+import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
   head: ({ params }) => {
@@ -43,7 +45,8 @@ function LessonScreen() {
   const navigate = useNavigate();
   const { course, hydrated } = useStoredCourse(slug);
   const { companion } = useCompanion();
-  const { completeLesson } = useProgress();
+  const { completeLesson, recordPractice } = useProgress();
+  const { userId } = useSessionUser();
   const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
     slug,
     Math.max(Number(index) || 1, 1),
@@ -52,11 +55,14 @@ function LessonScreen() {
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [completing, setCompleting] = useState(false);
+  /** The explain-it-back beat closes the lesson, after the quiz. */
+  const [practiceDone, setPracticeDone] = useState(false);
 
   useEffect(() => {
     setPage(0);
     setAnswers({});
     setCompleting(false);
+    setPracticeDone(false);
   }, [index]);
 
   useEffect(() => {
@@ -96,6 +102,22 @@ function LessonScreen() {
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
   );
+
+  /** After the quiz, the learner explains the lesson back in their own words. */
+  const showPractice = onQuiz && answeredAll && !practiceDone && !completing;
+  const practiceText = [
+    lesson.intro ?? "",
+    ...parts.map((p) => `${p.title}: ${p.body}`),
+    ...(lesson.keyPoints ?? []),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const handlePracticeDone = (close: PracticeClose | null) => {
+    if (close) recordPractice(close.verdict, close.connectionMade);
+    setPracticeDone(true);
+    finishLesson();
+  };
 
   const finishLesson = () => {
     if (completing) return;
@@ -288,11 +310,25 @@ function LessonScreen() {
           </div>
         )}
 
+        {showPractice && (
+          <PracticeChat
+            slug={slug}
+            lessonIndex={lessonNumber}
+            topic={course.topic}
+            lessonTitle={lesson.title}
+            lessonText={practiceText}
+            earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
+            companion={companion}
+            signedIn={!!userId}
+            onDone={handlePracticeDone}
+          />
+        )}
+
         <div className="mt-6">
           <Button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
             disabled={(onQuiz && !answeredAll) || predictionPending || completing}
-            className="h-12 w-full rounded-full bg-hero-gradient text-base font-extrabold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
+            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-extrabold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 ${showPractice ? "hidden" : ""}`}
           >
             {onQuiz
               ? lessonNumber < course.lessons.length
