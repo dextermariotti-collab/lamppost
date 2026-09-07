@@ -1,4 +1,4 @@
-import { Check, Flame, Share2, Sparkles, X } from "lucide-react";
+import { Check, Crown, Flame, Share2, Sparkles, X } from "lucide-react";
 import { Confetti } from "./Confetti";
 import type { Celebration } from "@/lib/progress";
 
@@ -33,11 +33,17 @@ export function MilestoneCard({
 
           <div
             aria-hidden
-            className={`mx-auto mt-5 flex h-24 w-24 items-center justify-center rounded-full bg-primary-foreground/20 text-5xl ${
+            className={`mx-auto mt-5 flex h-24 w-24 items-center justify-center rounded-full bg-primary-foreground/20 ${
               big ? "animate-float" : "animate-pop-in"
             }`}
           >
-            {celebration.emoji}
+            {celebration.kind === "streak" ? (
+              <Flame className="h-11 w-11" strokeWidth={2} />
+            ) : celebration.kind === "mastery" ? (
+              <Crown className="h-11 w-11" strokeWidth={2} />
+            ) : (
+              <Check className="h-11 w-11" strokeWidth={2.4} />
+            )}
           </div>
 
           <h2 className="mt-5 text-2xl leading-tight">{celebration.title}</h2>
