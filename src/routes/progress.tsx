@@ -1,5 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Flame, Snowflake, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
+import {
+  Check,
+  Clock,
+  Flame,
+  Gem,
+  GraduationCap,
+  Snowflake,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  Trophy,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Confetti } from "@/components/Confetti";
 import { CountUp } from "@/components/CountUp";
@@ -94,48 +106,36 @@ function ProgressScreen() {
             : "Small steps, compounding daily."}
         </p>
 
-        {/* Streak — loss aversion */}
-        <section
-          className={`relative mt-5 animate-rise-in overflow-hidden rounded-3xl p-5 shadow-card transition-colors ${
-            insights.atRisk ? "bg-card" : "bg-hero-gradient text-primary-foreground"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
-              <span
-                aria-hidden
-                className={`absolute inset-0 rounded-full bg-flame ${
-                  insights.atRisk ? "opacity-10" : "animate-glow-pulse"
-                }`}
-                style={{ opacity: insights.atRisk ? 0.1 : 0.25 + flameIntensity * 0.4 }}
-              />
-              <Flame
-                className={`relative h-11 w-11 ${insights.atRisk ? "animate-none text-muted-foreground" : "animate-flame text-flame"}`}
-                style={{ opacity: insights.atRisk ? 0.55 : 0.7 + flameIntensity * 0.3 }}
-                strokeWidth={2.4}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p
-                className={`text-4xl leading-none font-extrabold ${insights.atRisk ? "" : ""}`}
-              >
-                <CountUp value={hydrated ? state.streak : 0} duration={900} />
-                <span className="ml-1 text-base font-bold opacity-80">day streak</span>
-              </p>
-              <p
-                className={`mt-2 flex items-center gap-1.5 text-xs font-bold ${
-                  insights.atRisk ? "text-muted-foreground" : "opacity-85"
-                }`}
-              >
-                <Trophy className="h-3.5 w-3.5" /> Longest: {state.longestStreak} days
-              </p>
-              {insights.atRisk && (
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-flame/12 px-2.5 py-1 text-[11px] font-extrabold text-flame">
-                  <Clock className="h-3.5 w-3.5" /> {insights.hoursLeft}h left to keep it alive
-                </p>
-              )}
-            </div>
+        {/* Streak — one quiet pool of lamplight, nothing else shouting */}
+        <section className="relative mt-7 animate-rise-in">
+          <span
+            aria-hidden="true"
+            className="lamplight-glow absolute -top-8 -left-6 -z-10 h-40 w-40 rounded-full"
+            style={{ opacity: insights.atRisk ? 0.35 : 0.75 + flameIntensity * 0.25 }}
+          />
+          <div className="flex items-end gap-3">
+            <Flame
+              aria-hidden="true"
+              className={
+                insights.atRisk
+                  ? "mb-2 h-7 w-7 text-muted-foreground"
+                  : "animate-flame mb-2 h-7 w-7 text-primary"
+              }
+              strokeWidth={2}
+            />
+            <p className="font-display text-[3.5rem] leading-none font-extrabold">
+              <CountUp value={hydrated ? state.streak : 0} duration={900} />
+            </p>
+            <p className="mb-2 text-sm font-semibold text-foreground">day streak</p>
           </div>
+          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+            <Trophy className="h-3.5 w-3.5" /> Longest {state.longestStreak} days
+          </p>
+          {insights.atRisk && (
+            <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-flame">
+              <Clock className="h-3.5 w-3.5" /> {insights.hoursLeft}h left to keep it alive
+            </p>
+          )}
         </section>
 
         {state.freezeSaved && (
@@ -212,11 +212,11 @@ function ProgressScreen() {
           </Link>
         )}
 
-        {/* Stats */}
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <Tile label="Lessons" value={hydrated ? lessonsDone : 0} emoji="✅" delay={0} />
-          <Tile label="Total XP" value={hydrated ? state.xp : 0} emoji="⭐" delay={70} />
-          <Tile label="Gems" value={hydrated ? state.gems : 0} emoji="💎" delay={140} />
+        {/* Stats — unboxed, hairline-separated, quiet */}
+        <div className="mt-6 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
+          <Tile label="Lessons" value={hydrated ? lessonsDone : 0} icon={Check} delay={0} />
+          <Tile label="Total XP" value={hydrated ? state.xp : 0} icon={Star} delay={70} />
+          <Tile label="Gems" value={hydrated ? state.gems : 0} icon={Gem} delay={140} />
         </div>
 
         {/* Mastery tiers */}
@@ -239,15 +239,19 @@ function ProgressScreen() {
                   <div className="flex items-center gap-3">
                     <span
                       aria-hidden
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-xl ${
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary ${
                         pct === 100 ? "animate-pop-in" : ""
                       }`}
                     >
-                      {tier.emoji}
+                      {pct === 100 ? (
+                        <Trophy className="h-5 w-5" strokeWidth={2.2} />
+                      ) : (
+                        <GraduationCap className="h-5 w-5" strokeWidth={2.2} />
+                      )}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-bold">{c.topic}</span>
-                      <span className="block text-[11px] font-extrabold tracking-wide text-primary uppercase">
+                      <span className="block text-[11px] font-semibold text-primary">
                         {tier.name}
                       </span>
                     </span>
@@ -315,22 +319,20 @@ function ProgressScreen() {
 function Tile({
   label,
   value,
-  emoji,
+  icon: Icon,
   delay,
 }: {
   label: string;
   value: number;
-  emoji: string;
+  icon: typeof Check;
   delay: number;
 }) {
   return (
     <div
-      className="animate-rise-in rounded-3xl bg-card p-4 shadow-soft"
+      className="animate-rise-in px-3 text-center"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <span aria-hidden className="text-xl">
-        {emoji}
-      </span>
+      <Icon aria-hidden="true" className="mx-auto h-4 w-4 text-primary" strokeWidth={2.2} />
       <p className="mt-1.5 text-xl font-extrabold">
         <CountUp value={value} />
       </p>
