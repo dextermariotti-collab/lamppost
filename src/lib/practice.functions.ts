@@ -92,9 +92,10 @@ type SupabaseLike = {
 };
 
 async function readAccess({ supabase, userId }: Ctx): Promise<PracticeAccess> {
+  const db = supabase as any;
   const [{ data: sub }, { count }] = await Promise.all([
-    supabase.from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle(),
-    supabase
+    db.from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle(),
+    db
       .from("practice_sessions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
@@ -133,7 +134,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => TurnSchema.parse(input))
   .handler(async ({ data, context }): Promise<PracticeReply> => {
     const ctx = context as unknown as Ctx;
-    const { supabase, userId } = ctx;
+    const { supabase: db, userId } = ctx;
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
@@ -157,7 +158,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
     let sessionId = data.sessionId;
     if (opening) {
-      const { data: row, error } = await supabase
+      const { data: row, error } = await db
         .from("practice_sessions")
         .insert({
           user_id: userId,
@@ -221,7 +222,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
         { role: "tutor", text: parsed.reply.trim() },
       ];
 
-      await supabase
+      await db
         .from("practice_sessions")
         .update({
           transcript: nextTranscript,
@@ -256,8 +257,8 @@ export const practiceTurn = createServerFn({ method: "POST" })
 export const listPracticeSessions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context as unknown as Ctx;
-    const { data } = await supabase
+    const { supabase: db, userId } = context as unknown as Ctx;
+    const { data } = await db
       .from("practice_sessions")
       .select("id, course_slug, course_topic, lesson_title, verdict, remembered, connection_made, completed_at")
       .eq("user_id", userId)

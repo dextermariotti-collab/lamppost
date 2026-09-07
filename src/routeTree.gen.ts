@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
@@ -57,6 +58,11 @@ const CreateRoute = CreateRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PremiumRoute = PremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/courses': typeof CoursesRoute
   '/create': typeof CreateRoute
   '/onboarding': typeof OnboardingRoute
+  '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesRoute
   '/create': typeof CreateRoute
   '/onboarding': typeof OnboardingRoute
+  '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/courses': typeof CoursesRoute
   '/create': typeof CreateRoute
   '/onboarding': typeof OnboardingRoute
+  '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/create'
     | '/onboarding'
+    | '/premium'
     | '/profile'
     | '/progress'
     | '/review'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/create'
     | '/onboarding'
+    | '/premium'
     | '/profile'
     | '/progress'
     | '/review'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/courses'
     | '/create'
     | '/onboarding'
+    | '/premium'
     | '/profile'
     | '/progress'
     | '/review'
@@ -321,6 +333,7 @@ export interface RootRouteChildren {
   CoursesRoute: typeof CoursesRoute
   CreateRoute: typeof CreateRoute
   OnboardingRoute: typeof OnboardingRoute
+  PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
   ReviewRoute: typeof ReviewRoute
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/premium': {
+      id: '/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesRoute: CoursesRoute,
   CreateRoute: CreateRoute,
   OnboardingRoute: OnboardingRoute,
+  PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
   ReviewRoute: ReviewRoute,
