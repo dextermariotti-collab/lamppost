@@ -294,7 +294,21 @@ function LessonScreen() {
           </div>
         )}
 
-        <div className="mt-6">
+        {showPractice && (
+          <PracticeChat
+            slug={slug}
+            lessonIndex={lessonNumber}
+            topic={course.topic}
+            lessonTitle={lesson.title}
+            lessonText={practiceText}
+            earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
+            companion={companion}
+            signedIn={!!userId}
+            onDone={handlePracticeDone}
+          />
+        )}
+
+        <div className={showPractice ? "mt-6 hidden" : "mt-6"}>
           <Button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
             disabled={(onQuiz && !answeredAll) || predictionPending || completing}
