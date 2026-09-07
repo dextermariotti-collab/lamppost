@@ -65,8 +65,8 @@ function Home() {
       <main className="min-h-full px-5 pb-10">
         <header className="flex items-start justify-between gap-4 pt-7">
           <div>
-            <h1 className="text-[2rem] font-bold leading-none">Lamppost</h1>
-            <p className="mt-2 max-w-52 text-sm leading-relaxed text-muted-foreground">
+            <h1 className="max-w-56 text-lg font-bold leading-snug">Your knowledge map</h1>
+            <p className="mt-1 max-w-56 text-sm leading-relaxed text-muted-foreground">
               Your subjects, lit by the ideas they share.
             </p>
           </div>

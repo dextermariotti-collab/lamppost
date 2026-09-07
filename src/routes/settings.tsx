@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronRight, Download, Loader2, Trash2 } from "lucide-react";
+import { ChevronRight, Download, Loader2, Moon, Sun, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -11,6 +11,8 @@ import { LEGAL_DOCS, PRIVACY_CONTACT } from "@/lib/legal";
 import { updateMyProfile } from "@/lib/profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
+import { useTheme } from "@/lib/theme";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -36,6 +38,7 @@ function SettingsScreen() {
   const refresh = useRefreshAccount();
   const navigate = useNavigate();
   const { state, setDailyGoal } = useProgress();
+  const { theme, setTheme } = useTheme();
 
   const [name, setName] = useState("");
   const [handle, setHandle] = useState("");
@@ -79,6 +82,30 @@ function SettingsScreen() {
         ) : (
           <>
             <section>
+              <h2 className="text-sm font-bold">Appearance</h2>
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-muted p-1" role="group" aria-label="Color theme">
+                <Button
+                  type="button"
+                  variant={theme === "light" ? "default" : "ghost"}
+                  onClick={() => setTheme("light")}
+                  aria-pressed={theme === "light"}
+                  className="gap-2 shadow-none"
+                >
+                  <Sun className="h-4 w-4" /> Light
+                </Button>
+                <Button
+                  type="button"
+                  variant={theme === "dark" ? "default" : "ghost"}
+                  onClick={() => setTheme("dark")}
+                  aria-pressed={theme === "dark"}
+                  className="gap-2 shadow-none"
+                >
+                  <Moon className="h-4 w-4" /> Dark
+                </Button>
+              </div>
+            </section>
+
+            <section className="mt-8">
               <h2 className="text-sm font-bold">Profile</h2>
               <label className="mt-3 block text-xs font-bold text-muted-foreground">
                 Display name
