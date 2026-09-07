@@ -29,6 +29,12 @@ export type ProgressState = {
   celebration: Celebration | null;
   /** slug -> number of lessons completed */
   courses: Record<string, { topic: string; completed: number; total: number }>;
+  /** unused streak freezes held */
+  freezes: number;
+  /** YYYY-MM-DD days a freeze covered, so they're only spent once */
+  freezeLog: string[];
+  /** set when the last visit was rescued by a freeze, consumed by the UI */
+  freezeSaved: { days: number; day: string } | null;
 };
 
 const DEFAULT_STATE: ProgressState = {
@@ -41,9 +47,51 @@ const DEFAULT_STATE: ProgressState = {
   dailyGoal: 3,
   celebration: null,
   courses: {},
+  freezes: 1,
+  freezeLog: [],
+  freezeSaved: null,
 };
 
+/** Most freezes that can be held at once, and the gem price of one. */
+export const MAX_FREEZES = 2;
+export const FREEZE_COST = 60;
+
 const STREAK_MILESTONES = [7, 30, 100, 365];
+
+function daysBetween(from: string, to: string) {
+  const a = new Date(`${from}T00:00:00Z`).getTime();
+  const b = new Date(`${to}T00:00:00Z`).getTime();
+  return Math.round((b - a) / 86_400_000);
+}
+
+/**
+ * Streak forgiveness. A gap of missed days is covered by held freezes (one per
+ * missed day) so the streak continues instead of resetting — loss aversion only
+ * motivates while there's an escape valve. Every 7th day earns a freeze back.
+ */
+function advanceStreak(prev: ProgressState, today: string) {
+  if (prev.lastActiveDay === today) {
+    return { streak: prev.streak, freezes: prev.freezes, freezeLog: prev.freezeLog, freezeSaved: prev.freezeSaved };
+  }
+  const gap = prev.lastActiveDay ? daysBetween(prev.lastActiveDay, today) - 1 : 0;
+  let streak = 1;
+  let freezes = prev.freezes;
+  let freezeLog = prev.freezeLog;
+  let freezeSaved = prev.freezeSaved;
+
+  if (prev.lastActiveDay && gap <= 0) {
+    streak = prev.streak + 1;
+  } else if (prev.lastActiveDay && gap > 0 && gap <= freezes) {
+    const covered = Array.from({ length: gap }, (_, i) => shiftDay(today, -(i + 1)));
+    freezes -= gap;
+    freezeLog = [...prev.freezeLog, ...covered].slice(-30);
+    freezeSaved = { days: gap, day: today };
+    streak = prev.streak + 1;
+  }
+
+  if (streak > 0 && streak % 7 === 0) freezes = Math.min(MAX_FREEZES, freezes + 1);
+  return { streak, freezes, freezeLog, freezeSaved };
+}
 
 const SURPRISES = [
   "Bonus XP — you showed up when it counted.",
@@ -202,12 +250,8 @@ export function useProgress() {
 
         const today = dayKey();
         const history = { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 };
-        const streak =
-          prev.lastActiveDay === today
-            ? prev.streak
-            : prev.lastActiveDay === shiftDay(today, -1)
-              ? prev.streak + 1
-              : 1;
+        const advanced = advanceStreak(prev, today);
+        const streak = advanced.streak;
         const longestStreak = Math.max(prev.longestStreak, streak);
 
         const bonusXp = Math.random() < 0.25 ? 25 + Math.floor(Math.random() * 4) * 25 : undefined;
@@ -249,6 +293,9 @@ export function useProgress() {
           gems: prev.gems + 10,
           streak,
           longestStreak,
+          freezes: advanced.freezes,
+          freezeLog: advanced.freezeLog,
+          freezeSaved: advanced.freezeSaved,
           lastActiveDay: today,
           history,
           celebration,
@@ -263,18 +310,17 @@ export function useProgress() {
     (correct: boolean) =>
       update((prev) => {
         const today = dayKey();
-        const streak =
-          prev.lastActiveDay === today
-            ? prev.streak
-            : prev.lastActiveDay === shiftDay(today, -1)
-              ? prev.streak + 1
-              : 1;
+        const advanced = advanceStreak(prev, today);
+        const streak = advanced.streak;
         return {
           ...prev,
           xp: prev.xp + (correct ? 20 : 5),
           gems: prev.gems + (correct ? 2 : 0),
           streak,
           longestStreak: Math.max(prev.longestStreak, streak),
+          freezes: advanced.freezes,
+          freezeLog: advanced.freezeLog,
+          freezeSaved: advanced.freezeSaved,
           lastActiveDay: today,
           history: { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 },
         };
@@ -301,6 +347,22 @@ export function useProgress() {
     [update],
   );
 
+  /** Buy one freeze with gems, capped so it can't be stockpiled. */
+  const buyFreeze = useCallback(
+    () =>
+      update((prev) =>
+        prev.gems < FREEZE_COST || prev.freezes >= MAX_FREEZES
+          ? prev
+          : { ...prev, gems: prev.gems - FREEZE_COST, freezes: prev.freezes + 1 },
+      ),
+    [update],
+  );
+
+  const clearFreezeSaved = useCallback(
+    () => update((prev) => (prev.freezeSaved ? { ...prev, freezeSaved: null } : prev)),
+    [update],
+  );
+
   const clearCelebration = useCallback(
     () => update((prev) => (prev.celebration ? { ...prev, celebration: null } : prev)),
     [update],
@@ -318,6 +380,8 @@ export function useProgress() {
     completeLesson,
     recordReview,
     recordPractice,
+    buyFreeze,
+    clearFreezeSaved,
     clearCelebration,
     setDailyGoal,
   };
