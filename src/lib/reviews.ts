@@ -28,6 +28,22 @@ export function predictionWeight(slug: string, lessonIndex: number) {
   return attempt.correct ? 1.3 : 0.6;
 }
 
+/**
+ * Combined interval weighting. An explain-it-back session is stronger evidence
+ * of understanding than a single prediction, so it dominates when both exist.
+ */
+export function lessonWeight(slug: string, lessonIndex: number) {
+  const practice = practiceWeight(slug, lessonIndex);
+  if (practice !== 1) return practice;
+  return predictionWeight(slug, lessonIndex);
+}
+
+export type PracticeSignal = "solid" | "shaky" | "revisit" | null;
+
+export function practiceSignalFor(slug: string, lessonIndex: number): PracticeSignal {
+  return getPracticeResult(slug, lessonIndex)?.verdict ?? null;
+}
+
 export type PredictionSignal = "confident" | "shaky" | "unknown";
 
 export function predictionSignal(slug: string, lessonIndex: number): PredictionSignal {
