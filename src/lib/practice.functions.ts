@@ -54,13 +54,47 @@ export type PracticeReply =
     }
   | { ok: false; reason: string; upgrade?: boolean; blocked?: boolean };
 
-const ReplySchema = z.object({
-  reply: z.string(),
-  done: z.boolean(),
-  verdict: z.enum(["solid", "shaky", "revisit", "none"]),
-  remembered: z.string(),
-  connectionMade: z.boolean(),
-});
+type ModelReply = {
+  reply: string;
+  done: boolean;
+  verdict: "solid" | "shaky" | "revisit" | "none";
+  remembered: string;
+  connectionMade: boolean;
+};
+
+/**
+ * Gemini does not enforce response schemas, so parse its JSON loosely and
+ * normalise the field names it actually emits (question vs reply, null close).
+ * Falls back to treating the raw text as a plain reply when it is not JSON.
+ */
+function parseModelReply(text: string, forcedClose: boolean): ModelReply {
+  const trimmed = text.trim();
+  const match = trimmed.match(/\{[\s\S]*\}/);
+  if (!match) {
+    return { reply: trimmed.slice(0, 600), done: forcedClose, verdict: "none", remembered: "", connectionMade: false };
+  }
+  try {
+    const raw = JSON.parse(match[0]) as Record<string, unknown>;
+    const reply = [raw["reply"], raw["response"], raw["feedback"]].find(
+      (v): v is string => typeof v === "string" && v.trim().length > 0,
+    );
+    const question = [raw["question"], raw["follow_up_question"], raw["followUpQuestion"]].find(
+      (v): v is string => typeof v === "string" && v.trim().length > 0,
+    );
+    const verdict = ["solid", "shaky", "revisit"].includes(String(raw["verdict"]))
+      ? (raw["verdict"] as ModelReply["verdict"])
+      : "none";
+    return {
+      reply: [reply, question].filter(Boolean).join("\n\n").trim().slice(0, 600),
+      done: raw["done"] === true,
+      verdict,
+      remembered: typeof raw["remembered"] === "string" ? raw["remembered"] : "",
+      connectionMade: raw["connectionMade"] === true || raw["connection_made"] === true,
+    };
+  } catch {
+    return { reply: trimmed.slice(0, 600), done: forcedClose, verdict: "none", remembered: "", connectionMade: false };
+  }
+}
 
 function describe(error: unknown): { reason: string } {
   const text = (() => {
@@ -92,9 +126,10 @@ type SupabaseLike = {
 };
 
 async function readAccess({ supabase, userId }: Ctx): Promise<PracticeAccess> {
+  const db = supabase as any;
   const [{ data: sub }, { count }] = await Promise.all([
-    supabase.from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle(),
-    supabase
+    db.from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle(),
+    db
       .from("practice_sessions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
@@ -133,7 +168,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => TurnSchema.parse(input))
   .handler(async ({ data, context }): Promise<PracticeReply> => {
     const ctx = context as unknown as Ctx;
-    const { supabase, userId } = ctx;
+    const { supabase: db, userId } = ctx;
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
@@ -157,7 +192,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
     let sessionId = data.sessionId;
     if (opening) {
-      const { data: row, error } = await supabase
+      const { data: row, error } = await db
         .from("practice_sessions")
         .insert({
           user_id: userId,
@@ -182,38 +217,24 @@ export const practiceTurn = createServerFn({ method: "POST" })
     const learnerTurns = transcript.filter((t) => t.role === "learner").length;
 
     try {
-      const { streamText, Output, NoObjectGeneratedError } = await import("ai");
+      const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const { PRACTICE_SYSTEM, openingPrompt, turnPrompt } = await import("./practice.server");
       const gateway = createLovableAiGatewayProvider(key);
 
-      const run = () =>
-        streamText({
-          model: gateway("google/gemini-3.7-flash"),
-          system: PRACTICE_SYSTEM(data.context),
-          prompt: opening
-            ? openingPrompt(data.context)
-            : turnPrompt(data.context, transcript, learnerTurns),
-          output: Output.object({ schema: ReplySchema }),
-        });
-
-      let parsed: z.infer<typeof ReplySchema>;
-      try {
-        parsed = (await run().output) as z.infer<typeof ReplySchema>;
-      } catch (error) {
-        if (!NoObjectGeneratedError.isInstance(error)) throw error;
-        const fallback = error.text?.trim();
-        if (!fallback) throw error;
-        parsed = {
-          reply: fallback.slice(0, 600),
-          done: learnerTurns >= MAX_PRACTICE_TURNS,
-          verdict: learnerTurns >= MAX_PRACTICE_TURNS ? "shaky" : "none",
-          remembered: "",
-          connectionMade: false,
-        };
-      }
-
       const forcedClose = learnerTurns >= MAX_PRACTICE_TURNS;
+      const result = streamText({
+        model: gateway("google/gemini-3.7-flash"),
+        system: PRACTICE_SYSTEM(data.context),
+        prompt: opening
+          ? openingPrompt(data.context)
+          : turnPrompt(data.context, transcript, learnerTurns),
+        maxRetries: 1,
+      });
+      const text = await result.text;
+      if (!text.trim()) throw new Error("Empty reply from the AI gateway");
+      const parsed = parseModelReply(text, forcedClose);
+
       const done = parsed.done || forcedClose;
       const verdict = done ? (parsed.verdict === "none" ? "shaky" : parsed.verdict) : null;
       const nextTranscript: PracticeTurn[] = [
@@ -221,7 +242,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
         { role: "tutor", text: parsed.reply.trim() },
       ];
 
-      await supabase
+      await db
         .from("practice_sessions")
         .update({
           transcript: nextTranscript,
@@ -256,8 +277,8 @@ export const practiceTurn = createServerFn({ method: "POST" })
 export const listPracticeSessions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context as unknown as Ctx;
-    const { data } = await supabase
+    const { supabase: db, userId } = context as unknown as Ctx;
+    const { data } = await db
       .from("practice_sessions")
       .select("id, course_slug, course_topic, lesson_title, verdict, remembered, connection_made, completed_at")
       .eq("user_id", userId)

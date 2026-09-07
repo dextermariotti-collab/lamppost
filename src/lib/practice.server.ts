@@ -37,13 +37,16 @@ export const PRACTICE_SYSTEM = (ctx: PracticeContext) =>
     "Set connectionMade to true only if the learner genuinely linked this idea to another idea or lesson themselves.",
     "Lesson material you may rely on:",
     ctx.lessonText,
+    "",
+    "Respond with ONLY a JSON object, no markdown fences:",
+    '{"reply": "what you say", "done": false, "verdict": "none", "remembered": "", "connectionMade": false}',
   ].join("\n");
 
 export function openingPrompt(ctx: PracticeContext) {
   return [
     "Open the practice session.",
     "Write one short, friendly line and then ONE open question asking the learner to explain the core idea of this lesson in their own words.",
-    "Put both in `reply`. Leave verdict, remembered blank and done false.",
+    "Put both in the reply field. Leave verdict and remembered blank and done false.",
     `Lesson: ${ctx.lessonTitle}. Topic: ${ctx.topic}.`,
   ].join("\n");
 }
