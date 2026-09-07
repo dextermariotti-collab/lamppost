@@ -272,7 +272,7 @@ function CustomizeStep({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mt-4">
-      <p className="text-[11px] font-semibold   text-muted-foreground">
+      <p className="text-[11px] font-semibold text-muted-foreground">
         {label}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">{children}</div>

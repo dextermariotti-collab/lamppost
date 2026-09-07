@@ -102,7 +102,7 @@ function AuthScreen() {
         </button>
 
         <div className="my-4 flex items-center gap-3 text-[11px] font-bold text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> OR <span className="h-px flex-1 bg-border" />
+          <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
         </div>
 
         <form onSubmit={submit} className="space-y-3">

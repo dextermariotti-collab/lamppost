@@ -66,7 +66,7 @@ function PremiumScreen() {
             aria-hidden="true"
             className="lamplight-glow absolute -inset-10 -z-10 rounded-full"
           />
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold  text-accent-foreground ">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
             <Sparkles className="h-3.5 w-3.5" /> Lamppost Practice
           </p>
           <h1 className="mt-4 text-3xl leading-tight">Learn by explaining.</h1>
@@ -77,7 +77,7 @@ function PremiumScreen() {
         </div>
 
         <section className="mt-6 rounded-3xl bg-card p-5 shadow-card">
-          <p className="text-[11px] font-semibold  text-muted-foreground ">
+          <p className="text-[11px] font-semibold text-muted-foreground">
             Always free
           </p>
           <ul className="mt-3 space-y-2">
@@ -94,7 +94,7 @@ function PremiumScreen() {
         </section>
 
         <section className="mt-4 rounded-3xl border-2 border-primary/40 bg-primary-soft p-5">
-          <p className="text-[11px] font-semibold  text-primary ">
+          <p className="text-[11px] font-semibold text-primary">
             With Practice
           </p>
           <ul className="mt-3 space-y-2">

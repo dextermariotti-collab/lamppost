@@ -75,7 +75,7 @@ function ReviewQueue() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <p className="text-xs font-bold   text-muted-foreground">
+          <p className="text-xs font-bold text-muted-foreground">
             Daily review
           </p>
           <span className="w-9" />
@@ -89,7 +89,7 @@ function ReviewQueue() {
             </p>
 
             <div className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-              <p className="text-[11px] font-bold   text-primary">
+              <p className="text-[11px] font-bold text-primary">
                 {item.lessonTitle}
                 {item.overdueDays > 0 && ` · ${item.overdueDays}d overdue`}
               </p>

@@ -38,7 +38,7 @@ export function StreakHero({ streak, atRisk }: { streak: number; atRisk: boolean
           value={streak}
           className="font-display text-[2.75rem] font-semibold tracking-tight text-foreground"
         />
-        <p className="mt-1 text-xs font-bold   text-muted-foreground">
+        <p className="mt-1 text-xs font-bold text-muted-foreground">
           day streak
         </p>
       </div>

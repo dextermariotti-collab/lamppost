@@ -187,7 +187,7 @@ export function LessonTrail({
               ) : (
                 <Star className="h-3.5 w-3.5 shrink-0" strokeWidth={2.6} />
               )}
-              <p className="truncate text-[11px] font-semibold  ">
+              <p className="truncate text-[11px] font-semibold">
                 Unit {b.unit + 1} · {b.title}
               </p>
             </div>

@@ -166,7 +166,7 @@ function LessonScreen() {
       </div>
 
       <div className="px-5 pt-4 pb-8">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold  text-accent-foreground ">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
           <span aria-hidden>{lesson.emoji}</span> Lesson {lessonNumber}
         </span>
         <h1 className="mt-3 text-3xl leading-tight">{lesson.title}</h1>
@@ -195,7 +195,7 @@ function LessonScreen() {
         {!onQuiz ? (
           <>
             <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-              <p className="text-[11px] font-semibold  text-primary ">
+              <p className="text-[11px] font-semibold text-primary">
                 Part {page + 1} of {parts.length}
               </p>
               <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
