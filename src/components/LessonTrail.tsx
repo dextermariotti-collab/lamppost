@@ -17,7 +17,7 @@ const TOP = 104;
 const STEP = 178;
 const UNIT_GAP = 82;
 const LESSONS_PER_UNIT = 5;
-const X_POSITIONS = [56, 42, 58, 45, 54] as const;
+const X_POSITIONS = [51, 47, 53, 48, 52] as const;
 
 type TrailLesson = { title: string; subtitle?: string };
 type TrailState = "completed" | "current" | "locked";
@@ -151,8 +151,8 @@ export function LessonTrail({
               variant="ghost"
               onClick={() => node.state === "current" ? startLesson(node.index) : setOpenNode(node)}
               className={cn(
-                "expedition-label absolute top-1/2 h-auto w-[8.75rem] -translate-y-1/2 whitespace-normal p-0 text-left hover:bg-transparent",
-                isLeft ? "left-[5.5rem]" : "right-[5.5rem] text-right",
+                "expedition-label absolute top-1/2 h-auto w-[7.5rem] -translate-y-1/2 whitespace-normal p-0 text-left hover:bg-transparent",
+                isLeft ? "left-[4.75rem]" : "right-[4.75rem] text-right",
               )}
             >
               <span className={cn("block text-[10px] font-bold", node.state === "locked" ? "text-muted-foreground" : "text-foreground")}>
