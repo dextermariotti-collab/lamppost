@@ -1,12 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Flame, Lock, Play, RotateCcw, Share2, Zap } from "lucide-react";
+import { ArrowLeft, Flame, Play, RotateCcw, Share2, Zap } from "lucide-react";
 import { useEffect } from "react";
 import { clampBrief } from "@/lib/course-brief";
-import { AnimatedBar } from "@/components/AnimatedBar";
-import { CompanionPeek } from "@/components/CompanionPeek";
+import { Button } from "@/components/ui/button";
 import { LessonTrail } from "@/components/LessonTrail";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { ScreenHeader } from "@/components/ScreenHeader";
 import { useCompanion } from "@/lib/companion-store";
 import { useStoredCourse } from "@/lib/course-store";
 import { titleFromSlug } from "@/lib/courses";
@@ -75,110 +73,48 @@ function CoursePath() {
   const finished = completed >= total;
 
   return (
-    <PhoneFrame>
-      <ScreenHeader
-        backTo="/"
-        right={
-          <>
-            <StatPill icon={Flame} value={state.streak} tone="flame" />
-            <StatPill icon={Zap} value={state.xp} tone="xp" />
-            <button
-              aria-label="Regenerate course"
-              onClick={() =>
-                navigate({ to: "/setup", search: clampBrief({ topic: course.topic, ...course.brief }) })
-              }
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft transition-transform hover:rotate-90"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </button>
-            <button
-              aria-label="Share course"
-              onClick={() => {
+    <PhoneFrame className="course-expedition">
+      <div className="px-5 pb-10 pt-4">
+        <header>
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="icon" aria-label="Back to home" onClick={() => navigate({ to: "/" })}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-1">
+              <StatPill icon={Flame} value={state.streak} />
+              <StatPill icon={Zap} value={state.xp} />
+              <Button variant="ghost" size="icon" aria-label="Regenerate course" onClick={() => navigate({ to: "/setup", search: clampBrief({ topic: course.topic, ...course.brief }) })}>
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" aria-label="Share course" onClick={() => {
                 const url = window.location.href;
                 if (navigator.share) void navigator.share({ title: course.topic, url });
                 else void navigator.clipboard?.writeText(url);
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft transition-transform hover:-translate-y-0.5"
-            >
-              <Share2 className="h-4 w-4" />
-            </button>
-          </>
-        }
-      />
-
-      <div className="px-5 pb-10">
-        {/* Course header — title, blurb, segmented progress. */}
-        <div className="mt-7">
-          <section className="relative animate-rise-in rounded-3xl bg-hero-gradient p-5 text-primary-foreground shadow-card">
-
-            <div className="max-w-[70%]">
-              <h1 className="text-xl leading-tight">{course.topic}</h1>
-              <p className="mt-1 text-xs font-semibold opacity-85">{course.tagline}</p>
+              }}>
+                <Share2 className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex flex-1 gap-1">
-                {Array.from({ length: Math.min(total, 12) }, (_, i) => {
-                  const step = Math.round((i / Math.min(total, 12)) * total);
-                  return (
-                    <span
-                      key={i}
-                      className={`h-2.5 flex-1 rounded-full transition-colors duration-500 ${
-                        step < completed ? "bg-primary-foreground" : "bg-primary-foreground/30"
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-              <span className="text-xs font-extrabold">{pct}%</span>
+          </div>
+
+          <div className="mt-7 border-l border-primary pl-4">
+            <p className="font-graph text-xs font-bold text-muted-foreground">Learning expedition</p>
+            <h1 className="mt-1 font-graph text-3xl font-bold leading-tight text-foreground">{course.topic}</h1>
+            <p className="mt-2 max-w-[19rem] text-sm leading-relaxed text-muted-foreground">{course.tagline}</p>
+          </div>
+
+          <div className="mt-6 flex items-end justify-between border-b border-border pb-4">
+            <div>
+              <p className="font-graph text-3xl font-bold text-foreground">{pct}%</p>
+              <p className="text-[11px] text-muted-foreground">{completed} of {total} checkpoints</p>
             </div>
-            <button
-              onClick={() =>
-                navigate({
-                  to: "/course/$slug/lesson/$index",
-                  params: { slug, index: String(nextIndex + 1) },
-                })
-              }
-              className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground px-5 py-2.5 text-sm font-extrabold text-primary shadow-soft transition-transform hover:scale-[1.03] active:scale-95"
-            >
+            <Button onClick={() => navigate({ to: "/course/$slug/lesson/$index", params: { slug, index: String(nextIndex + 1) } })}>
               <Play className="h-4 w-4" />
-              {completed === 0 ? "Start" : finished ? "Review" : "Continue"}
-            </button>
-          </section>
-        </div>
-
-
-        <h2 className="mt-6 text-base">Your learning path</h2>
+              {completed === 0 ? "Begin route" : finished ? "Review route" : "Continue route"}
+            </Button>
+          </div>
+        </header>
 
         <LessonTrail slug={slug} lessons={course.lessons} completed={completed} companion={companion} />
-
-        {/* Locked-unit card: the trail keeps going once this course is done. */}
-        {!finished && (
-          <CompanionPeek companion={companion} size={68} side="center" className="mt-14">
-            <section className="animate-rise-in overflow-hidden rounded-3xl bg-hero-gradient px-5 pb-5 pt-8 text-center text-primary-foreground shadow-card">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-foreground/20">
-                <Lock className="h-5 w-5" />
-              </div>
-              <h3 className="mt-3 text-lg">Next unit locked</h3>
-              <p className="mx-auto mt-1 max-w-[16rem] text-xs font-semibold opacity-85">
-                Complete all the lessons in this unit to advance and continue your learning.
-              </p>
-              <div className="mx-auto mt-4 max-w-[15rem]">
-                <AnimatedBar pct={pct} />
-              </div>
-              <button
-                onClick={() =>
-                  navigate({
-                    to: "/course/$slug/lesson/$index",
-                    params: { slug, index: String(nextIndex + 1) },
-                  })
-                }
-                className="mt-4 w-full rounded-full bg-primary-foreground px-5 py-3 text-sm font-extrabold text-primary shadow-soft transition-transform hover:scale-[1.02] active:scale-95"
-              >
-                <span className="inline-flex items-center justify-center gap-1.5">Keep Going <Flame className="h-4 w-4" /></span>
-              </button>
-            </section>
-          </CompanionPeek>
-        )}
       </div>
     </PhoneFrame>
   );
@@ -187,15 +123,13 @@ function CoursePath() {
 function StatPill({
   icon: Icon,
   value,
-  tone,
 }: {
   icon: typeof Flame;
   value: number;
-  tone: "flame" | "xp";
 }) {
   return (
-    <span className="flex items-center gap-1 rounded-full bg-card px-2.5 py-1.5 text-[11px] font-extrabold shadow-soft">
-      <Icon className={`h-3.5 w-3.5 ${tone === "flame" ? "text-flame" : "text-xp"}`} strokeWidth={2.6} />
+    <span className="flex items-center gap-1 px-1.5 py-1 text-[11px] font-bold text-muted-foreground">
+      <Icon className="h-3.5 w-3.5 text-foreground" strokeWidth={2.2} />
       {value.toLocaleString()}
     </span>
   );
