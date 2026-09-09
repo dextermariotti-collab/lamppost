@@ -146,11 +146,12 @@ export function LessonTrail({
               </span>
             </Button>
 
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => node.state === "current" ? startLesson(node.index) : setOpenNode(node)}
               className={cn(
-                "expedition-label absolute top-1/2 w-[8.75rem] -translate-y-1/2 text-left",
+                "expedition-label absolute top-1/2 h-auto w-[8.75rem] -translate-y-1/2 whitespace-normal p-0 text-left hover:bg-transparent",
                 isLeft ? "left-[5.5rem]" : "right-[5.5rem] text-right",
               )}
             >
@@ -163,7 +164,7 @@ export function LessonTrail({
               {node.lesson.subtitle && node.state === "current" && (
                 <span className="mt-1 block line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">{node.lesson.subtitle}</span>
               )}
-            </button>
+            </Button>
           </div>
         );
       })}

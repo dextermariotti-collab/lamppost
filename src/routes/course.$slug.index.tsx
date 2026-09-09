@@ -23,6 +23,7 @@ export const Route = createFileRoute("/course/$slug/")({
         { property: "og:title", content: `${topic} — Lamppost` },
         { property: "og:description", content: `Your personalized ${topic} course path.` },
         { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
       ],
       links: [{ rel: "canonical", href: `/course/${params.slug}` }],
     };
