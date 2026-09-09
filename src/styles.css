@@ -255,6 +255,113 @@
   animation: connection-draw 520ms ease-out forwards;
 }
 
+.course-expedition {
+  --background: #383b47;
+  --foreground: #edebe6;
+  --card: #383b47;
+  --card-foreground: #edebe6;
+  --popover: #383b47;
+  --popover-foreground: #edebe6;
+  --primary: #edebe6;
+  --primary-foreground: #383b47;
+  --secondary: #4a4640;
+  --secondary-foreground: #edebe6;
+  --muted: #4a4640;
+  --muted-foreground: #888b96;
+  --accent: #4a4640;
+  --accent-foreground: #edebe6;
+  --border: color-mix(in oklab, #888b96 34%, transparent);
+  --input: color-mix(in oklab, #888b96 42%, transparent);
+  --ring: #edebe6;
+  color-scheme: dark;
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+.course-expedition h1,
+.course-expedition h2,
+.course-expedition h3,
+.course-expedition h4,
+.course-expedition nav {
+  font-family: var(--font-graph);
+}
+
+.expedition-map {
+  background-color: color-mix(in oklab, var(--background) 92%, var(--secondary));
+}
+
+.expedition-contour {
+  fill: none;
+  stroke: var(--muted-foreground);
+  stroke-width: 0.24;
+  vector-effect: non-scaling-stroke;
+}
+
+.expedition-route-ahead,
+.expedition-route-traveled {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.expedition-route-ahead {
+  stroke: var(--secondary);
+  stroke-width: 2;
+  stroke-dasharray: 2 10;
+}
+
+.expedition-route-traveled {
+  stroke: var(--foreground);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: expedition-draw 560ms ease-out forwards;
+}
+
+.expedition-node {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+
+.expedition-node:hover {
+  background: var(--secondary);
+}
+
+.expedition-node-completed {
+  border-color: var(--foreground);
+  color: var(--background);
+}
+
+.expedition-node-completed .expedition-node-core {
+  background: var(--foreground);
+}
+
+.expedition-node-current {
+  border-style: dashed;
+  border-color: var(--foreground);
+  color: var(--foreground);
+  box-shadow: 0 0 0 7px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.expedition-node-current .expedition-node-core {
+  border: 1px solid var(--border);
+  background: var(--secondary);
+}
+
+.expedition-node-locked {
+  opacity: 0.58;
+}
+
+.expedition-label {
+  background: transparent;
+  border: 0;
+}
+
+@keyframes expedition-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
 @keyframes float {
   0%,
   100% {
