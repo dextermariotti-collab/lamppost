@@ -7,9 +7,13 @@ import {
   type LessonStub,
 } from "./course-brief";
 import { CONTENT_POLICY_RULES } from "./moderation.server";
-import { slugify, type Lesson, type Prediction, type Quiz } from "./courses";
+import { THINKING_LENS } from "./thinking";
+import { slugify, type FlawDrill, type Lesson, type Prediction, type Quiz } from "./courses";
 
-export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
+export const OUTLINE_SYSTEM = `You are a curriculum designer for a critical-thinking app.
+${THINKING_LENS}
+Each lesson title names a reasoning skill applied to the subject (e.g. "Testing a causal claim"),
+not a chapter of facts.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
 {"topic":string,"tagline":string,"emoji":string,"lessons":[{"title":string,"subtitle":string,"emoji":string}]}
 Rules: return exactly the requested number of lessons, ordered so each one builds on the last.
@@ -19,9 +23,10 @@ emoji is a single emoji. tagline max 60 characters. Use the exact key names abov
 
 ${CONTENT_POLICY_RULES}`;
 
-export const CONTENT_SYSTEM = `You write in-depth, warm, plain-language lesson content for a mobile learning app.
+export const CONTENT_SYSTEM = `You write in-depth, warm, plain-language lesson content for a critical-thinking app.
+${THINKING_LENS}
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
-{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"prediction":{"question":string,"options":[string,string],"correct":number,"explanation":string},"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
+{"lessons":[{"index":number,"intro":string,"parts":[{"title":string,"body":string}],"prediction":{"question":string,"options":[string,string],"correct":number,"explanation":string},"flaw":{"claim":string,"options":[string,string,string],"correct":number,"fallacy":string,"explanation":string},"keyPoints":[string],"quizzes":[{"question":string,"options":[string,string,string],"correct":number,"explanation":string}]}]}
 Rules for every lesson:
 - "index" must repeat the index you were given.
 - "intro" is 2 sentences framing why this lesson matters.
@@ -35,6 +40,16 @@ Rules for every lesson:
   (max 12 words each) where the wrong ones are real misconceptions a learner would hold, not
   obviously silly. "correct" is the 0-based index. "explanation" is ONE sentence saying why it is
   correct and pointing forward to the example that follows.
+- "flaw" is the lesson's "spot the flaw" drill and is REQUIRED. "claim" is a 2-3 sentence argument
+  about this subject that sounds convincing but contains exactly one reasoning error the lesson
+  taught (bad causal leap, cherry-picked or unrepresentative sample, moved goalposts, appeal to
+  authority or popularity, false dilemma, survivorship bias, misread base rate, circular reasoning,
+  equivocation, and similar). Write it as something a real person would actually say or post — quote
+  concrete numbers or sources where it helps. "options" has exactly 3 candidate diagnoses, each max
+  16 words, all naming a plausible reasoning error; only one is the error actually present, the other
+  two are errors this argument does NOT commit. "correct" is the 0-based index. "fallacy" names the
+  error in 1-4 words. "explanation" is 1-2 sentences saying what the argument would need in order to
+  hold up, and why the closest wrong diagnosis does not fit.
 - "keyPoints" has exactly 4 short takeaways, max 14 words each.
 - Each quiz question tests understanding of this lesson's content, has exactly 3 plausible options,
   "correct" is the 0-based index of the right option, and "explanation" is one teaching sentence.
@@ -54,6 +69,8 @@ export function contentPrompt(brief: CourseBrief, courseTitle: string, stubs: Le
 Write full content for these lessons of that course, in this order:\n${list}\n
 Each lesson needs ${quizCountFor(brief)} quiz question(s) in "quizzes".
 ${quizRigorRules(brief)}
+Every lesson must include its required "flaw" drill: a convincing but broken argument from this
+subject plus three candidate diagnoses.
 Return the JSON now.`;
 }
 
@@ -145,6 +162,41 @@ function normalizePrediction(raw: unknown): Prediction | null {
   };
 }
 
+/** "Spot the flaw" drill — skipped rather than faked when the model omits it. */
+function normalizeFlaw(raw: unknown): FlawDrill | null {
+  const f = asObject(raw);
+  const claim = str(pick(f, ["claim", "argument", "statement", "text", "passage"]));
+  const options = asArray(pick(f, ["options", "answers", "choices", "diagnoses"]))
+    .map((o) => str(o))
+    .filter(Boolean)
+    .slice(0, 4);
+  if (!claim || options.length < 2) return null;
+
+  const correctRaw = pick(f, ["correct", "correct_index", "correctIndex", "answer_index"]);
+  const correct = Math.min(
+    Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
+    options.length - 1,
+  );
+
+  const order = options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+
+  const fallacy = str(pick(f, ["fallacy", "name", "error", "label"]));
+  return {
+    claim,
+    options: order.map((i) => options[i]!),
+    correct: order.indexOf(correct),
+    ...(fallacy ? { fallacy } : {}),
+    explanation: str(
+      pick(f, ["explanation", "why", "rationale"]),
+      "The argument needs evidence it never actually provides.",
+    ),
+  };
+}
+
 export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
   const root = extractJson(text);
   if (!root) return null;
@@ -208,6 +260,7 @@ export function parseLessonContent(
       .slice(0, Math.max(quizCount, 1));
 
     const prediction = normalizePrediction(pick(l, ["prediction", "predict", "predictionPrompt"]));
+    const flaw = normalizeFlaw(pick(l, ["flaw", "spotTheFlaw", "spot_the_flaw", "flawDrill"]));
 
     const single = quizzes.length === 0 ? normalizeQuiz(pick(l, ["quiz"]), stub.title) : null;
     const resolvedQuizzes = quizzes.length > 0 ? quizzes : single ? [single] : [];
@@ -221,6 +274,7 @@ export function parseLessonContent(
       intro: str(pick(l, ["intro", "introduction", "hook"]), stub.subtitle),
       ...(keyPoints.length ? { keyPoints } : {}),
       ...(prediction ? { prediction } : {}),
+      ...(flaw ? { flaw } : {}),
       parts,
       quiz: resolvedQuizzes[0]!,
       quizzes: resolvedQuizzes,

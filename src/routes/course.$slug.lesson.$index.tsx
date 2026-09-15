@@ -9,6 +9,7 @@ import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { PracticeChat } from "@/components/PracticeChat";
 import { PredictionCard } from "@/components/PredictionCard";
+import { SpotTheFlawCard } from "@/components/SpotTheFlawCard";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { useStoredCourse } from "@/lib/course-store";
 import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { usePredictionAttempt } from "@/lib/prediction-store";
+import { useFlawAttempt } from "@/lib/flaw-store";
 import { useProgress } from "@/lib/progress";
 import type { PracticeClose } from "@/lib/practice";
 
@@ -48,6 +50,10 @@ function LessonScreen() {
   const { completeLesson, recordPractice } = useProgress();
   const { userId } = useSessionUser();
   const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
+    slug,
+    Math.max(Number(index) || 1, 1),
+  );
+  const { attempt: flawAttempt, record: recordFlaw } = useFlawAttempt(
     slug,
     Math.max(Number(index) || 1, 1),
   );
@@ -91,13 +97,18 @@ function LessonScreen() {
   const lesson = course.lessons[lessonNumber - 1]!;
   const parts = lesson.parts && lesson.parts.length > 0 ? lesson.parts : [];
   const quizzes = lessonQuizzes(lesson);
-  const totalPages = parts.length + 1;
-  const onQuiz = page >= parts.length;
+  /** Pages: reading parts, then the spot-the-flaw drill, then the quiz set. */
+  const flaw = lesson.flaw;
+  const flawPage = flaw ? parts.length : -1;
+  const onFlaw = flaw ? page === flawPage : false;
+  const totalPages = parts.length + (flaw ? 1 : 0) + 1;
+  const onQuiz = page >= parts.length + (flaw ? 1 : 0);
   const answeredAll = quizzes.every((_, i) => answers[i] !== undefined);
   /** The predict-before-reveal beat closes the first reading part. */
   const prediction = lesson.prediction;
-  const showPrediction = !onQuiz && page === 0 && parts.length > 1 && !!prediction;
+  const showPrediction = !onQuiz && !onFlaw && page === 0 && parts.length > 1 && !!prediction;
   const predictionPending = showPrediction && predictionAttempt === undefined;
+  const flawPending = onFlaw && flawAttempt === undefined;
 
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
@@ -192,7 +203,14 @@ function LessonScreen() {
           </div>
         )}
 
-        {!onQuiz ? (
+        {onFlaw ? (
+          <SpotTheFlawCard
+            drill={flaw!}
+            companion={companion}
+            choice={flawAttempt?.choice}
+            onPick={(i) => recordFlaw(i, i === flaw!.correct)}
+          />
+        ) : !onQuiz ? (
           <>
             <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
               <p className="text-[11px] font-semibold text-primary">
@@ -327,18 +345,22 @@ function LessonScreen() {
         <div className="mt-6">
           <Button
             onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
-            disabled={(onQuiz && !answeredAll) || predictionPending || completing}
+            disabled={(onQuiz && !answeredAll) || predictionPending || flawPending || completing}
             className={`h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 ${showPractice ? "hidden" : ""}`}
           >
             {onQuiz
               ? lessonNumber < course.lessons.length
                 ? "Continue"
                 : "Finish course"
-              : showPrediction
-                ? "See it in action"
-                : page + 1 === parts.length
-                  ? "Take the quiz"
-                  : "Next page"}
+              : onFlaw
+                ? "Take the quiz"
+                : showPrediction
+                  ? "See it in action"
+                  : page + 1 === parts.length
+                    ? flaw
+                      ? "Spot the flaw"
+                      : "Take the quiz"
+                    : "Next page"}
             <ArrowRight className="h-4 w-4" />
           </Button>
           <AiDisclaimer
@@ -353,7 +375,9 @@ function LessonScreen() {
               lessonTitle: lesson.title,
               excerpt: onQuiz
                 ? quizzes.map((q) => `${q.question} :: ${q.options.join(" | ")}`).join("\n")
-                : (parts[page]?.body ?? lesson.intro ?? ""),
+                : onFlaw
+                  ? `${flaw!.claim} :: ${flaw!.options.join(" | ")}`
+                  : (parts[page]?.body ?? lesson.intro ?? ""),
             }}
           />
           {!onQuiz && page > 0 && (

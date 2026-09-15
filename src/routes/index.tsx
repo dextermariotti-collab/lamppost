@@ -10,20 +10,21 @@ import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { useStoredCourses } from "@/lib/course-store";
 import { useProgress } from "@/lib/progress";
 import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
+import { THINKING_TRACKS } from "@/lib/thinking";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lamppost — daily review for anything you learn" },
+      { title: "Lamppost — train your critical thinking daily" },
       {
         name: "description",
         content:
-          "Lamppost keeps what you learn: a daily spaced repetition queue, streaks that compound, and AI-built mini-courses on any topic.",
+          "Lamppost builds your reasoning: spot the flaw in real arguments, judge evidence, and review what you learn on a daily schedule.",
       },
-      { property: "og:title", content: "Lamppost — daily review for anything you learn" },
+      { property: "og:title", content: "Lamppost — train your critical thinking daily" },
       {
         property: "og:description",
-        content: "Review what's due today, keep your streak alive, and build a course on anything.",
+        content: "Spot the flaw in real arguments, test your reasoning, and keep the habit going.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -65,9 +66,9 @@ function Home() {
       <main className="min-h-full px-5 pb-10">
         <header className="flex items-start justify-between gap-4 pt-7">
           <div>
-            <h1 className="max-w-56 text-lg font-bold leading-snug">Your knowledge map</h1>
+            <h1 className="max-w-56 text-lg font-bold leading-snug">Your thinking map</h1>
             <p className="mt-1 max-w-56 text-sm leading-relaxed text-muted-foreground">
-              Your subjects, lit by the ideas they share.
+              Reasoning skills you're building, and the ideas they share.
             </p>
           </div>
 
@@ -100,10 +101,24 @@ function Home() {
         </section>
 
         <section className="border-t border-border pt-5">
-          <h2 className="text-sm font-bold text-foreground">Begin a new subject</h2>
+          <h2 className="text-sm font-bold text-foreground">Train a new thinking skill</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Add another node to the map.
+            Any subject works — every lesson makes you judge claims, not memorise them.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {THINKING_TRACKS.slice(0, 4).map((track) => (
+              <Button
+                key={track.topic}
+                type="button"
+                variant="outline"
+                onClick={() => start(track.topic)}
+                title={track.blurb}
+                className="h-auto rounded-full px-3 py-1.5 text-xs font-medium shadow-none"
+              >
+                {track.topic}
+              </Button>
+            ))}
+          </div>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -114,7 +129,7 @@ function Home() {
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="What do you want to learn?"
+              placeholder="What do you want to think clearly about?"
               aria-label="Course topic"
               className="w-full bg-transparent px-1 py-2 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground"
             />

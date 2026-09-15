@@ -1,5 +1,12 @@
 # Lamppost roadmap
 
+## Critical-thinking reframe (done)
+- [x] Reasoning lens (`src/lib/thinking.ts`) applied to every outline + content prompt
+- [x] Required "spot the flaw" drill per lesson: broken argument + 3 candidate diagnoses
+- [x] Flaw page between the reading parts and the quiz; answer required to continue
+- [x] Attempts persisted in `lamppost-flaws-v1`; home copy + starter tracks reframed
+- [ ] Weight review intervals with flaw attempts (currently prediction + practice only)
+
 ## Home knowledge graph
 - [x] Replace the warm-glow dashboard with a real course graph
 - [x] Derive cross-domain links only from concepts present in generated course content
