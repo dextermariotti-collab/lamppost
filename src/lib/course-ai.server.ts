@@ -7,9 +7,13 @@ import {
   type LessonStub,
 } from "./course-brief";
 import { CONTENT_POLICY_RULES } from "./moderation.server";
-import { slugify, type Lesson, type Prediction, type Quiz } from "./courses";
+import { THINKING_LENS } from "./thinking";
+import { slugify, type FlawDrill, type Lesson, type Prediction, type Quiz } from "./courses";
 
-export const OUTLINE_SYSTEM = `You are a curriculum designer for a mobile learning app.
+export const OUTLINE_SYSTEM = `You are a curriculum designer for a critical-thinking app.
+${THINKING_LENS}
+Each lesson title names a reasoning skill applied to the subject (e.g. "Testing a causal claim"),
+not a chapter of facts.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
 {"topic":string,"tagline":string,"emoji":string,"lessons":[{"title":string,"subtitle":string,"emoji":string}]}
 Rules: return exactly the requested number of lessons, ordered so each one builds on the last.
