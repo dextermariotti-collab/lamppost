@@ -20,6 +20,16 @@ export type Prediction = {
   explanation: string;
 };
 
+/** Core critical-thinking beat: a flawed argument the learner must diagnose. */
+export type FlawDrill = {
+  claim: string;
+  options: string[];
+  correct: number;
+  /** Name of the reasoning error, e.g. "Correlation as cause". */
+  fallacy?: string;
+  explanation: string;
+};
+
 export type Lesson = {
   title: string;
   subtitle: string;
@@ -30,6 +40,8 @@ export type Lesson = {
   parts?: LessonPart[];
   /** Optional prediction beat closing the first (reading) part. */
   prediction?: Prediction;
+  /** "Spot the flaw" drill shown after the reading, before the quiz. */
+  flaw?: FlawDrill;
   quiz: Quiz;
   /** Multiple quiz questions on longer courses; falls back to `quiz`. */
   quizzes?: Quiz[];
