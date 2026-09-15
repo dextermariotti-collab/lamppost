@@ -203,7 +203,14 @@ function LessonScreen() {
           </div>
         )}
 
-        {!onQuiz ? (
+        {onFlaw ? (
+          <SpotTheFlawCard
+            drill={flaw!}
+            companion={companion}
+            choice={flawAttempt?.choice}
+            onPick={(i) => recordFlaw(i, i === flaw!.correct)}
+          />
+        ) : !onQuiz ? (
           <>
             <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
               <p className="text-[11px] font-semibold text-primary">
