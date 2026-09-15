@@ -10,6 +10,7 @@ import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { useStoredCourses } from "@/lib/course-store";
 import { useProgress } from "@/lib/progress";
 import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
+import { THINKING_TRACKS } from "@/lib/thinking";
 
 export const Route = createFileRoute("/")({
   head: () => ({
