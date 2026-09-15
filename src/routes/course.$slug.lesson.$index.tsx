@@ -9,6 +9,7 @@ import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { PracticeChat } from "@/components/PracticeChat";
 import { PredictionCard } from "@/components/PredictionCard";
+import { SpotTheFlawCard } from "@/components/SpotTheFlawCard";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { useStoredCourse } from "@/lib/course-store";
 import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { usePredictionAttempt } from "@/lib/prediction-store";
+import { useFlawAttempt } from "@/lib/flaw-store";
 import { useProgress } from "@/lib/progress";
 import type { PracticeClose } from "@/lib/practice";
 

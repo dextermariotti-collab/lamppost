@@ -69,6 +69,8 @@ export function contentPrompt(brief: CourseBrief, courseTitle: string, stubs: Le
 Write full content for these lessons of that course, in this order:\n${list}\n
 Each lesson needs ${quizCountFor(brief)} quiz question(s) in "quizzes".
 ${quizRigorRules(brief)}
+Every lesson must include its required "flaw" drill: a convincing but broken argument from this
+subject plus three candidate diagnoses.
 Return the JSON now.`;
 }
 
