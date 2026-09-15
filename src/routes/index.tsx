@@ -14,16 +14,16 @@ import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lamppost — daily review for anything you learn" },
+      { title: "Lamppost — train your critical thinking daily" },
       {
         name: "description",
         content:
-          "Lamppost keeps what you learn: a daily spaced repetition queue, streaks that compound, and AI-built mini-courses on any topic.",
+          "Lamppost builds your reasoning: spot the flaw in real arguments, judge evidence, and review what you learn on a daily schedule.",
       },
-      { property: "og:title", content: "Lamppost — daily review for anything you learn" },
+      { property: "og:title", content: "Lamppost — train your critical thinking daily" },
       {
         property: "og:description",
-        content: "Review what's due today, keep your streak alive, and build a course on anything.",
+        content: "Spot the flaw in real arguments, test your reasoning, and keep the habit going.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
