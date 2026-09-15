@@ -40,6 +40,16 @@ Rules for every lesson:
   (max 12 words each) where the wrong ones are real misconceptions a learner would hold, not
   obviously silly. "correct" is the 0-based index. "explanation" is ONE sentence saying why it is
   correct and pointing forward to the example that follows.
+- "flaw" is the lesson's "spot the flaw" drill and is REQUIRED. "claim" is a 2-3 sentence argument
+  about this subject that sounds convincing but contains exactly one reasoning error the lesson
+  taught (bad causal leap, cherry-picked or unrepresentative sample, moved goalposts, appeal to
+  authority or popularity, false dilemma, survivorship bias, misread base rate, circular reasoning,
+  equivocation, and similar). Write it as something a real person would actually say or post — quote
+  concrete numbers or sources where it helps. "options" has exactly 3 candidate diagnoses, each max
+  16 words, all naming a plausible reasoning error; only one is the error actually present, the other
+  two are errors this argument does NOT commit. "correct" is the 0-based index. "fallacy" names the
+  error in 1-4 words. "explanation" is 1-2 sentences saying what the argument would need in order to
+  hold up, and why the closest wrong diagnosis does not fit.
 - "keyPoints" has exactly 4 short takeaways, max 14 words each.
 - Each quiz question tests understanding of this lesson's content, has exactly 3 plausible options,
   "correct" is the 0-based index of the right option, and "explanation" is one teaching sentence.
