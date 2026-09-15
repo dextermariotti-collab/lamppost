@@ -129,7 +129,7 @@ function Home() {
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="What do you want to learn?"
+              placeholder="What do you want to think clearly about?"
               aria-label="Course topic"
               className="w-full bg-transparent px-1 py-2 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground"
             />
