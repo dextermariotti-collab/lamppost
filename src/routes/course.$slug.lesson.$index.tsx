@@ -375,7 +375,9 @@ function LessonScreen() {
               lessonTitle: lesson.title,
               excerpt: onQuiz
                 ? quizzes.map((q) => `${q.question} :: ${q.options.join(" | ")}`).join("\n")
-                : (parts[page]?.body ?? lesson.intro ?? ""),
+                : onFlaw
+                  ? `${flaw!.claim} :: ${flaw!.options.join(" | ")}`
+                  : (parts[page]?.body ?? lesson.intro ?? ""),
             }}
           />
           {!onQuiz && page > 0 && (
