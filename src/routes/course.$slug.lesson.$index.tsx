@@ -97,13 +97,18 @@ function LessonScreen() {
   const lesson = course.lessons[lessonNumber - 1]!;
   const parts = lesson.parts && lesson.parts.length > 0 ? lesson.parts : [];
   const quizzes = lessonQuizzes(lesson);
-  const totalPages = parts.length + 1;
-  const onQuiz = page >= parts.length;
+  /** Pages: reading parts, then the spot-the-flaw drill, then the quiz set. */
+  const flaw = lesson.flaw;
+  const flawPage = flaw ? parts.length : -1;
+  const onFlaw = flaw ? page === flawPage : false;
+  const totalPages = parts.length + (flaw ? 1 : 0) + 1;
+  const onQuiz = page >= parts.length + (flaw ? 1 : 0);
   const answeredAll = quizzes.every((_, i) => answers[i] !== undefined);
   /** The predict-before-reveal beat closes the first reading part. */
   const prediction = lesson.prediction;
-  const showPrediction = !onQuiz && page === 0 && parts.length > 1 && !!prediction;
+  const showPrediction = !onQuiz && !onFlaw && page === 0 && parts.length > 1 && !!prediction;
   const predictionPending = showPrediction && predictionAttempt === undefined;
+  const flawPending = onFlaw && flawAttempt === undefined;
 
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
