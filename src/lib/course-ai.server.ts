@@ -258,6 +258,7 @@ export function parseLessonContent(
       .slice(0, Math.max(quizCount, 1));
 
     const prediction = normalizePrediction(pick(l, ["prediction", "predict", "predictionPrompt"]));
+    const flaw = normalizeFlaw(pick(l, ["flaw", "spotTheFlaw", "spot_the_flaw", "flawDrill"]));
 
     const single = quizzes.length === 0 ? normalizeQuiz(pick(l, ["quiz"]), stub.title) : null;
     const resolvedQuizzes = quizzes.length > 0 ? quizzes : single ? [single] : [];
@@ -271,6 +272,7 @@ export function parseLessonContent(
       intro: str(pick(l, ["intro", "introduction", "hook"]), stub.subtitle),
       ...(keyPoints.length ? { keyPoints } : {}),
       ...(prediction ? { prediction } : {}),
+      ...(flaw ? { flaw } : {}),
       parts,
       quiz: resolvedQuizzes[0]!,
       quizzes: resolvedQuizzes,
