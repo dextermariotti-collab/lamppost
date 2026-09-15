@@ -160,6 +160,41 @@ function normalizePrediction(raw: unknown): Prediction | null {
   };
 }
 
+/** "Spot the flaw" drill — skipped rather than faked when the model omits it. */
+function normalizeFlaw(raw: unknown): FlawDrill | null {
+  const f = asObject(raw);
+  const claim = str(pick(f, ["claim", "argument", "statement", "text", "passage"]));
+  const options = asArray(pick(f, ["options", "answers", "choices", "diagnoses"]))
+    .map((o) => str(o))
+    .filter(Boolean)
+    .slice(0, 4);
+  if (!claim || options.length < 2) return null;
+
+  const correctRaw = pick(f, ["correct", "correct_index", "correctIndex", "answer_index"]);
+  const correct = Math.min(
+    Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
+    options.length - 1,
+  );
+
+  const order = options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+
+  const fallacy = str(pick(f, ["fallacy", "name", "error", "label"]));
+  return {
+    claim,
+    options: order.map((i) => options[i]!),
+    correct: order.indexOf(correct),
+    ...(fallacy ? { fallacy } : {}),
+    explanation: str(
+      pick(f, ["explanation", "why", "rationale"]),
+      "The argument needs evidence it never actually provides.",
+    ),
+  };
+}
+
 export function parseOutline(text: string, brief: CourseBrief): CourseOutline | null {
   const root = extractJson(text);
   if (!root) return null;
