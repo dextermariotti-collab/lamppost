@@ -86,6 +86,36 @@ export type Database = {
         }
         Relationships: []
       }
+      curriculum_lessons: {
+        Row: {
+          content: Json
+          created_at: string
+          lesson_id: string
+          model: string | null
+          title: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          lesson_id: string
+          model?: string | null
+          title: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          lesson_id?: string
+          model?: string | null
+          title?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_activity: {
         Row: {
           created_at: string
