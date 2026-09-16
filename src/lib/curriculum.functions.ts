@@ -16,7 +16,7 @@ const MAX_REPAIRS = 2;
 
 function describe(error: unknown): string {
   const text = String((error as { message?: string })?.message ?? error ?? "unknown");
-  console.error("Curriculum lesson generation failed:", text);
+  console.error("Curriculum lesson generation failed:", text, (error as { stack?: string })?.stack);
   if (/402|credit|quota|billing|payment/i.test(text)) {
     return "The AI workspace is out of credits, so this lesson couldn't be written. Top up AI credits and try again.";
   }
