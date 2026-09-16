@@ -20,6 +20,46 @@ const POSITIONS: Record<string, { x: number; y: number }> = {
   probability: { x: 67, y: 77 },
   media: { x: 34, y: 91 },
 };
+/** Rough node footprint in the same percent space, used to route edges around them. */
+const NODE_CLEARANCE = 13;
+
+/**
+ * Bends an edge away from any unrelated node it would otherwise pass under, and
+ * returns the curve plus the point where its tap target sits.
+ */
+function routeEdge(fromId: string, toId: string) {
+  const from = POSITIONS[fromId];
+  const to = POSITIONS[toId];
+  if (!from || !to) return null;
+
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const nx = -dy / length;
+  const ny = dx / length;
+
+  let bend = 0;
+  for (const [id, node] of Object.entries(POSITIONS)) {
+    if (id === fromId || id === toId) continue;
+    // Signed perpendicular distance and how far along the segment the node sits.
+    const along = ((node.x - from.x) * dx + (node.y - from.y) * dy) / (length * length);
+    if (along <= 0.08 || along >= 0.92) continue;
+    const side = (node.x - from.x) * nx + (node.y - from.y) * ny;
+    if (Math.abs(side) >= NODE_CLEARANCE) continue;
+    const push = (NODE_CLEARANCE - Math.abs(side) + 5) * (side >= 0 ? -1 : 1);
+    if (Math.abs(push) > Math.abs(bend)) bend = push;
+  }
+  if (bend === 0) bend = length > 45 ? 6 : 3;
+
+  const cx = (from.x + to.x) / 2 + nx * bend * 2;
+  const cy = (from.y + to.y) / 2 + ny * bend * 2;
+  return {
+    d: `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`,
+    // Midpoint of a quadratic curve.
+    handle: { x: (from.x + to.x) / 4 + cx / 2, y: (from.y + to.y) / 4 + cy / 2 },
+  };
+}
+
 
 /**
  * The home skills graph: seven unit nodes, completion rings from real progress,
