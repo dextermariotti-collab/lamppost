@@ -1,5 +1,5 @@
 import { CONTENT_POLICY_RULES } from "./moderation.server";
-import { EXERCISE_LABEL, EXERCISE_QUESTION, describeExercise, type Exercise } from "./exercises";
+import { EXERCISE_LABEL, EXERCISE_QUESTION, type Exercise } from "./exercises";
 import type { CurriculumLesson } from "./curriculum";
 import { extractJson } from "./exercise-ai.server";
 
@@ -12,11 +12,18 @@ import { extractJson } from "./exercise-ai.server";
  */
 
 export const VALIDATION_SYSTEM = `You are a strict reviewer of critical-thinking drills. You do not rewrite anything; you judge.
-For each drill you are given, decide whether ALL of these hold:
-1. Exactly one option is clearly the best answer AND it is the one keyed as correct.
-2. The content matches the drill type's instruction (e.g. a "rank the evidence" drill contains real,
-   checkable evidence for a stated claim — never premises, restatements or opinions).
-3. The drill tests the stated lesson objective, not a different skill.
+Each drill is given to you as JSON, including its answer key.
+For each drill, decide whether ALL of these hold:
+1. For a multiple-choice drill (claim, flaw, assumption, predict, steelman): exactly one option is
+   clearly the best answer AND it is the one keyed as "correct". Rank drills have no keyed index —
+   their "items" must simply be listed strongest evidence first. Sort drills are keyed per statement.
+2. The content matches the drill type's instruction. In particular a "rank" drill's items must be
+   real, checkable evidence offered for the stated claim (studies, measurements, records, testimony) —
+   never premises, restatements of the claim, opinions or conclusions.
+3. The drill's material is relevant to the lesson's skill. The drill TYPE was chosen deliberately by
+   the curriculum, so NEVER fail a drill merely because its type differs from the objective's wording
+   (a "spot the flaw" drill in a lesson about restating claims is expected and fine). Fail on this
+   point only when the drill is about an unrelated topic or teaches a different skill entirely.
 4. The explanation/feedback agrees with the keyed answer and does not argue for another option.
 
 Reply with ONLY minified JSON:
@@ -25,7 +32,8 @@ Reply with ONLY minified JSON:
 - "problem" is one specific sentence when pass is false, otherwise "".
 - "betterCorrect": if the ONLY fault is that a different listed option is clearly the best answer,
   give that option's 0-based index. Otherwise null.
-Be demanding: if two options could each be defended as the best answer, that drill fails.
+Be demanding about points 1, 2 and 4: if two options could each be defended as the best answer, fail.
+Never fail a drill for missing fields that its type does not have.
 
 ${CONTENT_POLICY_RULES}`;
 
@@ -34,20 +42,20 @@ export function validationPrompt(lesson: CurriculumLesson, exercises: Exercise[]
     .map((exercise, index) => {
       const key =
         "correct" in exercise && typeof exercise.correct === "number"
-          ? `\nKeyed correct option index: ${exercise.correct}`
-          : "";
-      const explanation =
-        "explanation" in exercise && exercise.explanation
-          ? `\nExplanation shown after answering: ${exercise.explanation}`
-          : "";
+          ? `Answer key: option index ${exercise.correct} — "${exercise.options[exercise.correct]}"`
+          : exercise.kind === "rank"
+            ? "Answer key: the items as listed, strongest evidence first."
+            : "Answer key: the bucket named on each statement.";
       return `--- drill index ${index}
 Type: ${EXERCISE_LABEL[exercise.kind]} — instruction shown to learner: "${EXERCISE_QUESTION[exercise.kind]}"
-Content: ${describeExercise(exercise)}${key}${explanation}`;
+${key}
+JSON: ${JSON.stringify(exercise)}`;
     })
     .join("\n");
 
   return `Lesson: "${lesson.title}"
-Objective every drill must train: ${lesson.objective}
+Lesson skill: ${lesson.objective}
+The curriculum deliberately assigned these drill types to this lesson: ${lesson.drills.join(", ")}.
 
 ${drills}
 
@@ -97,7 +105,7 @@ ${failures
   .map(
     ({ exercise, problem }, i) =>
       `${i + 1}. type "${exercise.kind}" (${EXERCISE_LABEL[exercise.kind]}) — reviewer said: ${problem || "the keyed answer was not clearly the best answer."}
-   rejected content: ${describeExercise(exercise)}`,
+   rejected content: ${JSON.stringify(exercise)}`,
   )
   .join("\n")}
 

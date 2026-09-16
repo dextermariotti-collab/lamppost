@@ -54,3 +54,11 @@
 
 ## Mobile note
 - Revisit IAP if/when shipped as an iOS app (Apple rules for digital subscriptions).
+
+## Pivot phase 3 (done)
+- Per-lesson drill plans + written task type in `src/lib/curriculum.ts` (single source of truth).
+- Generation constrained to the planned drills; new "find the claim" drill.
+- Post-generation AI validation pass (`src/lib/exercise-validate.server.ts`): re-keys fixable drills, regenerates up to 2 times, only caches passing lessons, logs failures.
+- Cached lessons invalidated via `CONTENT_VERSION = 3` and cleared rows.
+- Three written task types (restate / make the case / critique) with matching passage, placeholder and rubric; grader scores against that rubric only and XP scales with score/max.
+- Fixed a localStorage save loop that overflowed the stack on the lesson screen.
