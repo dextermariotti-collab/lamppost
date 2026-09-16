@@ -133,9 +133,10 @@ export function LessonTrail({
           >
             {firstInUnit && (
               <span className={cn("absolute bottom-[4.8rem] whitespace-nowrap text-[10px] font-bold text-muted-foreground", isLeft ? "left-0" : "right-0")}>
-                Region {node.unit + 1}
+                {unitNames?.[node.unit] ?? `Region ${node.unit + 1}`}
               </span>
             )}
+
 
             <Button
               type="button"
