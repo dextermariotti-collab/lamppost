@@ -20,6 +20,45 @@ const POSITIONS: Record<string, { x: number; y: number }> = {
   probability: { x: 67, y: 77 },
   media: { x: 34, y: 91 },
 };
+/** Rough node footprint in the same percent space, used to route edges around them. */
+const NODE_CLEARANCE = 13;
+
+/**
+ * Bends an edge away from any unrelated node it would otherwise pass under, and
+ * returns the curve plus the point where its tap target sits.
+ */
+function routeEdge(fromId: string, toId: string) {
+  const from = POSITIONS[fromId];
+  const to = POSITIONS[toId];
+  if (!from || !to) return null;
+
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const nx = -dy / length;
+  const ny = dx / length;
+
+  let bend = 0;
+  for (const [id, node] of Object.entries(POSITIONS)) {
+    if (id === fromId || id === toId) continue;
+    // Signed perpendicular distance and how far along the segment the node sits.
+    const along = ((node.x - from.x) * dx + (node.y - from.y) * dy) / (length * length);
+    if (along <= 0.08 || along >= 0.92) continue;
+    const side = (node.x - from.x) * nx + (node.y - from.y) * ny;
+    if (Math.abs(side) >= NODE_CLEARANCE) continue;
+    const push = (NODE_CLEARANCE - Math.abs(side) + 5) * (side >= 0 ? -1 : 1);
+    if (Math.abs(push) > Math.abs(bend)) bend = push;
+  }
+  if (bend === 0) bend = length > 45 ? 6 : 3;
+
+  const cx = (from.x + to.x) / 2 + nx * bend * 2;
+  const cy = (from.y + to.y) / 2 + ny * bend * 2;
+  return {
+    d: `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`,
+    // Midpoint of a quadratic curve.
+    handle: { x: (from.x + to.x) / 4 + cx / 2, y: (from.y + to.y) / 4 + cy / 2 },
+  };
+}
 
 /**
  * The home skills graph: seven unit nodes, completion rings from real progress,
@@ -39,6 +78,27 @@ export function ThinkingGraph({
   const links = useMemo(() => unitLinks(), []);
   const currentUnitId = units.find((u) => u.state === "current")?.unit.id ?? units[0]?.unit.id;
 
+  // Edges fade when neither end is reachable yet, so the lit path stays readable.
+  const routes = useMemo(() => {
+    const lockedUnits = new Set(
+      units
+        .filter((u) => u.state === "locked" && u.unit.id !== currentUnitId)
+        .map((u) => u.unit.id),
+    );
+    return links.flatMap((link) => {
+      const route = routeEdge(link.fromUnit, link.toUnit);
+      if (!route) return [];
+      return [
+        {
+          key: `${link.from}-${link.to}`,
+          link,
+          ...route,
+          dim: lockedUnits.has(link.fromUnit) || lockedUnits.has(link.toUnit),
+        },
+      ];
+    });
+  }, [links, units, currentUnitId]);
+
   return (
     <div>
       <div className="relative h-[430px]" aria-label="Your critical thinking skills graph">
@@ -48,49 +108,28 @@ export function ThinkingGraph({
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          {links.map((link) => {
-            const from = POSITIONS[link.fromUnit];
-            const to = POSITIONS[link.toUnit];
-            if (!from || !to) return null;
-            return (
-              <line
-                key={`${link.from}-${link.to}`}
-                x1={from.x}
-                y1={from.y}
-                x2={to.x}
-                y2={to.y}
-                pathLength="1"
-                className="knowledge-connection"
-              />
-            );
-          })}
+          {routes.map((route) => (
+            <path
+              key={route.key}
+              d={route.d}
+              pathLength="1"
+              className={`knowledge-connection${route.dim ? " knowledge-connection-dim" : ""}`}
+              fill="none"
+            />
+          ))}
         </svg>
 
-        {links.map((link) => {
-          const from = POSITIONS[link.fromUnit];
-          const to = POSITIONS[link.toUnit];
-          if (!from || !to) return null;
-          const dx = to.x - from.x;
-          const dy = to.y - from.y;
-          const length = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-          return (
-            <Button
-              key={`${link.from}-${link.to}-control`}
-              type="button"
-              variant="ghost"
-              aria-label={`Open connection: ${link.concept}`}
-              onClick={() => setSelected(link)}
-              className="absolute z-10 h-4 origin-left rounded-none bg-transparent p-0 hover:bg-transparent"
-              style={{
-                left: `${from.x}%`,
-                top: `${from.y}%`,
-                width: `${length}%`,
-                transform: `translateY(-50%) rotate(${angle}deg)`,
-              }}
-            />
-          );
-        })}
+        {routes.map((route) => (
+          <Button
+            key={`${route.key}-control`}
+            type="button"
+            variant="ghost"
+            aria-label={`Open connection: ${route.link.concept}`}
+            onClick={() => setSelected(route.link)}
+            className="absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 hover:bg-primary/10"
+            style={{ left: `${route.handle.x}%`, top: `${route.handle.y}%` }}
+          />
+        ))}
 
         {units.map((unit) => {
           const point = POSITIONS[unit.unit.id] ?? { x: 50, y: 50 };

@@ -1,4 +1,6 @@
 import type { CourseBrief } from "./course-brief";
+import type { Exercise, WrittenPrompt } from "./exercises";
+
 
 export type Quiz = {
   question: string;
@@ -36,6 +38,12 @@ export type Lesson = {
   emoji: string;
   intro?: string;
   keyPoints?: string[];
+  /** Short concept card (max ~80 words + one example) opening the lesson. */
+  concept?: { title: string; body: string; example?: string };
+  /** The lesson's reasoning drills, done in order. */
+  exercises?: Exercise[];
+  /** Closing written-argument task, graded by rubric. */
+  written?: WrittenPrompt;
   /** Multi-page lesson content, shown one part at a time before the quiz. */
   parts?: LessonPart[];
   /** Optional prediction beat closing the first (reading) part. */
@@ -47,6 +55,7 @@ export type Lesson = {
   /** Multiple quiz questions on longer courses; falls back to `quiz`. */
   quizzes?: Quiz[];
 };
+
 
 export type Course = {
   slug: string;

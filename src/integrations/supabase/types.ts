@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      argument_attempts: {
+        Row: {
+          answer: string
+          attempt: number
+          created_at: string
+          id: string
+          lesson_id: string
+          lesson_title: string
+          scores: Json
+          tip: string | null
+          total: number
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          attempt?: number
+          created_at?: string
+          id?: string
+          lesson_id: string
+          lesson_title: string
+          scores?: Json
+          tip?: string | null
+          total?: number
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          attempt?: number
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          lesson_title?: string
+          scores?: Json
+          tip?: string | null
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_reports: {
         Row: {
           course_slug: string | null

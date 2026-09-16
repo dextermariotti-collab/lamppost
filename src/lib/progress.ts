@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
 
-
 const KEY = "lamppost-progress-v1";
 
 export type Celebration = {
@@ -28,7 +27,10 @@ export type ProgressState = {
   /** queued celebration, consumed by the progress screen */
   celebration: Celebration | null;
   /** slug -> number of lessons completed */
-  courses: Record<string, { topic: string; completed: number; total: number; lastActivityAt?: number }>;
+  courses: Record<
+    string,
+    { topic: string; completed: number; total: number; lastActivityAt?: number }
+  >;
   /** unused streak freezes held */
   freezes: number;
   /** YYYY-MM-DD days a freeze covered, so they're only spent once */
@@ -71,7 +73,12 @@ function daysBetween(from: string, to: string) {
  */
 function advanceStreak(prev: ProgressState, today: string) {
   if (prev.lastActiveDay === today) {
-    return { streak: prev.streak, freezes: prev.freezes, freezeLog: prev.freezeLog, freezeSaved: prev.freezeSaved };
+    return {
+      streak: prev.streak,
+      freezes: prev.freezes,
+      freezeLog: prev.freezeLog,
+      freezeSaved: prev.freezeSaved,
+    };
   }
   const gap = prev.lastActiveDay ? daysBetween(prev.lastActiveDay, today) - 1 : 0;
   let streak = 1;
@@ -138,10 +145,10 @@ export function deriveInsights(state: ProgressState) {
   const today = dayKey();
   const doneToday = state.history[today] ?? 0;
   const weekOf = (offset: number) =>
-    Array.from({ length: 7 }, (_, i) => state.history[shiftDay(today, -(i + offset * 7))] ?? 0).reduce(
-      (a, b) => a + b,
-      0,
-    );
+    Array.from(
+      { length: 7 },
+      (_, i) => state.history[shiftDay(today, -(i + offset * 7))] ?? 0,
+    ).reduce((a, b) => a + b, 0);
   const thisWeek = weekOf(0);
   const past = [1, 2, 3, 4, 5, 6, 7, 8].map(weekOf).filter((v) => v > 0);
   const beaten = past.filter((v) => thisWeek > v).length;
@@ -229,7 +236,6 @@ export function useProgress() {
     void syncProgress({ data: payload }).catch(() => undefined);
   }, [hydrated, userId, state]);
 
-
   const registerCourse = useCallback(
     (slug: string, topic: string, total: number) =>
       update((prev) =>
@@ -299,7 +305,10 @@ export function useProgress() {
           lastActiveDay: today,
           history,
           celebration,
-          courses: { ...prev.courses, [slug]: { topic, completed, total, lastActivityAt: Date.now() } },
+          courses: {
+            ...prev.courses,
+            [slug]: { topic, completed, total, lastActivityAt: Date.now() },
+          },
         };
       }),
     [update],
@@ -346,6 +355,30 @@ export function useProgress() {
       }),
     [update],
   );
+  /** XP per reasoning exercise, scaled by how much of it was right. */
+  const recordExercise = useCallback(
+    (score: number) =>
+      update((prev) => {
+        const clamped = Math.min(Math.max(score, 0), 1);
+        return {
+          ...prev,
+          xp: prev.xp + Math.max(5, Math.round(25 * clamped)),
+          gems: prev.gems + (clamped === 1 ? 2 : 0),
+        };
+      }),
+    [update],
+  );
+
+  /** The written argument pays by rubric score, not by length. */
+  const recordArgument = useCallback(
+    (total: number) =>
+      update((prev) => ({
+        ...prev,
+        xp: prev.xp + Math.max(20, Math.round(total * 6)),
+        gems: prev.gems + (total >= 12 ? 5 : 1),
+      })),
+    [update],
+  );
 
   /** Buy one freeze with gems, capped so it can't be stockpiled. */
   const buyFreeze = useCallback(
@@ -380,10 +413,12 @@ export function useProgress() {
     completeLesson,
     recordReview,
     recordPractice,
+    recordExercise,
+    recordArgument,
+
     buyFreeze,
     clearFreezeSaved,
     clearCelebration,
     setDailyGoal,
   };
 }
-

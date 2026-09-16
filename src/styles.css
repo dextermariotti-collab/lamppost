@@ -255,6 +255,12 @@
   animation: connection-draw 520ms ease-out forwards;
 }
 
+.knowledge-connection-dim {
+  opacity: 0.3;
+}
+
+
+
 .course-expedition {
   --background: #383b47;
   --foreground: #edebe6;
