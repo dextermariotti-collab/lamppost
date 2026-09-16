@@ -13,9 +13,9 @@ import { SpotTheFlawCard } from "@/components/SpotTheFlawCard";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
-import { clampBrief } from "@/lib/course-brief";
-import { useStoredCourse } from "@/lib/course-store";
-import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
+import { CURRICULUM_SLUG, TOTAL_LESSONS, lessonAt, unitById } from "@/lib/curriculum";
+import { useCurriculumCourse, useCurriculumLesson } from "@/lib/curriculum-store";
+import { lessonQuizzes } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { usePredictionAttempt } from "@/lib/prediction-store";
 import { useFlawAttempt } from "@/lib/flaw-store";
@@ -24,16 +24,21 @@ import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
   head: ({ params }) => {
-    const topic = titleFromSlug(params.slug);
+    const meta = lessonAt(Math.max(Number(params.index) || 1, 1) - 1);
+    const title = meta?.title ?? "Critical thinking lesson";
     return {
       meta: [
-        { title: `Lesson ${params.index} — ${topic} | Lamppost` },
+        { title: `${title} — Lamppost critical thinking` },
         {
           name: "description",
-          content: `An in-depth AI-written ${topic} lesson with quizzes on Lamppost.`,
+          content:
+            meta?.objective ?? "Train one critical-thinking skill with a lesson, a flaw drill and a quiz.",
         },
-        { property: "og:title", content: `${topic} lesson ${params.index} — Lamppost` },
-        { property: "og:description", content: `Read, practise and quiz yourself on ${topic}.` },
+        { property: "og:title", content: `${title} — Lamppost` },
+        {
+          property: "og:description",
+          content: meta?.objective ?? "Practise spotting weak reasoning in real arguments.",
+        },
         { property: "og:type", content: "article" },
       ],
       links: [{ rel: "canonical", href: `/course/${params.slug}/lesson/${params.index}` }],
@@ -41,6 +46,7 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
   },
   component: LessonScreen,
 });
+
 
 function LessonScreen() {
   const { slug, index } = Route.useParams();
