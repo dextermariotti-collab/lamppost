@@ -79,7 +79,7 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
         return await result.text;
       };
 
-      console.log("[gen] asking model");
+      console.log("[gen] meta", JSON.stringify(meta));
       const text = await ask(system, exerciseLessonPrompt(meta));
       console.log("[gen] got reply", text.length);
       const screened = screenOutput(text);
