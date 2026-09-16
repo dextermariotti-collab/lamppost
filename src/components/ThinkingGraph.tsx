@@ -79,6 +79,27 @@ export function ThinkingGraph({
   const links = useMemo(() => unitLinks(), []);
   const currentUnitId = units.find((u) => u.state === "current")?.unit.id ?? units[0]?.unit.id;
 
+  // Edges fade when neither end is reachable yet, so the lit path stays readable.
+  const routes = useMemo(() => {
+    const lockedUnits = new Set(
+      units.filter((u) => u.state === "locked" && u.unit.id !== currentUnitId).map((u) => u.unit.id),
+    );
+    return links.flatMap((link) => {
+      const route = routeEdge(link.fromUnit, link.toUnit);
+      if (!route) return [];
+      return [
+        {
+          key: `${link.from}-${link.to}`,
+          link,
+          ...route,
+          dim: lockedUnits.has(link.fromUnit) || lockedUnits.has(link.toUnit),
+        },
+      ];
+    });
+  }, [links, units, currentUnitId]);
+
+
+
   return (
     <div>
       <div className="relative h-[430px]" aria-label="Your critical thinking skills graph">
