@@ -405,6 +405,9 @@ export function useProgress() {
     completeLesson,
     recordReview,
     recordPractice,
+    recordExercise,
+    recordArgument,
+
     buyFreeze,
     clearFreezeSaved,
     clearCelebration,
