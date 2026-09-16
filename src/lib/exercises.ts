@@ -6,8 +6,17 @@
  * lesson through the constrained, cached curriculum pipeline.
  */
 
-export type ExerciseKind =
-  "claim" | "flaw" | "assumption" | "rank" | "sort" | "predict" | "steelman";
+export const EXERCISE_KINDS = [
+  "claim",
+  "flaw",
+  "assumption",
+  "rank",
+  "sort",
+  "predict",
+  "steelman",
+] as const;
+
+export type ExerciseKind = (typeof EXERCISE_KINDS)[number];
 
 /** Pick the sentence that carries the passage's central claim. */
 export type ClaimExercise = {

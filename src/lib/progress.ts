@@ -247,6 +247,24 @@ export function useProgress() {
     [update],
   );
 
+  /**
+   * Marks the first `count` lessons as already known — used by the optional
+   * onboarding placement check. No XP, no streak: nothing was practised.
+   */
+  const unlockLessons = useCallback(
+    (slug: string, topic: string, count: number, total: number) =>
+      update((prev) => {
+        const existing = prev.courses[slug] ?? { topic, completed: 0, total };
+        const completed = Math.max(existing.completed, Math.min(count, total));
+        if (completed === existing.completed) return prev;
+        return {
+          ...prev,
+          courses: { ...prev.courses, [slug]: { ...existing, topic, total, completed } },
+        };
+      }),
+    [update],
+  );
+
   const completeLesson = useCallback(
     (slug: string, topic: string, index: number, total: number) =>
       update((prev) => {
@@ -411,6 +429,7 @@ export function useProgress() {
     state,
     hydrated,
     registerCourse,
+    unlockLessons,
     completeLesson,
     recordReview,
     recordPractice,

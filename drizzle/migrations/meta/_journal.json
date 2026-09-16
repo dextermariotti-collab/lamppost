@@ -15,6 +15,13 @@
       "when": 1789597848561,
       "tag": "0001_create_argument_attempts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789600775027,
+      "tag": "0002_create_drill_variants_and_debates",
+      "breakpoints": true
     }
   ]
 }

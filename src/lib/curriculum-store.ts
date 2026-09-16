@@ -69,10 +69,14 @@ function storeLesson(index: number, lesson: Lesson) {
 }
 
 /**
- * Loads one curriculum lesson: local copy first, otherwise the cached/generated
- * content from the server.
+ * Loads one curriculum lesson.
+ *
+ * A lesson the learner has already finished is served from their local copy so
+ * their own drills and answers stay put. A lesson they have NOT finished always
+ * refetches the current shared version — otherwise someone who started a lesson
+ * before a content fix would keep seeing the broken drills forever.
  */
-export function useCurriculumLesson(index: number) {
+export function useCurriculumLesson(index: number, completedLessons = 0) {
   const meta = lessonAt(index);
   const [lesson, setLesson] = useState<Lesson | undefined>(undefined);
   const [loading, setLoading] = useState(true);
@@ -80,6 +84,7 @@ export function useCurriculumLesson(index: number) {
   const [attempt, setAttempt] = useState(0);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  const finished = index < completedLessons;
 
   useEffect(() => {
     if (!meta) {
@@ -90,15 +95,16 @@ export function useCurriculumLesson(index: number) {
     const course = ensureCurriculumCourse();
     const local = course.lessons[index];
 
-    if (hasLessonContent(local)) {
+    if (finished && hasLessonContent(local)) {
       setLesson(local);
       setLoading(false);
       return;
     }
 
-    setLesson(local);
+    setLesson(undefined);
     setLoading(true);
     setError(null);
+
 
     void getCurriculumLesson({ data: { lessonId: meta.id } })
       .then((result) => {
@@ -126,7 +132,7 @@ export function useCurriculumLesson(index: number) {
     return () => {
       cancelled = true;
     };
-  }, [index, meta, attempt]);
+  }, [index, meta, attempt, finished]);
 
   return { lesson, meta, loading, error, retry, ready: hasLessonContent(lesson) };
 }

@@ -182,6 +182,114 @@ export type Database = {
         }
         Relationships: []
       }
+      debates: {
+        Row: {
+          challenger_answer: string | null
+          challenger_id: string
+          challenger_scores: Json | null
+          challenger_seen_result: boolean
+          challenger_side: string
+          challenger_tip: string | null
+          challenger_total: number | null
+          created_at: string
+          id: string
+          lesson_id: string | null
+          max_score: number
+          opponent_answer: string | null
+          opponent_id: string
+          opponent_scores: Json | null
+          opponent_seen_result: boolean
+          opponent_side: string
+          opponent_tip: string | null
+          opponent_total: number | null
+          passage: string
+          prompt: string
+          status: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          challenger_answer?: string | null
+          challenger_id: string
+          challenger_scores?: Json | null
+          challenger_seen_result?: boolean
+          challenger_side: string
+          challenger_tip?: string | null
+          challenger_total?: number | null
+          created_at?: string
+          id?: string
+          lesson_id?: string | null
+          max_score?: number
+          opponent_answer?: string | null
+          opponent_id: string
+          opponent_scores?: Json | null
+          opponent_seen_result?: boolean
+          opponent_side: string
+          opponent_tip?: string | null
+          opponent_total?: number | null
+          passage: string
+          prompt: string
+          status?: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          challenger_answer?: string | null
+          challenger_id?: string
+          challenger_scores?: Json | null
+          challenger_seen_result?: boolean
+          challenger_side?: string
+          challenger_tip?: string | null
+          challenger_total?: number | null
+          created_at?: string
+          id?: string
+          lesson_id?: string | null
+          max_score?: number
+          opponent_answer?: string | null
+          opponent_id?: string
+          opponent_scores?: Json | null
+          opponent_seen_result?: boolean
+          opponent_side?: string
+          opponent_tip?: string | null
+          opponent_total?: number | null
+          passage?: string
+          prompt?: string
+          status?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      drill_variants: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          kind: string
+          lesson_id: string
+          model: string | null
+          variant: number
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          kind: string
+          lesson_id: string
+          model?: string | null
+          variant: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          lesson_id?: string
+          model?: string | null
+          variant?: number
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           accepted_at: string | null

@@ -10,7 +10,7 @@ export type LessonContentResult =
 
 const MODEL = "google/gemini-3.6-flash";
 /** Bumped when the generation pipeline changes; invalidates cached lessons. */
-const CONTENT_VERSION = 3;
+const CONTENT_VERSION = 4;
 /** Regeneration rounds allowed for drills that fail review. */
 const MAX_REPAIRS = 2;
 

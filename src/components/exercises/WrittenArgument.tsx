@@ -95,9 +95,8 @@ export function WrittenArgument({
       <blockquote className="mt-3 rounded-2xl border-l-4 border-primary/40 bg-muted/50 px-4 py-3 text-[13px] font-semibold leading-relaxed text-foreground">
         {written.passage}
       </blockquote>
-      {written.guidance && (
-        <p className="mt-2 text-[13px] font-semibold text-muted-foreground">{written.guidance}</p>
-      )}
+      {/* written.guidance describes what a strong answer does, so it stays hidden
+          until after submission — shown before, it hands over the answer. */}
 
       {showEditor && (
         <>
@@ -175,6 +174,15 @@ export function WrittenArgument({
               </div>
             );
           })}
+
+          {written.guidance && (
+            <div className="rounded-2xl border border-dashed border-primary/40 p-3">
+              <p className="text-[11px] font-bold text-primary">What a strong answer does</p>
+              <p className="mt-1 text-[13px] font-semibold leading-snug text-muted-foreground">
+                {written.guidance}
+              </p>
+            </div>
+          )}
 
           {attempt === 1 && (
             <Button

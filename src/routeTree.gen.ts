@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChallengeRoute = ChallengeRouteImport.update({
+  id: '/challenge',
+  path: '/challenge',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -152,6 +158,7 @@ const CourseSlugLessonIndexRoute = CourseSlugLessonIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/challenge': typeof ChallengeRoute
   '/courses': typeof CoursesRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/challenge': typeof ChallengeRoute
   '/courses': typeof CoursesRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/challenge': typeof ChallengeRoute
   '/courses': typeof CoursesRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/challenge'
     | '/courses'
     | '/onboarding'
     | '/premium'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/challenge'
     | '/courses'
     | '/onboarding'
     | '/premium'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/challenge'
     | '/courses'
     | '/onboarding'
     | '/premium'
@@ -306,6 +318,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  ChallengeRoute: typeof ChallengeRoute
   CoursesRoute: typeof CoursesRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/challenge': {
+      id: '/challenge'
+      path: '/challenge'
+      fullPath: '/challenge'
+      preLoaderRoute: typeof ChallengeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -498,6 +518,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  ChallengeRoute: ChallengeRoute,
   CoursesRoute: CoursesRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,

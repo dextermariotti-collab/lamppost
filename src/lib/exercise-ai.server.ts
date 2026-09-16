@@ -2,6 +2,7 @@ import { CONTENT_POLICY_RULES } from "./moderation.server";
 import { UNITS, linksForLesson, type CurriculumLesson } from "./curriculum";
 import {
   EXERCISE_LABEL,
+  EXERCISE_QUESTION,
   WRITTEN_TASKS,
   type AssumptionExercise,
   type ClaimExercise,
@@ -47,8 +48,14 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
   4 statements, bucket is one of "fact" (checkable), "opinion" (a preference or judgement) or
   "value" (a claim about what matters or what ought to be). Mix the buckets. why = one sentence.`,
   predict: `{"kind":"predict","scenario":string,"question":string,"options":[string,string,string],"correct":number,"explanation":string}
-  scenario = a study result, decision or chart described in 2-3 sentences, stopping BEFORE the outcome.
-  question asks the learner to predict the outcome. explanation reveals what actually happened.`,
+  scenario = a decision, situation or study described in 2-3 sentences, stopping BEFORE the outcome.
+  NEVER invent a study, statistic, institution or named source and present it as real. Either
+  (a) describe a genuinely well-established, widely-reported finding you are confident about, or
+  (b) begin the scenario with the exact words "Hypothetical scenario: " and keep every number inside
+  it clearly part of that hypothetical. Do not name researchers, universities, journals or years
+  unless the finding is genuinely famous.
+  question asks the learner to predict the outcome. explanation reveals what happened; if the
+  scenario was hypothetical, the explanation says what would follow and why, not what "was found".`,
   steelman: `{"kind":"steelman","view":string,"options":[string,string,string],"correct":number,"explanation":string}
   view = a weakly stated version of a real position (2 sentences). options = three rewrites; the
   correct one is the strongest honest version, the others overstate, strawman or dodge.`,
@@ -66,6 +73,26 @@ prompt asks the learner, in 2-4 sentences, to name the flaw, say why it matters 
 and suggest a fix.`,
 };
 
+/**
+ * Rules that hold for every drill, in lesson generation and in the fresh review
+ * variants alike. Two of them exist because of real content failures: models
+ * invented studies as fact, and tucked the reasoning into one option so the
+ * answer could be read off the wording instead of worked out.
+ */
+export const HARD_RULES = `Hard rules for every drill:
+- The content must match the drill's own instruction: evidence drills contain evidence, claim drills
+  contain a claim buried in a passage, and so on.
+- Exactly ONE option is clearly the best answer and "correct" (0-based index) points at it.
+- "explanation" must agree with the keyed option and never argue for a different one.
+- Every drill must test THIS lesson's objective and use everyday material (news, workplace decisions,
+  health advice, adverts, social posts, product reviews, politics).
+- NEVER present an invented study, statistic, institution or named source as real fact. Use a
+  genuinely well-established finding, or mark the whole scenario as hypothetical.
+- NO GIVEAWAY WORDING. Options must be the same style and within a few words of the same length, and
+  must never contain their own justification: no "because…", "since…", "which shows…", "as habit was
+  assumed, not created". State the outcome or diagnosis only; the reasoning belongs in "explanation".
+  Never make the keyed option the longest, the most hedged or the most detailed one.`;
+
 export function exerciseSystemPrompt(kinds: ExerciseKind[], written: WrittenTaskType) {
   const unique = [...new Set(kinds)];
   return `You design training drills for Lamppost, a critical-thinking trainer.
@@ -79,13 +106,7 @@ concrete everyday example (max 40 words). "concept.title" is max 5 words.
 "exercises" has EXACTLY ${unique.length} entries, in this order, one per line below, and NO other kinds:
 ${unique.map((kind, i) => `${i + 1} ${EXERCISE_LABEL[kind]} — ${KIND_SPEC[kind]}`).join("\n")}
 
-Hard rules for every drill:
-- The content must match the drill's own instruction: evidence drills contain evidence, claim drills
-  contain a claim buried in a passage, and so on.
-- Exactly ONE option is clearly the best answer and "correct" (0-based index) points at it.
-- "explanation" must agree with the keyed option and never argue for a different one.
-- Every drill must test THIS lesson's objective and use everyday material (news, workplace decisions,
-  health advice, adverts, social posts, product reviews, politics).
+${HARD_RULES}
 
 ${WRITTEN_SPEC[written]}
 Guidance is one sentence naming what a strong answer does. The passage is ALWAYS included in the JSON
@@ -117,6 +138,39 @@ Stay strictly on this objective: never drift into another unit's skill, never te
 instead of the skill, never ask a question that can be answered by recalling the concept card.
 ${links ? `This lesson genuinely connects to other units:\n${links}\nOne exercise may lean on that connection.` : ""}
 Return the JSON now.`;
+}
+
+/* --------------------- fresh variants for reviews --------------------- */
+
+/**
+ * A review must not be a memory test of one scenario, so a due item is served as
+ * a brand-new drill of the same kind on the same skill.
+ */
+export function variantSystemPrompt(kind: ExerciseKind) {
+  return `You design a single training drill for Lamppost, a critical-thinking trainer.
+Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
+${KIND_SPEC[kind]}
+
+${HARD_RULES}
+
+${CONTENT_POLICY_RULES}`;
+}
+
+export function variantPrompt(lesson: CurriculumLesson, kind: ExerciseKind, avoid: string[]) {
+  const unit = UNITS.find((u) => u.id === lesson.unitId);
+  return `Unit: ${unit?.title ?? lesson.unitId}
+Skill being reviewed: ${lesson.objective}
+Drill type: ${kind} — ${EXERCISE_LABEL[kind]} (${EXERCISE_QUESTION[kind]})
+
+Write ONE new drill of that type training exactly that skill, on fresh material.
+${
+  avoid.length
+    ? `These scenarios have already been used — pick a clearly different subject area and situation:\n${avoid
+        .map((a, i) => `${i + 1}. ${a}`)
+        .join("\n")}`
+    : ""
+}
+Return the JSON for that one drill now.`;
 }
 
 /* ------------------------------- parsing ------------------------------- */

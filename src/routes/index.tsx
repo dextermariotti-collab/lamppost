@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { ArrowRight, Zap } from "lucide-react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ThinkingGraph } from "@/components/ThinkingGraph";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
+import { useDailyChallenge } from "@/lib/challenge";
 import {
   CURRICULUM_SLUG,
   CURRICULUM_TITLE,
@@ -16,7 +17,7 @@ import {
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
-import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
+import { reviewUrgencyFor, useDueDrills } from "@/lib/review-drills";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -57,14 +58,11 @@ function Home() {
   }, [registerCourse]);
 
   const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
-  const completedBySlug = useMemo(
-    () => Object.fromEntries(Object.entries(state.courses).map(([slug, c]) => [slug, c.completed])),
-    [state.courses],
-  );
-  const { items: dueItems } = useReviewQueue(completedBySlug);
+  const { items: dueItems, total: dueTotal } = useDueDrills();
+  const { challenge, doneToday } = useDailyChallenge(completed);
 
   const maxOverdue = dueItems[0]?.overdueDays ?? 0;
-  const urgency = reviewUrgency(dueItems.length, maxOverdue);
+  const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
 
   const nextIndex = nextLessonIndex(completed);
   const next = lessonAt(nextIndex);
@@ -132,17 +130,40 @@ function Home() {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => navigate({ to: dueItems.length === 0 ? "/schedule" : "/review" })}
+            onClick={() => navigate({ to: dueTotal === 0 ? "/schedule" : "/review" })}
             className="mt-2 h-auto w-full justify-start whitespace-normal rounded-none bg-transparent p-0 text-left text-sm font-normal leading-relaxed text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground"
           >
-            {dueItems.length === 0
-              ? "Nothing due today. Review schedule is clear."
+            {dueTotal === 0
+              ? "Nothing due today. Every drill is sitting comfortably."
               : urgency === "piling"
-                ? `${dueItems.length} ideas due. Oldest is ${maxOverdue} days overdue.`
-                : `${dueItems.length} idea${dueItems.length === 1 ? "" : "s"} ready to revisit.`}
+                ? `${dueTotal} drills due. Oldest is ${maxOverdue} days overdue.`
+                : `${dueTotal} drill${dueTotal === 1 ? "" : "s"} due — new scenarios, same skills.`}
           </Button>
         </section>
+
+        {challenge && (
+          <section className="border-t border-border py-5">
+            <div className="flex items-center gap-1.5">
+              <Zap aria-hidden className="h-3.5 w-3.5 text-primary" />
+              <p className="text-sm font-bold text-foreground">Daily challenge</p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => navigate({ to: "/challenge" })}
+              className="mt-2 h-auto w-full justify-between gap-3 whitespace-normal rounded-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
+            >
+              <span className="min-w-0 text-sm font-normal leading-relaxed text-muted-foreground">
+                {doneToday
+                  ? "Done for today. A new one lands tomorrow."
+                  : `One drill from ${challenge.unitTitle}. Keeps your streak alive.`}
+              </span>
+              {!doneToday && <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+            </Button>
+          </section>
+        )}
       </main>
+
     </PhoneFrame>
   );
 }

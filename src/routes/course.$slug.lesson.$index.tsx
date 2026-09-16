@@ -19,6 +19,8 @@ import { describeExercise } from "@/lib/exercises";
 import { useLessonAttempts } from "@/lib/exercise-store";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { useProgress } from "@/lib/progress";
+import { recordWrittenScore } from "@/lib/mastery";
+import { trackDrillResult } from "@/lib/review-drills";
 import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
@@ -56,9 +58,13 @@ function LessonScreen() {
   const navigate = useNavigate();
   const course = useCurriculumCourse();
   const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
-  const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(lessonNumber - 1);
+  const { state, completeLesson, recordPractice, recordExercise, recordArgument } = useProgress();
+  const completedLessons = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
+  const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(
+    lessonNumber - 1,
+    completedLessons,
+  );
   const { companion } = useCompanion();
-  const { completeLesson, recordPractice, recordExercise, recordArgument } = useProgress();
   const { userId } = useSessionUser();
   const { attempts, record } = useLessonAttempts(meta?.id ?? `lesson-${lessonNumber}`);
 
@@ -139,6 +145,11 @@ function LessonScreen() {
     const fresh = record(exerciseIndex, answer, score);
     if (fresh) recordExercise(score);
     const correct = score === 1;
+    // Shaky drills earn a spaced review as a fresh variant of the same skill.
+    if (meta && currentExercise) {
+      const confidence = (answer as { confidence?: number } | null)?.confidence;
+      trackDrillResult(meta.id, currentExercise.kind, score, confidence);
+    }
     if (!correct || Math.random() < SOCRATIC_CHANCE) {
       setSocratic({ index: exerciseIndex, correct });
     }
@@ -287,6 +298,7 @@ function LessonScreen() {
               onGraded={(total, attempt, max) => {
                 setArgumentGrade(total);
                 if (attempt === 1) recordArgument(total, max);
+                recordWrittenScore(meta?.id ?? `lesson-${lessonNumber}`, total, max);
               }}
             />
             {argumentGrade === null && !skippedWriting && (
