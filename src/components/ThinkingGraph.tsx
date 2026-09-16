@@ -48,49 +48,29 @@ export function ThinkingGraph({
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          {links.map((link) => {
-            const from = POSITIONS[link.fromUnit];
-            const to = POSITIONS[link.toUnit];
-            if (!from || !to) return null;
-            return (
-              <line
-                key={`${link.from}-${link.to}`}
-                x1={from.x}
-                y1={from.y}
-                x2={to.x}
-                y2={to.y}
-                pathLength="1"
-                className="knowledge-connection"
-              />
-            );
-          })}
+          {routes.map((route) => (
+            <path
+              key={route.key}
+              d={route.d}
+              pathLength="1"
+              className={`knowledge-connection${route.dim ? " knowledge-connection-dim" : ""}`}
+              fill="none"
+            />
+          ))}
         </svg>
 
-        {links.map((link) => {
-          const from = POSITIONS[link.fromUnit];
-          const to = POSITIONS[link.toUnit];
-          if (!from || !to) return null;
-          const dx = to.x - from.x;
-          const dy = to.y - from.y;
-          const length = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-          return (
-            <Button
-              key={`${link.from}-${link.to}-control`}
-              type="button"
-              variant="ghost"
-              aria-label={`Open connection: ${link.concept}`}
-              onClick={() => setSelected(link)}
-              className="absolute z-10 h-4 origin-left rounded-none bg-transparent p-0 hover:bg-transparent"
-              style={{
-                left: `${from.x}%`,
-                top: `${from.y}%`,
-                width: `${length}%`,
-                transform: `translateY(-50%) rotate(${angle}deg)`,
-              }}
-            />
-          );
-        })}
+        {routes.map((route) => (
+          <Button
+            key={`${route.key}-control`}
+            type="button"
+            variant="ghost"
+            aria-label={`Open connection: ${route.link.concept}`}
+            onClick={() => setSelected(route.link)}
+            className="absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 hover:bg-primary/10"
+            style={{ left: `${route.handle.x}%`, top: `${route.handle.y}%` }}
+          />
+        ))}
+
 
         {units.map((unit) => {
           const point = POSITIONS[unit.unit.id] ?? { x: 50, y: 50 };
