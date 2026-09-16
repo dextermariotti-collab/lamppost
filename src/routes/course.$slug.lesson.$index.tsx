@@ -284,9 +284,9 @@ function LessonScreen() {
               written={written}
               companion={companion}
               signedIn={!!userId}
-              onGraded={(total, attempt) => {
+              onGraded={(total, attempt, max) => {
                 setArgumentGrade(total);
-                if (attempt === 1) recordArgument(total);
+                if (attempt === 1) recordArgument(total, max);
               }}
             />
             {argumentGrade === null && !skippedWriting && (

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
+import { argumentXpFor } from "./exercises";
 
 const KEY = "lamppost-progress-v1";
 
@@ -371,11 +372,11 @@ export function useProgress() {
 
   /** The written argument pays by rubric score, not by length. */
   const recordArgument = useCallback(
-    (total: number) =>
+    (total: number, max: number) =>
       update((prev) => ({
         ...prev,
-        xp: prev.xp + Math.max(20, Math.round(total * 6)),
-        gems: prev.gems + (total >= 12 ? 5 : 1),
+        xp: prev.xp + argumentXpFor(total, max),
+        gems: prev.gems + (total / Math.max(max, 1) >= 0.75 ? 5 : 1),
       })),
     [update],
   );

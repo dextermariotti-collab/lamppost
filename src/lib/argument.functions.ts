@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { screenLocally } from "./moderation";
-import { RUBRIC_CRITERIA, type ArgumentGrade, type RubricCriterion } from "./exercises";
+import { WRITTEN_TASKS, type ArgumentGrade, type RubricCriterion } from "./exercises";
 
 const MODEL = "google/gemini-3.6-flash";
 
@@ -10,6 +10,8 @@ const GradeInput = z.object({
   lessonId: z.string().min(1),
   lessonTitle: z.string().min(1),
   objective: z.string().min(1),
+  taskType: z.enum(["restate", "case", "critique"]),
+  passage: z.string().min(1).max(4000),
   prompt: z.string().min(1),
   answer: z.string().min(1).max(4000),
   attempt: z.number().int().min(1).max(2),
@@ -22,7 +24,10 @@ export type GradeResult =
 const clampScore = (value: unknown) =>
   Math.min(4, Math.max(1, Math.round(typeof value === "number" ? value : 1)));
 
-function parseGrade(text: string): { grade: ArgumentGrade; onTopic: boolean } | null {
+function parseGrade(
+  text: string,
+  criteria: readonly RubricCriterion[],
+): { grade: ArgumentGrade; onTopic: boolean } | null {
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) return null;
   let raw: Record<string, unknown>;
@@ -33,9 +38,9 @@ function parseGrade(text: string): { grade: ArgumentGrade; onTopic: boolean } | 
   }
   const scoresRaw = (raw["scores"] ?? {}) as Record<string, unknown>;
   const scores = {} as ArgumentGrade["scores"];
-  for (const criterion of RUBRIC_CRITERIA) {
+  for (const criterion of criteria) {
     const entry = (scoresRaw[criterion] ?? {}) as Record<string, unknown>;
-    scores[criterion as RubricCriterion] = {
+    scores[criterion] = {
       score: clampScore(entry["score"]),
       feedback:
         typeof entry["feedback"] === "string" && entry["feedback"].trim()
@@ -43,12 +48,15 @@ function parseGrade(text: string): { grade: ArgumentGrade; onTopic: boolean } | 
           : "Nothing here yet to grade on this criterion.",
     };
   }
-  const total = RUBRIC_CRITERIA.reduce((sum, c) => sum + scores[c].score, 0);
+  const total = criteria.reduce((sum, c) => sum + (scores[c]?.score ?? 0), 0);
   const tip =
     typeof raw["tip"] === "string" && raw["tip"].trim()
       ? raw["tip"].trim().slice(0, 300)
       : "Add one sentence naming the strongest objection, then answer it.";
-  return { grade: { scores, tip, total }, onTopic: raw["onTopic"] !== false };
+  return {
+    grade: { scores, tip, total, max: criteria.length * 4 },
+    onTopic: raw["onTopic"] !== false,
+  };
 }
 
 function describe(error: unknown): string {
@@ -71,8 +79,14 @@ export const gradeArgument = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<GradeResult> => {
     const screened = screenLocally(data.answer);
     if (!screened.allowed) return { ok: false, reason: screened.message, blocked: true };
-    if (data.answer.trim().split(/\s+/).length < 12) {
-      return { ok: false, reason: "Write at least three sentences so there's an argument to grade." };
+    const task = WRITTEN_TASKS[data.taskType];
+    const words = data.answer.trim().split(/\s+/).length;
+    const minWords = data.taskType === "restate" ? 5 : data.taskType === "critique" ? 15 : 25;
+    if (words < minWords) {
+      return {
+        ok: false,
+        reason: `Write ${task.length} so there's something to grade.`,
+      };
     }
 
     const key = process.env["LOVABLE_API_KEY"];
@@ -81,17 +95,17 @@ export const gradeArgument = createServerFn({ method: "POST" })
     try {
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-      const { GRADER_SYSTEM, graderPrompt } = await import("./argument.server");
+      const { graderSystem, graderPrompt } = await import("./argument.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
         model: gateway(MODEL),
-        system: GRADER_SYSTEM,
+        system: graderSystem(data.taskType),
         prompt: graderPrompt(data),
         maxRetries: 1,
       });
       const text = await result.text;
-      const parsed = parseGrade(text);
+      const parsed = parseGrade(text, task.criteria);
       if (!parsed) return { ok: false, reason: "The grader's reply couldn't be read. Try again." };
       return { ok: true, ...parsed };
     } catch (error) {
@@ -107,6 +121,7 @@ const SaveInput = z.object({
   scores: z.record(z.string(), z.object({ score: z.number(), feedback: z.string() })),
   tip: z.string(),
   total: z.number(),
+  max: z.number(),
 });
 
 /** Stores one graded attempt for the signed-in learner. */
