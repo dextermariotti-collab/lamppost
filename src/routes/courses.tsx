@@ -74,16 +74,18 @@ function MyPath() {
         <h1 className="pt-4 text-3xl">Your path</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {CURRICULUM_TITLE} · {completed} of {TOTAL_LESSONS} lessons ({pct}%)
-          {dueItems.length > 0 && ` · ${dueItems.length} review${dueItems.length === 1 ? "" : "s"} due`}
+          {dueItems.length > 0 &&
+            ` · ${dueItems.length} review${dueItems.length === 1 ? "" : "s"} due`}
         </p>
 
         <div className="mt-5 space-y-3">
           {units.map((unit, i) => {
             const due = dueByUnit[i] ?? 0;
             const firstLesson = unit.lessons[0];
-            const target = unit.completed > 0 && unit.state !== "complete"
-              ? completed + 1
-              : lessonIndexOf(firstLesson?.id ?? "") + 1;
+            const target =
+              unit.completed > 0 && unit.state !== "complete"
+                ? completed + 1
+                : lessonIndexOf(firstLesson?.id ?? "") + 1;
             return (
               <Link
                 key={unit.unit.id}

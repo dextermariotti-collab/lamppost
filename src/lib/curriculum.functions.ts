@@ -6,15 +6,12 @@ import type { Lesson } from "./courses";
 const Input = z.object({ lessonId: z.string().min(1) });
 
 export type LessonContentResult =
-  | { ok: true; lesson: Lesson; cached: boolean }
-  | { ok: false; reason: string };
+  { ok: true; lesson: Lesson; cached: boolean } | { ok: false; reason: string };
 
 const MODEL = "google/gemini-3.6-flash";
 
 function describe(error: unknown): string {
-  const text = String(
-    (error as { message?: string })?.message ?? error ?? "unknown",
-  );
+  const text = String((error as { message?: string })?.message ?? error ?? "unknown");
   console.error("Curriculum lesson generation failed:", text);
   if (/402|credit|quota|billing|payment/i.test(text)) {
     return "The AI workspace is out of credits, so this lesson couldn't be written. Top up AI credits and try again.";

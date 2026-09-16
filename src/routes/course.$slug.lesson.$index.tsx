@@ -32,7 +32,8 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
         {
           name: "description",
           content:
-            meta?.objective ?? "Train one critical-thinking skill with a lesson, a flaw drill and a quiz.",
+            meta?.objective ??
+            "Train one critical-thinking skill with a lesson, a flaw drill and a quiz.",
         },
         { property: "og:title", content: `${title} — Lamppost` },
         {
@@ -47,21 +48,13 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
   component: LessonScreen,
 });
 
-
 function LessonScreen() {
   const { slug: slugParam, index } = Route.useParams();
   const slug = CURRICULUM_SLUG;
   const navigate = useNavigate();
   const course = useCurriculumCourse();
   const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
-  const {
-    lesson,
-    meta,
-    loading,
-    error,
-    retry,
-    ready,
-  } = useCurriculumLesson(lessonNumber - 1);
+  const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(lessonNumber - 1);
   const { companion } = useCompanion();
   const { completeLesson, recordPractice } = useProgress();
   const { userId } = useSessionUser();
@@ -114,9 +107,7 @@ function LessonScreen() {
             </div>
           ) : (
             <div className="mt-6 space-y-4" aria-busy={loading}>
-              <p className="text-sm font-semibold text-muted-foreground">
-                Writing this lesson…
-              </p>
+              <p className="text-sm font-semibold text-muted-foreground">Writing this lesson…</p>
               <div className="h-24 animate-pulse rounded-3xl bg-muted" />
               <div className="h-52 animate-pulse rounded-3xl bg-muted" />
             </div>
@@ -144,7 +135,6 @@ function LessonScreen() {
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / TOTAL_LESSONS) * 100,
   );
-
 
   /** After the quiz, the learner explains the lesson back in their own words. */
   const showPractice = onQuiz && answeredAll && !practiceDone && !completing;
@@ -244,7 +234,10 @@ function LessonScreen() {
           />
         ) : !onQuiz ? (
           <>
-            <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
+            <article
+              key={page}
+              className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card"
+            >
               <p className="text-[11px] font-semibold text-primary">
                 Part {page + 1} of {parts.length}
               </p>
@@ -313,8 +306,7 @@ function LessonScreen() {
                           type="button"
                           variant="outline"
                           onClick={() =>
-                            picked === undefined &&
-                            setAnswers((prev) => ({ ...prev, [qi]: i }))
+                            picked === undefined && setAnswers((prev) => ({ ...prev, [qi]: i }))
                           }
                           className={`relative h-auto min-h-12 w-full justify-start whitespace-normal rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold shadow-none transition-all ${state} ${
                             picked !== undefined && isAnswer ? "animate-correct-answer" : ""
@@ -439,7 +431,9 @@ function LessonScreen() {
             />
             <p className="mt-5 text-sm font-bold text-primary">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You lit the next step.</h2>
-            <p className="mt-3 text-sm font-semibold text-muted-foreground">+100 XP · Progress saved</p>
+            <p className="mt-3 text-sm font-semibold text-muted-foreground">
+              +100 XP · Progress saved
+            </p>
           </div>
         </div>
       )}

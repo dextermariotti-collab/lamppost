@@ -172,9 +172,16 @@ export function ThinkingGraph({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold text-primary">{selected.concept}</p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{selected.detail}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {selected.detail}
+              </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setSelected(null)} className="shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelected(null)}
+              className="shrink-0"
+            >
               Close
             </Button>
           </div>

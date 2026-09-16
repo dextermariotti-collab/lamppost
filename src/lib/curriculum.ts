@@ -410,8 +410,7 @@ export const CROSS_LINKS: CurriculumLink[] = [
     from: "biases-overconfidence",
     to: "arguments-qualifying-claims",
     concept: "Overconfidence ↔ qualifying claims",
-    detail:
-      "Qualifying a claim to the scope the evidence supports is calibration written down.",
+    detail: "Qualifying a claim to the scope the evidence supports is calibration written down.",
   },
   {
     from: "evidence-anecdote-vs-data",
@@ -460,7 +459,12 @@ export function unitProgress(completed: number): UnitProgress[] {
       completed: done,
       total: lessons.length,
       pct,
-      state: done === lessons.length ? "complete" : done > 0 || completed >= start ? "current" : "locked",
+      state:
+        done === lessons.length
+          ? "complete"
+          : done > 0 || completed >= start
+            ? "current"
+            : "locked",
     };
   });
 }
