@@ -45,18 +45,18 @@ export const Route = createFileRoute("/onboarding")({
 const INTRO = [
   {
     icon: Wand2,
-    title: "Any topic, a real course",
-    body: "Tell Lamppost what you want to learn and it builds a full path — lessons, examples and quizzes.",
+    title: "Think clearer, argue better",
+    body: "Seven units take you from spotting hidden assumptions to reading charts, headlines and AI answers with a sharper eye.",
   },
   {
     icon: Compass,
-    title: "One step at a time",
-    body: "Short multi-part lessons keep momentum, and your streak, XP and gems track every win.",
+    title: "Spot the flaw before it fools you",
+    body: "Every lesson ends with a real-sounding argument. Your job is to name exactly what's wrong with it.",
   },
   {
     icon: Sparkles,
-    title: "You won't learn alone",
-    body: "Pick a companion to travel the path with you. It shows up on your home screen and celebrates your streaks.",
+    title: "Train daily, like a sport",
+    body: "Short lessons, reviews timed to when you'd forget, and a companion who keeps you honest about your streak.",
   },
 ] as const;
 
@@ -272,9 +272,7 @@ function CustomizeStep({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mt-4">
-      <p className="text-[11px] font-semibold text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-[11px] font-semibold text-muted-foreground">{label}</p>
       <div className="mt-2 flex flex-wrap gap-2">{children}</div>
     </div>
   );

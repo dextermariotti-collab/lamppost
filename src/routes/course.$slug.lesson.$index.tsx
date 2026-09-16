@@ -13,9 +13,9 @@ import { SpotTheFlawCard } from "@/components/SpotTheFlawCard";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
-import { clampBrief } from "@/lib/course-brief";
-import { useStoredCourse } from "@/lib/course-store";
-import { lessonQuizzes, titleFromSlug } from "@/lib/courses";
+import { CURRICULUM_SLUG, TOTAL_LESSONS, lessonAt, unitById } from "@/lib/curriculum";
+import { useCurriculumCourse, useCurriculumLesson } from "@/lib/curriculum-store";
+import { lessonQuizzes } from "@/lib/courses";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { usePredictionAttempt } from "@/lib/prediction-store";
 import { useFlawAttempt } from "@/lib/flaw-store";
@@ -24,16 +24,22 @@ import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
   head: ({ params }) => {
-    const topic = titleFromSlug(params.slug);
+    const meta = lessonAt(Math.max(Number(params.index) || 1, 1) - 1);
+    const title = meta?.title ?? "Critical thinking lesson";
     return {
       meta: [
-        { title: `Lesson ${params.index} — ${topic} | Lamppost` },
+        { title: `${title} — Lamppost critical thinking` },
         {
           name: "description",
-          content: `An in-depth AI-written ${topic} lesson with quizzes on Lamppost.`,
+          content:
+            meta?.objective ??
+            "Train one critical-thinking skill with a lesson, a flaw drill and a quiz.",
         },
-        { property: "og:title", content: `${topic} lesson ${params.index} — Lamppost` },
-        { property: "og:description", content: `Read, practise and quiz yourself on ${topic}.` },
+        { property: "og:title", content: `${title} — Lamppost` },
+        {
+          property: "og:description",
+          content: meta?.objective ?? "Practise spotting weak reasoning in real arguments.",
+        },
         { property: "og:type", content: "article" },
       ],
       links: [{ rel: "canonical", href: `/course/${params.slug}/lesson/${params.index}` }],
@@ -43,20 +49,20 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
 });
 
 function LessonScreen() {
-  const { slug, index } = Route.useParams();
+  const { slug: slugParam, index } = Route.useParams();
+  const slug = CURRICULUM_SLUG;
   const navigate = useNavigate();
-  const { course, hydrated } = useStoredCourse(slug);
+  const course = useCurriculumCourse();
+  const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
+  const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(lessonNumber - 1);
   const { companion } = useCompanion();
   const { completeLesson, recordPractice } = useProgress();
   const { userId } = useSessionUser();
   const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
     slug,
-    Math.max(Number(index) || 1, 1),
+    lessonNumber,
   );
-  const { attempt: flawAttempt, record: recordFlaw } = useFlawAttempt(
-    slug,
-    Math.max(Number(index) || 1, 1),
-  );
+  const { attempt: flawAttempt, record: recordFlaw } = useFlawAttempt(slug, lessonNumber);
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -71,30 +77,46 @@ function LessonScreen() {
     setPracticeDone(false);
   }, [index]);
 
+  // Old topic courses no longer exist: send any other slug to the curriculum.
   useEffect(() => {
-    if (hydrated && !course) {
+    if (slugParam !== CURRICULUM_SLUG) {
       navigate({
-        to: "/setup",
-        search: clampBrief({ topic: slug.replace(/-/g, " ") }),
+        to: "/course/$slug/lesson/$index",
+        params: { slug: CURRICULUM_SLUG, index: String(lessonNumber) },
         replace: true,
       });
     }
-  }, [hydrated, course, slug, navigate]);
+  }, [slugParam, lessonNumber, navigate]);
 
-  if (!course) {
+  if (!ready || !lesson) {
     return (
       <PhoneFrame showNav={false}>
-        <div className="space-y-4 px-5 py-8">
-          <div className="h-8 w-2/3 animate-pulse rounded-full bg-primary-soft" />
-          <div className="h-24 animate-pulse rounded-3xl bg-muted" />
-          <div className="h-52 animate-pulse rounded-3xl bg-muted" />
+        <div className="px-5 py-8">
+          <p className="text-xs font-bold text-primary">
+            {unitById(meta?.unitId ?? "claims").title}
+          </p>
+          <h1 className="mt-1 text-2xl leading-tight">{meta?.title ?? "Loading lesson"}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{meta?.objective}</p>
+
+          {error ? (
+            <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft">
+              <p className="text-sm font-semibold text-foreground">{error}</p>
+              <Button onClick={retry} className="mt-4 w-full rounded-full">
+                Try again
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-4" aria-busy={loading}>
+              <p className="text-sm font-semibold text-muted-foreground">Writing this lesson…</p>
+              <div className="h-24 animate-pulse rounded-3xl bg-muted" />
+              <div className="h-52 animate-pulse rounded-3xl bg-muted" />
+            </div>
+          )}
         </div>
       </PhoneFrame>
     );
   }
 
-  const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), course.lessons.length);
-  const lesson = course.lessons[lessonNumber - 1]!;
   const parts = lesson.parts && lesson.parts.length > 0 ? lesson.parts : [];
   const quizzes = lessonQuizzes(lesson);
   /** Pages: reading parts, then the spot-the-flaw drill, then the quiz set. */
@@ -111,7 +133,7 @@ function LessonScreen() {
   const flawPending = onFlaw && flawAttempt === undefined;
 
   const stepPct = Math.round(
-    ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
+    ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / TOTAL_LESSONS) * 100,
   );
 
   /** After the quiz, the learner explains the lesson back in their own words. */
@@ -212,7 +234,10 @@ function LessonScreen() {
           />
         ) : !onQuiz ? (
           <>
-            <article key={page} className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
+            <article
+              key={page}
+              className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card"
+            >
               <p className="text-[11px] font-semibold text-primary">
                 Part {page + 1} of {parts.length}
               </p>
@@ -281,8 +306,7 @@ function LessonScreen() {
                           type="button"
                           variant="outline"
                           onClick={() =>
-                            picked === undefined &&
-                            setAnswers((prev) => ({ ...prev, [qi]: i }))
+                            picked === undefined && setAnswers((prev) => ({ ...prev, [qi]: i }))
                           }
                           className={`relative h-auto min-h-12 w-full justify-start whitespace-normal rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold shadow-none transition-all ${state} ${
                             picked !== undefined && isAnswer ? "animate-correct-answer" : ""
@@ -407,7 +431,9 @@ function LessonScreen() {
             />
             <p className="mt-5 text-sm font-bold text-primary">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You lit the next step.</h2>
-            <p className="mt-3 text-sm font-semibold text-muted-foreground">+100 XP · Progress saved</p>
+            <p className="mt-3 text-sm font-semibold text-muted-foreground">
+              +100 XP · Progress saved
+            </p>
           </div>
         </div>
       )}

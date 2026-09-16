@@ -1,41 +1,51 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronRight, Crown, Sparkles, Timer } from "lucide-react";
+import { Check, ChevronRight, Timer } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
-import { Confetti } from "@/components/Confetti";
-import { categoryFor } from "@/lib/categories";
+import {
+  CURRICULUM_SLUG,
+  CURRICULUM_TITLE,
+  LESSONS_PER_UNIT,
+  TOTAL_LESSONS,
+  lessonIndexOf,
+  unitProgress,
+} from "@/lib/curriculum";
+import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
 import { useReviewQueue } from "@/lib/reviews";
 
 export const Route = createFileRoute("/courses")({
   head: () => ({
     meta: [
-      { title: "My Courses — Lamppost" },
-      { name: "description", content: "Every course Lamppost has built for you, with your progress on each one." },
-      { property: "og:title", content: "My Courses — Lamppost" },
-      { property: "og:description", content: "Pick up any of your AI-generated courses where you left off." },
+      { title: "Your critical thinking path — Lamppost" },
+      {
+        name: "description",
+        content:
+          "The seven units of Lamppost's critical thinking curriculum, with your progress through each one.",
+      },
+      { property: "og:title", content: "Your critical thinking path — Lamppost" },
+      {
+        property: "og:description",
+        content: "Claims, evidence, fallacies, biases, arguments, probability and media literacy.",
+      },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "/courses" }],
   }),
-  component: MyCourses,
+  component: MyPath,
 });
 
-const SEEN_KEY = "lamppost-mastered-seen-v1";
+function MyPath() {
+  const { state, registerCourse } = useProgress();
+  useCurriculumCourse();
 
-function readSeen(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(SEEN_KEY);
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  } catch {
-    return [];
-  }
-}
+  useEffect(() => {
+    registerCourse(CURRICULUM_SLUG, CURRICULUM_TITLE, TOTAL_LESSONS);
+  }, [registerCourse]);
 
-function MyCourses() {
-  const { state, hydrated } = useProgress();
+  const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
+  const units = useMemo(() => unitProgress(completed), [completed]);
 
   const completedBySlug = useMemo(
     () =>
@@ -46,92 +56,55 @@ function MyCourses() {
   );
   const { items: dueItems } = useReviewQueue(completedBySlug);
 
-  const dueBySlug = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const item of dueItems) map[item.slug] = (map[item.slug] ?? 0) + 1;
+  /** Reviews due, grouped by which unit the lesson belongs to. */
+  const dueByUnit = useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const item of dueItems) {
+      const unitIndex = Math.floor(item.lessonIndex / LESSONS_PER_UNIT);
+      map[unitIndex] = (map[unitIndex] ?? 0) + 1;
+    }
     return map;
   }, [dueItems]);
 
-  const courses = useMemo(() => {
-    const list = Object.entries(state.courses).map(([slug, course]) => {
-      const pct = course.total > 0 ? Math.round((course.completed / course.total) * 100) : 0;
-      return {
-        slug,
-        ...course,
-        pct,
-        mastered: pct >= 100,
-        remaining: Math.max(0, course.total - course.completed),
-        due: dueBySlug[slug] ?? 0,
-      };
-    });
-    // Courses needing attention float to the top; mastered ones settle at the bottom.
-    return list.sort(
-      (a, b) =>
-        b.due - a.due ||
-        Number(a.mastered) - Number(b.mastered) ||
-        b.pct - a.pct ||
-        a.topic.localeCompare(b.topic),
-    );
-  }, [state.courses, dueBySlug]);
-
-  // One-time celebration the first time a course hits 100%.
-  const [celebrateSlug, setCelebrateSlug] = useState<string | null>(null);
-  useEffect(() => {
-    if (!hydrated) return;
-    const seen = readSeen();
-    const fresh = courses.find((c) => c.mastered && !seen.includes(c.slug));
-    if (!fresh) return;
-    setCelebrateSlug(fresh.slug);
-    try {
-      window.localStorage.setItem(SEEN_KEY, JSON.stringify([...seen, fresh.slug]));
-    } catch {
-      /* ignore */
-    }
-    const id = window.setTimeout(() => setCelebrateSlug(null), 2600);
-    return () => window.clearTimeout(id);
-  }, [hydrated, courses]);
-
-  const dueTotal = dueItems.length;
-  const masteredCount = courses.filter((c) => c.mastered).length;
+  const pct = Math.round((completed / TOTAL_LESSONS) * 100);
 
   return (
     <PhoneFrame>
       <div className="relative px-5 pb-8">
-        {celebrateSlug && <Confetti big />}
-
-        <h1 className="pt-4 text-3xl">My courses</h1>
+        <h1 className="pt-4 text-3xl">Your path</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {courses.length} course{courses.length === 1 ? "" : "s"} built just for you
-          {masteredCount > 0 && ` · ${masteredCount} mastered`}
-          {dueTotal > 0 && ` · ${dueTotal} review${dueTotal === 1 ? "" : "s"} due`}.
+          {CURRICULUM_TITLE} · {completed} of {TOTAL_LESSONS} lessons ({pct}%)
+          {dueItems.length > 0 &&
+            ` · ${dueItems.length} review${dueItems.length === 1 ? "" : "s"} due`}
         </p>
 
         <div className="mt-5 space-y-3">
-          {courses.map((course, i) => {
-            const category = categoryFor(course.topic);
-            const Icon = category.icon;
-            const celebrating = celebrateSlug === course.slug;
+          {units.map((unit, i) => {
+            const due = dueByUnit[i] ?? 0;
+            const firstLesson = unit.lessons[0];
+            const target =
+              unit.completed > 0 && unit.state !== "complete"
+                ? completed + 1
+                : lessonIndexOf(firstLesson?.id ?? "") + 1;
             return (
               <Link
-                key={course.slug}
-                to="/course/$slug"
-                params={{ slug: course.slug }}
+                key={unit.unit.id}
+                to="/course/$slug/lesson/$index"
+                params={{ slug: CURRICULUM_SLUG, index: String(Math.max(1, target)) }}
                 style={{ animationDelay: `${i * 60}ms` }}
                 className={`flex animate-rise-in items-center gap-3 rounded-3xl border-2 p-4 shadow-soft transition-transform hover:-translate-y-0.5 ${
-                  course.mastered
+                  unit.state === "complete"
                     ? "border-success/40 bg-success/5"
-                    : course.due > 0
+                    : due > 0
                       ? "border-primary/35 bg-card"
                       : "border-transparent bg-card"
-                } ${celebrating ? "animate-pop-in ring-2 ring-success" : ""}`}
+                }`}
               >
                 <div className="relative shrink-0">
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${category.tile}`}
-                  >
-                    <Icon className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-xl">
+                    <span aria-hidden>{unit.unit.emoji}</span>
                   </div>
-                  {course.mastered && (
+                  {unit.state === "complete" && (
                     <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-success text-success-foreground shadow-soft">
                       <Check className="h-3 w-3" strokeWidth={3} />
                     </span>
@@ -140,34 +113,24 @@ function MyCourses() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-bold">{course.topic}</p>
-                    {course.mastered && (
-                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">
-                        <Crown className="h-3 w-3" />
-                        Mastered
-                      </span>
-                    )}
-                    {!course.mastered && course.due > 0 && (
+                    <p className="truncate text-sm font-bold">
+                      Unit {i + 1} · {unit.unit.title}
+                    </p>
+                    {due > 0 && (
                       <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
                         <Timer className="h-3 w-3" />
-                        {course.due} due
+                        {due} due
                       </span>
                     )}
                   </div>
 
                   <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
-                    {category.label}
-                    {" · "}
-                    {course.mastered
-                      ? "All lessons complete"
-                      : course.remaining <= 2 && course.completed > 0
-                        ? `${course.remaining} lesson${course.remaining === 1 ? "" : "s"} left`
-                        : `${course.completed}/${course.total} lessons`}
+                    {unit.unit.blurb} · {unit.completed}/{unit.total} lessons
                   </p>
 
                   <div className="mt-2 flex items-center gap-2">
-                    <AnimatedBar pct={course.pct} className="flex-1" />
-                    <span className="text-[11px] font-bold text-muted-foreground">{course.pct}%</span>
+                    <AnimatedBar pct={unit.pct} className="flex-1" />
+                    <span className="text-[11px] font-bold text-muted-foreground">{unit.pct}%</span>
                   </div>
                 </div>
 
@@ -177,18 +140,12 @@ function MyCourses() {
           })}
         </div>
 
-        {courses.length === 0 && hydrated && (
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            No courses yet — build your first one below.
-          </p>
-        )}
-
         <Link
-          to="/"
+          to="/course/$slug"
+          params={{ slug: CURRICULUM_SLUG }}
           className="mt-5 flex items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-primary/40 p-5 text-sm font-bold text-primary"
         >
-          <Sparkles className="h-4 w-4" />
-          Create a new course
+          See the full route map
         </Link>
       </div>
     </PhoneFrame>

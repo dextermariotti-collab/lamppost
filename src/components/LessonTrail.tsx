@@ -45,11 +45,14 @@ export function LessonTrail({
   lessons,
   completed,
   companion: _companion,
+  unitNames,
 }: {
   slug: string;
   lessons: TrailLesson[];
   completed: number;
   companion: { [K in keyof Companion]?: string | null | undefined } | null | undefined;
+  /** Region labels, one per unit of five lessons. */
+  unitNames?: string[];
 }) {
   const navigate = useNavigate();
   const [openNode, setOpenNode] = useState<Node | null>(null);
@@ -95,8 +98,16 @@ export function LessonTrail({
     navigate({ to: "/course/$slug/lesson/$index", params: { slug, index: String(index + 1) } });
 
   return (
-    <section className="expedition-map relative mt-5 overflow-hidden border-y border-border" style={{ height }}>
-      <svg aria-hidden className="absolute inset-0 h-full w-full opacity-35" viewBox={`0 0 100 ${height}`} preserveAspectRatio="none">
+    <section
+      className="expedition-map relative mt-5 overflow-hidden border-y border-border"
+      style={{ height }}
+    >
+      <svg
+        aria-hidden
+        className="absolute inset-0 h-full w-full opacity-35"
+        viewBox={`0 0 100 ${height}`}
+        preserveAspectRatio="none"
+      >
         {Array.from({ length: 8 }, (_, index) => (
           <path
             key={index}
@@ -108,13 +119,24 @@ export function LessonTrail({
 
       <div className="absolute left-4 top-4 z-10">
         <p className="font-graph text-xs font-bold text-foreground">Expedition route</p>
-        <p className="mt-1 text-[11px] text-muted-foreground">{completed} of {lessons.length} checkpoints cleared</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          {completed} of {lessons.length} checkpoints cleared
+        </p>
       </div>
 
-      <svg aria-hidden className="absolute inset-0 h-full w-full" viewBox={`0 0 100 ${height}`} preserveAspectRatio="none">
+      <svg
+        aria-hidden
+        className="absolute inset-0 h-full w-full"
+        viewBox={`0 0 100 ${height}`}
+        preserveAspectRatio="none"
+      >
         <path d={path} className="expedition-route-ahead" vectorEffect="non-scaling-stroke" />
         {currentIndex > 0 && (
-          <path d={completedPath} className="expedition-route-traveled" vectorEffect="non-scaling-stroke" />
+          <path
+            d={completedPath}
+            className="expedition-route-traveled"
+            vectorEffect="non-scaling-stroke"
+          />
         )}
       </svg>
 
@@ -128,8 +150,13 @@ export function LessonTrail({
             style={{ left: `${node.x}%`, top: node.y, transform: "translate(-50%, -50%)" }}
           >
             {firstInUnit && (
-              <span className={cn("absolute bottom-[4.8rem] whitespace-nowrap text-[10px] font-bold text-muted-foreground", isLeft ? "left-0" : "right-0")}>
-                Region {node.unit + 1}
+              <span
+                className={cn(
+                  "absolute bottom-[4.8rem] whitespace-nowrap text-[10px] font-bold text-muted-foreground",
+                  isLeft ? "left-0" : "right-0",
+                )}
+              >
+                {unitNames?.[node.unit] ?? `Region ${node.unit + 1}`}
               </span>
             )}
 
@@ -137,32 +164,61 @@ export function LessonTrail({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => node.state === "current" ? startLesson(node.index) : setOpenNode(node)}
+              onClick={() =>
+                node.state === "current" ? startLesson(node.index) : setOpenNode(node)
+              }
               aria-label={`Lesson ${node.index + 1}: ${node.lesson.title}`}
-              className={cn("expedition-node relative h-[4.5rem] w-[4.5rem] rounded-full", `expedition-node-${node.state}`)}
+              className={cn(
+                "expedition-node relative h-[4.5rem] w-[4.5rem] rounded-full",
+                `expedition-node-${node.state}`,
+              )}
             >
               <span className="expedition-node-core flex h-12 w-12 items-center justify-center rounded-full">
-                {node.state === "completed" ? <Check className="h-5 w-5" strokeWidth={2.5} /> : node.state === "current" ? <Play className="ml-0.5 h-5 w-5" fill="currentColor" /> : <Lock className="h-4 w-4" />}
+                {node.state === "completed" ? (
+                  <Check className="h-5 w-5" strokeWidth={2.5} />
+                ) : node.state === "current" ? (
+                  <Play className="ml-0.5 h-5 w-5" fill="currentColor" />
+                ) : (
+                  <Lock className="h-4 w-4" />
+                )}
               </span>
             </Button>
 
             <Button
               type="button"
               variant="ghost"
-              onClick={() => node.state === "current" ? startLesson(node.index) : setOpenNode(node)}
+              onClick={() =>
+                node.state === "current" ? startLesson(node.index) : setOpenNode(node)
+              }
               className={cn(
                 "expedition-label absolute top-1/2 h-auto w-[7.5rem] -translate-y-1/2 whitespace-normal p-0 text-left hover:bg-transparent",
                 isLeft ? "left-[4.75rem]" : "right-[4.75rem] text-right",
               )}
             >
-              <span className={cn("block text-[10px] font-bold", node.state === "locked" ? "text-muted-foreground" : "text-foreground")}>
-                {node.state === "completed" ? "Cleared" : node.state === "current" ? "Current checkpoint" : `Checkpoint ${node.index + 1}`}
+              <span
+                className={cn(
+                  "block text-[10px] font-bold",
+                  node.state === "locked" ? "text-muted-foreground" : "text-foreground",
+                )}
+              >
+                {node.state === "completed"
+                  ? "Cleared"
+                  : node.state === "current"
+                    ? "Current checkpoint"
+                    : `Checkpoint ${node.index + 1}`}
               </span>
-              <span className={cn("mt-1 block text-xs font-semibold leading-snug", node.state === "locked" ? "text-muted-foreground" : "text-foreground")}>
+              <span
+                className={cn(
+                  "mt-1 block text-xs font-semibold leading-snug",
+                  node.state === "locked" ? "text-muted-foreground" : "text-foreground",
+                )}
+              >
                 {shortLabel(node.lesson.title)}
               </span>
               {node.lesson.subtitle && node.state === "current" && (
-                <span className="mt-1 block line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">{node.lesson.subtitle}</span>
+                <span className="mt-1 block line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">
+                  {node.lesson.subtitle}
+                </span>
               )}
             </Button>
           </div>
@@ -194,7 +250,11 @@ export function LessonTrail({
                 startLesson(index);
               }}
             >
-              {openNode?.state === "completed" ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {openNode?.state === "completed" ? (
+                <RotateCcw className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
               {openNode?.state === "completed" ? "Replay checkpoint" : "Go to current checkpoint"}
             </Button>
           </DrawerFooter>

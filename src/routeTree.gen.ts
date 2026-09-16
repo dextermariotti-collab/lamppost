@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CoursesRouteImport } from './routes/courses'
-import { Route as CreateRouteImport } from './routes/create'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -20,7 +19,6 @@ import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SetupRouteImport } from './routes/setup'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsHandleRouteImport } from './routes/friends.$handle'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
@@ -48,11 +46,6 @@ const AuthRoute = AuthRouteImport.update({
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CreateRoute = CreateRouteImport.update({
-  id: '/create',
-  path: '/create',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -88,11 +81,6 @@ const ScheduleRoute = ScheduleRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FriendsIndexRoute = FriendsIndexRouteImport.update({
@@ -165,7 +153,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRoute
-  '/create': typeof CreateRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -173,7 +160,6 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
-  '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
@@ -192,7 +178,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRoute
-  '/create': typeof CreateRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -200,7 +185,6 @@ export interface FileRoutesByTo {
   '/review': typeof ReviewRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
-  '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
@@ -220,7 +204,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRoute
-  '/create': typeof CreateRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -228,7 +211,6 @@ export interface FileRoutesById {
   '/review': typeof ReviewRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
-  '/setup': typeof SetupRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
@@ -249,7 +231,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/courses'
-    | '/create'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -257,7 +238,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/schedule'
     | '/settings'
-    | '/setup'
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
@@ -276,7 +256,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/courses'
-    | '/create'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -284,7 +263,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/schedule'
     | '/settings'
-    | '/setup'
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
@@ -303,7 +281,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/courses'
-    | '/create'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -311,7 +288,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/schedule'
     | '/settings'
-    | '/setup'
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
@@ -331,7 +307,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   CoursesRoute: typeof CoursesRoute
-  CreateRoute: typeof CreateRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
@@ -339,7 +314,6 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
-  SetupRoute: typeof SetupRoute
   FriendsHandleRoute: typeof FriendsHandleRoute
   InviteCodeRoute: typeof InviteCodeRoute
   LegalAiContentRoute: typeof LegalAiContentRoute
@@ -376,13 +350,6 @@ declare module '@tanstack/react-router' {
       path: '/courses'
       fullPath: '/courses'
       preLoaderRoute: typeof CoursesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/create': {
-      id: '/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof CreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -432,13 +399,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/friends/': {
@@ -539,7 +499,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   CoursesRoute: CoursesRoute,
-  CreateRoute: CreateRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
@@ -547,7 +506,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
-  SetupRoute: SetupRoute,
   FriendsHandleRoute: FriendsHandleRoute,
   InviteCodeRoute: InviteCodeRoute,
   LegalAiContentRoute: LegalAiContentRoute,

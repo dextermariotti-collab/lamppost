@@ -42,7 +42,8 @@ export type Lesson = {
   prediction?: Prediction;
   /** "Spot the flaw" drill shown after the reading, before the quiz. */
   flaw?: FlawDrill;
-  quiz: Quiz;
+  /** Single quiz question; absent on lessons whose content hasn't loaded yet. */
+  quiz?: Quiz;
   /** Multiple quiz questions on longer courses; falls back to `quiz`. */
   quizzes?: Quiz[];
 };
@@ -57,7 +58,8 @@ export type Course = {
 };
 
 export const lessonQuizzes = (lesson: Lesson): Quiz[] =>
-  lesson.quizzes && lesson.quizzes.length > 0 ? lesson.quizzes : [lesson.quiz];
+  lesson.quizzes && lesson.quizzes.length > 0 ? lesson.quizzes : lesson.quiz ? [lesson.quiz] : [];
+
 
 
 export const slugify = (topic: string) =>
