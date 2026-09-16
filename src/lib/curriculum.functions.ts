@@ -83,7 +83,7 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
           lesson_id: meta.id,
           unit_id: unit?.id ?? meta.unitId,
           title: meta.title,
-          content: lesson as unknown as Record<string, unknown>,
+          content: JSON.parse(JSON.stringify(lesson)),
           model: MODEL,
           updated_at: new Date().toISOString(),
         },
