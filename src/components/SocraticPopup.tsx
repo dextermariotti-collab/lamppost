@@ -2,7 +2,7 @@ import { Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
-import type { Companion } from "@/lib/companions";
+import { companionName, type Companion } from "@/lib/companions";
 import { describeAnswer, describeExercise, type Exercise } from "@/lib/exercises";
 import { socraticLine } from "@/lib/socratic.functions";
 
@@ -34,6 +34,7 @@ export function SocraticPopup({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const asked = useRef(false);
+  const name = companionName(companion);
 
   useEffect(() => {
     if (asked.current) return;
@@ -41,7 +42,7 @@ export function SocraticPopup({
     void socraticLine({
       data: {
         mode: "question",
-        companionName: companion.name,
+        companionName: name,
         lessonTitle,
         objective,
         exercise: describeExercise(exercise),
@@ -55,7 +56,7 @@ export function SocraticPopup({
         if (result.ok) setQuestion(result.line);
       })
       .catch(() => undefined);
-  }, [companion.name, lessonTitle, objective, exercise, answer, correct]);
+  }, [name, lessonTitle, objective, exercise, answer, correct]);
 
   if (!question) return null;
 
@@ -65,7 +66,7 @@ export function SocraticPopup({
     void socraticLine({
       data: {
         mode: "reply",
-        companionName: companion.name,
+        companionName: name,
         lessonTitle,
         objective,
         exercise: "",
