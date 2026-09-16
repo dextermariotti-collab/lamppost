@@ -1,16 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Send } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { clampBrief } from "@/lib/course-brief";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
-import { KnowledgeGraph } from "@/components/KnowledgeGraph";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ThinkingGraph } from "@/components/ThinkingGraph";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
-import { useStoredCourses } from "@/lib/course-store";
+import {
+  CURRICULUM_SLUG,
+  CURRICULUM_TITLE,
+  TOTAL_LESSONS,
+  lessonAt,
+  nextLessonIndex,
+  unitById,
+} from "@/lib/curriculum";
+import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
 import { reviewUrgency, useReviewQueue } from "@/lib/reviews";
-import { THINKING_TRACKS } from "@/lib/thinking";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,7 +25,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Lamppost builds your reasoning: spot the flaw in real arguments, judge evidence, and review what you learn on a daily schedule.",
+          "Lamppost is a critical thinking trainer: seven units on claims, evidence, fallacies, biases, arguments, probability and media literacy.",
       },
       { property: "og:title", content: "Lamppost — train your critical thinking daily" },
       {
@@ -36,16 +42,21 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const [topic, setTopic] = useState("");
-  const { state } = useProgress();
-  const { courses } = useStoredCourses();
+  const { state, registerCourse } = useProgress();
   const { companion } = useCompanion();
+  // Makes sure the curriculum exists locally with its lesson titles.
+  useCurriculumCourse();
 
   // First run: introduce the app and let them pick a companion.
   useEffect(() => {
     if (!hasSeenOnboarding()) navigate({ to: "/onboarding", replace: true });
   }, [navigate]);
 
+  useEffect(() => {
+    registerCourse(CURRICULUM_SLUG, CURRICULUM_TITLE, TOTAL_LESSONS);
+  }, [registerCourse]);
+
+  const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const completedBySlug = useMemo(
     () => Object.fromEntries(Object.entries(state.courses).map(([slug, c]) => [slug, c.completed])),
     [state.courses],
@@ -55,11 +66,9 @@ function Home() {
   const maxOverdue = dueItems[0]?.overdueDays ?? 0;
   const urgency = reviewUrgency(dueItems.length, maxOverdue);
 
-  const start = (value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    navigate({ to: "/setup", search: clampBrief({ topic: trimmed }) });
-  };
+  const nextIndex = nextLessonIndex(completed);
+  const next = lessonAt(nextIndex);
+  const finished = completed >= TOTAL_LESSONS;
 
   return (
     <PhoneFrame className="graph-home">
@@ -68,11 +77,15 @@ function Home() {
           <div>
             <h1 className="max-w-56 text-lg font-bold leading-snug">Your thinking map</h1>
             <p className="mt-1 max-w-56 text-sm leading-relaxed text-muted-foreground">
-              Reasoning skills you're building, and the ideas they share.
+              Seven reasoning skills, and the ideas they share.
             </p>
           </div>
 
-          <Link to="/profile" aria-label="Open profile" className="shrink-0 opacity-85 transition-opacity hover:opacity-100">
+          <Link
+            to="/profile"
+            aria-label="Open profile"
+            className="shrink-0 opacity-85 transition-opacity hover:opacity-100"
+          >
             <CompanionAvatar
               companion={{ ...companion, expression: urgency === "piling" ? "calm" : "happy" }}
               size={44}
@@ -81,7 +94,37 @@ function Home() {
         </header>
 
         <section className="mt-5">
-          <KnowledgeGraph courses={courses} progress={state.courses} streak={state.streak} xp={state.xp} />
+          <ThinkingGraph completed={completed} streak={state.streak} xp={state.xp} />
+        </section>
+
+        <section className="border-t border-border py-5">
+          <p className="text-xs font-bold text-primary">
+            {finished ? "Curriculum complete" : unitById(next?.unitId ?? "claims").title}
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() =>
+              navigate({
+                to: "/course/$slug/lesson/$index",
+                params: { slug: CURRICULUM_SLUG, index: String(nextIndex + 1) },
+              })
+            }
+            className="mt-1 h-auto w-full justify-between gap-3 whitespace-normal rounded-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
+          >
+            <span className="min-w-0">
+              <span className="block text-base font-bold leading-snug text-foreground">
+                {finished ? `Revisit: ${next?.title}` : `Continue: ${next?.title}`}
+              </span>
+              <span className="mt-1 block text-sm font-normal leading-relaxed text-muted-foreground">
+                {next?.objective}
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Button>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Lesson {Math.min(completed + 1, TOTAL_LESSONS)} of {TOTAL_LESSONS}
+          </p>
         </section>
 
         <section className="border-t border-border py-5">
@@ -98,52 +141,6 @@ function Home() {
                 ? `${dueItems.length} ideas due. Oldest is ${maxOverdue} days overdue.`
                 : `${dueItems.length} idea${dueItems.length === 1 ? "" : "s"} ready to revisit.`}
           </Button>
-        </section>
-
-        <section className="border-t border-border pt-5">
-          <h2 className="text-sm font-bold text-foreground">Train a new thinking skill</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Any subject works — every lesson makes you judge claims, not memorise them.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {THINKING_TRACKS.slice(0, 4).map((track) => (
-              <Button
-                key={track.topic}
-                type="button"
-                variant="outline"
-                onClick={() => start(track.topic)}
-                title={track.blurb}
-                className="h-auto rounded-full px-3 py-1.5 text-xs font-medium shadow-none"
-              >
-                {track.topic}
-              </Button>
-            ))}
-          </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              start(topic);
-            }}
-            className="mt-4 border-b border-border pb-2 focus-within:border-primary"
-          >
-            <input
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="What do you want to think clearly about?"
-              aria-label="Course topic"
-              className="w-full bg-transparent px-1 py-2 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground"
-            />
-            <div className="mt-2 flex justify-end">
-              <Button
-                type="submit"
-                size="icon"
-                aria-label="Create course"
-                className="rounded-full shadow-none"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </form>
         </section>
       </main>
     </PhoneFrame>
