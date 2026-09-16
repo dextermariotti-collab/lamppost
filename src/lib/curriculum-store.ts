@@ -30,8 +30,10 @@ function skeleton(): Course {
   };
 }
 
+/** Phase 2 lessons are only usable once their exercise set is present. */
 export const hasLessonContent = (lesson: Lesson | undefined) =>
-  Boolean(lesson?.parts && lesson.parts.length > 0);
+  Boolean(lesson?.exercises && lesson.exercises.length >= 3);
+
 
 /** Returns the curriculum course, creating/refreshing the skeleton as needed. */
 export function ensureCurriculumCourse(): Course {

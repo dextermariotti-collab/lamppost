@@ -346,6 +346,31 @@ export function useProgress() {
       }),
     [update],
   );
+  /** XP per reasoning exercise, scaled by how much of it was right. */
+  const recordExercise = useCallback(
+    (score: number) =>
+      update((prev) => {
+        const clamped = Math.min(Math.max(score, 0), 1);
+        return {
+          ...prev,
+          xp: prev.xp + Math.max(5, Math.round(25 * clamped)),
+          gems: prev.gems + (clamped === 1 ? 2 : 0),
+        };
+      }),
+    [update],
+  );
+
+  /** The written argument pays by rubric score, not by length. */
+  const recordArgument = useCallback(
+    (total: number) =>
+      update((prev) => ({
+        ...prev,
+        xp: prev.xp + Math.max(20, Math.round(total * 6)),
+        gems: prev.gems + (total >= 12 ? 5 : 1),
+      })),
+    [update],
+  );
+
 
   /** Buy one freeze with gems, capped so it can't be stockpiled. */
   const buyFreeze = useCallback(
