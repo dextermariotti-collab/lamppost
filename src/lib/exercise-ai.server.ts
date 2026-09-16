@@ -1,73 +1,117 @@
 import { CONTENT_POLICY_RULES } from "./moderation.server";
 import { UNITS, linksForLesson, type CurriculumLesson } from "./curriculum";
-import type {
-  AssumptionExercise,
-  Exercise,
-  FlawExercise,
-  PredictExercise,
-  RankExercise,
-  SortBucket,
-  SortExercise,
-  SteelmanExercise,
-  WrittenPrompt,
+import {
+  EXERCISE_LABEL,
+  WRITTEN_TASKS,
+  type AssumptionExercise,
+  type ClaimExercise,
+  type Exercise,
+  type ExerciseKind,
+  type FlawExercise,
+  type PredictExercise,
+  type RankExercise,
+  type SortBucket,
+  type SortExercise,
+  type SteelmanExercise,
+  type WrittenPrompt,
+  type WrittenTaskType,
 } from "./exercises";
 import type { Lesson } from "./courses";
 
 /**
- * Phase 2 lesson generation: one short concept card, 4-6 mixed reasoning
- * exercises matched to the lesson's objective, one written-argument prompt and
- * a short summary. No text walls, no recall multiple choice.
+ * Lesson generation: one short concept card, the exact drills this lesson's
+ * curriculum plan calls for, one closing written task with its passage supplied
+ * in-app, and a short summary. No text walls, no recall multiple choice.
  */
-export const EXERCISE_SYSTEM = `You design training drills for Lamppost, a critical-thinking trainer.
+
+/** Per-kind shape spec. Only the planned kinds are sent to the model. */
+const KIND_SPEC: Record<ExerciseKind, string> = {
+  claim: `{"kind":"claim","passage":string,"options":[string,string,string],"correct":number,"explanation":string}
+  passage = 3-4 sentences mixing background, evidence and emotion around ONE central claim.
+  options = three candidate restatements of the central claim (max 18 words). Exactly one is the
+  conclusion the passage wants accepted; the others are premises or background from the passage.`,
+  flaw: `{"kind":"flaw","claim":string,"options":[string,string,string],"correct":number,"fallacy":string,"explanation":string}
+  claim = a 2-3 sentence argument that sounds convincing but commits exactly ONE reasoning error.
+  options = three candidate diagnoses (max 16 words each). The keyed one must be the single most
+  serious, most specific flaw actually present; the other two must be clearly weaker or simply
+  untrue of this argument. If two options could both be defended as the main flaw, rewrite one.`,
+  assumption: `{"kind":"assumption","argument":string,"options":[string,string,string],"correct":number,"explanation":string}
+  argument = 2 sentences. options = candidate unstated assumptions (max 18 words); exactly one MUST
+  be true for the argument to work, the others are plausible but not load-bearing.`,
+  rank: `{"kind":"rank","claim":string,"items":[{"text":string,"why":string}]}
+  claim = ONE stated claim. items = 3 or 4 pieces of REAL EVIDENCE offered for that claim
+  (studies, measurements, records, testimony, anecdotes) listed STRONGEST FIRST. Never premises,
+  restatements of the claim, opinions or conclusions — every item must be something a person could
+  check. text max 22 words. why = one sentence on why it sits at that strength.`,
+  sort: `{"kind":"sort","statements":[{"text":string,"bucket":"fact","why":string}]}
+  4 statements, bucket is one of "fact" (checkable), "opinion" (a preference or judgement) or
+  "value" (a claim about what matters or what ought to be). Mix the buckets. why = one sentence.`,
+  predict: `{"kind":"predict","scenario":string,"question":string,"options":[string,string,string],"correct":number,"explanation":string}
+  scenario = a study result, decision or chart described in 2-3 sentences, stopping BEFORE the outcome.
+  question asks the learner to predict the outcome. explanation reveals what actually happened.`,
+  steelman: `{"kind":"steelman","view":string,"options":[string,string,string],"correct":number,"explanation":string}
+  view = a weakly stated version of a real position (2 sentences). options = three rewrites; the
+  correct one is the strongest honest version, the others overstate, strawman or dodge.`,
+};
+
+const WRITTEN_SPEC: Record<WrittenTaskType, string> = {
+  restate: `"written" is a RESTATE task: passage = a 3-5 sentence opinion piece or advert written out in
+full inside the JSON. prompt asks the learner to restate its central claim in ONE sentence,
+excluding evidence and background. Never tell the learner to go and find an article.`,
+  case: `"written" is a MAKE THE CASE task: passage = the 2-4 sentence situation, motion or question being
+argued, written out in full. prompt asks the learner to argue for or against it in 3-5 sentences
+with a claim, support and the strongest objection answered.`,
+  critique: `"written" is a CRITIQUE task: passage = a 3-5 sentence flawed argument written out in full.
+prompt asks the learner, in 2-4 sentences, to name the flaw, say why it matters for the conclusion
+and suggest a fix.`,
+};
+
+export function exerciseSystemPrompt(kinds: ExerciseKind[], written: WrittenTaskType) {
+  const unique = [...new Set(kinds)];
+  return `You design training drills for Lamppost, a critical-thinking trainer.
 A lesson is a workout, not a reading. The learner does the reasoning; you never explain at length.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
-{"concept":{"title":string,"body":string,"example":string},"exercises":[Exercise],"written":{"prompt":string,"guidance":string},"summary":[string,string,string]}
+{"concept":{"title":string,"body":string,"example":string},"exercises":[Exercise],"written":{"passage":string,"prompt":string,"guidance":string},"summary":[string,string,string]}
 
 "concept.body" is AT MOST 80 words teaching the skill in plain language. "concept.example" is ONE
 concrete everyday example (max 40 words). "concept.title" is max 5 words.
 
-"exercises" has 5 entries. Every entry is one of these six shapes, each entry a different "kind"
-where possible, all serving this lesson's objective, all using everyday material (news claims,
-workplace decisions, health advice, adverts, social posts, product reviews, politics):
+"exercises" has EXACTLY ${unique.length} entries, in this order, one per line below, and NO other kinds:
+${unique.map((kind, i) => `${i + 1} ${EXERCISE_LABEL[kind]} — ${KIND_SPEC[kind]}`).join("\n")}
 
-1 {"kind":"flaw","claim":string,"options":[string,string,string],"correct":number,"fallacy":string,"explanation":string}
-  claim = a 2-3 sentence argument that sounds convincing but commits exactly one reasoning error.
-  options = three candidate diagnoses (max 16 words each); only one names the error actually present.
-2 {"kind":"assumption","argument":string,"options":[string,string,string],"correct":number,"explanation":string}
-  argument = 2 sentences. options = candidate unstated assumptions (max 18 words); exactly one MUST
-  be true for the argument to work, the others are plausible but not load-bearing.
-3 {"kind":"rank","claim":string,"items":[{"text":string,"why":string}]}
-  3 or 4 pieces of evidence for the claim, listed STRONGEST FIRST. text max 22 words.
-  why = one sentence explaining why it sits at that strength.
-4 {"kind":"sort","statements":[{"text":string,"bucket":"fact","why":string}]}
-  4 statements, bucket is one of "fact" (checkable), "opinion" (a preference or judgement) or
-  "value" (a claim about what matters or what ought to be). Mix the buckets. why = one sentence.
-5 {"kind":"predict","scenario":string,"question":string,"options":[string,string,string],"correct":number,"explanation":string}
-  scenario = a study result, decision or chart described in 2-3 sentences, stopping BEFORE the outcome.
-  question asks the learner to predict the outcome. explanation reveals what actually happened.
-6 {"kind":"steelman","view":string,"options":[string,string,string],"correct":number,"explanation":string}
-  view = a weakly stated version of a real position (2 sentences). options = three rewrites; the
-  correct one is the strongest honest version, the others overstate, strawman or dodge.
+Hard rules for every drill:
+- The content must match the drill's own instruction: evidence drills contain evidence, claim drills
+  contain a claim buried in a passage, and so on.
+- Exactly ONE option is clearly the best answer and "correct" (0-based index) points at it.
+- "explanation" must agree with the keyed option and never argue for a different one.
+- Every drill must test THIS lesson's objective and use everyday material (news, workplace decisions,
+  health advice, adverts, social posts, product reviews, politics).
 
-"correct" is always a 0-based index.
-"written" is the closing task: prompt asks the learner to make the case for or against something
-concrete from this lesson in 3-5 sentences. guidance is one sentence naming what a strong answer does.
+${WRITTEN_SPEC[written]}
+Guidance is one sentence naming what a strong answer does. The passage is ALWAYS included in the JSON
+so the learner never has to leave the app.
 "summary" is 3 takeaways, max 14 words each.
 Use the exact key names above.
 
 ${CONTENT_POLICY_RULES}`;
+}
 
 export function exerciseLessonPrompt(lesson: CurriculumLesson) {
   const unit = UNITS.find((u) => u.id === lesson.unitId);
   const links = linksForLesson(lesson.id)
     .map((link) => `- ${link.concept}: ${link.detail}`)
     .join("\n");
+  const task = WRITTEN_TASKS[lesson.written];
 
   return `Course: Lamppost — Critical thinking (a fixed 7-unit curriculum).
 Unit: ${unit?.title ?? lesson.unitId} — ${unit?.blurb ?? ""}
 Lesson title: "${lesson.title}"
 Learning objective (every exercise must train exactly this, nothing wider):
 ${lesson.objective}
+
+Drill plan for this lesson (use exactly these kinds, in this order):
+${lesson.drills.map((kind, i) => `${i + 1}. ${kind} — ${EXERCISE_LABEL[kind]}`).join("\n")}
+Closing written task: ${task.label} (${task.length}).
 
 Stay strictly on this objective: never drift into another unit's skill, never teach study technique
 instead of the skill, never ask a question that can be answered by recalling the concept card.
@@ -92,7 +136,7 @@ const asObject = (value: unknown): Record<string, unknown> =>
 
 const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
 
-function extractJson(text: string): Record<string, unknown> | null {
+export function extractJson(text: string): Record<string, unknown> | null {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   if (start === -1 || end <= start) return null;
@@ -132,10 +176,24 @@ function choiceSet(raw: Record<string, unknown>, max = 4) {
 
 const BUCKETS: SortBucket[] = ["fact", "opinion", "value"];
 
-function normalizeExercise(raw: unknown): Exercise | null {
+export function normalizeExercise(raw: unknown): Exercise | null {
   const e = asObject(raw);
   const kind = str(pick(e, ["kind", "type"])).toLowerCase();
   const explanation = str(pick(e, ["explanation", "why", "rationale", "reveal"]));
+
+  if (kind === "claim" || kind === "find_the_claim" || kind === "findtheclaim") {
+    const passage = str(pick(e, ["passage", "text", "argument", "claim"]));
+    const set = choiceSet(e, 4);
+    if (!passage || !set) return null;
+    const drill: ClaimExercise = {
+      kind: "claim",
+      passage,
+      options: set.options,
+      correct: set.correct,
+      explanation: explanation || "That is the conclusion the passage wants you to accept.",
+    };
+    return drill;
+  }
 
   if (kind === "flaw") {
     const claim = str(pick(e, ["claim", "argument", "statement", "passage"]));
@@ -171,14 +229,16 @@ function normalizeExercise(raw: unknown): Exercise | null {
     const items = asArray(pick(e, ["items", "evidence", "cards", "options"]))
       .map((raw2) => {
         const item = asObject(raw2);
-        const text = typeof raw2 === "string" ? raw2.trim() : str(pick(item, ["text", "evidence", "label"]));
+        const text =
+          typeof raw2 === "string" ? raw2.trim() : str(pick(item, ["text", "evidence", "label"]));
         if (!text) return null;
         return { text, why: str(pick(item, ["why", "explanation", "reason"]), "") };
       })
       .filter((i): i is { text: string; why: string } => i !== null)
       .slice(0, 4);
-    if (items.length < 3) return null;
-    const drill: RankExercise = { kind: "rank", claim: str(pick(e, ["claim", "question"]), "Which evidence is strongest?"), items };
+    const claim = str(pick(e, ["claim", "question"]));
+    if (items.length < 3 || !claim) return null;
+    const drill: RankExercise = { kind: "rank", claim, items };
     return drill;
   }
 
@@ -231,13 +291,31 @@ function normalizeExercise(raw: unknown): Exercise | null {
   return null;
 }
 
+/** Keeps only drills the plan asked for, one per planned slot, in plan order. */
+export function drillsMatchingPlan(exercises: Exercise[], plan: ExerciseKind[]): Exercise[] {
+  const pool = [...exercises];
+  const chosen: Exercise[] = [];
+  for (const kind of plan) {
+    const at = pool.findIndex((e) => e.kind === kind);
+    if (at === -1) continue;
+    chosen.push(pool.splice(at, 1)[0]!);
+  }
+  return chosen;
+}
+
 /**
  * Turns one model reply into a lesson. Returns null when there isn't enough
  * usable material — the caller surfaces an error rather than faking content.
  */
 export function parseExerciseLesson(
   text: string,
-  meta: { title: string; objective: string; emoji: string },
+  meta: {
+    title: string;
+    objective: string;
+    emoji: string;
+    drills: ExerciseKind[];
+    written: WrittenTaskType;
+  },
 ): Lesson | null {
   const root = extractJson(text);
   if (!root) return null;
@@ -246,18 +324,22 @@ export function parseExerciseLesson(
   const body = str(pick(conceptRaw, ["body", "text", "explanation"]));
   const example = str(pick(conceptRaw, ["example", "illustration"]));
 
-  const exercises = asArray(pick(root, ["exercises", "drills", "items"]))
+  const parsed = asArray(pick(root, ["exercises", "drills", "items"]))
     .map(normalizeExercise)
-    .filter((e): e is Exercise => e !== null)
-    .slice(0, 6);
+    .filter((e): e is Exercise => e !== null);
+  const exercises = drillsMatchingPlan(parsed, meta.drills);
   if (!body || exercises.length < 3) return null;
 
-  const writtenRaw = asObject(pick(root, ["written", "writtenArgument", "written_argument", "essay"]));
+  const writtenRaw = asObject(
+    pick(root, ["written", "writtenArgument", "written_argument", "essay"]),
+  );
   const writtenPrompt = str(pick(writtenRaw, ["prompt", "question", "task"]));
+  const passage = str(pick(writtenRaw, ["passage", "text", "scenario", "argument", "excerpt"]));
   const guidance = str(pick(writtenRaw, ["guidance", "hint", "criteria"]));
-  const written: WrittenPrompt | null = writtenPrompt
-    ? { prompt: writtenPrompt, ...(guidance ? { guidance } : {}) }
-    : null;
+  const written: WrittenPrompt | null =
+    writtenPrompt && passage
+      ? { type: meta.written, prompt: writtenPrompt, passage, ...(guidance ? { guidance } : {}) }
+      : null;
 
   const summary = asArray(pick(root, ["summary", "takeaways", "keyPoints", "key_points"]))
     .map((s) => str(s))
@@ -281,6 +363,16 @@ export function parseExerciseLesson(
     // Keep the legacy shapes populated so older screens keep working.
     intro: body,
     parts: [{ title: str(pick(conceptRaw, ["title", "heading"]), meta.title), body }],
-    ...(flaw ? { flaw: { claim: flaw.claim, options: flaw.options, correct: flaw.correct, ...(flaw.fallacy ? { fallacy: flaw.fallacy } : {}), explanation: flaw.explanation } } : {}),
+    ...(flaw
+      ? {
+          flaw: {
+            claim: flaw.claim,
+            options: flaw.options,
+            correct: flaw.correct,
+            ...(flaw.fallacy ? { fallacy: flaw.fallacy } : {}),
+            explanation: flaw.explanation,
+          },
+        }
+      : {}),
   };
 }

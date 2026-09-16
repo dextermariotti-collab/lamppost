@@ -19,6 +19,7 @@ export function ExerciseRunner({
   onAnswer: (answer: unknown, score: number) => void;
 }) {
   switch (exercise.kind) {
+    case "claim":
     case "flaw":
     case "assumption":
     case "steelman":

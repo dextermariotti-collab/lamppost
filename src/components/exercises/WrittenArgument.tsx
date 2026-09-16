@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { Companion } from "@/lib/companions";
 import {
   CRITERION_LABEL,
-  RUBRIC_CRITERIA,
+  WRITTEN_TASKS,
   argumentXpFor,
   type ArgumentGrade,
   type WrittenPrompt,
@@ -31,7 +31,7 @@ export function WrittenArgument({
   written: WrittenPrompt;
   companion: Companion;
   signedIn: boolean;
-  onGraded: (total: number, attempt: number) => void;
+  onGraded: (total: number, attempt: number, max: number) => void;
 }) {
   const [text, setText] = useState("");
   const [attempt, setAttempt] = useState(1);
@@ -40,6 +40,7 @@ export function WrittenArgument({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [revising, setRevising] = useState(false);
+  const task = WRITTEN_TASKS[written.type];
 
   const submit = () => {
     if (busy || !text.trim()) return;
@@ -50,6 +51,8 @@ export function WrittenArgument({
         lessonId,
         lessonTitle,
         objective,
+        taskType: written.type,
+        passage: written.passage,
         prompt: written.prompt,
         answer: text.trim(),
         attempt,
@@ -63,7 +66,7 @@ export function WrittenArgument({
         setGrade(result.grade);
         setOnTopic(result.onTopic);
         setRevising(false);
-        onGraded(result.grade.total, attempt);
+        onGraded(result.grade.total, attempt, result.grade.max);
         if (signedIn) {
           void saveArgumentAttempt({
             data: {
@@ -74,6 +77,7 @@ export function WrittenArgument({
               scores: result.grade.scores,
               tip: result.grade.tip,
               total: result.grade.total,
+              max: result.grade.max,
             },
           }).catch(() => undefined);
         }
@@ -86,8 +90,11 @@ export function WrittenArgument({
 
   return (
     <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-      <p className="text-[11px] font-semibold text-primary">Make the case</p>
+      <p className="text-[11px] font-semibold text-primary">{task.label}</p>
       <h2 className="mt-1 text-xl leading-snug">{written.prompt}</h2>
+      <blockquote className="mt-3 rounded-2xl border-l-4 border-primary/40 bg-muted/50 px-4 py-3 text-[13px] font-semibold leading-relaxed text-foreground">
+        {written.passage}
+      </blockquote>
       {written.guidance && (
         <p className="mt-2 text-[13px] font-semibold text-muted-foreground">{written.guidance}</p>
       )}
@@ -97,9 +104,9 @@ export function WrittenArgument({
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
-            rows={6}
+            rows={written.type === "restate" ? 3 : 6}
             maxLength={3000}
-            placeholder="Three to five sentences. Make a claim, back it, then handle the strongest objection."
+            placeholder={task.placeholder}
             aria-label="Your argument"
             className="mt-4 w-full resize-none rounded-2xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold leading-relaxed text-foreground outline-none focus-visible:border-primary"
           />
@@ -115,7 +122,7 @@ export function WrittenArgument({
           <Button
             type="button"
             onClick={submit}
-            disabled={busy || text.trim().length < 20}
+            disabled={busy || text.trim().length < (written.type === "restate" ? 12 : 20)}
             className="mt-3 h-12 w-full rounded-full text-base font-semibold"
           >
             <PenLine className="h-4 w-4" />
@@ -131,7 +138,7 @@ export function WrittenArgument({
             <div className="flex-1 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-4 py-2.5">
               <p className="text-[13px] font-bold text-foreground">
                 {onTopic
-                  ? `${grade.total} of 16 · +${argumentXpFor(grade.total)} XP`
+                  ? `${grade.total} of ${grade.max} · +${argumentXpFor(grade.total, grade.max)} XP`
                   : "That answered a different question."}
               </p>
               <p className="mt-1 text-[13px] font-semibold leading-snug text-accent-foreground">
@@ -140,8 +147,11 @@ export function WrittenArgument({
             </div>
           </div>
 
-          {RUBRIC_CRITERIA.map((criterion) => {
-            const row = grade.scores[criterion];
+          {task.criteria.map((criterion) => {
+            const row = grade.scores[criterion] ?? {
+              score: 1,
+              feedback: "Nothing here yet to grade on this criterion.",
+            };
             return (
               <div key={criterion} className="rounded-2xl border border-border p-3">
                 <div className="flex items-center justify-between">

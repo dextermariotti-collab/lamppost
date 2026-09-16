@@ -7,6 +7,8 @@
  * the curriculum here changes the whole app.
  */
 
+import type { ExerciseKind, WrittenTaskType } from "./exercises";
+
 export type CurriculumUnit = {
   id: string;
   title: string;
@@ -24,6 +26,15 @@ export type CurriculumLesson = {
   /** Lesson ids that should come first. Defaults to the previous lesson. */
   prerequisites: string[];
   emoji: string;
+  /**
+   * The only drill types that fit this objective, in the order they are shown.
+   * Generation never invents a drill type outside this list — a lesson about
+   * naming claims must not be asked to rank evidence, and rank-the-evidence
+   * only appears where there is real evidence for a stated claim.
+   */
+  drills: ExerciseKind[];
+  /** Which closing written task this objective calls for. */
+  written: WrittenTaskType;
 };
 
 /** A real curriculum link between two skills in different units. */
@@ -86,30 +97,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   claims: [
     {
       id: "claims-the-actual-claim",
+      drills: ["claim", "flaw", "sort", "predict"],
+      written: "restate",
       title: "What is actually claimed",
       objective: "Restate any argument's central claim in one precise sentence.",
       emoji: "🎯",
     },
     {
       id: "claims-hidden-assumptions",
+      drills: ["assumption", "flaw", "claim", "predict"],
+      written: "critique",
       title: "Hidden assumptions",
       objective: "Surface the unstated beliefs an argument needs in order to work.",
       emoji: "🫥",
     },
     {
       id: "claims-facts-opinions-values",
+      drills: ["sort", "claim", "assumption", "predict"],
+      written: "restate",
       title: "Facts, opinions, values",
       objective: "Sort a statement into fact, opinion or value judgement before debating it.",
       emoji: "⚖️",
     },
     {
       id: "claims-burden-of-proof",
+      drills: ["flaw", "assumption", "predict", "claim"],
+      written: "critique",
       title: "Burden of proof",
       objective: "Identify who owes evidence in a disagreement, and how much.",
       emoji: "📐",
     },
     {
       id: "claims-vague-language",
+      drills: ["claim", "flaw", "sort", "predict"],
+      written: "restate",
       title: "Vague language",
       objective: "Spot words loose enough to make a claim unfalsifiable.",
       emoji: "🌫️",
@@ -118,30 +139,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   evidence: [
     {
       id: "evidence-types",
+      drills: ["rank", "sort", "predict", "flaw"],
+      written: "case",
       title: "Types of evidence",
       objective: "Rank the main kinds of evidence by what each one can actually show.",
       emoji: "🧾",
     },
     {
       id: "evidence-anecdote-vs-data",
+      drills: ["rank", "flaw", "predict", "assumption"],
+      written: "critique",
       title: "Anecdote vs data",
       objective: "Explain what a single vivid story can and cannot establish.",
       emoji: "📖",
     },
     {
       id: "evidence-source-reliability",
+      drills: ["rank", "flaw", "predict", "sort"],
+      written: "case",
       title: "Source reliability",
       objective: "Judge a source by expertise, incentives and track record.",
       emoji: "🏛️",
     },
     {
       id: "evidence-correlation-causation",
+      drills: ["flaw", "assumption", "predict", "rank"],
+      written: "critique",
       title: "Correlation vs causation",
       objective: "Test whether a claimed cause survives confounders and reverse causation.",
       emoji: "🔗",
     },
     {
       id: "evidence-sample-cherry-picking",
+      drills: ["rank", "flaw", "predict"],
+      written: "critique",
       title: "Samples and cherry-picking",
       objective: "Detect when a sample is too small or selected to flatter a conclusion.",
       emoji: "🍒",
@@ -150,30 +181,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   fallacies: [
     {
       id: "fallacies-adhominem-strawman",
+      drills: ["flaw", "steelman", "claim", "predict"],
+      written: "critique",
       title: "Ad hominem and strawman",
       objective: "Tell an attack on a person or a distorted position from a real rebuttal.",
       emoji: "🥊",
     },
     {
       id: "fallacies-dilemma-slippery-slope",
+      drills: ["flaw", "assumption", "predict", "claim"],
+      written: "critique",
       title: "False dilemma, slippery slope",
       objective: "Spot fake either/or framings and unearned chains of consequence.",
       emoji: "🪜",
     },
     {
       id: "fallacies-authority-popularity",
+      drills: ["flaw", "rank", "predict", "assumption"],
+      written: "critique",
       title: "Authority and popularity",
       objective: "Separate legitimate expert testimony from appeals to status or crowds.",
       emoji: "👑",
     },
     {
       id: "fallacies-circular-reasoning",
+      drills: ["flaw", "claim", "assumption", "predict"],
+      written: "critique",
       title: "Circular reasoning",
       objective: "Notice when a conclusion is quietly used as its own premise.",
       emoji: "🔄",
     },
     {
       id: "fallacies-hasty-generalization",
+      drills: ["flaw", "rank", "predict", "assumption"],
+      written: "critique",
       title: "Hasty generalisation",
       objective: "Catch conclusions drawn from too few or unrepresentative cases.",
       emoji: "⚡",
@@ -182,30 +223,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   biases: [
     {
       id: "biases-confirmation",
+      drills: ["predict", "flaw", "assumption", "sort"],
+      written: "critique",
       title: "Confirmation bias",
       objective: "Notice yourself seeking evidence that agrees with you, and correct for it.",
       emoji: "🪞",
     },
     {
       id: "biases-anchoring",
+      drills: ["predict", "flaw", "assumption", "claim"],
+      written: "critique",
       title: "Anchoring",
       objective: "Recognise how a first number quietly sets your later judgements.",
       emoji: "⚓",
     },
     {
       id: "biases-availability",
+      drills: ["predict", "flaw", "rank", "assumption"],
+      written: "critique",
       title: "Availability",
       objective: "Adjust for risks that feel common only because they are memorable.",
       emoji: "🚨",
     },
     {
       id: "biases-sunk-cost",
+      drills: ["predict", "flaw", "assumption", "claim"],
+      written: "critique",
       title: "Sunk cost",
       objective: "Decide from what is ahead rather than what you already spent.",
       emoji: "🕳️",
     },
     {
       id: "biases-overconfidence",
+      drills: ["predict", "flaw", "assumption", "sort"],
+      written: "critique",
       title: "Overconfidence",
       objective: "Calibrate how sure you are against how often you are right.",
       emoji: "📏",
@@ -214,30 +265,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   arguments: [
     {
       id: "arguments-premise-conclusion",
+      drills: ["claim", "assumption", "flaw", "predict"],
+      written: "case",
       title: "Premise to conclusion",
       objective: "Lay out any argument as explicit premises leading to a conclusion.",
       emoji: "🧩",
     },
     {
       id: "arguments-strong-vs-weak",
+      drills: ["flaw", "rank", "assumption", "predict"],
+      written: "case",
       title: "Strong vs weak reasoning",
       objective: "Judge whether premises, if true, would actually support the conclusion.",
       emoji: "💪",
     },
     {
       id: "arguments-steelmanning",
+      drills: ["steelman", "flaw", "claim", "predict"],
+      written: "case",
       title: "Steelmanning",
       objective: "State the strongest honest version of a view you disagree with.",
       emoji: "🛡️",
     },
     {
       id: "arguments-counterarguments",
+      drills: ["steelman", "flaw", "assumption", "predict"],
+      written: "case",
       title: "Counterarguments and rebuttals",
       objective: "Anticipate the best objection and answer it without dodging.",
       emoji: "↔️",
     },
     {
       id: "arguments-qualifying-claims",
+      drills: ["claim", "flaw", "sort", "predict"],
+      written: "case",
       title: "Qualifying claims",
       objective: "State a claim with the scope and confidence the evidence supports.",
       emoji: "✂️",
@@ -246,30 +307,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   probability: [
     {
       id: "probability-base-rates",
+      drills: ["predict", "flaw", "assumption", "rank"],
+      written: "case",
       title: "Base rates",
       objective: "Start from how common something is before weighing specific signals.",
       emoji: "📊",
     },
     {
       id: "probability-expected-value",
+      drills: ["predict", "flaw", "assumption", "claim"],
+      written: "case",
       title: "Expected value",
       objective: "Compare options by payoff weighted by probability, not by best case.",
       emoji: "🧮",
     },
     {
       id: "probability-thinking-in-bets",
+      drills: ["predict", "flaw", "assumption", "sort"],
+      written: "case",
       title: "Thinking in bets",
       objective: "Judge a decision by its reasoning, not only by how it turned out.",
       emoji: "🃏",
     },
     {
       id: "probability-updating-beliefs",
+      drills: ["predict", "rank", "flaw", "assumption"],
+      written: "case",
       title: "Updating on evidence",
       objective: "Move your confidence in proportion to how diagnostic new evidence is.",
       emoji: "🔁",
     },
     {
       id: "probability-second-order",
+      drills: ["predict", "flaw", "assumption", "claim"],
+      written: "case",
       title: "Second-order effects",
       objective: "Trace what happens after the obvious first consequence.",
       emoji: "🌊",
@@ -278,30 +349,40 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   media: [
     {
       id: "media-headlines-vs-findings",
+      drills: ["claim", "flaw", "predict", "sort"],
+      written: "critique",
       title: "Headlines vs findings",
       objective: "Compare what a headline promises with what the study actually found.",
       emoji: "🗞️",
     },
     {
       id: "media-misleading-charts",
+      drills: ["predict", "flaw", "claim", "assumption"],
+      written: "critique",
       title: "Misleading charts and stats",
       objective: "Spot truncated axes, bad baselines and percentages without denominators.",
       emoji: "📉",
     },
     {
       id: "media-manipulation",
+      drills: ["flaw", "sort", "predict", "claim"],
+      written: "critique",
       title: "Spotting manipulation",
       objective: "Recognise emotional framing, selective omission and manufactured urgency.",
       emoji: "🎭",
     },
     {
       id: "media-ai-answers",
+      drills: ["flaw", "rank", "predict", "assumption"],
+      written: "critique",
       title: "Evaluating AI answers",
       objective: "Check an AI answer for confident fabrication and missing sourcing.",
       emoji: "🤖",
     },
     {
       id: "media-lateral-reading",
+      drills: ["rank", "flaw", "predict", "assumption"],
+      written: "case",
       title: "Lateral reading",
       objective: "Leave the page and check what other sources say about it.",
       emoji: "🧭",
@@ -326,6 +407,8 @@ export const LESSONS: CurriculumLesson[] = UNITS.flatMap((unit, unitIndex) => {
       title: draft.title,
       objective: draft.objective,
       emoji: draft.emoji,
+      drills: draft.drills,
+      written: draft.written,
       prerequisites: draft.prerequisites ?? (previous ? [previous] : []),
     };
   });

@@ -36,7 +36,10 @@ export type Lesson = {
   title: string;
   subtitle: string;
   emoji: string;
+  /** Generation-pipeline version; older cached content is regenerated. */
+  contentVersion?: number;
   intro?: string;
+
   keyPoints?: string[];
   /** Short concept card (max ~80 words + one example) opening the lesson. */
   concept?: { title: string; body: string; example?: string };

@@ -1,16 +1,28 @@
 import { ExerciseFeedback, ExerciseShell, OptionButton } from "./ExerciseShell";
-import type { AssumptionExercise, FlawExercise, SteelmanExercise } from "@/lib/exercises";
+import type {
+  AssumptionExercise,
+  ClaimExercise,
+  FlawExercise,
+  SteelmanExercise,
+} from "@/lib/exercises";
 
-type ChoiceKindExercise = FlawExercise | AssumptionExercise | SteelmanExercise;
+type ChoiceKindExercise = ClaimExercise | FlawExercise | AssumptionExercise | SteelmanExercise;
 
 const passageFor = (exercise: ChoiceKindExercise) =>
-  exercise.kind === "flaw"
-    ? exercise.claim
-    : exercise.kind === "assumption"
-      ? exercise.argument
-      : exercise.view;
+  exercise.kind === "claim"
+    ? exercise.passage
+    : exercise.kind === "flaw"
+      ? exercise.claim
+      : exercise.kind === "assumption"
+        ? exercise.argument
+        : exercise.view;
 
 const headline = (exercise: ChoiceKindExercise, correct: boolean) => {
+  if (exercise.kind === "claim") {
+    return correct
+      ? "That's the conclusion everything else was supporting."
+      : "That's a premise, not the claim itself.";
+  }
   if (exercise.kind === "flaw") {
     return correct
       ? `Exactly — you named it.${exercise.fallacy ? ` (${exercise.fallacy})` : ""}`
