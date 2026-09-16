@@ -117,3 +117,45 @@ export type ArgumentGrade = {
 
 /** Rubric total is 4-16; XP scales with it so quality pays, not word count. */
 export const argumentXpFor = (total: number) => Math.max(20, Math.round(total * 6));
+
+/** One-line description of a drill, used for the mascot's Socratic prompt. */
+export function describeExercise(exercise: Exercise): string {
+  switch (exercise.kind) {
+    case "flaw":
+      return `Spot the flaw in: "${exercise.claim}" (options: ${exercise.options.join(" | ")})`;
+    case "assumption":
+      return `Hidden assumption in: "${exercise.argument}" (options: ${exercise.options.join(" | ")})`;
+    case "rank":
+      return `Rank evidence for: "${exercise.claim}" (${exercise.items.map((i) => i.text).join(" | ")})`;
+    case "sort":
+      return `Sort fact/opinion/value: ${exercise.statements.map((s) => s.text).join(" | ")}`;
+    case "predict":
+      return `Predict the outcome of: "${exercise.scenario}" — ${exercise.question}`;
+    case "steelman":
+      return `Steelman this view: "${exercise.view}" (options: ${exercise.options.join(" | ")})`;
+  }
+}
+
+/** Human-readable version of what the learner picked, for the Socratic prompt. */
+export function describeAnswer(exercise: Exercise, answer: unknown): string {
+  switch (exercise.kind) {
+    case "flaw":
+    case "assumption":
+    case "steelman":
+      return typeof answer === "number" ? (exercise.options[answer] ?? "") : "";
+    case "predict": {
+      const a = answer as { choice?: number; confidence?: number } | undefined;
+      return a && typeof a.choice === "number"
+        ? `${exercise.options[a.choice] ?? ""} (${a.confidence ?? 50}% confident)`
+        : "";
+    }
+    case "rank":
+      return Array.isArray(answer) ? (answer as string[]).join(" > ") : "";
+    case "sort": {
+      const a = (answer ?? {}) as Record<string, string>;
+      return exercise.statements
+        .map((s, i) => `${s.text} → ${a[String(i)] ?? "?"}`)
+        .join("; ");
+    }
+  }
+}
