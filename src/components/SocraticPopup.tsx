@@ -83,7 +83,7 @@ export function SocraticPopup({
   return (
     <div className="mt-4 flex animate-rise-in items-end gap-2">
       <CompanionAvatar
-        companion={{ ...companion, expression: correct ? "happy" : "thinking" }}
+        companion={{ ...companion, expression: correct ? "happy" : "calm" }}
         size={60}
         className="shrink-0 animate-float"
       />
