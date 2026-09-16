@@ -1,16 +1,24 @@
 # Lamppost roadmap
 
+## Fixed critical-thinking curriculum (done)
+- [x] One canonical curriculum in `src/lib/curriculum.ts`: 7 units × 5 lessons, objectives, prerequisites
+- [x] Explicit cross-unit links (correlation↔base rates, confirmation bias↔cherry-picking, etc.)
+- [x] Lesson content generated once per lesson id and cached in `curriculum_lessons` (public read)
+- [x] Open-ended topic creation removed from the UI (`/setup`, `/create`, AI Create nav gone)
+- [x] Course map + `/courses` show the seven units; home graph = unit nodes + curriculum edges
+- [x] Home CTA is "Continue: <next lesson>"; onboarding copy rewritten around critical thinking
+- [ ] Unit-level expansion of graph nodes to individual lessons
+
 ## Critical-thinking reframe (done)
 - [x] Reasoning lens (`src/lib/thinking.ts`) applied to every outline + content prompt
 - [x] Required "spot the flaw" drill per lesson: broken argument + 3 candidate diagnoses
 - [x] Flaw page between the reading parts and the quiz; answer required to continue
-- [x] Attempts persisted in `lamppost-flaws-v1`; home copy + starter tracks reframed
+- [x] Attempts persisted in `lamppost-flaws-v1`
 - [ ] Weight review intervals with flaw attempts (currently prediction + practice only)
 
 ## Home knowledge graph
-- [x] Replace the warm-glow dashboard with a real course graph
-- [x] Derive cross-domain links only from concepts present in generated course content
-- [x] Show progress rings, recency brightness, and connection details
+- [x] Seven-unit thinking-skills graph with real completion rings and curriculum-defined edges
+
 
 ## Course expedition map
 - [x] Replace the playful winding trail with an asymmetric topographical route
