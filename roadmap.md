@@ -36,7 +36,16 @@
 - [x] Streak freeze: 1 earned every 7 streak days (max 2), buyable for 60 gems
 - [x] Missed days covered automatically; "a freeze saved your streak" note on Progress
 
+## Pivot phase 2 (done) — reasoning exercises
+- [x] Exercise set: spot the flaw, hidden assumption, rank evidence, fact/opinion/value sort, predict + confidence, steelman
+- [x] Lesson shape: concept card (~80 words + example) → 5 mixed drills → written argument → summary
+- [x] Written argument graded 1–4 on claim/evidence/reasoning/counterargument, one revision, attempts stored
+- [x] Socratic mascot line after wrong answers and ~1 in 3 right ones, optional reply
+- [x] Home graph edges curve around unrelated nodes; locked-unit edges faded
+- [ ] Weight review intervals with drill accuracy (flaw + exercise scores)
+
 ## Phase 3 — small cast
+
 - 2–3 extra characters mapped to celebration / correction / empty states
 
 ## Later
