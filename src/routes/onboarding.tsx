@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Compass, Sparkles, Wand2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { DrillVariant } from "@/components/exercises/DrillVariant";
+import { Button } from "@/components/ui/button";
 import {
   markOnboardingSeen,
   saveCompanionForUser,
@@ -19,21 +21,25 @@ import {
   presetById,
   type Companion,
 } from "@/lib/companions";
+import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS } from "@/lib/curriculum";
+import type { ExerciseKind } from "@/lib/exercises";
+import { MOTIVATIONS, TIME_OPTIONS, placementSkip, saveIntent, type Motivation } from "@/lib/onboarding";
+import { useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Meet your companion — Lamppost" },
+      { title: "Get set up — Lamppost" },
       {
         name: "description",
         content:
-          "Pick and customise the companion that learns alongside you in Lamppost's AI-built courses.",
+          "Tell Lamppost why you want to think sharper, how much time you have each day, and meet the companion who trains with you.",
       },
-      { property: "og:title", content: "Meet your companion — Lamppost" },
+      { property: "og:title", content: "Get set up — Lamppost" },
       {
         property: "og:description",
-        content: "Choose a mascot companion, then start your first AI-built course.",
+        content: "Two questions, an optional placement check, and your companion.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -56,15 +62,31 @@ const INTRO = [
   {
     icon: Sparkles,
     title: "Train daily, like a sport",
-    body: "Short lessons, reviews timed to when you'd forget, and a companion who keeps you honest about your streak.",
+    body: "Short drills, reviews timed to when you'd forget, and a companion who keeps you honest about your streak.",
   },
+] as const;
+
+/** Steps, in order. The stepper dots and the flow both read from this. */
+const STEPS = [
+  "intro-0",
+  "intro-1",
+  "intro-2",
+  "why",
+  "time",
+  "placement",
+  "pick",
+  "customize",
 ] as const;
 
 function Onboarding() {
   const navigate = useNavigate();
   const { userId } = useSessionUser();
+  const { unlockLessons, setDailyGoal } = useProgress();
   const [step, setStep] = useState(0);
   const [companion, setCompanion] = useState<Companion>(companionFromPreset("scout"));
+
+  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const current = STEPS[step];
 
   const finish = async (chosen: Companion) => {
     markOnboardingSeen();
@@ -91,9 +113,9 @@ function Onboarding() {
       <div className="flex min-h-full flex-col px-6 pb-8">
         <div className="flex items-center justify-between pt-4">
           <div className="flex gap-1.5">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {STEPS.map((id, i) => (
               <span
-                key={i}
+                key={id}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300",
                   i === step ? "w-6 bg-primary" : "w-1.5 bg-border",
@@ -106,15 +128,57 @@ function Onboarding() {
           </button>
         </div>
 
-        {step < 3 ? (
-          <IntroStep index={step} onNext={() => setStep(step + 1)} />
-        ) : step === 3 ? (
+        {step < 3 && <IntroStep index={step} onNext={next} />}
+
+        {current === "why" && (
+          <WhyStep
+            companion={companion}
+            onDone={(motivation) => {
+              saveIntent({ motivation });
+              next();
+            }}
+          />
+        )}
+
+        {current === "time" && (
+          <TimeStep
+            companion={companion}
+            onDone={(minutes, goal) => {
+              saveIntent({ minutesPerDay: minutes });
+              setDailyGoal(goal);
+              next();
+            }}
+          />
+        )}
+
+        {current === "placement" && (
+          <PlacementStep
+            companion={companion}
+            onDone={(correct, total, skipped) => {
+              saveIntent({
+                placementScore: skipped ? null : correct,
+                placementSkipped: skipped,
+              });
+              if (!skipped) {
+                const unlocked = placementSkip(correct, total);
+                if (unlocked > 0) {
+                  unlockLessons(CURRICULUM_SLUG, CURRICULUM_TITLE, unlocked, TOTAL_LESSONS);
+                }
+              }
+              next();
+            }}
+          />
+        )}
+
+        {current === "pick" && (
           <PickStep
             selected={companion.preset}
             onSelect={(presetId) => setCompanion(companionFromPreset(presetId))}
-            onNext={() => setStep(4)}
+            onNext={next}
           />
-        ) : (
+        )}
+
+        {current === "customize" && (
           <CustomizeStep
             companion={companion}
             onChange={setCompanion}
@@ -147,8 +211,254 @@ function IntroStep({ index, onNext }: { index: number; onNext: () => void }) {
         onClick={onNext}
         className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
       >
-        {index === 2 ? "Pick my companion" : "Next"} <ArrowRight className="h-4 w-4" />
+        Next <ArrowRight className="h-4 w-4" />
       </button>
+    </div>
+  );
+}
+
+/** The companion's line only appears once something has actually been chosen. */
+function Reaction({ companion, line }: { companion: Companion; line: string | null }) {
+  if (!line) return null;
+  return (
+    <div className="mt-4 flex animate-rise-in items-end gap-2">
+      <CompanionAvatar companion={{ ...companion, expression: "excited" }} size={48} />
+      <p className="flex-1 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-3 py-2 text-[13px] font-semibold text-accent-foreground">
+        {line}
+      </p>
+    </div>
+  );
+}
+
+function OptionRow({
+  active,
+  label,
+  blurb,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  blurb: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "w-full rounded-2xl border-2 p-3.5 text-left transition-all",
+        active ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+      )}
+    >
+      <p className="text-sm font-bold text-foreground">{label}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{blurb}</p>
+    </button>
+  );
+}
+
+function WhyStep({
+  companion,
+  onDone,
+}: {
+  companion: Companion;
+  onDone: (motivation: Motivation) => void;
+}) {
+  const [chosen, setChosen] = useState<Motivation | null>(null);
+  const reaction = MOTIVATIONS.find((m) => m.id === chosen)?.reaction ?? null;
+
+  return (
+    <div className="flex flex-1 animate-rise-in flex-col">
+      <h1 className="mt-6 text-2xl leading-tight">Why do you want to think sharper?</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        It shapes the examples you'll see. Pick the closest one.
+      </p>
+
+      <div className="mt-4 space-y-2.5">
+        {MOTIVATIONS.map((option) => (
+          <OptionRow
+            key={option.id}
+            active={chosen === option.id}
+            label={option.label}
+            blurb={option.blurb}
+            onClick={() => setChosen(option.id)}
+          />
+        ))}
+      </div>
+
+      <Reaction companion={companion} line={reaction} />
+
+      <Button
+        disabled={!chosen}
+        onClick={() => chosen && onDone(chosen)}
+        className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
+      >
+        Next <ArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+function TimeStep({
+  companion,
+  onDone,
+}: {
+  companion: Companion;
+  onDone: (minutes: number, goal: number) => void;
+}) {
+  const [chosen, setChosen] = useState<number | null>(null);
+  const option = TIME_OPTIONS.find((o) => o.minutes === chosen);
+
+  return (
+    <div className="flex flex-1 animate-rise-in flex-col">
+      <h1 className="mt-6 text-2xl leading-tight">How much time per day?</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        This sets your daily goal. You can change it in settings.
+      </p>
+
+      <div className="mt-4 space-y-2.5">
+        {TIME_OPTIONS.map((o) => (
+          <OptionRow
+            key={o.minutes}
+            active={chosen === o.minutes}
+            label={o.label}
+            blurb={`${o.goal} lesson${o.goal === 1 ? "" : "s"} a day`}
+            onClick={() => setChosen(o.minutes)}
+          />
+        ))}
+      </div>
+
+      <Reaction companion={companion} line={option?.reaction ?? null} />
+
+      <Button
+        disabled={!option}
+        onClick={() => option && onDone(option.minutes, option.goal)}
+        className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
+      >
+        Next <ArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * Optional five-drill check. Only a near-perfect run skips lessons — being
+ * pushed past a skill you don't have is worse than repeating one you do.
+ */
+function PlacementStep({
+  companion,
+  onDone,
+}: {
+  companion: Companion;
+  onDone: (correct: number, total: number, skipped: boolean) => void;
+}) {
+  const pairs = useMemo(
+    () =>
+      LESSONS.filter((lesson) => lesson.unitId === "claims")
+        .slice(0, 5)
+        .flatMap((lesson) =>
+          lesson.drills[0]
+            ? [{ lessonId: lesson.id, kind: lesson.drills[0] as ExerciseKind }]
+            : [],
+        ),
+    [],
+  );
+  const [started, setStarted] = useState(false);
+  const [step, setStep] = useState(0);
+  const [correct, setCorrect] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const seen = useMemo<number[]>(() => [], []);
+
+  const pair = pairs[step];
+
+  if (!started) {
+    return (
+      <div className="flex flex-1 animate-rise-in flex-col">
+        <h1 className="mt-6 text-2xl leading-tight">Want to skip what you already know?</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Five quick drills from the first unit. Get nearly all of them right and we'll mark those
+          lessons as done. Get them wrong and nothing changes — it's not a test you can fail.
+        </p>
+        <div className="mt-6 flex justify-center">
+          <CompanionAvatar companion={companion} size={140} animate />
+        </div>
+        <div className="mt-auto space-y-2">
+          <Button
+            onClick={() => setStarted(true)}
+            className="h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
+          >
+            Take the check <ArrowRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => onDone(0, pairs.length, true)}
+            className="h-11 w-full rounded-2xl text-sm font-bold text-muted-foreground"
+          >
+            Start from lesson one
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pair) {
+    const unlocked = placementSkip(correct, pairs.length);
+    return (
+      <div className="flex flex-1 animate-pop-in flex-col items-center text-center">
+        <div className="mt-8">
+          <CompanionAvatar
+            companion={{ ...companion, expression: unlocked > 0 ? "excited" : "happy" }}
+            size={140}
+            animate
+          />
+        </div>
+        <h1 className="mt-5 text-2xl leading-tight">
+          {correct} of {pairs.length}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {unlocked > 0
+            ? `Strong start — the first ${unlocked} lessons are marked as known. You can still replay them any time.`
+            : "We'll start you at lesson one, where these skills get built properly."}
+        </p>
+        <Button
+          onClick={() => onDone(correct, pairs.length, false)}
+          className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
+        >
+          Continue <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <p className="mt-6 text-xs font-bold text-primary">
+        Placement check · {step + 1} of {pairs.length}
+      </p>
+      <DrillVariant
+        key={`${pair.lessonId}-${step}`}
+        lessonId={pair.lessonId}
+        kind={pair.kind}
+        seen={seen}
+        index={step}
+        total={pairs.length}
+        onAnswer={(score) => {
+          if (answered) return;
+          setAnswered(true);
+          if (score >= 1) setCorrect((n) => n + 1);
+        }}
+      />
+      {answered && (
+        <Button
+          onClick={() => {
+            setAnswered(false);
+            setStep((s) => s + 1);
+          }}
+          className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
+        >
+          {step + 1 >= pairs.length ? "See my result" : "Next drill"}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }
