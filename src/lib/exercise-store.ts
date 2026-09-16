@@ -68,6 +68,11 @@ export function useLessonAttempts(lessonId: string) {
   return { attempts, record };
 }
 
+/** Every attempt, keyed `lessonId#index` — read by the progress analytics. */
+export function readAttemptStore(): Record<string, ExerciseAttempt> {
+  return readStore();
+}
+
 /** Share of a lesson's flaw drills the learner got right — feeds review timing. */
 export function flawAccuracyFor(lessonId: string): number | null {
   const store = readStore();

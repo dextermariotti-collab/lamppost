@@ -25,6 +25,16 @@ For each drill, decide whether ALL of these hold:
    (a "spot the flaw" drill in a lesson about restating claims is expected and fine). Fail on this
    point only when the drill is about an unrelated topic or teaches a different skill entirely.
 4. The explanation/feedback agrees with the keyed answer and does not argue for another option.
+5. NO INVENTED FACTS. The drill must not present a made-up study, statistic, institution, researcher or
+   named source as though it were real. A scenario built on a hypothetical is fine ONLY if it is openly
+   marked as hypothetical (e.g. it begins "Hypothetical scenario:"). Fail any drill that says
+   researchers/scientists/a university found something specific unless that finding is genuinely
+   famous and well established.
+6. NO GIVEAWAY WORDING. Options must be the same style and roughly the same length, and must not carry
+   their own justification inside them ("because…", "since…", "which shows…", "…was assumed, not
+   created"). Fail the drill if the keyed option can be identified from its wording, its length or its
+   extra detail rather than from reasoning about the material.
+
 
 Reply with ONLY minified JSON:
 {"results":[{"index":number,"pass":boolean,"problem":string,"betterCorrect":number|null}]}
@@ -32,7 +42,8 @@ Reply with ONLY minified JSON:
 - "problem" is one specific sentence when pass is false, otherwise "".
 - "betterCorrect": if the ONLY fault is that a different listed option is clearly the best answer,
   give that option's 0-based index. Otherwise null.
-Be demanding about points 1, 2 and 4: if two options could each be defended as the best answer, fail.
+Be demanding about points 1, 2, 4, 5 and 6: if two options could each be defended as the best answer,
+fail; if the answer can be read off the wording, fail; if a study is invented as fact, fail.
 Never fail a drill for missing fields that its type does not have.
 
 ${CONTENT_POLICY_RULES}`;

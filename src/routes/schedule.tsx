@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, HelpCircle, Sparkles, XCircle } from "lucide-react";
 import { useMemo } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { Button } from "@/components/ui/button";
-import { useProgress } from "@/lib/progress";
-import { useReviewSchedule, type ScheduledItem } from "@/lib/reviews";
+import { CURRICULUM_SLUG } from "@/lib/curriculum";
+import { EXERCISE_LABEL } from "@/lib/exercises";
+import { DRILL_INTERVALS, useDrillSchedule, type ScheduledDrill } from "@/lib/review-drills";
 
 export const Route = createFileRoute("/schedule")({
   head: () => ({
@@ -13,12 +14,12 @@ export const Route = createFileRoute("/schedule")({
       {
         name: "description",
         content:
-          "See which lessons come back next, and how your predict-before-reveal answers stretch or shorten each review interval.",
+          "See which reasoning drills come back next. Missed drills return in a day; the ones you keep getting right rest for two weeks.",
       },
       { property: "og:title", content: "Review schedule — Lamppost" },
       {
         property: "og:description",
-        content: "Track upcoming spaced repetition reviews, weighted by your prediction answers.",
+        content: "Track upcoming drill reviews, scheduled from what you actually got wrong.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -27,15 +28,15 @@ export const Route = createFileRoute("/schedule")({
   component: ReviewSchedule,
 });
 
-type Group = { label: string; note: string; items: ScheduledItem[] };
+type Group = { label: string; note: string; items: ScheduledDrill[] };
 
-function groupItems(items: ScheduledItem[]): Group[] {
+function groupItems(items: ScheduledDrill[]): Group[] {
   const groups: Group[] = [
     { label: "Overdue", note: "Waiting longer than planned", items: [] },
-    { label: "Due today", note: "Ready for recall now", items: [] },
+    { label: "Due today", note: "Ready now, as a new scenario", items: [] },
     { label: "Tomorrow", note: "Coming back next", items: [] },
     { label: "This week", note: "Within the next 7 days", items: [] },
-    { label: "Later", note: "Resting — recall is still strong", items: [] },
+    { label: "Later", note: "Resting — this one is sticking", items: [] },
   ];
   for (const item of items) {
     if (item.dueInDays < 0) groups[0]!.items.push(item);
@@ -47,47 +48,37 @@ function groupItems(items: ScheduledItem[]): Group[] {
   return groups.filter((g) => g.items.length > 0);
 }
 
-function whenLabel(item: ScheduledItem) {
+function whenLabel(item: ScheduledDrill) {
   if (item.dueInDays < 0) return `${item.overdueDays}d overdue`;
   if (item.dueInDays === 0) return "today";
   if (item.dueInDays === 1) return "tomorrow";
   return `in ${item.dueInDays}d`;
 }
 
-function SignalChip({ item }: { item: ScheduledItem }) {
-  if (item.signal === "unknown") {
-    return (
-      <span className="text-[11px] font-semibold text-muted-foreground">standard interval</span>
-    );
-  }
-  const shaky = item.signal === "shaky";
-  const Icon = shaky ? TrendingDown : TrendingUp;
+function ReasonChip({ item }: { item: ScheduledDrill }) {
+  const missed = item.reason === "missed";
+  const Icon = missed ? XCircle : HelpCircle;
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-bold ${
-        shaky ? "text-destructive" : "text-primary"
+        missed ? "text-destructive" : "text-primary"
       }`}
     >
       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
-      {shaky ? "missed prediction · comes back sooner" : "predicted right · interval stretched"}
+      {missed ? "missed it — comes back soonest" : "answered unsure — worth another look"}
     </span>
   );
 }
 
 function ReviewSchedule() {
   const navigate = useNavigate();
-  const { state } = useProgress();
-  const completedBySlug = useMemo(
-    () => Object.fromEntries(Object.entries(state.courses).map(([slug, c]) => [slug, c.completed])),
-    [state.courses],
-  );
-  const { items, hydrated } = useReviewSchedule(completedBySlug);
+  const { items, hydrated } = useDrillSchedule();
   const groups = useMemo(() => groupItems(items), [items]);
   const dueNow = items.filter((item) => item.dueInDays <= 0).length;
 
   return (
     <PhoneFrame>
-      <main className="journal-page min-h-full px-5 pb-10">
+      <main className="min-h-full px-5 pb-10">
         <div className="flex items-center justify-between py-3">
           <Link
             to="/"
@@ -100,10 +91,11 @@ function ReviewSchedule() {
           <span className="w-9" />
         </div>
 
-        <h1 className="mt-2 text-[1.9rem] italic leading-tight">What comes back next</h1>
+        <h1 className="mt-2 text-[1.9rem] leading-tight">What comes back next</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Every finished lesson gets a due date. Lessons where you predicted right rest longer;
-          lessons where the prediction tripped you up return sooner.
+          Every drill you miss — or answer without much confidence — gets a return date:{" "}
+          {DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when
+          you don't. Reviews always use a new scenario for the same skill.
         </p>
 
         {dueNow > 0 && (
@@ -112,7 +104,7 @@ function ReviewSchedule() {
             className="mt-5 h-11 w-full justify-between px-4 font-bold shadow-none"
           >
             <span>
-              Review {dueNow} lesson{dueNow === 1 ? "" : "s"} now
+              Review {dueNow} drill{dueNow === 1 ? "" : "s"} now
             </span>
             <ArrowRight className="h-4 w-4" />
           </Button>
@@ -121,12 +113,15 @@ function ReviewSchedule() {
         {hydrated && items.length === 0 && (
           <div className="mt-8 rounded-2xl border border-border p-5 text-center">
             <Sparkles aria-hidden="true" className="mx-auto h-5 w-5 text-primary" />
-            <p className="mt-2 text-sm font-bold">Nothing tracked yet</p>
+            <p className="mt-2 text-sm font-bold">Nothing queued yet</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Finish a lesson and it will appear here with its first review date.
+              Nothing you've answered has needed a second look. Drills you get wrong will show up
+              here.
             </p>
             <Button asChild variant="outline" className="mt-4 h-10 w-full font-bold shadow-none">
-              <Link to="/courses">Go to my courses</Link>
+              <Link to="/course/$slug" params={{ slug: CURRICULUM_SLUG }}>
+                Go to my path
+              </Link>
             </Button>
           </div>
         )}
@@ -134,7 +129,7 @@ function ReviewSchedule() {
         {groups.map((group) => (
           <section key={group.label} className="mt-7">
             <div className="flex items-baseline justify-between">
-              <h2 className="font-sans text-lg font-bold">{group.label}</h2>
+              <h2 className="text-lg font-bold">{group.label}</h2>
               <span className="text-[11px] font-semibold text-muted-foreground">
                 {group.items.length}
               </span>
@@ -145,20 +140,23 @@ function ReviewSchedule() {
                 <li key={item.key} className="border-b border-border/80 py-3">
                   <Link
                     to="/course/$slug/lesson/$index"
-                    params={{ slug: item.slug, index: String(item.lessonIndex) }}
+                    params={{ slug: CURRICULUM_SLUG, index: String(item.lessonIndex + 1) }}
                     className="block"
                   >
                     <div className="flex items-baseline justify-between gap-3">
-                      <p className="text-sm font-bold leading-snug">{item.lessonTitle}</p>
+                      <p className="text-sm font-bold leading-snug">
+                        {EXERCISE_LABEL[item.kind]}
+                      </p>
                       <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
                         {whenLabel(item)}
                       </span>
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {item.topic} · lesson {item.lessonIndex + 1} · stage {item.box + 1} of 6
+                      {item.unitTitle} · {item.lessonTitle} · stage {item.box + 1} of{" "}
+                      {DRILL_INTERVALS.length}
                     </p>
                     <div className="mt-1">
-                      <SignalChip item={item} />
+                      <ReasonChip item={item} />
                     </div>
                   </Link>
                 </li>
