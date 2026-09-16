@@ -1,4 +1,6 @@
 import type { CourseBrief } from "./course-brief";
+import type { Exercise, WrittenPrompt } from "./exercises";
+
 
 export type Quiz = {
   question: string;
