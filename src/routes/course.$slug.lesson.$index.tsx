@@ -49,20 +49,27 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
 
 
 function LessonScreen() {
-  const { slug, index } = Route.useParams();
+  const { slug: slugParam, index } = Route.useParams();
+  const slug = CURRICULUM_SLUG;
   const navigate = useNavigate();
-  const { course, hydrated } = useStoredCourse(slug);
+  const course = useCurriculumCourse();
+  const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
+  const {
+    lesson,
+    meta,
+    loading,
+    error,
+    retry,
+    ready,
+  } = useCurriculumLesson(lessonNumber - 1);
   const { companion } = useCompanion();
   const { completeLesson, recordPractice } = useProgress();
   const { userId } = useSessionUser();
   const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
     slug,
-    Math.max(Number(index) || 1, 1),
+    lessonNumber,
   );
-  const { attempt: flawAttempt, record: recordFlaw } = useFlawAttempt(
-    slug,
-    Math.max(Number(index) || 1, 1),
-  );
+  const { attempt: flawAttempt, record: recordFlaw } = useFlawAttempt(slug, lessonNumber);
   /** Page 0..n-1 are content parts, the last page is the quiz set. */
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -77,30 +84,48 @@ function LessonScreen() {
     setPracticeDone(false);
   }, [index]);
 
+  // Old topic courses no longer exist: send any other slug to the curriculum.
   useEffect(() => {
-    if (hydrated && !course) {
+    if (slugParam !== CURRICULUM_SLUG) {
       navigate({
-        to: "/setup",
-        search: clampBrief({ topic: slug.replace(/-/g, " ") }),
+        to: "/course/$slug/lesson/$index",
+        params: { slug: CURRICULUM_SLUG, index: String(lessonNumber) },
         replace: true,
       });
     }
-  }, [hydrated, course, slug, navigate]);
+  }, [slugParam, lessonNumber, navigate]);
 
-  if (!course) {
+  if (!ready || !lesson) {
     return (
       <PhoneFrame showNav={false}>
-        <div className="space-y-4 px-5 py-8">
-          <div className="h-8 w-2/3 animate-pulse rounded-full bg-primary-soft" />
-          <div className="h-24 animate-pulse rounded-3xl bg-muted" />
-          <div className="h-52 animate-pulse rounded-3xl bg-muted" />
+        <div className="px-5 py-8">
+          <p className="text-xs font-bold text-primary">
+            {unitById(meta?.unitId ?? "claims").title}
+          </p>
+          <h1 className="mt-1 text-2xl leading-tight">{meta?.title ?? "Loading lesson"}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{meta?.objective}</p>
+
+          {error ? (
+            <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft">
+              <p className="text-sm font-semibold text-foreground">{error}</p>
+              <Button onClick={retry} className="mt-4 w-full rounded-full">
+                Try again
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-4" aria-busy={loading}>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Writing this lesson…
+              </p>
+              <div className="h-24 animate-pulse rounded-3xl bg-muted" />
+              <div className="h-52 animate-pulse rounded-3xl bg-muted" />
+            </div>
+          )}
         </div>
       </PhoneFrame>
     );
   }
 
-  const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), course.lessons.length);
-  const lesson = course.lessons[lessonNumber - 1]!;
   const parts = lesson.parts && lesson.parts.length > 0 ? lesson.parts : [];
   const quizzes = lessonQuizzes(lesson);
   /** Pages: reading parts, then the spot-the-flaw drill, then the quiz set. */
@@ -117,8 +142,9 @@ function LessonScreen() {
   const flawPending = onFlaw && flawAttempt === undefined;
 
   const stepPct = Math.round(
-    ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / course.lessons.length) * 100,
+    ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / TOTAL_LESSONS) * 100,
   );
+
 
   /** After the quiz, the learner explains the lesson back in their own words. */
   const showPractice = onQuiz && answeredAll && !practiceDone && !completing;
