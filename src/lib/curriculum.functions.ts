@@ -79,7 +79,9 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
         return await result.text;
       };
 
+      console.log("[gen] asking model");
       const text = await ask(system, exerciseLessonPrompt(meta));
+      console.log("[gen] got reply", text.length);
       const screened = screenOutput(text);
       if (!screened.allowed) return { ok: false, reason: screened.message };
 
@@ -90,6 +92,7 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
         drills: meta.drills,
         written: meta.written,
       });
+      console.log("[gen] parsed", !!lesson, lesson?.exercises?.length);
       if (!lesson?.exercises) {
         return { ok: false, reason: "The tutor's reply couldn't be read as a lesson." };
       }
