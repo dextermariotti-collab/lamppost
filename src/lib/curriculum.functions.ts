@@ -16,7 +16,7 @@ const MAX_REPAIRS = 2;
 
 function describe(error: unknown): string {
   const text = String((error as { message?: string })?.message ?? error ?? "unknown");
-  console.error("Curriculum lesson generation failed:", text, (error as { stack?: string })?.stack);
+  console.error("Curriculum lesson generation failed:", text);
   if (/402|credit|quota|billing|payment/i.test(text)) {
     return "The AI workspace is out of credits, so this lesson couldn't be written. Top up AI credits and try again.";
   }
@@ -79,9 +79,7 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
         return await result.text;
       };
 
-      console.log("[gen] meta", JSON.stringify(meta));
       const text = await ask(system, exerciseLessonPrompt(meta));
-      console.log("[gen] got reply", text.length);
       const screened = screenOutput(text);
       if (!screened.allowed) return { ok: false, reason: screened.message };
 
@@ -92,7 +90,6 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
         drills: meta.drills,
         written: meta.written,
       });
-      console.log("[gen] parsed", !!lesson, lesson?.exercises?.length);
       if (!lesson?.exercises) {
         return { ok: false, reason: "The tutor's reply couldn't be read as a lesson." };
       }
