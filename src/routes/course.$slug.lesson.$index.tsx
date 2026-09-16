@@ -298,6 +298,7 @@ function LessonScreen() {
               onGraded={(total, attempt, max) => {
                 setArgumentGrade(total);
                 if (attempt === 1) recordArgument(total, max);
+                recordWrittenScore(meta?.id ?? `lesson-${lessonNumber}`, total, max);
               }}
             />
             {argumentGrade === null && !skippedWriting && (
