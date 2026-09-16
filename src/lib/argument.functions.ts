@@ -24,7 +24,7 @@ export type GradeResult =
 const clampScore = (value: unknown) =>
   Math.min(4, Math.max(1, Math.round(typeof value === "number" ? value : 1)));
 
-function parseGrade(
+export function parseGrade(
   text: string,
   criteria: readonly RubricCriterion[],
 ): { grade: ArgumentGrade; onTopic: boolean } | null {
