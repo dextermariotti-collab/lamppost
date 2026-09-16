@@ -45,12 +45,16 @@ export function LessonTrail({
   lessons,
   completed,
   companion: _companion,
+  unitNames,
 }: {
   slug: string;
   lessons: TrailLesson[];
   completed: number;
   companion: { [K in keyof Companion]?: string | null | undefined } | null | undefined;
+  /** Region labels, one per unit of five lessons. */
+  unitNames?: string[];
 }) {
+
   const navigate = useNavigate();
   const [openNode, setOpenNode] = useState<Node | null>(null);
   const nodes: Node[] = [];
