@@ -40,8 +40,10 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
       .select("content")
       .eq("lesson_id", meta.id)
       .maybeSingle();
-    if (cached.data?.content) {
-      return { ok: true, lesson: cached.data.content as unknown as Lesson, cached: true };
+    const cachedLesson = cached.data?.content as unknown as Lesson | undefined;
+    // Rows cached before phase 2 have no exercises: regenerate those.
+    if (cachedLesson?.exercises && cachedLesson.exercises.length >= 3) {
+      return { ok: true, lesson: cachedLesson, cached: true };
     }
 
     const key = process.env["LOVABLE_API_KEY"];
@@ -50,29 +52,31 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
     try {
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-      const { CONTENT_SYSTEM, parseLessonContent } = await import("./course-ai.server");
       const { screenOutput } = await import("./moderation.server");
-      const { curriculumLessonPrompt } = await import("./curriculum.server");
+      const { EXERCISE_SYSTEM, exerciseLessonPrompt, parseExerciseLesson } = await import(
+        "./exercise-ai.server"
+      );
 
       const gateway = createLovableAiGatewayProvider(key);
       const result = streamText({
         model: gateway(MODEL),
-        system: CONTENT_SYSTEM,
-        prompt: curriculumLessonPrompt(meta),
+        system: EXERCISE_SYSTEM,
+        prompt: exerciseLessonPrompt(meta),
       });
       const text = await result.text;
 
       const screened = screenOutput(text);
       if (!screened.allowed) return { ok: false, reason: screened.message };
 
-      const [lesson] = parseLessonContent(
-        text,
-        [{ index: 1, title: meta.title, subtitle: meta.objective, emoji: meta.emoji }],
-        2,
-      );
+      const lesson = parseExerciseLesson(text, {
+        title: meta.title,
+        objective: meta.objective,
+        emoji: meta.emoji,
+      });
       if (!lesson) {
         return { ok: false, reason: "The tutor's reply couldn't be read as a lesson." };
       }
+
 
       const unit = UNITS.find((u) => u.id === meta.unitId);
       await supabaseAdmin.from("curriculum_lessons").upsert(
