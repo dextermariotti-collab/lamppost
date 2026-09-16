@@ -34,7 +34,6 @@ function skeleton(): Course {
 export const hasLessonContent = (lesson: Lesson | undefined) =>
   Boolean(lesson?.exercises && lesson.exercises.length >= 3);
 
-
 /** Returns the curriculum course, creating/refreshing the skeleton as needed. */
 export function ensureCurriculumCourse(): Course {
   const stored = getStoredCourse(CURRICULUM_SLUG);

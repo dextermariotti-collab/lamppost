@@ -1,9 +1,5 @@
 import { ExerciseFeedback, ExerciseShell, OptionButton } from "./ExerciseShell";
-import type {
-  AssumptionExercise,
-  FlawExercise,
-  SteelmanExercise,
-} from "@/lib/exercises";
+import type { AssumptionExercise, FlawExercise, SteelmanExercise } from "@/lib/exercises";
 
 type ChoiceKindExercise = FlawExercise | AssumptionExercise | SteelmanExercise;
 

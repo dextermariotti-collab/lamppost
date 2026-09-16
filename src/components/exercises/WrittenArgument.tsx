@@ -104,7 +104,11 @@ export function WrittenArgument({
             className="mt-4 w-full resize-none rounded-2xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold leading-relaxed text-foreground outline-none focus-visible:border-primary"
           />
           <div className="mt-1 flex items-center justify-between text-[12px] font-semibold text-muted-foreground">
-            <span>{text.trim() ? `${text.trim().split(/\s+/).length} words` : "Grades reasoning, not spelling"}</span>
+            <span>
+              {text.trim()
+                ? `${text.trim().split(/\s+/).length} words`
+                : "Grades reasoning, not spelling"}
+            </span>
             {attempt === 2 && <span>Revision</span>}
           </div>
           {error && <p className="mt-2 text-[13px] font-semibold text-destructive">{error}</p>}

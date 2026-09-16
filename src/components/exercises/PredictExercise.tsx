@@ -37,12 +37,7 @@ export function PredictExerciseCard({
   const correct = answer?.choice === exercise.correct;
 
   return (
-    <ExerciseShell
-      kind="predict"
-      index={index}
-      total={total}
-      passage={exercise.scenario}
-    >
+    <ExerciseShell kind="predict" index={index} total={total} passage={exercise.scenario}>
       <p className="mt-4 text-[15px] font-semibold leading-snug text-foreground">
         {exercise.question}
       </p>

@@ -107,9 +107,7 @@ function LessonScreen() {
             </div>
           ) : (
             <div className="mt-6 space-y-4" aria-busy={loading}>
-              <p className="text-sm font-semibold text-muted-foreground">
-                Building your drills…
-              </p>
+              <p className="text-sm font-semibold text-muted-foreground">Building your drills…</p>
               <div className="h-24 animate-pulse rounded-3xl bg-muted" />
               <div className="h-52 animate-pulse rounded-3xl bg-muted" />
             </div>
@@ -235,9 +233,7 @@ function LessonScreen() {
         {onConcept && (
           <article className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
             <p className="text-[11px] font-semibold text-primary">The idea</p>
-            <h2 className="mt-1 text-xl leading-snug">
-              {lesson.concept?.title ?? lesson.title}
-            </h2>
+            <h2 className="mt-1 text-xl leading-snug">{lesson.concept?.title ?? lesson.title}</h2>
             <p className="mt-3 text-[15px] font-semibold leading-relaxed text-foreground/85">
               {lesson.concept?.body}
             </p>

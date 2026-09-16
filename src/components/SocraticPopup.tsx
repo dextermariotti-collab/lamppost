@@ -90,7 +90,10 @@ export function SocraticPopup({
       />
       <div className="flex-1 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-4 py-3">
         <div className="flex items-start gap-2">
-          <p aria-live="polite" className="flex-1 text-[13px] font-semibold leading-snug text-foreground">
+          <p
+            aria-live="polite"
+            className="flex-1 text-[13px] font-semibold leading-snug text-foreground"
+          >
             {question}
           </p>
           <button

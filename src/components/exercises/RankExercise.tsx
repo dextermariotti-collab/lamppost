@@ -106,7 +106,10 @@ export function RankExerciseCard({
                 </span>
               )}
               {!answered && (
-                <GripVertical aria-hidden className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/60" />
+                <GripVertical
+                  aria-hidden
+                  className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/60"
+                />
               )}
             </li>
           );
@@ -116,7 +119,9 @@ export function RankExerciseCard({
       {!answered ? (
         <Button
           type="button"
-          onClick={() => onAnswer(order, order.filter((t, i) => t === solution[i]).length / solution.length)}
+          onClick={() =>
+            onAnswer(order, order.filter((t, i) => t === solution[i]).length / solution.length)
+          }
           className="mt-4 h-11 w-full rounded-full font-semibold"
         >
           Check my ordering

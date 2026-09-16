@@ -60,7 +60,6 @@ function routeEdge(fromId: string, toId: string) {
   };
 }
 
-
 /**
  * The home skills graph: seven unit nodes, completion rings from real progress,
  * and edges drawn only where the curriculum defines a genuine cross-unit link.
@@ -82,7 +81,9 @@ export function ThinkingGraph({
   // Edges fade when neither end is reachable yet, so the lit path stays readable.
   const routes = useMemo(() => {
     const lockedUnits = new Set(
-      units.filter((u) => u.state === "locked" && u.unit.id !== currentUnitId).map((u) => u.unit.id),
+      units
+        .filter((u) => u.state === "locked" && u.unit.id !== currentUnitId)
+        .map((u) => u.unit.id),
     );
     return links.flatMap((link) => {
       const route = routeEdge(link.fromUnit, link.toUnit);
@@ -97,8 +98,6 @@ export function ThinkingGraph({
       ];
     });
   }, [links, units, currentUnitId]);
-
-
 
   return (
     <div>
@@ -131,7 +130,6 @@ export function ThinkingGraph({
             style={{ left: `${route.handle.x}%`, top: `${route.handle.y}%` }}
           />
         ))}
-
 
         {units.map((unit) => {
           const point = POSITIONS[unit.unit.id] ?? { x: 50, y: 50 };
