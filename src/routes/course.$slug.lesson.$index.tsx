@@ -1,24 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Lightbulb } from "lucide-react";
 import { useEffect, useState } from "react";
-import aiBot from "@/assets/ai-bot.png";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { PracticeChat } from "@/components/PracticeChat";
-import { PredictionCard } from "@/components/PredictionCard";
-import { SpotTheFlawCard } from "@/components/SpotTheFlawCard";
+import { SocraticPopup } from "@/components/SocraticPopup";
+import { ExerciseRunner } from "@/components/exercises/ExerciseRunner";
+import { WrittenArgument } from "@/components/exercises/WrittenArgument";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { CURRICULUM_SLUG, TOTAL_LESSONS, lessonAt, unitById } from "@/lib/curriculum";
 import { useCurriculumCourse, useCurriculumLesson } from "@/lib/curriculum-store";
-import { lessonQuizzes } from "@/lib/courses";
+import { describeExercise } from "@/lib/exercises";
+import { useLessonAttempts } from "@/lib/exercise-store";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
-import { usePredictionAttempt } from "@/lib/prediction-store";
-import { useFlawAttempt } from "@/lib/flaw-store";
 import { useProgress } from "@/lib/progress";
 import type { PracticeClose } from "@/lib/practice";
 
@@ -33,7 +32,7 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
           name: "description",
           content:
             meta?.objective ??
-            "Train one critical-thinking skill with a lesson, a flaw drill and a quiz.",
+            "Train one reasoning skill with mixed drills and a graded written argument.",
         },
         { property: "og:title", content: `${title} — Lamppost` },
         {
@@ -48,6 +47,9 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
   component: LessonScreen,
 });
 
+/** Roughly one in three correct answers also gets a Socratic nudge. */
+const SOCRATIC_CHANCE = 1 / 3;
+
 function LessonScreen() {
   const { slug: slugParam, index } = Route.useParams();
   const slug = CURRICULUM_SLUG;
@@ -56,25 +58,23 @@ function LessonScreen() {
   const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
   const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(lessonNumber - 1);
   const { companion } = useCompanion();
-  const { completeLesson, recordPractice } = useProgress();
+  const { completeLesson, recordPractice, recordExercise, recordArgument } = useProgress();
   const { userId } = useSessionUser();
-  const { attempt: predictionAttempt, record: recordPrediction } = usePredictionAttempt(
-    slug,
-    lessonNumber,
-  );
-  const { attempt: flawAttempt, record: recordFlaw } = useFlawAttempt(slug, lessonNumber);
-  /** Page 0..n-1 are content parts, the last page is the quiz set. */
+  const { attempts, record } = useLessonAttempts(meta?.id ?? `lesson-${lessonNumber}`);
+
+  /** Page 0 = concept card, 1..n = exercises, then written argument, then summary. */
   const [page, setPage] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
   const [completing, setCompleting] = useState(false);
-  /** The explain-it-back beat closes the lesson, after the quiz. */
-  const [practiceDone, setPracticeDone] = useState(false);
+  const [socratic, setSocratic] = useState<{ index: number; correct: boolean } | null>(null);
+  const [argumentGrade, setArgumentGrade] = useState<number | null>(null);
+  const [skippedWriting, setSkippedWriting] = useState(false);
 
   useEffect(() => {
     setPage(0);
-    setAnswers({});
     setCompleting(false);
-    setPracticeDone(false);
+    setSocratic(null);
+    setArgumentGrade(null);
+    setSkippedWriting(false);
   }, [index]);
 
   // Old topic courses no longer exist: send any other slug to the curriculum.
@@ -107,7 +107,9 @@ function LessonScreen() {
             </div>
           ) : (
             <div className="mt-6 space-y-4" aria-busy={loading}>
-              <p className="text-sm font-semibold text-muted-foreground">Writing this lesson…</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Building your drills…
+              </p>
               <div className="h-24 animate-pulse rounded-3xl bg-muted" />
               <div className="h-52 animate-pulse rounded-3xl bg-muted" />
             </div>
@@ -117,39 +119,31 @@ function LessonScreen() {
     );
   }
 
-  const parts = lesson.parts && lesson.parts.length > 0 ? lesson.parts : [];
-  const quizzes = lessonQuizzes(lesson);
-  /** Pages: reading parts, then the spot-the-flaw drill, then the quiz set. */
-  const flaw = lesson.flaw;
-  const flawPage = flaw ? parts.length : -1;
-  const onFlaw = flaw ? page === flawPage : false;
-  const totalPages = parts.length + (flaw ? 1 : 0) + 1;
-  const onQuiz = page >= parts.length + (flaw ? 1 : 0);
-  const answeredAll = quizzes.every((_, i) => answers[i] !== undefined);
-  /** The predict-before-reveal beat closes the first reading part. */
-  const prediction = lesson.prediction;
-  const showPrediction = !onQuiz && !onFlaw && page === 0 && parts.length > 1 && !!prediction;
-  const predictionPending = showPrediction && predictionAttempt === undefined;
-  const flawPending = onFlaw && flawAttempt === undefined;
+  const exercises = lesson.exercises ?? [];
+  const written = lesson.written;
+  const writtenPage = exercises.length + 1;
+  const summaryPage = writtenPage + (written ? 1 : 0);
+  const totalPages = summaryPage + 1;
+
+  const onConcept = page === 0;
+  const onExercise = page >= 1 && page <= exercises.length;
+  const exerciseIndex = page - 1;
+  const currentExercise = onExercise ? exercises[exerciseIndex] : undefined;
+  const currentAttempt = onExercise ? attempts[exerciseIndex] : undefined;
+  const onWritten = !!written && page === writtenPage;
+  const onSummary = page === summaryPage;
 
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / TOTAL_LESSONS) * 100,
   );
 
-  /** After the quiz, the learner explains the lesson back in their own words. */
-  const showPractice = onQuiz && answeredAll && !practiceDone && !completing;
-  const practiceText = [
-    lesson.intro ?? "",
-    ...parts.map((p) => `${p.title}: ${p.body}`),
-    ...(lesson.keyPoints ?? []),
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
-  const handlePracticeDone = (close: PracticeClose | null) => {
-    if (close) recordPractice(close.verdict, close.connectionMade);
-    setPracticeDone(true);
-    finishLesson();
+  const answerExercise = (answer: unknown, score: number) => {
+    const fresh = record(exerciseIndex, answer, score);
+    if (fresh) recordExercise(score);
+    const correct = score === 1;
+    if (!correct || Math.random() < SOCRATIC_CHANCE) {
+      setSocratic({ index: exerciseIndex, correct });
+    }
   };
 
   const finishLesson = () => {
@@ -167,6 +161,39 @@ function LessonScreen() {
       }
     }, 1450);
   };
+
+  const handlePracticeDone = (close: PracticeClose | null) => {
+    if (close) recordPractice(close.verdict, close.connectionMade);
+    finishLesson();
+  };
+
+  const practiceText = [
+    lesson.concept?.body ?? "",
+    lesson.concept?.example ?? "",
+    ...(lesson.keyPoints ?? []),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const canContinue = onExercise
+    ? currentAttempt !== undefined
+    : onWritten
+      ? argumentGrade !== null || skippedWriting
+      : true;
+
+  const nextLabel = onConcept
+    ? "Start training"
+    : onExercise
+      ? exerciseIndex + 1 === exercises.length
+        ? written
+          ? "Write your argument"
+          : "See the summary"
+        : "Next drill"
+      : onWritten
+        ? "See the summary"
+        : lessonNumber < course.lessons.length
+          ? "Continue"
+          : "Finish course";
 
   return (
     <PhoneFrame showNav={false}>
@@ -200,191 +227,117 @@ function LessonScreen() {
 
       <div className="px-5 pt-4 pb-8">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
-          <span aria-hidden>{lesson.emoji}</span> Lesson {lessonNumber}
+          <span aria-hidden>{lesson.emoji}</span> {unitById(meta?.unitId ?? "claims").title}
         </span>
         <h1 className="mt-3 text-3xl leading-tight">{lesson.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{lesson.subtitle}</p>
 
-        {page === 0 && (
-          <div className="relative mt-4 animate-rise-in overflow-hidden rounded-3xl bg-primary-soft p-4">
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold text-primary-foreground">
-              <Sparkles className="h-3 w-3" /> Written for you
-            </span>
-            <p className="mt-2 max-w-[72%] text-sm font-semibold text-accent-foreground">
-              {lesson.intro ??
-                `This lesson was written by AI just for you, based on your ${course.topic.toLowerCase()} goals.`}
+        {onConcept && (
+          <article className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
+            <p className="text-[11px] font-semibold text-primary">The idea</p>
+            <h2 className="mt-1 text-xl leading-snug">
+              {lesson.concept?.title ?? lesson.title}
+            </h2>
+            <p className="mt-3 text-[15px] font-semibold leading-relaxed text-foreground/85">
+              {lesson.concept?.body}
             </p>
-            <img
-              src={aiBot}
-              alt=""
-              aria-hidden
-              width={816}
-              height={816}
-              className="pointer-events-none absolute right-2 bottom-2 h-16 w-16 animate-float object-contain"
+            {lesson.concept?.example && (
+              <div className="mt-4 flex gap-3 rounded-2xl bg-primary-soft p-4">
+                <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p className="text-[14px] font-semibold leading-relaxed text-accent-foreground">
+                  {lesson.concept.example}
+                </p>
+              </div>
+            )}
+            <p className="mt-4 text-[13px] font-semibold text-muted-foreground">
+              {exercises.length} drills ahead. You do the reasoning — I'll push back.
+            </p>
+          </article>
+        )}
+
+        {onExercise && currentExercise && (
+          <>
+            <ExerciseRunner
+              exercise={currentExercise}
+              index={exerciseIndex}
+              total={exercises.length}
+              answer={currentAttempt?.answer}
+              onAnswer={answerExercise}
+            />
+            {socratic?.index === exerciseIndex && (
+              <SocraticPopup
+                key={`socratic-${lessonNumber}-${exerciseIndex}`}
+                companion={companion}
+                lessonTitle={lesson.title}
+                objective={lesson.subtitle}
+                exercise={currentExercise}
+                answer={currentAttempt?.answer}
+                correct={socratic.correct}
+                onDismiss={() => setSocratic(null)}
+              />
+            )}
+          </>
+        )}
+
+        {onWritten && written && (
+          <>
+            <WrittenArgument
+              lessonId={meta?.id ?? `lesson-${lessonNumber}`}
+              lessonTitle={lesson.title}
+              objective={lesson.subtitle}
+              written={written}
+              companion={companion}
+              signedIn={!!userId}
+              onGraded={(total, attempt) => {
+                setArgumentGrade(total);
+                if (attempt === 1) recordArgument(total);
+              }}
+            />
+            {argumentGrade === null && !skippedWriting && (
+              <button
+                type="button"
+                onClick={() => setSkippedWriting(true)}
+                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Skip the writing this time
+              </button>
+            )}
+          </>
+        )}
+
+        {onSummary && (
+          <div className="mt-5 space-y-4">
+            {(lesson.keyPoints ?? []).map((point, i) => (
+              <div
+                key={point}
+                className="flex animate-rise-in items-start gap-3 rounded-2xl bg-card p-3 text-sm font-semibold shadow-soft"
+                style={{ animationDelay: `${i * 70}ms` }}
+              >
+                <Check className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
+                {point}
+              </div>
+            ))}
+            <PracticeChat
+              slug={slug}
+              lessonIndex={lessonNumber}
+              topic={course.topic}
+              lessonTitle={lesson.title}
+              lessonText={practiceText}
+              earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
+              companion={companion}
+              signedIn={!!userId}
+              onDone={handlePracticeDone}
             />
           </div>
         )}
 
-        {onFlaw ? (
-          <SpotTheFlawCard
-            drill={flaw!}
-            companion={companion}
-            choice={flawAttempt?.choice}
-            onPick={(i) => recordFlaw(i, i === flaw!.correct)}
-          />
-        ) : !onQuiz ? (
-          <>
-            <article
-              key={page}
-              className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card"
-            >
-              <p className="text-[11px] font-semibold text-primary">
-                Part {page + 1} of {parts.length}
-              </p>
-              <h2 className="mt-1 text-xl leading-snug">{parts[page]!.title}</h2>
-              <p className="mt-3 text-[15px] leading-relaxed font-semibold text-foreground/85">
-                {parts[page]!.body}
-              </p>
-            </article>
-            {showPrediction && (
-              <PredictionCard
-                prediction={prediction!}
-                companion={companion}
-                choice={predictionAttempt?.choice}
-                onPick={(i) => recordPrediction(i, i === prediction!.correct)}
-              />
-            )}
-          </>
-        ) : (
-          <div className="mt-5 space-y-4">
-            {lesson.keyPoints && lesson.keyPoints.length > 0 && (
-              <ul className="space-y-2">
-                {lesson.keyPoints.map((point, i) => (
-                  <li
-                    key={point}
-                    className="flex animate-rise-in items-start gap-3 rounded-2xl bg-card p-3 text-sm font-semibold shadow-soft"
-                    style={{ animationDelay: `${i * 70}ms` }}
-                  >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {quizzes.map((quiz, qi) => {
-              const picked = answers[qi];
-              const isCorrect = picked === quiz.correct;
-              return (
-                <div
-                  key={quiz.question}
-                  className="relative animate-rise-in rounded-3xl bg-card p-4 shadow-card"
-                  style={{ animationDelay: `${qi * 90}ms` }}
-                >
-                  <div className="flex gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-hero-gradient text-sm font-semibold text-primary-foreground">
-                      Q{quizzes.length > 1 ? qi + 1 : ""}
-                    </span>
-                    <h2 className="text-base leading-snug">{quiz.question}</h2>
-                  </div>
-
-                  <div className="mt-4 space-y-2">
-                    {quiz.options.map((option, i) => {
-                      const isPicked = picked === i;
-                      const isAnswer = i === quiz.correct;
-                      const state =
-                        picked === undefined
-                          ? "border-border hover:border-primary/50 hover:-translate-y-0.5"
-                          : isAnswer
-                            ? "border-success bg-success/10"
-                            : isPicked
-                              ? "border-destructive bg-destructive/10 animate-wiggle"
-                              : "border-border opacity-60";
-                      return (
-                        <Button
-                          key={option}
-                          type="button"
-                          variant="outline"
-                          onClick={() =>
-                            picked === undefined && setAnswers((prev) => ({ ...prev, [qi]: i }))
-                          }
-                          className={`relative h-auto min-h-12 w-full justify-start whitespace-normal rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold shadow-none transition-all ${state} ${
-                            picked !== undefined && isAnswer ? "animate-correct-answer" : ""
-                          }`}
-                        >
-                          <span className="font-semibold text-primary">
-                            {String.fromCharCode(65 + i)}
-                          </span>
-                          <span className="flex-1">{option}</span>
-                          {picked !== undefined && isAnswer && (
-                            <Check className="h-5 w-5 animate-pop-in rounded-full bg-success p-1 text-success-foreground" />
-                          )}
-                          {picked !== undefined && isPicked && !isAnswer && (
-                            <X className="h-5 w-5 animate-pop-in rounded-full bg-destructive p-1 text-destructive-foreground" />
-                          )}
-                          {isPicked && isAnswer && <SuccessBurst compact />}
-                        </Button>
-                      );
-                    })}
-                  </div>
-
-                  {picked !== undefined && (
-                    <div className="relative mt-4 animate-pop-in rounded-2xl bg-primary-soft p-3 pr-20">
-                      <p className="text-sm font-semibold text-accent-foreground">
-                        {isCorrect ? "Nailed it! " : "Not quite. "}
-                        {quiz.explanation}
-                      </p>
-                      {isCorrect && (
-                        <p className="mt-1 text-xs font-semibold text-primary">+50 XP · +10 💎</p>
-                      )}
-                      <CompanionAvatar
-                        companion={companion}
-                        size={72}
-                        className={`pointer-events-none absolute -right-1 -bottom-1 ${
-                          isCorrect ? "animate-pop-in" : ""
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {showPractice && (
-          <PracticeChat
-            slug={slug}
-            lessonIndex={lessonNumber}
-            topic={course.topic}
-            lessonTitle={lesson.title}
-            lessonText={practiceText}
-            earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
-            companion={companion}
-            signedIn={!!userId}
-            onDone={handlePracticeDone}
-          />
-        )}
-
         <div className="mt-6">
           <Button
-            onClick={() => (onQuiz ? finishLesson() : setPage((p) => p + 1))}
-            disabled={(onQuiz && !answeredAll) || predictionPending || flawPending || completing}
-            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 ${showPractice ? "hidden" : ""}`}
+            onClick={() => (onSummary ? finishLesson() : setPage((p) => p + 1))}
+            disabled={!canContinue || completing}
+            className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
           >
-            {onQuiz
-              ? lessonNumber < course.lessons.length
-                ? "Continue"
-                : "Finish course"
-              : onFlaw
-                ? "Take the quiz"
-                : showPrediction
-                  ? "See it in action"
-                  : page + 1 === parts.length
-                    ? flaw
-                      ? "Spot the flaw"
-                      : "Take the quiz"
-                    : "Next page"}
+            {nextLabel}
             <ArrowRight className="h-4 w-4" />
           </Button>
           <AiDisclaimer
@@ -397,19 +350,17 @@ function LessonScreen() {
               courseTopic: course.topic,
               lessonIndex: lessonNumber,
               lessonTitle: lesson.title,
-              excerpt: onQuiz
-                ? quizzes.map((q) => `${q.question} :: ${q.options.join(" | ")}`).join("\n")
-                : onFlaw
-                  ? `${flaw!.claim} :: ${flaw!.options.join(" | ")}`
-                  : (parts[page]?.body ?? lesson.intro ?? ""),
+              excerpt: currentExercise
+                ? describeExercise(currentExercise)
+                : (lesson.concept?.body ?? lesson.title),
             }}
           />
-          {!onQuiz && page > 0 && (
+          {page > 0 && !completing && (
             <button
               onClick={() => setPage((p) => p - 1)}
               className="mt-2 h-10 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
             >
-              Back a page
+              Back a step
             </button>
           )}
         </div>
@@ -430,7 +381,7 @@ function LessonScreen() {
               pose="cheer"
             />
             <p className="mt-5 text-sm font-bold text-primary">Lesson complete</p>
-            <h2 className="mt-2 text-3xl leading-tight">You lit the next step.</h2>
+            <h2 className="mt-2 text-3xl leading-tight">You trained your reasoning.</h2>
             <p className="mt-3 text-sm font-semibold text-muted-foreground">
               +100 XP · Progress saved
             </p>
