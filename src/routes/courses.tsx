@@ -13,7 +13,7 @@ import {
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
-import { useReviewQueue } from "@/lib/reviews";
+import { useDueDrills } from "@/lib/review-drills";
 
 export const Route = createFileRoute("/courses")({
   head: () => ({
@@ -47,14 +47,7 @@ function MyPath() {
   const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const units = useMemo(() => unitProgress(completed), [completed]);
 
-  const completedBySlug = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(state.courses).map(([slug, c]) => [slug, c.completed]),
-      ) as Record<string, number>,
-    [state.courses],
-  );
-  const { items: dueItems } = useReviewQueue(completedBySlug);
+  const { items: dueItems } = useDueDrills(100);
 
   /** Reviews due, grouped by which unit the lesson belongs to. */
   const dueByUnit = useMemo(() => {
