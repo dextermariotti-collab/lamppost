@@ -19,13 +19,18 @@ function readStore(): Store {
 export function saveCourse(course: Course) {
   if (typeof window === "undefined") return;
   try {
-    const next = { ...readStore(), [course.slug]: course };
+    const store = readStore();
+    const serialized = JSON.stringify(course);
+    // No-op writes would otherwise re-fire the change event and loop listeners.
+    if (store[course.slug] && JSON.stringify(store[course.slug]) === serialized) return;
+    const next = { ...store, [course.slug]: course };
     window.localStorage.setItem(KEY, JSON.stringify(next));
     window.dispatchEvent(new Event(EVENT));
   } catch {
     /* ignore */
   }
 }
+
 
 export function getStoredCourse(slug: string): Course | undefined {
   return readStore()[slug];
