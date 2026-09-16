@@ -31,7 +31,6 @@ export function saveCourse(course: Course) {
   }
 }
 
-
 export function getStoredCourse(slug: string): Course | undefined {
   return readStore()[slug];
 }
