@@ -429,6 +429,7 @@ export function useProgress() {
     state,
     hydrated,
     registerCourse,
+    unlockLessons,
     completeLesson,
     recordReview,
     recordPractice,
