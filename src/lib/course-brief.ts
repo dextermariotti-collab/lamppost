@@ -100,7 +100,6 @@ export const QUIZ_RIGOR = [
   },
 ];
 
-
 export const QUIZ_RIGOR_PROMPT: Record<string, string> = {
   easy: `Quiz rigor: EASY. The correct option is unambiguous and stated close to how the lesson said it. The two distractors are plainly wrong to anyone who read the lesson — no near-misses, no trick wording.`,
   tricky: `Quiz rigor: TRICKY. Every option must be phrased in confident, textbook-sounding language and be topically relevant. Two options must be wrong only because of one precise detail (a swapped cause and effect, a wrong threshold or number, an over-generalised rule, or a right idea applied in the wrong situation). A learner who skimmed should be tempted by a distractor; only careful reading of the lesson rules them out. Never use "all of the above", "none of the above", joke options, or obviously absurd options.`,
@@ -149,7 +148,6 @@ export const FOCUS = [
   },
 ];
 
-
 export const DEFAULT_BRIEF: CourseBrief = {
   topic: "",
   lessons: 8,
@@ -166,7 +164,8 @@ const label = (list: { value: string; label: string }[], value: string, fallback
 
 /** Coerces raw search params / stored values into a safe brief. */
 export function clampBrief(raw: Partial<Record<keyof CourseBrief, unknown>>): CourseBrief {
-  const topic = typeof raw.topic === "string" && raw.topic.trim() ? raw.topic.trim() : DEFAULT_BRIEF.topic;
+  const topic =
+    typeof raw.topic === "string" && raw.topic.trim() ? raw.topic.trim() : DEFAULT_BRIEF.topic;
   const lessonsRaw = Number(raw.lessons);
   const lessons = LENGTHS.some((l) => l.value === lessonsRaw) ? lessonsRaw : DEFAULT_BRIEF.lessons;
   const pickValue = (list: { value: string }[], value: unknown, fallback: string) =>

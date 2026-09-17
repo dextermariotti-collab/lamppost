@@ -148,7 +148,9 @@ function DebateScreen() {
               className="mt-4 w-full resize-none rounded-2xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold leading-relaxed outline-none focus-visible:border-primary"
             />
             <p className="mt-1 text-[12px] font-semibold text-muted-foreground">
-              {text.trim() ? `${text.trim().split(/\s+/).length} words` : "Graded on reasoning only"}
+              {text.trim()
+                ? `${text.trim().split(/\s+/).length} words`
+                : "Graded on reasoning only"}
             </p>
             {error && <p className="mt-2 text-[13px] font-semibold text-destructive">{error}</p>}
             <Button

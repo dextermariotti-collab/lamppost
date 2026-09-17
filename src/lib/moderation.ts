@@ -19,8 +19,7 @@ export type ModerationCategory =
   | "other";
 
 export type ModerationVerdict =
-  | { allowed: true }
-  | { allowed: false; category: ModerationCategory; message: string };
+  { allowed: true } | { allowed: false; category: ModerationCategory; message: string };
 
 /** Reasons a learner sees when a topic is refused. Kept calm and non-judgemental. */
 export const REFUSAL_COPY: Record<ModerationCategory, string> = {

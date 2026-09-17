@@ -23,7 +23,13 @@ import {
 } from "@/lib/companions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS } from "@/lib/curriculum";
 import type { ExerciseKind } from "@/lib/exercises";
-import { MOTIVATIONS, TIME_OPTIONS, placementSkip, saveIntent, type Motivation } from "@/lib/onboarding";
+import {
+  MOTIVATIONS,
+  TIME_OPTIONS,
+  placementSkip,
+  saveIntent,
+  type Motivation,
+} from "@/lib/onboarding";
 import { useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 
@@ -356,9 +362,7 @@ function PlacementStep({
       LESSONS.filter((lesson) => lesson.unitId === "claims")
         .slice(0, 5)
         .flatMap((lesson) =>
-          lesson.drills[0]
-            ? [{ lessonId: lesson.id, kind: lesson.drills[0] as ExerciseKind }]
-            : [],
+          lesson.drills[0] ? [{ lessonId: lesson.id, kind: lesson.drills[0] as ExerciseKind }] : [],
         ),
     [],
   );

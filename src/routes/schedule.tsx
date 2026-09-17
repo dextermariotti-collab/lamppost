@@ -94,8 +94,8 @@ function ReviewSchedule() {
         <h1 className="mt-2 text-[1.9rem] leading-tight">What comes back next</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Every drill you miss — or answer without much confidence — gets a return date:{" "}
-          {DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when
-          you don't. Reviews always use a new scenario for the same skill.
+          {DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting
+          when you don't. Reviews always use a new scenario for the same skill.
         </p>
 
         {dueNow > 0 && (
@@ -144,9 +144,7 @@ function ReviewSchedule() {
                     className="block"
                   >
                     <div className="flex items-baseline justify-between gap-3">
-                      <p className="text-sm font-bold leading-snug">
-                        {EXERCISE_LABEL[item.kind]}
-                      </p>
+                      <p className="text-sm font-bold leading-snug">{EXERCISE_LABEL[item.kind]}</p>
                       <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
                         {whenLabel(item)}
                       </span>

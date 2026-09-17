@@ -57,11 +57,16 @@ export function useRefreshAccount() {
   }, [client]);
 }
 
-export function displayNameFor(profile: {
-  displayName: string | null;
-  handle: string;
-  email: string | null;
-} | null | undefined) {
+export function displayNameFor(
+  profile:
+    | {
+        displayName: string | null;
+        handle: string;
+        email: string | null;
+      }
+    | null
+    | undefined,
+) {
   if (!profile) return "Learner";
   if (profile.displayName && profile.displayName.trim()) return profile.displayName;
   if (profile.email) return profile.email.split("@")[0]!;

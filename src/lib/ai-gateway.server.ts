@@ -8,4 +8,3 @@ export function createLovableAiGatewayProvider(apiKey: string) {
     supportsStructuredOutputs: true,
   });
 }
-

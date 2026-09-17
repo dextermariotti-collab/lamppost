@@ -168,7 +168,7 @@ export const TERMS: LegalDoc = {
       heading: "Disclaimers and liability",
       review: true,
       body: [
-        "[LEGAL REVIEW — attorney-drafted warranty disclaimer, limitation of liability, indemnity, governing law, and dispute-resolution clauses go here. Do not ship generated boilerplate.] Lamppost is provided \"as is\", and you use it at your own risk.",
+        '[LEGAL REVIEW — attorney-drafted warranty disclaimer, limitation of liability, indemnity, governing law, and dispute-resolution clauses go here. Do not ship generated boilerplate.] Lamppost is provided "as is", and you use it at your own risk.',
       ],
     },
   ],
@@ -207,7 +207,9 @@ export const HEALTH: LegalDoc = {
     },
     {
       heading: "Emergencies",
-      body: ["If you think you are having a medical emergency, call your local emergency number now."],
+      body: [
+        "If you think you are having a medical emergency, call your local emergency number now.",
+      ],
     },
   ],
 };

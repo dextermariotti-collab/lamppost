@@ -63,7 +63,6 @@ export async function saveCompanionForUser(userId: string, companion: Companion)
   if (error) throw error;
 }
 
-
 /** After sign-in, promotes any pre-account pick onto the account. */
 export async function syncDraftAfterSignIn(userId: string) {
   const draft = readDraft();

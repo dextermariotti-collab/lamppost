@@ -34,7 +34,9 @@ function seedFor(day: string) {
 export function challengeFor(completedLessons: number, day = dayKey()): DailyChallenge | null {
   const unlocked = LESSONS.slice(0, Math.max(completedLessons, 0));
   const pool = unlocked.flatMap((lesson) =>
-    lesson.drills.map((kind) => ({ lesson, kind }) as { lesson: (typeof LESSONS)[number]; kind: ExerciseKind }),
+    lesson.drills.map(
+      (kind) => ({ lesson, kind }) as { lesson: (typeof LESSONS)[number]; kind: ExerciseKind },
+    ),
   );
   if (pool.length === 0) return null;
   const pick = pool[seedFor(day) % pool.length]!;

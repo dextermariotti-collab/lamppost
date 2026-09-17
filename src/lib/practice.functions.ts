@@ -71,7 +71,13 @@ function parseModelReply(text: string, forcedClose: boolean): ModelReply {
   const trimmed = text.trim();
   const match = trimmed.match(/\{[\s\S]*\}/);
   if (!match) {
-    return { reply: trimmed.slice(0, 600), done: forcedClose, verdict: "none", remembered: "", connectionMade: false };
+    return {
+      reply: trimmed.slice(0, 600),
+      done: forcedClose,
+      verdict: "none",
+      remembered: "",
+      connectionMade: false,
+    };
   }
   try {
     const raw = JSON.parse(match[0]) as Record<string, unknown>;
@@ -92,7 +98,13 @@ function parseModelReply(text: string, forcedClose: boolean): ModelReply {
       connectionMade: raw["connectionMade"] === true || raw["connection_made"] === true,
     };
   } catch {
-    return { reply: trimmed.slice(0, 600), done: forcedClose, verdict: "none", remembered: "", connectionMade: false };
+    return {
+      reply: trimmed.slice(0, 600),
+      done: forcedClose,
+      verdict: "none",
+      remembered: "",
+      connectionMade: false,
+    };
   }
 }
 
@@ -128,7 +140,11 @@ type SupabaseLike = {
 async function readAccess({ supabase, userId }: Ctx): Promise<PracticeAccess> {
   const db = supabase as any;
   const [{ data: sub }, { count }] = await Promise.all([
-    db.from("subscriptions").select("status, current_period_end").eq("user_id", userId).maybeSingle(),
+    db
+      .from("subscriptions")
+      .select("status, current_period_end")
+      .eq("user_id", userId)
+      .maybeSingle(),
     db
       .from("practice_sessions")
       .select("id", { count: "exact", head: true })
@@ -155,9 +171,7 @@ async function readAccess({ supabase, userId }: Ctx): Promise<PracticeAccess> {
 /** Paid status + how much of the free weekly allowance is left. */
 export const getPracticeAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<PracticeAccess> =>
-    readAccess(context as unknown as Ctx),
-  );
+  .handler(async ({ context }): Promise<PracticeAccess> => readAccess(context as unknown as Ctx));
 
 /**
  * One tutor turn. The opening turn (empty `answer`) creates the session row,
@@ -280,7 +294,9 @@ export const listPracticeSessions = createServerFn({ method: "POST" })
     const { supabase: db, userId } = context as unknown as Ctx;
     const { data } = await db
       .from("practice_sessions")
-      .select("id, course_slug, course_topic, lesson_title, verdict, remembered, connection_made, completed_at")
+      .select(
+        "id, course_slug, course_topic, lesson_title, verdict, remembered, connection_made, completed_at",
+      )
       .eq("user_id", userId)
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: false })

@@ -40,9 +40,8 @@ export const socraticLine = createServerFn({ method: "POST" })
     try {
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-      const { SOCRATIC_SYSTEM, socraticQuestionPrompt, socraticReplyPrompt } = await import(
-        "./socratic.server"
-      );
+      const { SOCRATIC_SYSTEM, socraticQuestionPrompt, socraticReplyPrompt } =
+        await import("./socratic.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
@@ -66,7 +65,11 @@ export const socraticLine = createServerFn({ method: "POST" })
         maxRetries: 1,
       });
       const text = (await result.text).trim();
-      const line = text.split("\n").find((l) => l.trim().length > 0)?.trim() ?? "";
+      const line =
+        text
+          .split("\n")
+          .find((l) => l.trim().length > 0)
+          ?.trim() ?? "";
       if (!line) return { ok: false, reason: "No reply." };
       return { ok: true, line: line.replace(/^["'“]|["'”]$/g, "").slice(0, 220) };
     } catch (error) {

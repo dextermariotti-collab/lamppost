@@ -49,7 +49,6 @@ function ProgressScreen() {
   const [burst, setBurst] = useState(false);
   const analytics = useMasteryAnalytics();
 
-
   // Consume any queued celebration from a just-finished lesson or quiz.
   useEffect(() => {
     if (!state.celebration) return;
@@ -84,7 +83,11 @@ function ProgressScreen() {
   const week = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (6 - i));
-    return { key: dayKey(d), label: WEEK_LABELS[d.getDay()]!, count: state.history[dayKey(d)] ?? 0 };
+    return {
+      key: dayKey(d),
+      label: WEEK_LABELS[d.getDay()]!,
+      count: state.history[dayKey(d)] ?? 0,
+    };
   });
   const weekMax = Math.max(1, ...week.map((d) => d.count));
 
@@ -237,7 +240,11 @@ function ProgressScreen() {
               const pct = Math.round(unit.accuracy * 100);
               const tier = tierFor(pct);
               return (
-                <li key={unit.unitId} className="animate-rise-in" style={{ animationDelay: `${i * 50}ms` }}>
+                <li
+                  key={unit.unitId}
+                  className="animate-rise-in"
+                  style={{ animationDelay: `${i * 50}ms` }}
+                >
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="min-w-0 truncate text-sm font-bold">
                       <span aria-hidden className="mr-1.5">
@@ -335,7 +342,6 @@ function ProgressScreen() {
           )}
         </div>
 
-
         {/* Week */}
         <div className="mt-6 border-t border-border pt-5">
           <div className="flex items-center justify-between">
@@ -388,10 +394,7 @@ function Tile({
   delay: number;
 }) {
   return (
-    <div
-      className="animate-rise-in px-3 text-center"
-      style={{ animationDelay: `${delay}ms` }}
-    >
+    <div className="animate-rise-in px-3 text-center" style={{ animationDelay: `${delay}ms` }}>
       <Icon aria-hidden="true" className="mx-auto h-4 w-4 text-primary" strokeWidth={2.2} />
       <p className="mt-1.5 text-xl font-extrabold">
         <CountUp value={value} />

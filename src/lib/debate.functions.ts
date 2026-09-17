@@ -280,7 +280,10 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     const screened = screenLocally(data.answer);
     if (!screened.allowed) return { ok: false as const, reason: screened.message };
     if (data.answer.trim().split(/\s+/).length < 25) {
-      return { ok: false as const, reason: "Write three to five sentences so there's a case to grade." };
+      return {
+        ok: false as const,
+        reason: "Write three to five sentences so there's a case to grade.",
+      };
     }
 
     const { data: row, error } = await supabase
@@ -297,7 +300,8 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     }
 
     const key = process.env["LOVABLE_API_KEY"];
-    if (!key) return { ok: false as const, reason: "Grading isn't configured for this project yet." };
+    if (!key)
+      return { ok: false as const, reason: "Grading isn't configured for this project yet." };
 
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
@@ -321,7 +325,8 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     }).text;
 
     const parsed = parseGrade(graded, TASK.criteria);
-    if (!parsed) return { ok: false as const, reason: "The grader's reply couldn't be read. Try again." };
+    if (!parsed)
+      return { ok: false as const, reason: "The grader's reply couldn't be read. Try again." };
 
     const bothIn = (mine ? typed.opponent_answer : typed.challenger_answer) !== null;
     const patch = mine

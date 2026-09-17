@@ -12,12 +12,10 @@ import {
 } from "./course-ai.server";
 
 export type OutlineResult =
-  | { ok: true; outline: CourseOutline }
-  | { ok: false; reason: string; blocked?: boolean };
+  { ok: true; outline: CourseOutline } | { ok: false; reason: string; blocked?: boolean };
 
 export type ChunkResult =
-  | { ok: true; lessons: Lesson[] }
-  | { ok: false; reason: string; blocked?: boolean };
+  { ok: true; lessons: Lesson[] } | { ok: false; reason: string; blocked?: boolean };
 
 /** Turns provider errors into a short, human message for the UI. */
 function describe(error: unknown): string {
@@ -51,9 +49,8 @@ export const generateOutline = createServerFn({ method: "POST" })
       return { ok: false, reason: "AI isn't configured for this project yet." };
     }
 
-    const { screenTopicText, screenOutput, logModerationBlock } = await import(
-      "./moderation.server"
-    );
+    const { screenTopicText, screenOutput, logModerationBlock } =
+      await import("./moderation.server");
 
     // Input pass: nothing is generated for a disallowed topic.
     const gate = await screenTopicText(brief.topic, brief.goal, key);

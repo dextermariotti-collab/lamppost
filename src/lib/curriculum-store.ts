@@ -105,7 +105,6 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
     setLoading(true);
     setError(null);
 
-
     void getCurriculumLesson({ data: { lessonId: meta.id } })
       .then((result) => {
         if (cancelled) return;

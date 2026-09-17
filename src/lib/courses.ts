@@ -1,7 +1,6 @@
 import type { CourseBrief } from "./course-brief";
 import type { Exercise, WrittenPrompt } from "./exercises";
 
-
 export type Quiz = {
   question: string;
   options: string[];
@@ -59,7 +58,6 @@ export type Lesson = {
   quizzes?: Quiz[];
 };
 
-
 export type Course = {
   slug: string;
   topic: string;
@@ -71,8 +69,6 @@ export type Course = {
 
 export const lessonQuizzes = (lesson: Lesson): Quiz[] =>
   lesson.quizzes && lesson.quizzes.length > 0 ? lesson.quizzes : lesson.quiz ? [lesson.quiz] : [];
-
-
 
 export const slugify = (topic: string) =>
   topic

@@ -64,9 +64,7 @@ function FriendProfileScreen() {
     return (
       <PhoneFrame>
         <ScreenHeader title="Not found" backTo="/friends" />
-        <p className="px-5 pt-6 text-sm text-muted-foreground">
-          No learner uses @{handle}.
-        </p>
+        <p className="px-5 pt-6 text-sm text-muted-foreground">No learner uses @{handle}.</p>
       </PhoneFrame>
     );
   }
@@ -101,13 +99,23 @@ function FriendProfileScreen() {
         </div>
 
         <div className="mt-5 grid grid-cols-3 gap-2">
-          <Tile icon={<Flame className="h-[18px] w-[18px] text-flame" />} value={String(person.currentStreak)} label="Day streak" />
-          <Tile icon={<Zap className="h-[18px] w-[18px] text-xp" />} value={(person.totalXp ?? 0).toLocaleString()} label="Total XP" />
-          <Tile icon={<Trophy className="h-[18px] w-[18px] text-primary" />} value={league.name} label="League" />
+          <Tile
+            icon={<Flame className="h-[18px] w-[18px] text-flame" />}
+            value={String(person.currentStreak)}
+            label="Day streak"
+          />
+          <Tile
+            icon={<Zap className="h-[18px] w-[18px] text-xp" />}
+            value={(person.totalXp ?? 0).toLocaleString()}
+            label="Total XP"
+          />
+          <Tile
+            icon={<Trophy className="h-[18px] w-[18px] text-primary" />}
+            value={league.name}
+            label="League"
+          />
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Longest streak: {longestStreak} days
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground">Longest streak: {longestStreak} days</p>
 
         <h2 className="mt-6 text-sm font-bold">Achievements</h2>
         {badges.length === 0 ? (
@@ -117,7 +125,10 @@ function FriendProfileScreen() {
             {badges.map((badge) => {
               const Icon = achievementIcon(badge.code);
               return (
-                <span key={badge.code} className="flex w-[68px] shrink-0 flex-col items-center gap-1.5">
+                <span
+                  key={badge.code}
+                  className="flex w-[68px] shrink-0 flex-col items-center gap-1.5"
+                >
                   <span className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -137,8 +148,8 @@ function FriendProfileScreen() {
               <p className="text-sm font-bold">Debate a friend</p>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              You both get the same motion and opposite sides. Each case is graded on the same rubric,
-              then shown side by side.
+              You both get the same motion and opposite sides. Each case is graded on the same
+              rubric, then shown side by side.
             </p>
             {debateError && (
               <p className="mt-2 text-xs font-semibold text-destructive">{debateError}</p>
@@ -178,10 +189,11 @@ function FriendProfileScreen() {
         )}
 
         <div className="mt-8">
-
           {isFriend ? (
             <button
-              onClick={() => void act(() => removeFriend({ data: { friendshipId: friendshipId! } }))}
+              onClick={() =>
+                void act(() => removeFriend({ data: { friendshipId: friendshipId! } }))
+              }
               disabled={busy}
               className="flex items-center gap-2 text-xs text-muted-foreground underline disabled:opacity-60"
             >
