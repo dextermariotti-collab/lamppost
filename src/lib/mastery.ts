@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LESSONS, UNITS } from "./curriculum";
 import { readAttemptStore } from "./exercise-store";
+import type { RubricCriterion } from "./exercises";
 
 /**
  * Real analytics for the progress screen. Every number here comes from drills the
@@ -28,7 +29,14 @@ export type CalibrationBand = {
   count: number;
 };
 
-export type WrittenScore = { lessonId: string; total: number; max: number; at: number };
+export type WrittenScore = {
+  lessonId: string;
+  total: number;
+  max: number;
+  at: number;
+  /** Per-criterion 1-4 scores, so the next task can target the weakest one. */
+  scores?: Partial<Record<RubricCriterion, number>>;
+};
 
 const unitOf = (lessonId: string) => LESSONS.find((l) => l.id === lessonId)?.unitId;
 
@@ -106,10 +114,22 @@ function readWritten(): WrittenScore[] {
 }
 
 /** Stores one graded written response so the trend line has real history. */
-export function recordWrittenScore(lessonId: string, total: number, max: number) {
+export function recordWrittenScore(
+  lessonId: string,
+  total: number,
+  max: number,
+  scores?: Partial<Record<RubricCriterion, number>>,
+) {
   if (typeof window === "undefined") return;
   try {
-    const next = [...readWritten(), { lessonId, total, max, at: Date.now() }].slice(-40);
+    const entry: WrittenScore = {
+      lessonId,
+      total,
+      max,
+      at: Date.now(),
+      ...(scores ? { scores } : {}),
+    };
+    const next = [...readWritten(), entry].slice(-40);
     window.localStorage.setItem(WRITTEN_KEY, JSON.stringify(next));
     window.dispatchEvent(new Event("lamppost-written-change"));
   } catch {
@@ -126,6 +146,31 @@ export function writtenTrend(): { points: (WrittenScore & { pct: number })[] } {
         pct: Math.round((score.total / Math.max(score.max, 1)) * 100),
       })),
   };
+}
+
+/**
+ * The rubric criterion the learner scores worst on across their graded written
+ * answers, so the next written task can name one thing to focus on.
+ */
+export function weakestCriterion(
+  among: readonly RubricCriterion[],
+): { criterion: RubricCriterion; average: number } | null {
+  const tally = new Map<RubricCriterion, { sum: number; count: number }>();
+  for (const entry of readWritten()) {
+    for (const [criterion, score] of Object.entries(entry.scores ?? {})) {
+      if (!among.includes(criterion as RubricCriterion)) continue;
+      const row = tally.get(criterion as RubricCriterion) ?? { sum: 0, count: 0 };
+      row.sum += typeof score === "number" ? score : 0;
+      row.count += 1;
+      tally.set(criterion as RubricCriterion, row);
+    }
+  }
+  const rows = [...tally.entries()]
+    .filter(([, row]) => row.count > 0)
+    .map(([criterion, row]) => ({ criterion, average: row.sum / row.count }))
+    .sort((a, b) => a.average - b.average);
+  const worst = rows[0];
+  return worst && worst.average < 3.5 ? worst : null;
 }
 
 /** All three analytics, refreshed after hydration so SSR stays stable. */

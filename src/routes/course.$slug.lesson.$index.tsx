@@ -9,6 +9,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { PracticeChat } from "@/components/PracticeChat";
 import { SocraticPopup } from "@/components/SocraticPopup";
 import { ExerciseRunner } from "@/components/exercises/ExerciseRunner";
+import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { WrittenArgument } from "@/components/exercises/WrittenArgument";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -21,6 +22,7 @@ import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { dayKey, useProgress } from "@/lib/progress";
 import { recordWrittenScore } from "@/lib/mastery";
 import { trackDrillResult } from "@/lib/review-drills";
+import { recordDrillOutcome } from "@/lib/rating";
 import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
@@ -76,6 +78,9 @@ function LessonScreen() {
   const [socratic, setSocratic] = useState<{ index: number; correct: boolean } | null>(null);
   const [argumentGrade, setArgumentGrade] = useState<number | null>(null);
   const [skippedWriting, setSkippedWriting] = useState(false);
+  /** Set after two or more missed drills: one easier drill plus a re-explanation. */
+  const [easier, setEasier] = useState(false);
+  const [easierDone, setEasierDone] = useState(false);
   /** XP when the lesson opened, so the results screen can show what was earned. */
   const xpAtStart = useRef(state.xp);
 
@@ -86,6 +91,8 @@ function LessonScreen() {
     setSocratic(null);
     setArgumentGrade(null);
     setSkippedWriting(false);
+    setEasier(false);
+    setEasierDone(false);
   }, [index]);
 
   // Old topic courses no longer exist: send any other slug to the curriculum.
@@ -130,7 +137,8 @@ function LessonScreen() {
 
   const exercises = lesson.exercises ?? [];
   const written = lesson.written;
-  const writtenPage = exercises.length + 1;
+  const easierPage = easier ? exercises.length + 1 : null;
+  const writtenPage = exercises.length + 1 + (easier ? 1 : 0);
   const summaryPage = writtenPage + (written ? 1 : 0);
   const totalPages = summaryPage + 1;
 
@@ -139,6 +147,7 @@ function LessonScreen() {
   const exerciseIndex = page - 1;
   const currentExercise = onExercise ? exercises[exerciseIndex] : undefined;
   const currentAttempt = onExercise ? attempts[exerciseIndex] : undefined;
+  const onEasier = easierPage !== null && page === easierPage;
   const onWritten = !!written && page === writtenPage;
   const onSummary = page === summaryPage;
 
@@ -154,6 +163,17 @@ function LessonScreen() {
     if (meta && currentExercise) {
       const confidence = (answer as { confidence?: number } | null)?.confidence;
       trackDrillResult(meta.id, currentExercise.kind, score, confidence);
+      recordDrillOutcome(meta.id, {
+        score,
+        difficulty: 2,
+        ...(typeof confidence === "number" ? { confidence } : {}),
+      });
+    }
+    // Two or more misses: earn one easier drill and a plain re-explanation.
+    if (!correct) {
+      const missed =
+        Object.values(attempts).filter((a) => a.score < 1).length + (fresh && score < 1 ? 1 : 0);
+      if (missed >= 2 && !easier) setEasier(true);
     }
     if (!correct || Math.random() < SOCRATIC_CHANCE) {
       setSocratic({ index: exerciseIndex, correct });
@@ -185,9 +205,11 @@ function LessonScreen() {
 
   const canContinue = onExercise
     ? currentAttempt !== undefined
-    : onWritten
-      ? argumentGrade !== null || skippedWriting
-      : true;
+    : onEasier
+      ? easierDone
+      : onWritten
+        ? argumentGrade !== null || skippedWriting
+        : true;
 
   const nextLabel = onConcept
     ? "Start training"
@@ -197,11 +219,15 @@ function LessonScreen() {
           ? "Write your argument"
           : "See the summary"
         : "Next drill"
-      : onWritten
-        ? "See the summary"
-        : lessonNumber < course.lessons.length
-          ? "Continue"
-          : "Finish course";
+      : onEasier
+        ? written
+          ? "Write your argument"
+          : "See the summary"
+        : onWritten
+          ? "See the summary"
+          : lessonNumber < course.lessons.length
+            ? "Continue"
+            : "Finish course";
 
   if (finished) {
     const scores = exercises.map((_, i) => attempts[i]?.score ?? 0);
@@ -211,7 +237,12 @@ function LessonScreen() {
     const xpEarned = Math.max(state.xp - xpAtStart.current, 0);
     const doneToday = state.history[dayKey()] ?? 0;
     const goal = state.dailyGoal;
-    const practised = Array.from(new Set(exercises.map((e) => EXERCISE_LABEL[e.kind])));
+    // Only what was actually done gets listed.
+    const practised = Array.from(
+      new Set(
+        exercises.flatMap((e, i) => (attempts[i] !== undefined ? [EXERCISE_LABEL[e.kind]] : [])),
+      ),
+    );
     const nextMeta = lessonAt(lessonNumber);
     const unitDone = !nextMeta || nextMeta.unitId !== meta?.unitId;
     const unitTitle = unitById(meta?.unitId ?? "claims").title;
@@ -273,7 +304,7 @@ function LessonScreen() {
                   {label}
                 </li>
               ))}
-              {written && (
+              {argumentGrade !== null && (
                 <li className="flex items-center gap-2 text-[13px] font-semibold">
                   <Check className="h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
                   Writing an argument
@@ -282,7 +313,7 @@ function LessonScreen() {
             </ul>
           </div>
 
-          <div className="mt-6 space-y-2">
+          <div className="mt-6 flex flex-col gap-2">
             {lessonNumber < course.lessons.length && (
               <Button
                 onClick={() =>
@@ -399,6 +430,31 @@ function LessonScreen() {
           </>
         )}
 
+        {onEasier && meta && (
+          <>
+            <div className="mt-5 animate-rise-in rounded-3xl border border-dashed border-primary/40 bg-primary-soft/50 p-4">
+              <p className="text-[13px] font-semibold leading-snug text-accent-foreground">
+                Quick reset: {lesson.subtitle} Here's one gentler drill on the same skill.
+              </p>
+            </div>
+            <DrillVariant
+              lessonId={meta.id}
+              kind={exercises[0]?.kind ?? meta.drills[0]!}
+              seen={[]}
+              index={0}
+              total={1}
+              showCount={false}
+              difficulty={1}
+              onAnswer={(score) => {
+                if (easierDone) return;
+                setEasierDone(true);
+                recordExercise(score);
+                recordDrillOutcome(meta.id, { score, difficulty: 1 });
+              }}
+            />
+          </>
+        )}
+
         {onWritten && written && (
           <>
             <WrittenArgument
@@ -408,10 +464,10 @@ function LessonScreen() {
               written={written}
               companion={companion}
               signedIn={!!userId}
-              onGraded={(total, attempt, max) => {
+              onGraded={(total, attempt, max, scores) => {
                 setArgumentGrade(total);
                 if (attempt === 1) recordArgument(total, max);
-                recordWrittenScore(meta?.id ?? `lesson-${lessonNumber}`, total, max);
+                recordWrittenScore(meta?.id ?? `lesson-${lessonNumber}`, total, max, scores);
               }}
             />
             {argumentGrade === null && !skippedWriting && (
@@ -464,6 +520,20 @@ function LessonScreen() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           )}
+
+          {onExercise &&
+            written &&
+            exercises.length > 3 &&
+            exerciseIndex < 3 &&
+            [0, 1, 2].every((i) => attempts[i]?.score === 1) && (
+              <button
+                type="button"
+                onClick={() => setPage(writtenPage)}
+                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-primary"
+              >
+                You've got this — skip ahead to the written task
+              </button>
+            )}
 
           <AiDisclaimer
             className="mt-4"

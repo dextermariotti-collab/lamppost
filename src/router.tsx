@@ -17,12 +17,15 @@ if (typeof window !== "undefined") {
   });
   window.addEventListener("unhandledrejection", (event) => {
     const message = String((event.reason as Error | undefined)?.message ?? "");
-    if (/Failed to fetch dynamically imported module|error loading dynamically imported module/i.test(message)) {
+    if (
+      /Failed to fetch dynamically imported module|error loading dynamically imported module/i.test(
+        message,
+      )
+    ) {
       recover();
     }
   });
 }
-
 
 export const getRouter = () => {
   const queryClient = new QueryClient();

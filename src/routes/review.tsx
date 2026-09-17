@@ -10,6 +10,7 @@ import { useCompanion } from "@/lib/companion-store";
 import { useProgress } from "@/lib/progress";
 import { EXERCISE_LABEL } from "@/lib/exercises";
 import { useDueDrills, type ScheduledDrill } from "@/lib/review-drills";
+import { recordDrillOutcome } from "@/lib/rating";
 
 export const Route = createFileRoute("/review")({
   head: () => ({
@@ -51,13 +52,20 @@ function ReviewQueue() {
   const item = session?.[step];
   const done = session !== null && (session.length === 0 || step >= session.length);
 
-  const handleAnswer = (score: number, variant: number) => {
+  const handleAnswer = (
+    score: number,
+    variant: number,
+    _answer: unknown,
+    _exercise: unknown,
+    difficulty: number,
+  ) => {
     if (answered || !item) return;
     setAnswered(true);
     const correct = score >= 1;
     if (correct) setRight((n) => n + 1);
     grade(item.key, correct, variant);
     recordReview(correct);
+    recordDrillOutcome(item.lessonId, { score, difficulty });
   };
 
   return (

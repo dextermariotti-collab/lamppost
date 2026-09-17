@@ -21,15 +21,9 @@ import {
   presetById,
   type Companion,
 } from "@/lib/companions";
-import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS } from "@/lib/curriculum";
+import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS, UNITS } from "@/lib/curriculum";
 import type { ExerciseKind } from "@/lib/exercises";
-import {
-  MOTIVATIONS,
-  TIME_OPTIONS,
-  placementSkip,
-  saveIntent,
-  type Motivation,
-} from "@/lib/onboarding";
+import { MOTIVATIONS, TIME_OPTIONS, saveIntent, type Motivation } from "@/lib/onboarding";
 import { useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 
@@ -139,16 +133,13 @@ function Onboarding() {
         {current === "placement" && (
           <PlacementStep
             companion={companion}
-            onDone={(correct, total, skipped) => {
+            onDone={(correct, _total, skipped, unlocked) => {
               saveIntent({
                 placementScore: skipped ? null : correct,
                 placementSkipped: skipped,
               });
-              if (!skipped) {
-                const unlocked = placementSkip(correct, total);
-                if (unlocked > 0) {
-                  unlockLessons(CURRICULUM_SLUG, CURRICULUM_TITLE, unlocked, TOTAL_LESSONS);
-                }
+              if (!skipped && unlocked > 0) {
+                unlockLessons(CURRICULUM_SLUG, CURRICULUM_TITLE, unlocked, TOTAL_LESSONS);
               }
               next();
             }}
@@ -321,24 +312,44 @@ function PlacementStep({
   onDone,
 }: {
   companion: Companion;
-  onDone: (correct: number, total: number, skipped: boolean) => void;
+  onDone: (correct: number, total: number, skipped: boolean, unlocked: number) => void;
 }) {
-  const pairs = useMemo(
-    () =>
-      LESSONS.filter((lesson) => lesson.unitId === "claims")
-        .slice(0, 5)
-        .flatMap((lesson) =>
-          lesson.drills[0] ? [{ lessonId: lesson.id, kind: lesson.drills[0] as ExerciseKind }] : [],
-        ),
-    [],
-  );
+  /**
+   * A ladder across all seven units: two easy drills to start, then one drill
+   * from each unit in order. It climbs while the learner keeps up and stops as
+   * soon as two in a row go wrong, so nobody sits through ten drills.
+   */
+  const pairs = useMemo(() => {
+    const picks: { lessonId: string; kind: ExerciseKind; lessonIndex: number }[] = [];
+    const add = (lesson: (typeof LESSONS)[number] | undefined) => {
+      if (!lesson || !lesson.drills[0]) return;
+      picks.push({
+        lessonId: lesson.id,
+        kind: lesson.drills[0] as ExerciseKind,
+        lessonIndex: LESSONS.findIndex((l) => l.id === lesson.id) + 1,
+      });
+    };
+    add(LESSONS[0]);
+    add(LESSONS[2]);
+    for (const unit of UNITS) {
+      const inUnit = LESSONS.filter((lesson) => lesson.unitId === unit.id);
+      add(inUnit[1] ?? inUnit[0]);
+    }
+    return picks.slice(0, 10);
+  }, []);
   const [started, setStarted] = useState(false);
   const [step, setStep] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [answered, setAnswered] = useState(false);
+  const [missRun, setMissRun] = useState(0);
+  /** Highest lesson number answered correctly — what gets marked as known. */
+  const [reached, setReached] = useState(0);
   const seen = useMemo<number[]>(() => [], []);
 
-  const pair = pairs[step];
+  // Two misses in a row and the check is over; there's nothing more to learn.
+  const stopped = missRun >= 2;
+  const pair = stopped ? undefined : pairs[step];
+  const asked = Math.min(step + (answered ? 1 : 0), pairs.length);
 
   if (!started) {
     return (
@@ -360,7 +371,7 @@ function PlacementStep({
           </Button>
           <Button
             variant="ghost"
-            onClick={() => onDone(0, pairs.length, true)}
+            onClick={() => onDone(0, pairs.length, true, 0)}
             className="h-11 w-full rounded-2xl text-sm font-bold text-muted-foreground"
           >
             Start from lesson one
@@ -371,7 +382,8 @@ function PlacementStep({
   }
 
   if (!pair) {
-    const unlocked = placementSkip(correct, pairs.length);
+    // Unlock everything below the hardest lesson they actually got right.
+    const unlocked = correct >= 2 ? Math.max(reached - 1, 0) : 0;
     return (
       <div className="flex flex-1 animate-pop-in flex-col items-center text-center">
         <div className="mt-8">
@@ -382,7 +394,7 @@ function PlacementStep({
           />
         </div>
         <h1 className="mt-5 text-2xl leading-tight">
-          {correct} of {pairs.length}
+          {correct} of {Math.max(asked, 1)}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {unlocked > 0
@@ -390,7 +402,7 @@ function PlacementStep({
             : "We'll start you at lesson one, where these skills get built properly."}
         </p>
         <Button
-          onClick={() => onDone(correct, pairs.length, false)}
+          onClick={() => onDone(correct, Math.max(asked, 1), false, unlocked)}
           className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
         >
           Continue <ArrowRight className="h-4 w-4" />
@@ -401,9 +413,7 @@ function PlacementStep({
 
   return (
     <div className="flex flex-1 flex-col">
-      <p className="mt-6 text-xs font-bold text-primary">
-        Placement check · {step + 1} of {pairs.length}
-      </p>
+      <p className="mt-6 text-xs font-bold text-primary">Placement check · drill {step + 1}</p>
       <DrillVariant
         key={`${pair.lessonId}-${step}`}
         lessonId={pair.lessonId}
@@ -415,7 +425,13 @@ function PlacementStep({
         onAnswer={(score) => {
           if (answered) return;
           setAnswered(true);
-          if (score >= 1) setCorrect((n) => n + 1);
+          if (score >= 1) {
+            setCorrect((n) => n + 1);
+            setMissRun(0);
+            setReached((n) => Math.max(n, pair.lessonIndex));
+          } else {
+            setMissRun((n) => n + 1);
+          }
         }}
       />
       {answered && (
@@ -426,7 +442,7 @@ function PlacementStep({
           }}
           className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
         >
-          {step + 1 >= pairs.length ? "See my result" : "Next drill"}
+          {step + 1 >= pairs.length || missRun >= 2 ? "See my result" : "Next drill"}
           <ArrowRight className="h-4 w-4" />
         </Button>
       )}

@@ -1,12 +1,14 @@
 /**
- * Phase 2 reasoning exercises.
+ * Reasoning drills.
  *
- * A lesson is no longer "read a wall of text, then answer recall questions".
- * It is a short concept card followed by 4-6 of these drills, all generated per
- * lesson through the constrained, cached curriculum pipeline.
+ * A lesson is a workout: a short concept card followed by 4-6 drills chosen by
+ * the curriculum spine for that lesson, then one written task. Every drill kind
+ * here is generated per lesson through the constrained, validated, cached
+ * pipeline and served from a pre-vetted pool.
  */
 
 export const EXERCISE_KINDS = [
+  // original set
   "claim",
   "flaw",
   "assumption",
@@ -14,6 +16,14 @@ export const EXERCISE_KINDS = [
   "sort",
   "predict",
   "steelman",
+  // phase 6 set
+  "judge",
+  "highlight",
+  "rewrite",
+  "order",
+  "numeric",
+  "slider",
+  "chart",
 ] as const;
 
 export type ExerciseKind = (typeof EXERCISE_KINDS)[number];
@@ -80,6 +90,91 @@ export type SteelmanExercise = {
   explanation: string;
 };
 
+/**
+ * The flexible reasoning judgement. Its own question is written per lesson, so
+ * one shape covers "name the fallacy", "legitimate or fallacy?", "which study
+ * design settles this?", "what else could explain it?", "who owes evidence?",
+ * "which sample is better?", "which objection is strongest?", "what is
+ * unsupported in this AI answer?" and friends.
+ */
+export type JudgeExercise = {
+  kind: "judge";
+  /** The instruction shown in place of a generic drill question. */
+  question: string;
+  passage: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+};
+
+/** Tap the words or phrases in a passage that do the damage. */
+export type HighlightExercise = {
+  kind: "highlight";
+  question: string;
+  /** The passage split into tappable spans, in reading order. */
+  tokens: string[];
+  /** Indexes into `tokens` that should be selected. */
+  targets: number[];
+  explanation: string;
+};
+
+/** Pick the rewrite that fixes the original — testable, defensible, faithful. */
+export type RewriteExercise = {
+  kind: "rewrite";
+  question: string;
+  original: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+};
+
+/** Order cards into the right sequence (argument structure, checking steps). */
+export type OrderExercise = {
+  kind: "order";
+  question: string;
+  /** Optional context above the cards. */
+  passage?: string;
+  /** Stored in the correct order. */
+  items: { text: string; why: string }[];
+};
+
+/** Numeric estimate judged against a tolerance, with a worked solution. */
+export type NumericExercise = {
+  kind: "numeric";
+  question: string;
+  scenario: string;
+  answer: number;
+  /** Absolute tolerance in the same unit as `answer`. */
+  tolerance: number;
+  unit?: string;
+  solution: string;
+};
+
+/** Set confidence, read new evidence, then move it the right way. */
+export type SliderExercise = {
+  kind: "slider";
+  claim: string;
+  evidence: string;
+  /** Which way a good reasoner moves, and roughly how far (percentage points). */
+  direction: "up" | "down";
+  size: number;
+  explanation: string;
+};
+
+/** A small chart rendered from data, with one deliberate trick in it. */
+export type ChartExercise = {
+  kind: "chart";
+  question: string;
+  title: string;
+  series: { label: string; value: number }[];
+  /** Axis window the chart is drawn with — often the trick itself. */
+  yMin: number;
+  yMax: number;
+  options: string[];
+  correct: number;
+  explanation: string;
+};
+
 export type Exercise =
   | ClaimExercise
   | FlawExercise
@@ -87,9 +182,26 @@ export type Exercise =
   | RankExercise
   | SortExercise
   | PredictExercise
-  | SteelmanExercise;
+  | SteelmanExercise
+  | JudgeExercise
+  | HighlightExercise
+  | RewriteExercise
+  | OrderExercise
+  | NumericExercise
+  | SliderExercise
+  | ChartExercise;
 
-/** The closing written-argument prompt, one per lesson. */
+/** Drills with a single keyed option index. */
+export type ChoiceLikeExercise =
+  | ClaimExercise
+  | FlawExercise
+  | AssumptionExercise
+  | PredictExercise
+  | SteelmanExercise
+  | JudgeExercise
+  | RewriteExercise
+  | ChartExercise;
+
 /**
  * The closing written task. The passage always lives in the app — the learner is
  * never sent off to find an article of their own.
@@ -110,6 +222,13 @@ export const EXERCISE_LABEL: Record<ExerciseKind, string> = {
   sort: "Fact, opinion or value",
   predict: "Predict, then reveal",
   steelman: "Steelman it",
+  judge: "Make the call",
+  highlight: "Tap the words",
+  rewrite: "Fix the wording",
+  order: "Put it in order",
+  numeric: "Work out the number",
+  slider: "Update your confidence",
+  chart: "Read the chart",
 };
 
 export const EXERCISE_QUESTION: Record<ExerciseKind, string> = {
@@ -120,7 +239,21 @@ export const EXERCISE_QUESTION: Record<ExerciseKind, string> = {
   rank: "Order the evidence, strongest first.",
   predict: "Call it before you see the answer.",
   steelman: "Which is the strongest version of this view?",
+  judge: "Make the call.",
+  highlight: "Tap every word that does the damage.",
+  rewrite: "Which rewrite fixes it?",
+  order: "Put the cards in order.",
+  numeric: "Work out the number.",
+  slider: "How confident are you now?",
+  chart: "What is this chart doing to you?",
 };
+
+/** The instruction actually shown — lesson-specific where the drill carries one. */
+export function questionFor(exercise: Exercise): string {
+  return "question" in exercise && exercise.question
+    ? exercise.question
+    : EXERCISE_QUESTION[exercise.kind];
+}
 
 /** XP paid per exercise, scaled by how much of it the learner got right. */
 export const EXERCISE_XP = 25;
@@ -131,11 +264,11 @@ export const exerciseXpFor = (score: number) =>
 /* ------------------------- written closing tasks ------------------------- */
 
 /**
- * Three written tasks, each with its own placeholder and its own rubric. The
- * lesson's drill plan picks one, so a one-sentence restatement is never graded
- * on counterarguments it was never asked for.
+ * Written tasks each carry their own placeholder and their own rubric, so a
+ * one-sentence restatement is never graded on counterarguments it was never
+ * asked for.
  */
-export type WrittenTaskType = "restate" | "case" | "critique";
+export type WrittenTaskType = "restate" | "case" | "critique" | "testable" | "steelmanWrite";
 
 export const RUBRIC_CRITERIA = [
   "precision",
@@ -148,6 +281,11 @@ export const RUBRIC_CRITERIA = [
   "flaw",
   "matters",
   "fix",
+  "specific",
+  "measurable",
+  "charitable",
+  "strongest",
+  "accurate",
 ] as const;
 export type RubricCriterion = (typeof RUBRIC_CRITERIA)[number];
 
@@ -162,6 +300,11 @@ export const CRITERION_LABEL: Record<RubricCriterion, string> = {
   flaw: "Names the flaw",
   matters: "Why it matters",
   fix: "Suggested fix",
+  specific: "Specific",
+  measurable: "Measurable",
+  charitable: "Charitable",
+  strongest: "Strongest reasons",
+  accurate: "Accurate",
 };
 
 export const CRITERION_MEANING: Record<RubricCriterion, string> = {
@@ -175,6 +318,11 @@ export const CRITERION_MEANING: Record<RubricCriterion, string> = {
   flaw: "names the specific reasoning flaw in the passage",
   matters: "explains what the flaw does to the conclusion",
   fix: "suggests a concrete repair or the evidence that would be needed",
+  specific: "names who or what, in what conditions, with no weasel words left",
+  measurable: "says what result would count as true and what would count as false",
+  charitable: "states the other side's view as its own supporters would recognise it",
+  strongest: "uses the best reasons available for that view, not the weakest ones",
+  accurate: "does not smuggle in a straw version or change the position",
 };
 
 export type WrittenTask = {
@@ -209,6 +357,21 @@ export const WRITTEN_TASKS: Record<WrittenTaskType, WrittenTask> = {
     placeholder: "Two to four sentences. Name the flaw, say why it matters, suggest a fix.",
     criteria: ["flaw", "matters", "fix"],
   },
+  testable: {
+    type: "testable",
+    label: "Rewrite it testable",
+    length: "one or two sentences",
+    placeholder:
+      "Rewrite the claim so it could actually be shown false. Numbers and scope welcome.",
+    criteria: ["specific", "measurable", "faithful"],
+  },
+  steelmanWrite: {
+    type: "steelmanWrite",
+    label: "Steelman it",
+    length: "two to four sentences",
+    placeholder: "Two to four sentences. State the other side at its strongest, honestly.",
+    criteria: ["charitable", "strongest", "accurate"],
+  },
 };
 
 export type RubricScore = { score: number; feedback: string };
@@ -242,6 +405,20 @@ export function describeExercise(exercise: Exercise): string {
       return `Predict the outcome of: "${exercise.scenario}" — ${exercise.question}`;
     case "steelman":
       return `Steelman this view: "${exercise.view}" (options: ${exercise.options.join(" | ")})`;
+    case "judge":
+      return `${exercise.question} — "${exercise.passage}" (options: ${exercise.options.join(" | ")})`;
+    case "highlight":
+      return `${exercise.question} — "${exercise.tokens.join(" ")}"`;
+    case "rewrite":
+      return `${exercise.question} — original: "${exercise.original}" (options: ${exercise.options.join(" | ")})`;
+    case "order":
+      return `${exercise.question} — cards: ${exercise.items.map((i) => i.text).join(" | ")}`;
+    case "numeric":
+      return `${exercise.scenario} — ${exercise.question}`;
+    case "slider":
+      return `Confidence in "${exercise.claim}" after learning: ${exercise.evidence}`;
+    case "chart":
+      return `${exercise.question} — chart "${exercise.title}" (options: ${exercise.options.join(" | ")})`;
   }
 }
 
@@ -252,6 +429,9 @@ export function describeAnswer(exercise: Exercise, answer: unknown): string {
     case "flaw":
     case "assumption":
     case "steelman":
+    case "judge":
+    case "rewrite":
+    case "chart":
       return typeof answer === "number" ? (exercise.options[answer] ?? "") : "";
     case "predict": {
       const a = answer as { choice?: number; confidence?: number } | undefined;
@@ -261,9 +441,28 @@ export function describeAnswer(exercise: Exercise, answer: unknown): string {
     }
     case "rank":
       return Array.isArray(answer) ? (answer as string[]).join(" > ") : "";
+    case "order":
+      return Array.isArray(answer) ? (answer as string[]).join(" then ") : "";
     case "sort": {
       const a = (answer ?? {}) as Record<string, string>;
       return exercise.statements.map((s, i) => `${s.text} → ${a[String(i)] ?? "?"}`).join("; ");
     }
+    case "highlight": {
+      const picked = Array.isArray(answer) ? (answer as number[]) : [];
+      return picked.map((i) => exercise.tokens[i] ?? "").join(", ");
+    }
+    case "numeric":
+      return typeof answer === "number" ? String(answer) : "";
+    case "slider": {
+      const a = answer as { before?: number; after?: number } | undefined;
+      return a ? `${a.before ?? 50}% → ${a.after ?? 50}%` : "";
+    }
   }
+}
+
+/** The keyed option's own text, so feedback never says "option 1". */
+export function correctText(exercise: Exercise): string | null {
+  return "options" in exercise && typeof exercise.correct === "number"
+    ? (exercise.options[exercise.correct] ?? null)
+    : null;
 }

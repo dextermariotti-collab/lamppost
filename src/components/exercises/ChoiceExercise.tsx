@@ -3,38 +3,58 @@ import type {
   AssumptionExercise,
   ClaimExercise,
   FlawExercise,
+  JudgeExercise,
+  RewriteExercise,
   SteelmanExercise,
 } from "@/lib/exercises";
 
-type ChoiceKindExercise = ClaimExercise | FlawExercise | AssumptionExercise | SteelmanExercise;
+type ChoiceKindExercise =
+  | ClaimExercise
+  | FlawExercise
+  | AssumptionExercise
+  | SteelmanExercise
+  | JudgeExercise
+  | RewriteExercise;
 
-const passageFor = (exercise: ChoiceKindExercise) =>
-  exercise.kind === "claim"
-    ? exercise.passage
-    : exercise.kind === "flaw"
-      ? exercise.claim
-      : exercise.kind === "assumption"
-        ? exercise.argument
-        : exercise.view;
-
-const headline = (exercise: ChoiceKindExercise, correct: boolean) => {
-  if (exercise.kind === "claim") {
-    return correct
-      ? "That's the conclusion everything else was supporting."
-      : "That's a premise, not the claim itself.";
+const passageFor = (exercise: ChoiceKindExercise) => {
+  switch (exercise.kind) {
+    case "claim":
+      return exercise.passage;
+    case "flaw":
+      return exercise.claim;
+    case "assumption":
+      return exercise.argument;
+    case "steelman":
+      return exercise.view;
+    case "judge":
+      return exercise.passage;
+    case "rewrite":
+      return exercise.original;
   }
-  if (exercise.kind === "flaw") {
-    return correct
-      ? `Exactly — you named it.${exercise.fallacy ? ` (${exercise.fallacy})` : ""}`
-      : `Not quite — here's the real break.${exercise.fallacy ? ` (${exercise.fallacy})` : ""}`;
-  }
-  if (exercise.kind === "assumption") {
-    return correct ? "That's the load-bearing one." : "That one isn't doing the work.";
-  }
-  return correct ? "That's the strongest version." : "That version weakens the view.";
 };
 
-/** Flaw, hidden assumption and steelman all share the pick-one interaction. */
+const headline = (exercise: ChoiceKindExercise, correct: boolean) => {
+  switch (exercise.kind) {
+    case "claim":
+      return correct
+        ? "That's the conclusion everything else was supporting."
+        : "That's a premise, not the claim itself.";
+    case "flaw":
+      return correct
+        ? `Exactly — you named it.${exercise.fallacy ? ` (${exercise.fallacy})` : ""}`
+        : `Not quite — here's the real break.${exercise.fallacy ? ` (${exercise.fallacy})` : ""}`;
+    case "assumption":
+      return correct ? "That's the load-bearing one." : "That one isn't doing the work.";
+    case "steelman":
+      return correct ? "That's the strongest version." : "That version weakens the view.";
+    case "judge":
+      return correct ? "That's the right call." : "Not the call this one calls for.";
+    case "rewrite":
+      return correct ? "That rewrite holds up." : "That rewrite still slips away.";
+  }
+};
+
+/** Every pick-one drill shares this interaction. */
 export function ChoiceExercise({
   exercise,
   index,
@@ -52,6 +72,7 @@ export function ChoiceExercise({
 }) {
   const answered = answer !== undefined;
   const correct = answer === exercise.correct;
+  const keyed = exercise.options[exercise.correct];
 
   return (
     <ExerciseShell
@@ -59,6 +80,7 @@ export function ChoiceExercise({
       index={index}
       total={total}
       showCount={showCount}
+      question={"question" in exercise ? exercise.question : undefined}
       passage={passageFor(exercise)}
     >
       <div className="mt-4 space-y-2">
@@ -77,7 +99,16 @@ export function ChoiceExercise({
         <ExerciseFeedback
           correct={correct}
           headline={headline(exercise, correct)}
-          body={exercise.explanation}
+          body={
+            <>
+              {!correct && keyed ? (
+                <span className="mb-1 block">
+                  The answer is <span className="text-foreground">“{keyed}”</span>.
+                </span>
+              ) : null}
+              {exercise.explanation}
+            </>
+          }
         />
       )}
     </ExerciseShell>

@@ -15,7 +15,7 @@ import type { Exercise, ExerciseKind } from "./exercises";
 
 export const MODEL = "google/gemini-3.6-flash";
 /** Bumped when the generation pipeline changes; invalidates cached lessons. */
-export const CONTENT_VERSION = 5;
+export const CONTENT_VERSION = 6;
 /** Regeneration rounds allowed for drills that fail review. */
 const MAX_REPAIRS = 2;
 /** Whole-lesson attempts before giving up on this request. */
@@ -47,15 +47,21 @@ export async function readCachedLesson(lessonId: string): Promise<Lesson | undef
  * Copies a lesson's validated drills into the shared pool, so a review or
  * challenge on this skill always has something vetted to serve with no wait.
  */
-export async function seedPoolFromLesson(lessonId: string, exercises: Exercise[]) {
+export async function seedPoolFromLesson(
+  lessonId: string,
+  exercises: Exercise[],
+  opts: { difficulty?: number; domains?: string[] } = {},
+) {
   const db = await admin();
   const existing =
     (await db.from("drill_variants").select("variant, kind").eq("lesson_id", lessonId)).data ?? [];
   let next = existing.reduce((max, row) => Math.max(max, row.variant), 0);
-  const rows = exercises.map((exercise) => ({
+  const rows = exercises.map((exercise, i) => ({
     lesson_id: lessonId,
     kind: exercise.kind,
     variant: ++next,
+    difficulty: opts.difficulty ?? 2,
+    domain: opts.domains?.[i] ?? null,
     content: JSON.parse(JSON.stringify(exercise)),
     model: MODEL,
   }));
@@ -82,7 +88,7 @@ export type GenerateResult =
  */
 export async function ensureLessonContent(
   lessonId: string,
-  opts: { force?: boolean } = {},
+  opts: { force?: boolean; difficulty?: number } = {},
 ): Promise<GenerateResult> {
   const meta: CurriculumLesson | undefined = LESSONS.find((l) => l.id === lessonId);
   if (!meta) return { ok: false, reason: "unknown-lesson" };
@@ -108,6 +114,10 @@ export async function ensureLessonContent(
   const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts, repairPrompt } =
     await import("./exercise-validate.server");
 
+  const { domainPlan } = await import("./domains");
+  const domains = domainPlan(null, meta.drills.length);
+  const difficulty = opts.difficulty ?? 2;
+
   const gateway = createLovableAiGatewayProvider(key);
   const system = exerciseSystemPrompt(meta.drills, meta.written);
   const ask = async (systemPrompt: string, prompt: string) =>
@@ -115,7 +125,7 @@ export async function ensureLessonContent(
 
   for (let round = 0; round < MAX_ATTEMPTS; round++) {
     try {
-      const text = await ask(system, exerciseLessonPrompt(meta));
+      const text = await ask(system, exerciseLessonPrompt(meta, { domains, difficulty }));
       const screened = screenOutput(text);
       if (!screened.allowed) continue;
 
@@ -135,7 +145,10 @@ export async function ensureLessonContent(
       let passed = false;
 
       for (let attempt = 0; attempt <= MAX_REPAIRS; attempt++) {
-        const review = await ask(VALIDATION_SYSTEM, validationPrompt(meta, exercises));
+        const review = await ask(
+          VALIDATION_SYSTEM,
+          validationPrompt(meta, exercises, lesson.concept?.body),
+        );
         const verdicts = parseVerdicts(review, exercises.length);
         if (!verdicts) break;
 
@@ -209,7 +222,7 @@ export async function ensureLessonContent(
         },
         { onConflict: "lesson_id" },
       );
-      await seedPoolFromLesson(meta.id, exercises).catch(() => undefined);
+      await seedPoolFromLesson(meta.id, exercises, { difficulty, domains }).catch(() => undefined);
       return { ok: true, lesson: validated, cached: false };
     } catch (error) {
       console.error(`[curriculum] ${meta.id}: generation error`, error);
@@ -226,6 +239,7 @@ export async function ensureLessonContent(
 export async function generatePoolDrill(
   lessonId: string,
   kind: ExerciseKind,
+  opts: { difficulty?: number; domain?: string } = {},
 ): Promise<Exercise | null> {
   const meta = LESSONS.find((l) => l.id === lessonId);
   if (!meta) return null;
@@ -254,6 +268,7 @@ export async function generatePoolDrill(
           .limit(4)
       ).data ?? [];
 
+    const difficulty = opts.difficulty ?? 2;
     const gateway = createLovableAiGatewayProvider(key);
     const ask = async (system: string, prompt: string) =>
       await streamText({ model: gateway(MODEL), system, prompt, maxRetries: 2 }).text;
@@ -263,7 +278,13 @@ export async function generatePoolDrill(
     );
 
     for (let attempt = 0; attempt < 2; attempt++) {
-      const text = await ask(variantSystemPrompt(kind), variantPrompt(meta, kind, avoid));
+      const text = await ask(
+        variantSystemPrompt(kind),
+        variantPrompt(meta, kind, avoid, {
+          difficulty,
+          ...(opts.domain ? { domain: opts.domain } : {}),
+        }),
+      );
       if (!screenOutput(text).allowed) continue;
       const root = extractJson(text);
       const candidate = normalizeExercise(
@@ -294,6 +315,8 @@ export async function generatePoolDrill(
         lesson_id: lessonId,
         kind,
         variant: max + 1,
+        difficulty,
+        domain: opts.domain ?? null,
         content: JSON.parse(JSON.stringify(exercise)),
         model: MODEL,
       });

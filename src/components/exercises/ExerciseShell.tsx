@@ -8,6 +8,7 @@ export function ExerciseShell({
   index,
   total,
   showCount = true,
+  question,
   passage,
   children,
   footer,
@@ -16,11 +17,13 @@ export function ExerciseShell({
   index: number;
   total: number;
   /** Single-drill screens hide the counter so it isn't shown twice. */
-  showCount?: boolean;
+  showCount?: boolean | undefined;
+  /** Lesson-specific instruction, replacing the drill kind's generic one. */
+  question?: string | undefined;
   /** The argument, scenario or claim under examination. */
-  passage?: ReactNode;
+  passage?: ReactNode | undefined;
   children: ReactNode;
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
 }) {
   return (
     <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
@@ -33,7 +36,7 @@ export function ExerciseShell({
         ) : null}
       </div>
 
-      <h2 className="mt-1 text-xl leading-snug">{EXERCISE_QUESTION[kind]}</h2>
+      <h2 className="mt-1 text-xl leading-snug">{question || EXERCISE_QUESTION[kind]}</h2>
       {passage ? (
         <div className="mt-4 rounded-2xl bg-primary-soft p-4 text-[15px] font-semibold leading-relaxed text-accent-foreground">
           {passage}

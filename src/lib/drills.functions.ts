@@ -2,27 +2,39 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { LESSONS } from "./curriculum";
 import { EXERCISE_KINDS, type Exercise, type ExerciseKind } from "./exercises";
+import { MOTIVATION_IDS } from "./onboarding";
 
 /**
  * Serves ONE fresh drill of a skill + type for reviews, the daily challenge and
  * the placement check.
  *
  * Everything is served from a pre-validated pool so the learner never waits on
- * a model call and never sees a generation failure. The pool is topped up in the
+ * a model call and never sees a generation failure. Within the pool the pick is
+ * steered by the learner's rating (difficulty band), their goal (setting), and
+ * which variants they have already seen. The pool is topped up in the
  * background; if it is somehow empty, the lesson's own validated drills seed it.
  */
 
 const Input = z.object({
   lessonId: z.string().min(1),
   kind: z.enum(EXERCISE_KINDS),
-  seen: z.array(z.number().int()).max(50).default([]),
+  seen: z.array(z.number().int()).max(80).default([]),
+  /** Difficulty band the learner's rating asks for. */
+  difficulty: z.number().int().min(1).max(3).default(2),
+  motivation: z.enum(MOTIVATION_IDS).nullish(),
 });
 
 /** Below this, a background top-up is kicked off after answering. */
 const POOL_TARGET = 8;
 
 export type DrillVariantResult =
-  | { ok: true; variant: number; exercise: Exercise; kind: ExerciseKind }
+  | {
+      ok: true;
+      variant: number;
+      exercise: Exercise;
+      kind: ExerciseKind;
+      difficulty: number;
+    }
   | { ok: false; reason: string };
 
 export const getDrillVariant = createServerFn({ method: "POST" })
@@ -35,12 +47,13 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { seedPoolFromLesson, readCachedLesson, isUsableLesson, ensureLessonContent } =
         await import("./curriculum-generate.server");
+      const { domainsFor } = await import("./domains");
 
       const readPool = async () =>
         (
           await supabaseAdmin
             .from("drill_variants")
-            .select("variant, kind, content")
+            .select("variant, kind, content, difficulty, domain")
             .eq("lesson_id", meta.id)
             .order("variant", { ascending: true })
         ).data ?? [];
@@ -67,14 +80,32 @@ export const getDrillVariant = createServerFn({ method: "POST" })
         return { ok: false, reason: "This drill is still being prepared. Try again in a moment." };
       }
 
+      // Never repeat a drill this learner has already seen until the pool runs out.
       const unseen = candidates.filter((row) => !data.seen.includes(row.variant));
-      const source = unseen.length > 0 ? unseen : candidates;
+      const pool = unseen.length > 0 ? unseen : candidates;
+
+      // Then keep it near their rating, and in a setting their goal cares about.
+      const nearest = Math.min(
+        ...pool.map((row) => Math.abs((row.difficulty ?? 2) - data.difficulty)),
+      );
+      const atLevel = pool.filter(
+        (row) => Math.abs((row.difficulty ?? 2) - data.difficulty) === nearest,
+      );
+      const wanted = domainsFor(data.motivation ?? null);
+      const onTheme = atLevel.filter((row) => row.domain && wanted.includes(row.domain));
+      const source = onTheme.length > 0 ? onTheme : atLevel;
       const chosen = source[Math.floor(Math.random() * source.length)]!;
 
       // Keep the pool healthy for next time, without making anyone wait for it.
       if (ofKind.length < POOL_TARGET && meta.drills.includes(data.kind)) {
+        const domain = wanted[Math.floor(Math.random() * wanted.length)];
         void import("./curriculum-generate.server")
-          .then(({ generatePoolDrill }) => generatePoolDrill(meta.id, data.kind))
+          .then(({ generatePoolDrill }) =>
+            generatePoolDrill(meta.id, data.kind, {
+              difficulty: data.difficulty,
+              ...(domain ? { domain } : {}),
+            }),
+          )
           .catch(() => undefined);
       }
 
@@ -83,6 +114,7 @@ export const getDrillVariant = createServerFn({ method: "POST" })
         variant: chosen.variant,
         exercise: chosen.content as unknown as Exercise,
         kind: chosen.kind as ExerciseKind,
+        difficulty: chosen.difficulty ?? 2,
       };
     } catch (error) {
       console.error("Drill pool read failed:", error);

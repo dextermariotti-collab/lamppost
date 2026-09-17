@@ -72,6 +72,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       dailyGoal?: number;
       notifyNudgesInApp?: boolean;
       notifyNudgesEmail?: boolean;
+      goal?: string;
     }) => input,
   )
   .handler(async ({ data, context }) => {
@@ -90,6 +91,7 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     if (data.dailyGoal !== undefined) {
       patch["daily_goal"] = Math.min(10, Math.max(1, Math.round(data.dailyGoal)));
     }
+    if (data.goal !== undefined) patch["goal"] = data.goal.slice(0, 40) || null;
     if (data.notifyNudgesInApp !== undefined) patch["notify_nudges_inapp"] = data.notifyNudgesInApp;
     if (data.notifyNudgesEmail !== undefined) patch["notify_nudges_email"] = data.notifyNudgesEmail;
     if (Object.keys(patch).length === 0) return { ok: true };

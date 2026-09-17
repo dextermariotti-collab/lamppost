@@ -46,6 +46,9 @@ export const Route = createFileRoute("/api/public/warm-curriculum")({
           poolCounts,
           generatePoolDrill,
         } = await import("@/lib/curriculum-generate.server");
+        const { DOMAIN_SETS } = await import("@/lib/domains");
+        const allDomains = Object.values(DOMAIN_SETS).flat();
+        const pickDomain = () => allDomains[Math.floor(Math.random() * allDomains.length)]!;
 
         const done: string[] = [];
         const failed: string[] = [];
@@ -64,7 +67,14 @@ export const Route = createFileRoute("/api/public/warm-curriculum")({
                 const counts = await poolCounts(lesson.id);
                 for (const kind of lesson.drills) {
                   if ((counts[kind] ?? 0) >= 2 + extraDrills) continue;
-                  await generatePoolDrill(lesson.id, kind);
+                  // Spread the pool across all three difficulty bands so the
+                  // adaptive serve always has something at the learner's level.
+                  for (const difficulty of [1, 2, 3] as const) {
+                    await generatePoolDrill(lesson.id, kind, {
+                      difficulty,
+                      domain: pickDomain(),
+                    });
+                  }
                 }
               }
               continue;

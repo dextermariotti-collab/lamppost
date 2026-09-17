@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
 import { dayKey } from "./progress";
+import { skillRating } from "./rating";
 import type { ExerciseKind } from "./exercises";
 
 /**
@@ -194,7 +195,10 @@ export function useDrillSchedule() {
 /** Only what is due now, capped so a session stays short. */
 export function useDueDrills(limit = 8) {
   const { store, hydrated } = useDrillStore();
-  const items = decorate(store).filter((item) => item.dueInDays <= 0);
+  // Due first, then weakest and least-recently-practised skills at the front.
+  const items = decorate(store)
+    .filter((item) => item.dueInDays <= 0)
+    .sort((a, b) => skillRating(a.lessonId).rating - skillRating(b.lessonId).rating);
   const grade = useCallback(
     (key: string, correct: boolean, variant?: number) => gradeDrillReview(key, correct, variant),
     [],

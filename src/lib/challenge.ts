@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
 import { dayKey } from "./progress";
+import { skillsToPractise } from "./rating";
 import type { ExerciseKind } from "./exercises";
 
 /**
@@ -30,10 +31,19 @@ function seedFor(day: string) {
   return hash;
 }
 
-/** The pool is every drill type of every unlocked lesson. */
+/**
+ * The pool is every drill type of the learner's weakest and least-recently
+ * practised unlocked skills, so the daily drill goes where it's needed. The pick
+ * is still seeded by the date, so it's stable for the whole day.
+ */
 export function challengeFor(completedLessons: number, day = dayKey()): DailyChallenge | null {
   const unlocked = LESSONS.slice(0, Math.max(completedLessons, 0));
-  const pool = unlocked.flatMap((lesson) =>
+  const needy = skillsToPractise(Math.max(completedLessons, 0)).slice(0, 5);
+  const focus =
+    needy.length > 0
+      ? unlocked.filter((lesson) => needy.some((need) => need.lessonId === lesson.id))
+      : unlocked;
+  const pool = (focus.length > 0 ? focus : unlocked).flatMap((lesson) =>
     lesson.drills.map(
       (kind) => ({ lesson, kind }) as { lesson: (typeof LESSONS)[number]; kind: ExerciseKind },
     ),

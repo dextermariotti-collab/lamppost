@@ -1,5 +1,5 @@
 import { PenLine } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
 import type { Companion } from "@/lib/companions";
@@ -8,8 +8,10 @@ import {
   WRITTEN_TASKS,
   argumentXpFor,
   type ArgumentGrade,
+  type RubricCriterion,
   type WrittenPrompt,
 } from "@/lib/exercises";
+import { weakestCriterion } from "@/lib/mastery";
 import { gradeArgument, saveArgumentAttempt } from "@/lib/argument.functions";
 
 /**
@@ -31,7 +33,12 @@ export function WrittenArgument({
   written: WrittenPrompt;
   companion: Companion;
   signedIn: boolean;
-  onGraded: (total: number, attempt: number, max: number) => void;
+  onGraded: (
+    total: number,
+    attempt: number,
+    max: number,
+    scores: Partial<Record<RubricCriterion, number>>,
+  ) => void;
 }) {
   const [text, setText] = useState("");
   const [attempt, setAttempt] = useState(1);
@@ -41,6 +48,10 @@ export function WrittenArgument({
   const [error, setError] = useState<string | null>(null);
   const [revising, setRevising] = useState(false);
   const task = WRITTEN_TASKS[written.type];
+  const [focus, setFocus] = useState<RubricCriterion | null>(null);
+
+  // Read after hydration: the weakest criterion lives in local history.
+  useEffect(() => setFocus(weakestCriterion(task.criteria)?.criterion ?? null), [task.criteria]);
 
   const submit = () => {
     if (busy || !text.trim()) return;
@@ -56,6 +67,7 @@ export function WrittenArgument({
         prompt: written.prompt,
         answer: text.trim(),
         attempt,
+        ...(focus ? { focus: CRITERION_LABEL[focus] } : {}),
       },
     })
       .then((result) => {
@@ -66,7 +78,12 @@ export function WrittenArgument({
         setGrade(result.grade);
         setOnTopic(result.onTopic);
         setRevising(false);
-        onGraded(result.grade.total, attempt, result.grade.max);
+        const perCriterion: Partial<Record<RubricCriterion, number>> = {};
+        for (const criterion of task.criteria) {
+          const row = result.grade.scores[criterion];
+          if (row) perCriterion[criterion] = row.score;
+        }
+        onGraded(result.grade.total, attempt, result.grade.max, perCriterion);
         if (signedIn) {
           void saveArgumentAttempt({
             data: {
@@ -98,12 +115,18 @@ export function WrittenArgument({
       {/* written.guidance describes what a strong answer does, so it stays hidden
           until after submission — shown before, it hands over the answer. */}
 
+      {showEditor && focus && (
+        <p className="mt-3 text-[13px] font-bold text-primary">
+          This time, focus on {CRITERION_LABEL[focus].toLowerCase()} — it's been your weakest part.
+        </p>
+      )}
+
       {showEditor && (
         <>
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
-            rows={written.type === "restate" ? 3 : 6}
+            rows={written.type === "restate" || written.type === "testable" ? 3 : 6}
             maxLength={3000}
             placeholder={task.placeholder}
             aria-label="Your argument"
@@ -121,7 +144,11 @@ export function WrittenArgument({
           <Button
             type="button"
             onClick={submit}
-            disabled={busy || text.trim().length < (written.type === "restate" ? 12 : 20)}
+            disabled={
+              busy ||
+              text.trim().length <
+                (written.type === "restate" || written.type === "testable" ? 12 : 20)
+            }
             className="mt-3 h-12 w-full rounded-full text-base font-semibold"
           >
             <PenLine className="h-4 w-4" />

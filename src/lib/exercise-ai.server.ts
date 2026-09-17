@@ -5,12 +5,19 @@ import {
   EXERCISE_QUESTION,
   WRITTEN_TASKS,
   type AssumptionExercise,
+  type ChartExercise,
   type ClaimExercise,
   type Exercise,
   type ExerciseKind,
   type FlawExercise,
+  type HighlightExercise,
+  type JudgeExercise,
+  type NumericExercise,
+  type OrderExercise,
   type PredictExercise,
   type RankExercise,
+  type RewriteExercise,
+  type SliderExercise,
   type SortBucket,
   type SortExercise,
   type SteelmanExercise,
@@ -59,6 +66,49 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
   steelman: `{"kind":"steelman","view":string,"options":[string,string,string],"correct":number,"explanation":string}
   view = a weakly stated version of a real position (2 sentences). options = three rewrites; the
   correct one is the strongest honest version, the others overstate, strawman or dodge.`,
+  judge: `{"kind":"judge","question":string,"passage":string,"options":[string,string,string],"correct":number,"explanation":string}
+  question = THIS lesson's own instruction, max 12 words, ending in a question mark. Examples of the
+  form: "Who owes evidence here?", "Which alternative explanation fits best?", "Legitimate appeal to
+  expertise, or a fallacy?", "Which study design would settle this?", "Which objection is strongest?",
+  "Which part of this answer is unsupported?", "Good decision or good luck?", "Which sample is better?".
+  passage = the material being judged, 2-4 sentences. options = three candidate answers, same length
+  and style; exactly one is right for the reason the lesson teaches.`,
+  highlight: `{"kind":"highlight","question":string,"tokens":[string],"targets":[number],"explanation":string}
+  question = the tapping instruction, max 12 words (e.g. "Tap every word that makes this untestable").
+  tokens = the passage split into tappable pieces IN READING ORDER; each token is one word or a short
+  phrase, and joining the tokens with single spaces must read exactly as the original passage.
+  Use 20-45 tokens. Punctuation stays attached to its word.
+  targets = 0-based indexes of the tokens that must be tapped: 2-5 of them, never more than a quarter
+  of the tokens, and each one genuinely guilty of what the question asks for.`,
+  rewrite: `{"kind":"rewrite","question":string,"original":string,"options":[string,string,string],"correct":number,"explanation":string}
+  question = what the rewrite must achieve, max 12 words (e.g. "Which rewrite could actually be shown
+  false?", "Which version is scoped to the evidence?").
+  original = the faulty claim, headline or objection, one or two sentences.
+  options = three rewrites of similar length; the keyed one fixes exactly the fault named, one stays
+  faulty in a subtler way, one overcorrects into a different claim.`,
+  order: `{"kind":"order","question":string,"passage":string,"items":[{"text":string,"why":string}]}
+  question = the ordering instruction, max 12 words (e.g. "Order these into a working argument",
+  "Which check would you do first?").
+  passage = one or two sentences of context, or an empty string if none is needed.
+  items = 3 or 4 cards LISTED IN THE CORRECT ORDER, each max 18 words, with why = one sentence on
+  why it sits there. Never include two cards whose order is arguable.`,
+  numeric: `{"kind":"numeric","question":string,"scenario":string,"answer":number,"tolerance":number,"unit":string,"solution":string}
+  scenario = 2-4 sentences giving every number needed, all clearly hypothetical or genuinely
+  well-established. question = what to work out, max 16 words. answer = the single correct number,
+  computable from the scenario alone. tolerance = allowed absolute difference (never zero).
+  unit = "%", "£", "people" or "" as appropriate. solution = the working in max 45 words.`,
+  slider: `{"kind":"slider","claim":string,"evidence":string,"direction":"up","size":number,"explanation":string}
+  claim = a specific claim the learner rates their confidence in, one sentence.
+  evidence = one new piece of evidence revealed afterwards, 1-2 sentences.
+  direction = "up" if the evidence should raise confidence, "down" if it should lower it.
+  size = roughly how many percentage points a good reasoner moves (5-40): small for weak or
+  expected evidence, large for strong, hard-to-fake evidence.
+  explanation = why that direction, and why that much.`,
+  chart: `{"kind":"chart","question":string,"title":string,"series":[{"label":string,"value":number}],"yMin":number,"yMax":number,"options":[string,string,string],"correct":number,"explanation":string}
+  series = 4-6 real-looking data points, label max 8 characters. yMin/yMax = the axis window the
+  chart is drawn with, chosen so the drawing exaggerates or hides what the numbers actually do
+  (that is the trick). question asks what the chart is doing, max 14 words. options = three candidate
+  answers, one of which names the trick precisely.`,
 };
 
 const WRITTEN_SPEC: Record<WrittenTaskType, string> = {
@@ -71,6 +121,14 @@ with a claim, support and the strongest objection answered.`,
   critique: `"written" is a CRITIQUE task: passage = a 3-5 sentence flawed argument written out in full.
 prompt asks the learner, in 2-4 sentences, to name the flaw, say why it matters for the conclusion
 and suggest a fix.`,
+  testable: `"written" is a REWRITE IT TESTABLE task: passage = a vague, unfalsifiable claim (a headline,
+advert line or announcement) written out in full, 1-3 sentences. prompt asks the learner to rewrite
+it in one or two sentences so it could actually be shown false — specific about who, how much and
+under what conditions — without changing what was originally claimed.`,
+  steelmanWrite: `"written" is a STEELMAN task: passage = a position stated weakly or unsympathetically,
+2-4 sentences, on a question with honest disagreement on both sides. prompt asks the learner to state
+that position at its strongest in 2-4 sentences, using the best reasons available for it, without
+changing what the position actually is.`,
 };
 
 /**
@@ -84,14 +142,23 @@ export const HARD_RULES = `Hard rules for every drill:
   contain a claim buried in a passage, and so on.
 - Exactly ONE option is clearly the best answer and "correct" (0-based index) points at it.
 - "explanation" must agree with the keyed option and never argue for a different one.
-- Every drill must test THIS lesson's objective and use everyday material (news, workplace decisions,
-  health advice, adverts, social posts, product reviews, politics).
+- Every drill must test THIS lesson's key idea and its named trap, not critical thinking in general.
 - NEVER present an invented study, statistic, institution or named source as real fact. Use a
   genuinely well-established finding, or mark the whole scenario as hypothetical.
 - NO GIVEAWAY WORDING. Options must be the same style and within a few words of the same length, and
   must never contain their own justification: no "because…", "since…", "which shows…", "as habit was
   assumed, not created". State the outcome or diagnosis only; the reasoning belongs in "explanation".
-  Never make the keyed option the longest, the most hedged or the most detailed one.`;
+  Never make the keyed option the longest, the most hedged or the most detailed one.
+- NEVER REUSE THE CONCEPT CARD'S WORDING in the keyed option. If the card says "elastic terms like
+  'up to'", the correct option must not contain that phrase — otherwise the answer is a matching
+  exercise, not reasoning.
+- DISTRACTORS MUST BE REAL MISTAKES a thoughtful person would actually make here: a weaker but
+  tempting diagnosis, the popular-but-wrong answer, a true statement that isn't what was asked.
+  Never write an obviously silly option.
+- For find-the-claim drills, the keyed sentence must NOT sit last in the passage more than about a
+  third of the time; put it first or in the middle, or leave it implied.
+- Vary the setting between drills. No single setting (workplace, wellness, remote work, school…) may
+  carry more than one drill in a lesson.`;
 
 export function exerciseSystemPrompt(kinds: ExerciseKind[], written: WrittenTaskType) {
   const unique = [...new Set(kinds)];
@@ -117,12 +184,27 @@ Use the exact key names above.
 ${CONTENT_POLICY_RULES}`;
 }
 
-export function exerciseLessonPrompt(lesson: CurriculumLesson) {
+/** What difficulty band 1-3 actually means for the material. */
+export const DIFFICULTY_NOTE: Record<number, string> = {
+  1: `Difficulty 1: short passage (2 sentences), the fault is plain once looked for, distractors are
+clearly weaker.`,
+  2: `Difficulty 2: normal length (3 sentences), the fault takes a moment to name, one distractor is
+genuinely tempting.`,
+  3: `Difficulty 3: longer passage (4-5 sentences), the fault is subtle and partly buried, and two
+distractors are defensible until examined closely. Never make it harder by being vaguer — only by
+being subtler.`,
+};
+
+export function exerciseLessonPrompt(
+  lesson: CurriculumLesson,
+  opts: { domains?: string[]; difficulty?: number } = {},
+) {
   const unit = UNITS.find((u) => u.id === lesson.unitId);
   const links = linksForLesson(lesson.id)
     .map((link) => `- ${link.concept}: ${link.detail}`)
     .join("\n");
   const task = WRITTEN_TASKS[lesson.written];
+  const domains = opts.domains ?? [];
 
   return `Course: Lamppost — Critical thinking (a fixed 7-unit curriculum).
 Unit: ${unit?.title ?? lesson.unitId} — ${unit?.blurb ?? ""}
@@ -130,9 +212,23 @@ Lesson title: "${lesson.title}"
 Learning objective (every exercise must train exactly this, nothing wider):
 ${lesson.objective}
 
+KEY IDEA the lesson teaches:
+${lesson.keyIdea}
+
+THE TRAP every drill must actually test:
+${lesson.trap}
+
 Drill plan for this lesson (use exactly these kinds, in this order):
 ${lesson.drills.map((kind, i) => `${i + 1}. ${kind} — ${EXERCISE_LABEL[kind]}`).join("\n")}
 Closing written task: ${task.label} (${task.length}).
+${
+  domains.length
+    ? `Settings to use, one per drill in this order (do not reuse a setting):\n${domains
+        .map((d, i) => `${i + 1}. ${d}`)
+        .join("\n")}`
+    : ""
+}
+${DIFFICULTY_NOTE[opts.difficulty ?? 2] ?? ""}
 
 Stay strictly on this objective: never drift into another unit's skill, never teach study technique
 instead of the skill, never ask a question that can be answered by recalling the concept card.
@@ -156,11 +252,20 @@ ${HARD_RULES}
 ${CONTENT_POLICY_RULES}`;
 }
 
-export function variantPrompt(lesson: CurriculumLesson, kind: ExerciseKind, avoid: string[]) {
+export function variantPrompt(
+  lesson: CurriculumLesson,
+  kind: ExerciseKind,
+  avoid: string[],
+  opts: { difficulty?: number; domain?: string } = {},
+) {
   const unit = UNITS.find((u) => u.id === lesson.unitId);
   return `Unit: ${unit?.title ?? lesson.unitId}
 Skill being reviewed: ${lesson.objective}
+Key idea: ${lesson.keyIdea}
+The trap to test: ${lesson.trap}
 Drill type: ${kind} — ${EXERCISE_LABEL[kind]} (${EXERCISE_QUESTION[kind]})
+${opts.domain ? `Setting for this drill: ${opts.domain}` : ""}
+${DIFFICULTY_NOTE[opts.difficulty ?? 2] ?? ""}
 
 Write ONE new drill of that type training exactly that skill, on fresh material.
 ${
@@ -338,6 +443,157 @@ export function normalizeExercise(raw: unknown): Exercise | null {
       options: set.options,
       correct: set.correct,
       explanation: explanation || "The strongest version keeps the point honest and specific.",
+    };
+    return drill;
+  }
+
+  if (kind === "judge" || kind === "call" || kind === "decide") {
+    const passage = str(pick(e, ["passage", "scenario", "argument", "text", "claim"]));
+    const question = str(pick(e, ["question", "instruction", "prompt"]));
+    const set = choiceSet(e, 4);
+    if (!passage || !question || !set) return null;
+    const drill: JudgeExercise = {
+      kind: "judge",
+      question,
+      passage,
+      options: set.options,
+      correct: set.correct,
+      explanation: explanation || "That's the call the reasoning actually supports.",
+    };
+    return drill;
+  }
+
+  if (kind === "highlight" || kind === "highlight_words" || kind === "tap") {
+    const tokens = asArray(pick(e, ["tokens", "words", "spans"]))
+      .map((t) => (typeof t === "string" ? t.trim() : str(pick(asObject(t), ["text", "token"]))))
+      .filter(Boolean);
+    const targets = [
+      ...new Set(
+        asArray(pick(e, ["targets", "answer", "indexes", "indices"]))
+          .map((t) => (typeof t === "number" ? t : Number(t)))
+          .filter((t) => Number.isInteger(t) && t >= 0 && t < tokens.length),
+      ),
+    ].sort((a, b) => a - b);
+    const question = str(pick(e, ["question", "instruction", "prompt"]));
+    if (tokens.length < 8 || targets.length === 0 || !question) return null;
+    const drill: HighlightExercise = {
+      kind: "highlight",
+      question,
+      tokens,
+      targets,
+      explanation: explanation || "Those are the words doing the damage.",
+    };
+    return drill;
+  }
+
+  if (kind === "rewrite" || kind === "make_it_testable" || kind === "best_rewrite") {
+    const original = str(pick(e, ["original", "claim", "passage", "headline", "text"]));
+    const question = str(pick(e, ["question", "instruction", "prompt"]));
+    const set = choiceSet(e, 4);
+    if (!original || !question || !set) return null;
+    const drill: RewriteExercise = {
+      kind: "rewrite",
+      question,
+      original,
+      options: set.options,
+      correct: set.correct,
+      explanation: explanation || "That version says what would count as failure.",
+    };
+    return drill;
+  }
+
+  if (kind === "order" || kind === "build_the_argument" || kind === "sequence") {
+    const items = asArray(pick(e, ["items", "cards", "steps", "options"]))
+      .map((raw2) => {
+        const item = asObject(raw2);
+        const text = typeof raw2 === "string" ? raw2.trim() : str(pick(item, ["text", "label"]));
+        if (!text) return null;
+        return { text, why: str(pick(item, ["why", "explanation", "reason"]), "") };
+      })
+      .filter((i): i is { text: string; why: string } => i !== null)
+      .slice(0, 4);
+    const question = str(pick(e, ["question", "instruction", "prompt"]));
+    if (items.length < 3 || !question) return null;
+    const passage = str(pick(e, ["passage", "context", "scenario"]));
+    const drill: OrderExercise = {
+      kind: "order",
+      question,
+      ...(passage ? { passage } : {}),
+      items,
+    };
+    return drill;
+  }
+
+  if (kind === "numeric" || kind === "estimate" || kind === "calculate") {
+    const answerRaw = pick(e, ["answer", "value", "correct", "result"]);
+    const answer = typeof answerRaw === "number" ? answerRaw : Number(answerRaw);
+    const tolRaw = pick(e, ["tolerance", "margin"]);
+    const tolerance = typeof tolRaw === "number" ? tolRaw : Number(tolRaw);
+    const scenario = str(pick(e, ["scenario", "passage", "setup", "context"]));
+    const question = str(pick(e, ["question", "prompt"]));
+    const solution = str(pick(e, ["solution", "working", "explanation", "why"]));
+    if (!Number.isFinite(answer) || !scenario || !question || !solution) return null;
+    const unit = str(pick(e, ["unit", "units"]));
+    const drill: NumericExercise = {
+      kind: "numeric",
+      question,
+      scenario,
+      answer,
+      tolerance: Number.isFinite(tolerance) && tolerance > 0 ? tolerance : Math.abs(answer) * 0.1,
+      ...(unit ? { unit } : {}),
+      solution,
+    };
+    return drill;
+  }
+
+  if (kind === "slider" || kind === "update" || kind === "update_slider") {
+    const claim = str(pick(e, ["claim", "statement", "passage"]));
+    const evidence = str(pick(e, ["evidence", "newEvidence", "new_evidence", "update"]));
+    const dirRaw = str(pick(e, ["direction", "move"])).toLowerCase();
+    const sizeRaw = pick(e, ["size", "amount", "points"]);
+    const size = typeof sizeRaw === "number" ? sizeRaw : Number(sizeRaw);
+    if (!claim || !evidence || (dirRaw !== "up" && dirRaw !== "down")) return null;
+    const drill: SliderExercise = {
+      kind: "slider",
+      claim,
+      evidence,
+      direction: dirRaw,
+      size: Number.isFinite(size) ? Math.min(Math.max(size, 5), 45) : 15,
+      explanation: explanation || "Move in proportion to how hard that evidence is to fake.",
+    };
+    return drill;
+  }
+
+  if (kind === "chart" || kind === "chart_read" || kind === "graph") {
+    const series = asArray(pick(e, ["series", "data", "points", "bars"]))
+      .map((raw2) => {
+        const point = asObject(raw2);
+        const label = str(pick(point, ["label", "name", "x"]));
+        const valueRaw = pick(point, ["value", "y", "amount"]);
+        const value = typeof valueRaw === "number" ? valueRaw : Number(valueRaw);
+        if (!label || !Number.isFinite(value)) return null;
+        return { label, value };
+      })
+      .filter((p): p is { label: string; value: number } => p !== null)
+      .slice(0, 6);
+    const set = choiceSet(e, 4);
+    const question = str(pick(e, ["question", "prompt", "instruction"]));
+    if (series.length < 3 || !set || !question) return null;
+    const values = series.map((p) => p.value);
+    const yMinRaw = pick(e, ["yMin", "y_min", "axisMin"]);
+    const yMaxRaw = pick(e, ["yMax", "y_max", "axisMax"]);
+    const yMin = typeof yMinRaw === "number" ? yMinRaw : Math.min(...values);
+    const yMax = typeof yMaxRaw === "number" ? yMaxRaw : Math.max(...values);
+    const drill: ChartExercise = {
+      kind: "chart",
+      question,
+      title: str(pick(e, ["title", "heading", "caption"]), "The chart"),
+      series,
+      yMin,
+      yMax: yMax > yMin ? yMax : yMin + 1,
+      options: set.options,
+      correct: set.correct,
+      explanation: explanation || "The axis is doing the work, not the data.",
     };
     return drill;
   }

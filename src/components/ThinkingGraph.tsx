@@ -198,10 +198,8 @@ export function ThinkingGraph({
           );
         })}
 
+        {/* The streak lives once on this screen, next to the daily-goal ring. */}
         <div className="absolute right-1 top-1 z-30 text-right text-[11px] leading-relaxed text-muted-foreground">
-          <p>
-            <span className="font-bold text-foreground">{streak}</span> day streak
-          </p>
           <p>{xp.toLocaleString()} XP</p>
         </div>
       </div>
