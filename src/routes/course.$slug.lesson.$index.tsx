@@ -119,7 +119,7 @@ function LessonScreen() {
             </div>
           ) : (
             <div className="mt-6 space-y-4" aria-busy={loading}>
-              <p className="text-sm font-semibold text-muted-foreground">Building your drills…</p>
+              <p className="text-sm font-semibold text-muted-foreground">Opening your lesson…</p>
               <div className="h-24 animate-pulse rounded-3xl bg-muted" />
               <div className="h-52 animate-pulse rounded-3xl bg-muted" />
             </div>
