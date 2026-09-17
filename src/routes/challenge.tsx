@@ -157,8 +157,20 @@ function DailyChallengeScreen() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 )}
+                {answered && !socraticDone && (
+                  <SocraticPopup
+                    companion={companion}
+                    lessonTitle={challenge.lessonTitle}
+                    objective={challenge.unitTitle}
+                    exercise={answered.exercise}
+                    answer={answered.answer}
+                    correct={answered.correct}
+                    onDismiss={() => setSocraticDone(true)}
+                  />
+                )}
               </>
             )}
+
           </>
         )}
 
