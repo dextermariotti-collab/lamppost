@@ -27,7 +27,7 @@ export function DrillVariant({
   index: number;
   total: number;
   showCount?: boolean;
-  onAnswer: (score: number, variant: number, answer: unknown) => void;
+  onAnswer: (score: number, variant: number, answer: unknown, exercise: Exercise) => void;
 }) {
   const [drill, setDrill] = useState<{ exercise: Exercise; variant: number } | null>(null);
   const [stuck, setStuck] = useState(false);
@@ -73,7 +73,7 @@ export function DrillVariant({
   const handleAnswer = useCallback(
     (given: unknown, score: number) => {
       setAnswer(given);
-      if (drill) onAnswer(score, drill.variant, given);
+      if (drill) onAnswer(score, drill.variant, given, drill.exercise);
     },
     [drill, onAnswer],
   );
