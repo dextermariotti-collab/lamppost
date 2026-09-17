@@ -12,7 +12,10 @@ export const Route = createFileRoute("/legal/terms")({
           "Account terms, prohibited conduct, AI-generated content terms and termination rights for Lamppost.",
       },
       { property: "og:title", content: "Terms of Service — Lamppost" },
-      { property: "og:description", content: "Rules of use, account terms and prohibited conduct." },
+      {
+        property: "og:description",
+        content: "Rules of use, account terms and prohibited conduct.",
+      },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "/legal/terms" }],

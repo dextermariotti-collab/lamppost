@@ -18,8 +18,9 @@ export function LegalScreen({ doc, backTo = "/legal" }: { doc: LegalDoc; backTo?
         <div className="mt-4 flex items-start gap-2 rounded-2xl bg-flame/10 p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-flame" />
           <p className="text-xs font-semibold text-foreground/80">
-            Draft scaffolding. Sections marked <span className="font-extrabold">Needs legal review</span>{" "}
-            are placeholders and must be approved by a lawyer before launch.
+            Draft scaffolding. Sections marked{" "}
+            <span className="font-extrabold">Needs legal review</span> are placeholders and must be
+            approved by a lawyer before launch.
           </p>
         </div>
 

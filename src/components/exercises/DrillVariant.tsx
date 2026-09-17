@@ -1,19 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ExerciseRunner } from "./ExerciseRunner";
 import { getDrillVariant } from "@/lib/drills.functions";
 import type { Exercise, ExerciseKind } from "@/lib/exercises";
 
 /**
- * Fetches and runs ONE fresh drill of a given skill + type. Reviews and the daily
- * challenge both use this, so a repeat of a skill is never a repeat of a scenario.
+ * Fetches and runs ONE drill of a given skill + type from the pre-validated
+ * pool, so a repeat of a skill is never a repeat of a scenario — and never a
+ * wait. Transient hiccups are retried quietly rather than shown to the learner.
  */
+
+const AUTO_RETRIES = 2;
+
 export function DrillVariant({
   lessonId,
   kind,
   seen,
   index,
   total,
+  showCount = true,
   onAnswer,
 }: {
   lessonId: string;
@@ -21,27 +26,43 @@ export function DrillVariant({
   seen: number[];
   index: number;
   total: number;
-  onAnswer: (score: number, variant: number, answer: unknown) => void;
+  showCount?: boolean;
+  onAnswer: (score: number, variant: number, answer: unknown, exercise: Exercise) => void;
 }) {
   const [drill, setDrill] = useState<{ exercise: Exercise; variant: number } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [stuck, setStuck] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [answer, setAnswer] = useState<unknown>(undefined);
+  const autoRetries = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
     setDrill(null);
     setAnswer(undefined);
-    setError(null);
-    void getDrillVariant({ data: { lessonId, kind, seen } })
-      .then((result) => {
-        if (cancelled) return;
-        if (result.ok) setDrill({ exercise: result.exercise, variant: result.variant });
-        else setError(result.reason);
-      })
-      .catch(() => {
-        if (!cancelled) setError("That drill couldn't be loaded. Try again in a moment.");
-      });
+    setStuck(false);
+
+    const load = () => {
+      void getDrillVariant({ data: { lessonId, kind, seen } })
+        .then((result) => {
+          if (cancelled) return;
+          if (result.ok) {
+            setDrill({ exercise: result.exercise, variant: result.variant });
+            return;
+          }
+          throw new Error(result.reason);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          if (autoRetries.current < AUTO_RETRIES) {
+            autoRetries.current += 1;
+            window.setTimeout(load, 900);
+            return;
+          }
+          setStuck(true);
+        });
+    };
+    load();
+
     return () => {
       cancelled = true;
     };
@@ -52,16 +73,24 @@ export function DrillVariant({
   const handleAnswer = useCallback(
     (given: unknown, score: number) => {
       setAnswer(given);
-      if (drill) onAnswer(score, drill.variant, given);
+      if (drill) onAnswer(score, drill.variant, given, drill.exercise);
     },
     [drill, onAnswer],
   );
 
-  if (error) {
+  if (stuck) {
     return (
       <div className="mt-5 rounded-3xl bg-card p-5 shadow-soft">
-        <p className="text-sm font-semibold text-foreground">{error}</p>
-        <Button onClick={() => setAttempt((n) => n + 1)} className="mt-4 w-full rounded-full">
+        <p className="text-sm font-semibold text-foreground">
+          This drill is still being prepared. Give it a moment.
+        </p>
+        <Button
+          onClick={() => {
+            autoRetries.current = 0;
+            setAttempt((n) => n + 1);
+          }}
+          className="mt-4 w-full rounded-full"
+        >
           Try again
         </Button>
       </div>
@@ -71,7 +100,6 @@ export function DrillVariant({
   if (!drill) {
     return (
       <div className="mt-5 space-y-4" aria-busy="true">
-        <p className="text-sm font-semibold text-muted-foreground">Writing you a fresh drill…</p>
         <div className="h-20 animate-pulse rounded-3xl bg-muted" />
         <div className="h-44 animate-pulse rounded-3xl bg-muted" />
       </div>
@@ -83,6 +111,7 @@ export function DrillVariant({
       exercise={drill.exercise}
       index={index}
       total={total}
+      showCount={showCount}
       answer={answer}
       onAnswer={handleAnswer}
     />

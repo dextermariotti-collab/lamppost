@@ -75,3 +75,21 @@
 
 ### Open
 - [ ] Debate results are not emailed/pushed — badge only (in-app).
+
+## Pivot phase 5 (done)
+- Fixed the course-store recursion crash (infinite save/event loop).
+- Lessons and drills now served from a pre-validated cache + drill pool
+  (`curriculum-generate.server.ts`, `drills.functions.ts`,
+  `/api/public/warm-curriculum`); runtime failures fall back silently.
+- Daily challenge shows feedback + Socratic follow-up before the done card.
+- Lesson-complete and unit-complete screens with accuracy, XP, streak,
+  daily-goal ring and "what you practiced".
+- Home: onboarding gate before render, daily goal ring next to the streak.
+- Progress: one source of truth for lessons done and reviews due.
+- Onboarding shortened to 1 intro slide + why + time + placement + companion
+  pick; customization moved to the new `/companion` screen; copy and time
+  labels corrected; duplicate headers removed.
+
+Open: background warm-up job must finish all 35 lessons (rerun
+`/api/public/warm-curriculum` until `remaining` is 0). Debate results are
+still badge-only (no email/push).

@@ -22,12 +22,14 @@ export function PredictExerciseCard({
   exercise,
   index,
   total,
+  showCount = true,
   answer,
   onAnswer,
 }: {
   exercise: PredictExerciseData;
   index: number;
   total: number;
+  showCount?: boolean;
   answer: PredictAnswer | undefined;
   onAnswer: (answer: PredictAnswer, score: number) => void;
 }) {
@@ -37,7 +39,13 @@ export function PredictExerciseCard({
   const correct = answer?.choice === exercise.correct;
 
   return (
-    <ExerciseShell kind="predict" index={index} total={total} passage={exercise.scenario}>
+    <ExerciseShell
+      kind="predict"
+      index={index}
+      total={total}
+      showCount={showCount}
+      passage={exercise.scenario}
+    >
       <p className="mt-4 text-[15px] font-semibold leading-snug text-foreground">
         {exercise.question}
       </p>

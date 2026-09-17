@@ -19,12 +19,14 @@ export function RankExerciseCard({
   exercise,
   index,
   total,
+  showCount = true,
   answer,
   onAnswer,
 }: {
   exercise: RankExerciseData;
   index: number;
   total: number;
+  showCount?: boolean;
   answer: string[] | undefined;
   onAnswer: (order: string[], score: number) => void;
 }) {
@@ -48,7 +50,13 @@ export function RankExerciseCard({
   const score = correctCount / solution.length;
 
   return (
-    <ExerciseShell kind="rank" index={index} total={total} passage={exercise.claim}>
+    <ExerciseShell
+      kind="rank"
+      index={index}
+      total={total}
+      showCount={showCount}
+      passage={exercise.claim}
+    >
       <ol className="mt-4 space-y-2">
         {shown.map((text, i) => {
           const rightSpot = answered && text === solution[i];

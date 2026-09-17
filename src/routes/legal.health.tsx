@@ -14,7 +14,8 @@ export const Route = createFileRoute("/legal/health")({
       { property: "og:title", content: "Health & Fitness Disclaimer — Lamppost" },
       {
         property: "og:description",
-        content: "Consult a doctor first. Generated training programs are not coaching or medical care.",
+        content:
+          "Consult a doctor first. Generated training programs are not coaching or medical care.",
       },
       { property: "og:type", content: "website" },
     ],

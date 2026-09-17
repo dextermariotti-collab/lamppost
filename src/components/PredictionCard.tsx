@@ -18,9 +18,7 @@ export function PredictionCard({ prediction, companion, choice, onPick }: Props)
 
   return (
     <section className="mt-4 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-      <p className="text-[11px] font-semibold text-primary">
-        Predict first
-      </p>
+      <p className="text-[11px] font-semibold text-primary">Predict first</p>
       <h2 className="mt-1 text-xl leading-snug">{prediction.question}</h2>
 
       <div className="mt-4 space-y-2">
@@ -55,7 +53,10 @@ export function PredictionCard({ prediction, companion, choice, onPick }: Props)
       {answered && (
         <div className="mt-4 flex items-end gap-2 animate-pop-in">
           <CompanionAvatar companion={companion} size={56} className="shrink-0" />
-          <div aria-live="polite" className="flex-1 rounded-2xl border-2 border-primary/30 bg-primary-soft px-4 py-2.5">
+          <div
+            aria-live="polite"
+            className="flex-1 rounded-2xl border-2 border-primary/30 bg-primary-soft px-4 py-2.5"
+          >
             <p className="text-[13px] font-semibold leading-snug text-foreground">
               {isCorrect ? "Called it!" : "So close — that's the usual trap."}
             </p>

@@ -81,7 +81,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Lamppost — Learn anything with AI" },
       {
         name: "description",
-        content: "Lamppost builds a personalized mini-course on any topic, with a learning path and quick quizzes.",
+        content:
+          "Lamppost builds a personalized mini-course on any topic, with a learning path and quick quizzes.",
       },
       { name: "author", content: "Lamppost" },
       { property: "og:site_name", content: "Lamppost" },

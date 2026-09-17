@@ -15,7 +15,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Create your Lamppost account to keep your companion, streak and AI-built courses on every device.",
+          "Create your Lamppost account to keep your companion, streak and training progress on every device.",
       },
       { property: "og:title", content: "Sign in — Lamppost" },
       { property: "og:description", content: "Keep your companion and streak across devices." },
@@ -90,7 +90,7 @@ function AuthScreen() {
           <CompanionAvatar companion={companion} size={116} animate />
           <h1 className="mt-3 text-2xl">Save {companionName(companion)}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Create an account and your companion, streak and courses follow you everywhere.
+            Create an account and your companion, streak and progress follow you everywhere.
           </p>
         </div>
 

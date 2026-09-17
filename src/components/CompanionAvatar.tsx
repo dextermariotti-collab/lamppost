@@ -30,25 +30,39 @@ export function CompanionAvatar({
   const activePose: CompanionPose = pose ?? (animate ? "happy" : "idle");
 
   const bodyMotion =
-    activePose === "cheer"
-      ? "animate-fox-hop"
-      : activePose === "idle"
-        ? ""
-        : "animate-fox-bob";
+    activePose === "cheer" ? "animate-fox-hop" : activePose === "idle" ? "" : "animate-fox-bob";
   const wrapperMotion = activePose === "peek" ? "animate-peek-in" : "";
 
   const eyes = () => {
     if (c.expression === "calm")
       return (
         <>
-          <path d="M35 47c2.6-3 7-3 9.6 0" stroke="#2c2440" strokeWidth="3" strokeLinecap="round" fill="none" />
-          <path d="M55.4 47c2.6-3 7-3 9.6 0" stroke="#2c2440" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <path
+            d="M35 47c2.6-3 7-3 9.6 0"
+            stroke="#2c2440"
+            strokeWidth="3"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <path
+            d="M55.4 47c2.6-3 7-3 9.6 0"
+            stroke="#2c2440"
+            strokeWidth="3"
+            strokeLinecap="round"
+            fill="none"
+          />
         </>
       );
     if (c.expression === "wink")
       return (
         <>
-          <path d="M35 48c2.6-3.4 7-3.4 9.6 0" stroke="#2c2440" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <path
+            d="M35 48c2.6-3.4 7-3.4 9.6 0"
+            stroke="#2c2440"
+            strokeWidth="3"
+            strokeLinecap="round"
+            fill="none"
+          />
           <circle cx="60" cy="47" r="4.4" fill="#2c2440" />
           <circle cx="61.6" cy="45.4" r="1.5" fill="#fff" />
         </>
@@ -65,12 +79,17 @@ export function CompanionAvatar({
   };
 
   const mouth = () => {
-    if (c.expression === "excited")
-      return <path d="M44 60q6 8 12 0q-6 4-12 0z" fill="#2c2440" />;
+    if (c.expression === "excited") return <path d="M44 60q6 8 12 0q-6 4-12 0z" fill="#2c2440" />;
     if (c.expression === "calm")
       return <path d="M45 60h10" stroke="#2c2440" strokeWidth="2.6" strokeLinecap="round" />;
     return (
-      <path d="M44.5 59c2.4 3.6 8.6 3.6 11 0" stroke="#2c2440" strokeWidth="2.8" strokeLinecap="round" fill="none" />
+      <path
+        d="M44.5 59c2.4 3.6 8.6 3.6 11 0"
+        stroke="#2c2440"
+        strokeWidth="2.8"
+        strokeLinecap="round"
+        fill="none"
+      />
     );
   };
 
@@ -133,7 +152,8 @@ export function CompanionAvatar({
           <path d="M50 55 44.5 62h11z" fill={p.accent} />
         </>
       );
-    if (species === "bot") return <rect x="30" y="36" width="40" height="28" rx="12" fill={p.soft} />;
+    if (species === "bot")
+      return <rect x="30" y="36" width="40" height="28" rx="12" fill={p.soft} />;
     return <ellipse cx="50" cy="58" rx="16" ry="12" fill={p.soft} />;
   };
 
@@ -177,7 +197,10 @@ export function CompanionAvatar({
     return (
       <>
         {/* tail, behind the body */}
-        <g className={activePose === "idle" ? "" : "animate-fox-tail"} style={{ transformOrigin: "70px 74px" }}>
+        <g
+          className={activePose === "idle" ? "" : "animate-fox-tail"}
+          style={{ transformOrigin: "70px 74px" }}
+        >
           <path
             d="M68 74c13 5 24-3 24-16 0-7-3-13-9-16 5 10 3 20-6 24-3 1.4-6 2-9 2z"
             fill={p.base}
@@ -186,7 +209,10 @@ export function CompanionAvatar({
         </g>
 
         {/* ears */}
-        <g className={activePose === "idle" ? "" : "animate-fox-ear"} style={{ transformOrigin: "50px 36px" }}>
+        <g
+          className={activePose === "idle" ? "" : "animate-fox-ear"}
+          style={{ transformOrigin: "50px 36px" }}
+        >
           <path d="M25 38 27 9c7 2 14 7 19 14z" fill={p.base} />
           <path d="M75 38 73 9c-7 2-14 7-19 14z" fill={p.base} />
           <path d="M31 33 32.6 18c4 1.8 7.4 4.6 10 8z" fill={p.soft} />
@@ -223,12 +249,30 @@ export function CompanionAvatar({
         <g className={blink} style={{ transformOrigin: "50px 46px" }}>
           {c.expression === "calm" ? (
             <>
-              <path d="M35 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
-              <path d="M55.2 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path
+                d="M35 46c2.8-3.4 7-3.4 9.8 0"
+                stroke={dark}
+                strokeWidth="3"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                d="M55.2 46c2.8-3.4 7-3.4 9.8 0"
+                stroke={dark}
+                strokeWidth="3"
+                strokeLinecap="round"
+                fill="none"
+              />
             </>
           ) : c.expression === "wink" ? (
             <>
-              <path d="M35 46c2.8-3.4 7-3.4 9.8 0" stroke={dark} strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path
+                d="M35 46c2.8-3.4 7-3.4 9.8 0"
+                stroke={dark}
+                strokeWidth="3"
+                strokeLinecap="round"
+                fill="none"
+              />
               <circle cx="60.2" cy="45.5" r={eyeR} fill={dark} />
               <circle cx="61.9" cy="43.7" r="1.7" fill="#fff" />
             </>
@@ -241,7 +285,6 @@ export function CompanionAvatar({
             </>
           )}
         </g>
-
 
         {/* blush */}
         <ellipse cx="33" cy="53" rx="4.6" ry="3" fill={p.accent} opacity="0.4" />

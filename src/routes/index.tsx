@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Zap } from "lucide-react";
-import { useEffect } from "react";
+import { ArrowRight, Flame, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ProgressRing } from "@/components/ProgressRing";
 import { ThinkingGraph } from "@/components/ThinkingGraph";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
@@ -16,7 +17,7 @@ import {
   unitById,
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
-import { useProgress } from "@/lib/progress";
+import { dayKey, useProgress } from "@/lib/progress";
 import { reviewUrgencyFor, useDueDrills } from "@/lib/review-drills";
 
 export const Route = createFileRoute("/")({
@@ -48,9 +49,15 @@ function Home() {
   // Makes sure the curriculum exists locally with its lesson titles.
   useCurriculumCourse();
 
-  // First run: introduce the app and let them pick a companion.
+  // First run: introduce the app and let them pick a companion. Nothing renders
+  // until that check has run, so a new visitor never sees home flash first.
+  const [gate, setGate] = useState<"checking" | "open">("checking");
   useEffect(() => {
-    if (!hasSeenOnboarding()) navigate({ to: "/onboarding", replace: true });
+    if (!hasSeenOnboarding()) {
+      navigate({ to: "/onboarding", replace: true });
+      return;
+    }
+    setGate("open");
   }, [navigate]);
 
   useEffect(() => {
@@ -59,14 +66,25 @@ function Home() {
 
   const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const { items: dueItems, total: dueTotal } = useDueDrills();
-  const { challenge, doneToday } = useDailyChallenge(completed);
+  const { challenge, doneToday: challengeDone } = useDailyChallenge(completed);
 
   const maxOverdue = dueItems[0]?.overdueDays ?? 0;
   const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
 
+  const doneToday = state.history[dayKey()] ?? 0;
+  const goalPct = Math.min(100, Math.round((doneToday / Math.max(state.dailyGoal, 1)) * 100));
+
   const nextIndex = nextLessonIndex(completed);
   const next = lessonAt(nextIndex);
   const finished = completed >= TOTAL_LESSONS;
+
+  if (gate === "checking") {
+    return (
+      <PhoneFrame className="graph-home" showNav={false}>
+        <div className="min-h-full" aria-busy="true" />
+      </PhoneFrame>
+    );
+  }
 
   return (
     <PhoneFrame className="graph-home">
@@ -90,6 +108,27 @@ function Home() {
             />
           </Link>
         </header>
+
+        <section className="mt-5 flex items-center gap-4 border-b border-border pb-5">
+          <ProgressRing pct={goalPct} size={64} stroke={7}>
+            <span className="text-sm font-bold text-foreground">
+              {Math.min(doneToday, state.dailyGoal)}/{state.dailyGoal}
+            </span>
+          </ProgressRing>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <Flame aria-hidden className="h-3.5 w-3.5 text-primary" />
+              <p className="text-sm font-bold text-foreground">
+                {state.streak} day{state.streak === 1 ? "" : "s"} in a row
+              </p>
+            </div>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {doneToday >= state.dailyGoal
+                ? "Daily goal met. Anything more is a bonus."
+                : `${state.dailyGoal - doneToday} more lesson${state.dailyGoal - doneToday === 1 ? "" : "s"} to hit today's goal.`}
+            </p>
+          </div>
+        </section>
 
         <section className="mt-5">
           <ThinkingGraph completed={completed} streak={state.streak} xp={state.xp} />
@@ -154,11 +193,11 @@ function Home() {
               className="mt-2 h-auto w-full justify-between gap-3 whitespace-normal rounded-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
             >
               <span className="min-w-0 text-sm font-normal leading-relaxed text-muted-foreground">
-                {doneToday
+                {challengeDone
                   ? "Done for today. A new one lands tomorrow."
                   : `One drill from ${challenge.unitTitle}. Keeps your streak alive.`}
               </span>
-              {!doneToday && <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              {!challengeDone && <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
             </Button>
           </section>
         )}

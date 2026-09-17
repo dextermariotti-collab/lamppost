@@ -19,7 +19,9 @@ import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ProgressRing } from "@/components/ProgressRing";
 import { StreakFreezeCard } from "@/components/StreakFreezeCard";
+import { CURRICULUM_SLUG } from "@/lib/curriculum";
 import { useMasteryAnalytics } from "@/lib/mastery";
+import { useDueDrills } from "@/lib/review-drills";
 import { dayKey, deriveInsights, tierFor, useProgress, type Celebration } from "@/lib/progress";
 
 export const Route = createFileRoute("/progress")({
@@ -64,8 +66,11 @@ function ProgressScreen() {
   }, [state.celebration, clearCelebration]);
 
   const insights = useMemo(() => deriveInsights(state), [state]);
+  const { total: dueTotal } = useDueDrills();
   const courses = Object.entries(state.courses);
-  const lessonsDone = courses.reduce((sum, [, c]) => sum + c.completed, 0);
+  // One source of truth: the curriculum's own completed count, the same number
+  // My Path and Home read (placement-unlocked lessons included).
+  const lessonsDone = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const sessionPct = Math.min(100, Math.round((insights.doneToday / state.dailyGoal) * 100));
   const sessionDone = insights.doneToday >= state.dailyGoal;
 
@@ -185,9 +190,14 @@ function ProgressScreen() {
             <p className="mt-1 text-sm font-semibold text-muted-foreground">
               {sessionDone
                 ? "Session complete. The streak is safe."
-                : `${state.dailyGoal - insights.doneToday} more review${
+                : `${state.dailyGoal - insights.doneToday} more lesson${
                     state.dailyGoal - insights.doneToday === 1 ? "" : "s"
                   } to close today out.`}
+            </p>
+            <p className="mt-1 text-sm font-semibold text-muted-foreground">
+              {dueTotal === 0
+                ? "Nothing due for review today."
+                : `${dueTotal} drill${dueTotal === 1 ? "" : "s"} due for review.`}
             </p>
             {sessionDone && (
               <span className="mt-2 inline-flex animate-pop-in items-center gap-1.5 rounded-full bg-success/12 px-2.5 py-1 text-[11px] font-extrabold text-success">

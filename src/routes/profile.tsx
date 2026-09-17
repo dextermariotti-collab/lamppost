@@ -69,7 +69,7 @@ function ProfileScreen() {
         {/* Identity */}
         <header className="flex items-center gap-3 pt-5">
           <Link
-            to="/onboarding"
+            to="/companion"
             aria-label="Change companion"
             className="flex flex-1 items-center gap-3 text-left"
           >
@@ -140,11 +140,7 @@ function ProfileScreen() {
                             : "bg-muted text-muted-foreground",
                         )}
                       >
-                        {unlocked ? (
-                          <Icon className="h-5 w-5" />
-                        ) : (
-                          <Lock className="h-4 w-4" />
-                        )}
+                        {unlocked ? <Icon className="h-5 w-5" /> : <Lock className="h-4 w-4" />}
                       </span>
                       <span
                         className={cn(
@@ -161,10 +157,7 @@ function ProfileScreen() {
         </section>
 
         {/* Friends */}
-        <Link
-          to="/friends"
-          className="mt-6 flex items-center gap-3 border-t border-border pt-4"
-        >
+        <Link to="/friends" className="mt-6 flex items-center gap-3 border-t border-border pt-4">
           <UserPlus className="h-5 w-5 text-primary" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold">Add friends</span>
@@ -203,7 +196,7 @@ function ProfileScreen() {
             value={`${state.dailyGoal} lesson${state.dailyGoal === 1 ? "" : "s"}`}
           />
           <SettingsRow
-            to="/onboarding"
+            to="/companion"
             icon={<Repeat className="h-5 w-5 text-muted-foreground" />}
             label="Change companion"
             value={companionName(companion)}
@@ -232,10 +225,7 @@ function ProfileScreen() {
             Sign out
           </button>
         ) : (
-          <Link
-            to="/auth"
-            className="mt-8 flex items-center gap-2 text-xs font-bold text-primary"
-          >
+          <Link to="/auth" className="mt-8 flex items-center gap-2 text-xs font-bold text-primary">
             <LogIn className="h-3.5 w-3.5" />
             Sign in to save your progress
             <Sparkles className="h-3.5 w-3.5" />
@@ -269,7 +259,9 @@ function BadgeDetail({ badge }: { badge: Badge }) {
       <span
         className={cn(
           "flex h-16 w-16 items-center justify-center rounded-full",
-          unlocked ? "bg-hero-gradient text-primary-foreground shadow-card" : "bg-muted text-muted-foreground",
+          unlocked
+            ? "bg-hero-gradient text-primary-foreground shadow-card"
+            : "bg-muted text-muted-foreground",
         )}
       >
         {unlocked ? <Icon className="h-7 w-7" /> : <Lock className="h-6 w-6" />}
@@ -299,15 +291,7 @@ function BadgeDetail({ badge }: { badge: Badge }) {
   );
 }
 
-function Stat({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
+function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1 px-2">
       {icon}

@@ -1,13 +1,6 @@
 import { useMemo } from "react";
 
-const COLORS = [
-  "bg-primary",
-  "bg-primary-glow",
-  "bg-success",
-  "bg-flame",
-  "bg-gem",
-  "bg-xp",
-];
+const COLORS = ["bg-primary", "bg-primary-glow", "bg-success", "bg-flame", "bg-gem", "bg-xp"];
 
 /** Lightweight CSS confetti burst. Mount it to fire; unmount to stop. */
 export function Confetti({ count = 28, big = false }: { count?: number; big?: boolean }) {

@@ -83,7 +83,11 @@ function SettingsScreen() {
           <>
             <section>
               <h2 className="text-sm font-bold">Appearance</h2>
-              <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-muted p-1" role="group" aria-label="Color theme">
+              <div
+                className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-muted p-1"
+                role="group"
+                aria-label="Color theme"
+              >
                 <Button
                   type="button"
                   variant={theme === "light" ? "default" : "ghost"}

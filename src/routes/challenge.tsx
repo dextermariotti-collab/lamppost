@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
+import { SocraticPopup } from "@/components/SocraticPopup";
+import type { Exercise } from "@/lib/exercises";
+
 import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
 import { CURRICULUM_SLUG } from "@/lib/curriculum";
-import { EXERCISE_LABEL } from "@/lib/exercises";
 import { useProgress } from "@/lib/progress";
 import { trackDrillResult } from "@/lib/review-drills";
 
@@ -41,17 +43,33 @@ function DailyChallengeScreen() {
   const { challenge, doneToday, lastCorrect, hydrated, complete } = useDailyChallenge(completed);
 
   const [result, setResult] = useState<boolean | null>(null);
+  /** True when the answer was given on this screen, so feedback is shown first. */
+  const [justAnswered, setJustAnswered] = useState(false);
+  const [wrapped, setWrapped] = useState(false);
+
   useEffect(() => {
     if (hydrated && doneToday && result === null) setResult(lastCorrect);
   }, [hydrated, doneToday, lastCorrect, result]);
 
   const seen = useMemo<number[]>(() => [], []);
   const finished = result !== null;
+  /** Show the done card once feedback has been read (or on a later visit). */
+  const showDone = finished && (wrapped || !justAnswered);
 
-  const handleAnswer = (score: number) => {
+  /** The answered drill, kept so the companion can ask a follow-up about it. */
+  const [answered, setAnswered] = useState<{
+    exercise: Exercise;
+    answer: unknown;
+    correct: boolean;
+  } | null>(null);
+  const [socraticDone, setSocraticDone] = useState(false);
+
+  const handleAnswer = (score: number, _variant: number, answer: unknown, exercise: Exercise) => {
     if (finished || !challenge) return;
     const correct = score >= 1;
     setResult(correct);
+    setJustAnswered(true);
+    setAnswered({ exercise, answer, correct });
     complete(correct);
     recordReview(correct);
     trackDrillResult(challenge.lessonId, challenge.kind, score);
@@ -94,12 +112,10 @@ function DailyChallengeScreen() {
 
         {challenge && (
           <>
-            <h1 className="mt-3 text-2xl leading-tight">{EXERCISE_LABEL[challenge.kind]}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {challenge.unitTitle} · {challenge.lessonTitle}
-            </p>
+            <h1 className="mt-3 text-2xl leading-tight">{challenge.lessonTitle}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{challenge.unitTitle}</p>
 
-            {doneToday && result !== null ? (
+            {showDone ? (
               <div className="mt-8 flex animate-pop-in flex-col items-center text-center">
                 <CompanionAvatar
                   companion={{ ...companion, expression: result ? "excited" : "calm" }}
@@ -124,14 +140,37 @@ function DailyChallengeScreen() {
                 </Button>
               </div>
             ) : (
-              <DrillVariant
-                lessonId={challenge.lessonId}
-                kind={challenge.kind}
-                seen={seen}
-                index={0}
-                total={1}
-                onAnswer={handleAnswer}
-              />
+              <>
+                <DrillVariant
+                  lessonId={challenge.lessonId}
+                  kind={challenge.kind}
+                  seen={seen}
+                  index={0}
+                  total={1}
+                  showCount={false}
+                  onAnswer={handleAnswer}
+                />
+                {finished && (
+                  <Button
+                    onClick={() => setWrapped(true)}
+                    className="mt-5 h-12 w-full animate-pop-in rounded-full bg-hero-gradient text-sm font-semibold shadow-card"
+                  >
+                    Finish challenge
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
+                {answered && !socraticDone && (
+                  <SocraticPopup
+                    companion={companion}
+                    lessonTitle={challenge.lessonTitle}
+                    objective={challenge.unitTitle}
+                    exercise={answered.exercise}
+                    answer={answered.answer}
+                    correct={answered.correct}
+                    onDismiss={() => setSocraticDone(true)}
+                  />
+                )}
+              </>
             )}
           </>
         )}
