@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChallengeRouteImport } from './routes/challenge'
+import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -50,6 +51,11 @@ const AuthRoute = AuthRouteImport.update({
 const ChallengeRoute = ChallengeRouteImport.update({
   id: '/challenge',
   path: '/challenge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanionRoute = CompanionRouteImport.update({
+  id: '/companion',
+  path: '/companion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
+  '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
   '/onboarding': typeof OnboardingRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
+  '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
   '/onboarding': typeof OnboardingRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
+  '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
   '/onboarding': typeof OnboardingRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/challenge'
+    | '/companion'
     | '/courses'
     | '/debates'
     | '/onboarding'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/challenge'
+    | '/companion'
     | '/courses'
     | '/debates'
     | '/onboarding'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/challenge'
+    | '/companion'
     | '/courses'
     | '/debates'
     | '/onboarding'
@@ -355,6 +367,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ChallengeRoute: typeof ChallengeRoute
+  CompanionRoute: typeof CompanionRoute
   CoursesRoute: typeof CoursesRoute
   DebatesRoute: typeof DebatesRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -402,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/challenge'
       fullPath: '/challenge'
       preLoaderRoute: typeof ChallengeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companion': {
+      id: '/companion'
+      path: '/companion'
+      fullPath: '/companion'
+      preLoaderRoute: typeof CompanionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -579,6 +599,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ChallengeRoute: ChallengeRoute,
+  CompanionRoute: CompanionRoute,
   CoursesRoute: CoursesRoute,
   DebatesRoute: DebatesRoute,
   OnboardingRoute: OnboardingRoute,
