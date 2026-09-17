@@ -66,7 +66,7 @@ function Home() {
 
   const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const { items: dueItems, total: dueTotal } = useDueDrills();
-  const { challenge, doneToday } = useDailyChallenge(completed);
+  const { challenge, doneToday: challengeDone } = useDailyChallenge(completed);
 
   const maxOverdue = dueItems[0]?.overdueDays ?? 0;
   const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
@@ -189,11 +189,11 @@ function Home() {
               className="mt-2 h-auto w-full justify-between gap-3 whitespace-normal rounded-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
             >
               <span className="min-w-0 text-sm font-normal leading-relaxed text-muted-foreground">
-                {doneToday
+                {challengeDone
                   ? "Done for today. A new one lands tomorrow."
                   : `One drill from ${challenge.unitTitle}. Keeps your streak alive.`}
               </span>
-              {!doneToday && <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              {!challengeDone && <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
             </Button>
           </section>
         )}
