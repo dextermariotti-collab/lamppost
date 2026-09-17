@@ -17,7 +17,7 @@ export function SortExerciseCard({
   exercise,
   index,
   total,
-  showCount,
+  showCount = true,
   answer,
   onAnswer,
 }: {

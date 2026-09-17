@@ -58,7 +58,7 @@ export async function seedPoolFromLesson(lessonId: string, exercises: Exercise[]
     lesson_id: lessonId,
     kind: exercise.kind,
     variant: ++next,
-    content: JSON.parse(JSON.stringify(exercise)) as unknown,
+    content: JSON.parse(JSON.stringify(exercise)),
     model: MODEL,
   }));
   if (rows.length === 0) return;
@@ -297,7 +297,7 @@ export async function generatePoolDrill(
         lesson_id: lessonId,
         kind,
         variant: max + 1,
-        content: JSON.parse(JSON.stringify(exercise)) as unknown,
+        content: JSON.parse(JSON.stringify(exercise)),
         model: MODEL,
       });
       return exercise;

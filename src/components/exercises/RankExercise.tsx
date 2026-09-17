@@ -19,7 +19,7 @@ export function RankExerciseCard({
   exercise,
   index,
   total,
-  showCount,
+  showCount = true,
   answer,
   onAnswer,
 }: {

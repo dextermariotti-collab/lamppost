@@ -39,7 +39,7 @@ export function ChoiceExercise({
   exercise,
   index,
   total,
-  showCount,
+  showCount = true,
   answer,
   onAnswer,
 }: {
