@@ -79,7 +79,11 @@ function Home() {
   const finished = completed >= TOTAL_LESSONS;
 
   if (gate === "checking") {
-    return <PhoneFrame className="graph-home" showNav={false} />;
+    return (
+      <PhoneFrame className="graph-home" showNav={false}>
+        <div className="min-h-full" aria-busy="true" />
+      </PhoneFrame>
+    );
   }
 
   return (
