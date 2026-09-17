@@ -293,7 +293,7 @@ function TimeStep({
             key={o.minutes}
             active={chosen === o.minutes}
             label={o.label}
-            blurb={`${o.goal} lesson${o.goal === 1 ? "" : "s"} a day`}
+            blurb={o.goal === 1 ? "One lesson most days" : `${o.goal} lessons a day`}
             onClick={() => setChosen(o.minutes)}
           />
         ))}

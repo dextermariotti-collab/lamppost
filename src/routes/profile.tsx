@@ -69,7 +69,7 @@ function ProfileScreen() {
         {/* Identity */}
         <header className="flex items-center gap-3 pt-5">
           <Link
-            to="/onboarding"
+            to="/companion"
             aria-label="Change companion"
             className="flex flex-1 items-center gap-3 text-left"
           >
@@ -196,7 +196,7 @@ function ProfileScreen() {
             value={`${state.dailyGoal} lesson${state.dailyGoal === 1 ? "" : "s"}`}
           />
           <SettingsRow
-            to="/onboarding"
+            to="/companion"
             icon={<Repeat className="h-5 w-5 text-muted-foreground" />}
             label="Change companion"
             value={companionName(companion)}

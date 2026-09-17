@@ -43,10 +43,24 @@ export const MOTIVATIONS: { id: Motivation; label: string; blurb: string; reacti
   },
 ];
 
+/**
+ * A full lesson (concept, drills and the written task) runs about 8-10 minutes,
+ * so the labels promise what the time actually buys.
+ */
 export const TIME_OPTIONS: { minutes: number; goal: number; label: string; reaction: string }[] = [
-  { minutes: 5, goal: 1, label: "5 minutes", reaction: "Small and daily beats big and rare." },
-  { minutes: 10, goal: 2, label: "10 minutes", reaction: "That's a real habit. Nice." },
-  { minutes: 20, goal: 4, label: "20 minutes", reaction: "Ambitious. I'll hold you to it." },
+  {
+    minutes: 5,
+    goal: 1,
+    label: "About 5 minutes",
+    reaction: "Small and daily beats big and rare.",
+  },
+  { minutes: 15, goal: 2, label: "About 15 minutes", reaction: "That's a real habit. Nice." },
+  {
+    minutes: 25,
+    goal: 3,
+    label: "About 25 minutes",
+    reaction: "Ambitious. I'll hold you to it.",
+  },
 ];
 
 export type Intent = {
