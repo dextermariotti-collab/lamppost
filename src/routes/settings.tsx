@@ -11,6 +11,7 @@ import { LEGAL_DOCS, PRIVACY_CONTACT } from "@/lib/legal";
 import { updateMyProfile } from "@/lib/profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
+import { MOTIVATIONS, readIntent, saveIntent, type Motivation } from "@/lib/onboarding";
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 
@@ -38,6 +39,8 @@ function SettingsScreen() {
   const refresh = useRefreshAccount();
   const navigate = useNavigate();
   const { state, setDailyGoal } = useProgress();
+  const [motivation, setMotivation] = useState<Motivation | null>(null);
+  useEffect(() => setMotivation(readIntent().motivation), []);
   const { theme, setTheme } = useTheme();
 
   const [name, setName] = useState("");
@@ -167,6 +170,42 @@ function SettingsScreen() {
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Lessons a day. Hitting it every day for a week earns the perfect week badge.
               </p>
+            </section>
+
+            <section className="mt-8">
+              <h2 className="text-sm font-bold">What you're training for</h2>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Drills use examples from the situations you care about.
+              </p>
+              <ul className="mt-3 space-y-2">
+                {MOTIVATIONS.map((option) => (
+                  <li key={option.id}>
+                    <button
+                      onClick={() => {
+                        saveIntent({ motivation: option.id });
+                        setMotivation(option.id);
+                        void save({ goal: option.id });
+                      }}
+                      className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-bold shadow-soft ${
+                        motivation === option.id
+                          ? "bg-hero-gradient text-primary-foreground"
+                          : "bg-card text-foreground"
+                      }`}
+                    >
+                      {option.label}
+                      <span
+                        className={`mt-0.5 block text-[11px] font-semibold ${
+                          motivation === option.id
+                            ? "text-primary-foreground/80"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {option.blurb}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </section>
 
             <section className="mt-8">

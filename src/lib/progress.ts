@@ -4,6 +4,7 @@ import { getMyProfile, syncProgress } from "./profile.functions";
 import { argumentXpFor } from "./exercises";
 
 const KEY = "lamppost-progress-v1";
+const PROGRESS_EVENT = "lamppost-progress-change";
 
 export type Celebration = {
   kind: "lesson" | "streak" | "mastery";
@@ -183,9 +184,18 @@ export function useProgress() {
   const lastSynced = useRef("");
   const pulled = useRef<string | null>(null);
 
+  // Every screen that reads progress shares one source of truth: writes from any
+  // hook instance are broadcast so no screen shows stale XP, gems or lessons.
   useEffect(() => {
-    setState(read());
+    const sync = () => setState(read());
+    sync();
     setHydrated(true);
+    window.addEventListener(PROGRESS_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PROGRESS_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
 
   const update = useCallback((fn: (prev: ProgressState) => ProgressState) => {
@@ -193,6 +203,7 @@ export function useProgress() {
       const next = fn(prev);
       try {
         window.localStorage.setItem(KEY, JSON.stringify(next));
+        window.dispatchEvent(new Event(PROGRESS_EVENT));
       } catch {
         /* ignore */
       }

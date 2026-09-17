@@ -8,7 +8,9 @@ import { useEffect, useState } from "react";
 
 const KEY = "lamppost-intent-v1";
 
-export type Motivation = "debate" | "school" | "decisions" | "misinformation" | "work";
+export const MOTIVATION_IDS = ["debate", "school", "decisions", "misinformation", "work"] as const;
+
+export type Motivation = (typeof MOTIVATION_IDS)[number];
 
 export const MOTIVATIONS: { id: Motivation; label: string; blurb: string; reaction: string }[] = [
   {

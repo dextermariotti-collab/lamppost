@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Flame, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { skillsToPractise } from "@/lib/rating";
 import { Button } from "@/components/ui/button";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -73,6 +74,13 @@ function Home() {
 
   const doneToday = state.history[dayKey()] ?? 0;
   const goalPct = Math.min(100, Math.round((doneToday / Math.max(state.dailyGoal, 1)) * 100));
+
+  // One-line reason for the recommendation, from the learner's own drill history.
+  const [recommendation, setRecommendation] = useState<{ reason: string } | null>(null);
+  useEffect(() => {
+    const top = skillsToPractise(completed)[0];
+    setRecommendation(top ? { reason: top.reason } : null);
+  }, [completed]);
 
   const nextIndex = nextLessonIndex(completed);
   const next = lessonAt(nextIndex);
@@ -161,6 +169,7 @@ function Home() {
           </Button>
           <p className="mt-2 text-xs text-muted-foreground">
             Lesson {Math.min(completed + 1, TOTAL_LESSONS)} of {TOTAL_LESSONS}
+            {recommendation ? ` · ${recommendation.reason}` : ""}
           </p>
         </section>
 

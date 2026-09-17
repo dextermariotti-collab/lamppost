@@ -10,11 +10,13 @@ const GradeInput = z.object({
   lessonId: z.string().min(1),
   lessonTitle: z.string().min(1),
   objective: z.string().min(1),
-  taskType: z.enum(["restate", "case", "critique"]),
+  taskType: z.enum(["restate", "case", "critique", "testable", "steelmanWrite"]),
   passage: z.string().min(1).max(4000),
   prompt: z.string().min(1),
   answer: z.string().min(1).max(4000),
   attempt: z.number().int().min(1).max(2),
+  /** Rubric criterion this learner is weakest on, so feedback leans on it. */
+  focus: z.string().max(40).nullish(),
 });
 
 export type GradeResult =
@@ -81,7 +83,12 @@ export const gradeArgument = createServerFn({ method: "POST" })
     if (!screened.allowed) return { ok: false, reason: screened.message, blocked: true };
     const task = WRITTEN_TASKS[data.taskType];
     const words = data.answer.trim().split(/\s+/).length;
-    const minWords = data.taskType === "restate" ? 5 : data.taskType === "critique" ? 15 : 25;
+    const minWords =
+      data.taskType === "restate" || data.taskType === "testable"
+        ? 5
+        : data.taskType === "critique"
+          ? 15
+          : 25;
     if (words < minWords) {
       return {
         ok: false,

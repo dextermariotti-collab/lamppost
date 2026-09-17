@@ -34,6 +34,19 @@ For each drill, decide whether ALL of these hold:
    their own justification inside them ("because…", "since…", "which shows…", "…was assumed, not
    created"). Fail the drill if the keyed option can be identified from its wording, its length or its
    extra detail rather than from reasoning about the material.
+7. THE KEYED OPTION DOES NOT REUSE THE CONCEPT CARD'S DISTINCTIVE WORDING. If the card's phrasing is
+   quoted back in the correct option, the drill is a matching exercise, not reasoning — fail it.
+8. DISTRACTORS ARE REAL MISTAKES a thoughtful person would make on this material: a weaker but
+   tempting diagnosis, the popular-but-wrong answer, or a true statement that isn't what was asked.
+   Fail any drill with an obviously silly or throwaway option.
+9. THE DRILL TESTS THIS LESSON'S KEY IDEA AND ITS NAMED TRAP, not critical thinking in general.
+10. For a "claim" drill, fail it if the keyed sentence is simply the last sentence of the passage AND
+   nothing else in the passage makes it the conclusion — position must not be the giveaway.
+11. For a "predict" drill, the answer must follow from a genuinely well-established finding or be
+   computable from the scenario. Fail anything that asks the learner to guess how hypothetical
+   people reacted.
+
+
 
 
 Reply with ONLY minified JSON:
@@ -48,25 +61,52 @@ Never fail a drill for missing fields that its type does not have.
 
 ${CONTENT_POLICY_RULES}`;
 
-export function validationPrompt(lesson: CurriculumLesson, exercises: Exercise[]) {
+function answerKey(exercise: Exercise) {
+  if ("correct" in exercise && typeof exercise.correct === "number") {
+    return `Answer key: option index ${exercise.correct} — "${exercise.options[exercise.correct]}"`;
+  }
+  switch (exercise.kind) {
+    case "rank":
+      return "Answer key: the items as listed, strongest evidence first.";
+    case "order":
+      return "Answer key: the cards as listed, in the correct sequence.";
+    case "sort":
+      return "Answer key: the bucket named on each statement.";
+    case "highlight":
+      return `Answer key: token indexes ${exercise.targets.join(", ")} must be tapped.`;
+    case "numeric":
+      return `Answer key: ${exercise.answer} (tolerance ${exercise.tolerance}).`;
+    case "slider":
+      return `Answer key: confidence should move ${exercise.direction} by about ${exercise.size} points.`;
+    default:
+      return "Answer key: as given in the JSON.";
+  }
+}
+
+export function validationPrompt(
+  lesson: CurriculumLesson,
+  exercises: Exercise[],
+  conceptBody?: string,
+) {
   const drills = exercises
     .map((exercise, index) => {
-      const key =
-        "correct" in exercise && typeof exercise.correct === "number"
-          ? `Answer key: option index ${exercise.correct} — "${exercise.options[exercise.correct]}"`
-          : exercise.kind === "rank"
-            ? "Answer key: the items as listed, strongest evidence first."
-            : "Answer key: the bucket named on each statement.";
+      const instruction =
+        "question" in exercise && exercise.question
+          ? exercise.question
+          : EXERCISE_QUESTION[exercise.kind];
       return `--- drill index ${index}
-Type: ${EXERCISE_LABEL[exercise.kind]} — instruction shown to learner: "${EXERCISE_QUESTION[exercise.kind]}"
-${key}
+Type: ${EXERCISE_LABEL[exercise.kind]} — instruction shown to learner: "${instruction}"
+${answerKey(exercise)}
 JSON: ${JSON.stringify(exercise)}`;
     })
     .join("\n");
 
   return `Lesson: "${lesson.title}"
 Lesson skill: ${lesson.objective}
+KEY IDEA the lesson teaches: ${lesson.keyIdea}
+THE TRAP every drill must test: ${lesson.trap}
 The curriculum deliberately assigned these drill types to this lesson: ${lesson.drills.join(", ")}.
+${conceptBody ? `Concept card shown before the drills (its wording must NOT be reused in a keyed option):\n"${conceptBody}"` : ""}
 
 ${drills}
 

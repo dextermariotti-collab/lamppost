@@ -13,6 +13,7 @@ import { useDailyChallenge } from "@/lib/challenge";
 import { CURRICULUM_SLUG } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
 import { trackDrillResult } from "@/lib/review-drills";
+import { recordDrillOutcome } from "@/lib/rating";
 
 export const Route = createFileRoute("/challenge")({
   head: () => ({
@@ -64,7 +65,13 @@ function DailyChallengeScreen() {
   } | null>(null);
   const [socraticDone, setSocraticDone] = useState(false);
 
-  const handleAnswer = (score: number, _variant: number, answer: unknown, exercise: Exercise) => {
+  const handleAnswer = (
+    score: number,
+    _variant: number,
+    answer: unknown,
+    exercise: Exercise,
+    difficulty: number,
+  ) => {
     if (finished || !challenge) return;
     const correct = score >= 1;
     setResult(correct);
@@ -73,6 +80,7 @@ function DailyChallengeScreen() {
     complete(correct);
     recordReview(correct);
     trackDrillResult(challenge.lessonId, challenge.kind, score);
+    recordDrillOutcome(challenge.lessonId, { score, difficulty });
   };
 
   return (
