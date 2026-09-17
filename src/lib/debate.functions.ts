@@ -315,6 +315,7 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
         passage: typed.passage,
         prompt: `${typed.prompt} You are arguing ${side.toUpperCase()} the motion.`,
         answer: data.answer.trim(),
+        attempt: 1,
       }),
       maxRetries: 1,
     }).text;
