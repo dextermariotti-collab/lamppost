@@ -52,7 +52,9 @@ function PremiumScreen() {
 
   useEffect(() => {
     if (!userId) return;
-    void fetchAccess({}).then(setAccess).catch(() => undefined);
+    void fetchAccess({})
+      .then(setAccess)
+      .catch(() => undefined);
   }, [userId, fetchAccess]);
 
   const subscribed = access?.subscribed ?? false;
@@ -77,9 +79,7 @@ function PremiumScreen() {
         </div>
 
         <section className="mt-6 rounded-3xl bg-card p-5 shadow-card">
-          <p className="text-[11px] font-semibold text-muted-foreground">
-            Always free
-          </p>
+          <p className="text-[11px] font-semibold text-muted-foreground">Always free</p>
           <ul className="mt-3 space-y-2">
             {FREE.map((item) => (
               <li key={item} className="flex items-start gap-2.5 text-sm font-semibold">
@@ -94,9 +94,7 @@ function PremiumScreen() {
         </section>
 
         <section className="mt-4 rounded-3xl border-2 border-primary/40 bg-primary-soft p-5">
-          <p className="text-[11px] font-semibold text-primary">
-            With Practice
-          </p>
+          <p className="text-[11px] font-semibold text-primary">With Practice</p>
           <ul className="mt-3 space-y-2">
             {PAID.map((item) => (
               <li

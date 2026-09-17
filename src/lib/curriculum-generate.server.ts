@@ -26,9 +26,7 @@ export const isUsableLesson = (lesson: Lesson | undefined | null) =>
     lesson?.contentVersion === CONTENT_VERSION && lesson.exercises && lesson.exercises.length >= 3,
   );
 
-type Admin = Awaited<
-  typeof import("@/integrations/supabase/client.server")
->["supabaseAdmin"];
+type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
 async function admin(): Promise<Admin> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -68,15 +66,15 @@ export async function seedPoolFromLesson(lessonId: string, exercises: Exercise[]
 /** How many vetted drills exist per kind for a lesson. */
 export async function poolCounts(lessonId: string): Promise<Record<string, number>> {
   const db = await admin();
-  const rows = (await db.from("drill_variants").select("kind").eq("lesson_id", lessonId)).data ?? [];
+  const rows =
+    (await db.from("drill_variants").select("kind").eq("lesson_id", lessonId)).data ?? [];
   const counts: Record<string, number> = {};
   for (const row of rows) counts[row.kind] = (counts[row.kind] ?? 0) + 1;
   return counts;
 }
 
 export type GenerateResult =
-  | { ok: true; lesson: Lesson; cached: boolean }
-  | { ok: false; reason: string };
+  { ok: true; lesson: Lesson; cached: boolean } | { ok: false; reason: string };
 
 /**
  * Returns a validated lesson, generating and caching it if needed. Safe to call
@@ -107,9 +105,8 @@ export async function ensureLessonContent(
     normalizeExercise,
     extractJson,
   } = await import("./exercise-ai.server");
-  const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts, repairPrompt } = await import(
-    "./exercise-validate.server"
-  );
+  const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts, repairPrompt } =
+    await import("./exercise-validate.server");
 
   const gateway = createLovableAiGatewayProvider(key);
   const system = exerciseSystemPrompt(meta.drills, meta.written);
@@ -177,7 +174,9 @@ export async function ensureLessonContent(
         );
         if (!screenOutput(repair).allowed) break;
         const root = extractJson(repair);
-        const replacements = (Array.isArray(root?.["exercises"]) ? (root!["exercises"] as unknown[]) : [])
+        const replacements = (
+          Array.isArray(root?.["exercises"]) ? (root!["exercises"] as unknown[]) : []
+        )
           .map(normalizeExercise)
           .filter((e): e is Exercise => e !== null);
 
@@ -237,12 +236,10 @@ export async function generatePoolDrill(
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const { screenOutput } = await import("./moderation.server");
-    const { variantSystemPrompt, variantPrompt, normalizeExercise, extractJson } = await import(
-      "./exercise-ai.server"
-    );
-    const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } = await import(
-      "./exercise-validate.server"
-    );
+    const { variantSystemPrompt, variantPrompt, normalizeExercise, extractJson } =
+      await import("./exercise-ai.server");
+    const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } =
+      await import("./exercise-validate.server");
     const { describeExercise } = await import("./exercises");
 
     const db = await admin();

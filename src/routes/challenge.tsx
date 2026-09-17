@@ -75,7 +75,6 @@ function DailyChallengeScreen() {
     trackDrillResult(challenge.lessonId, challenge.kind, score);
   };
 
-
   return (
     <PhoneFrame>
       <div className="px-5 pb-10">
@@ -173,10 +172,8 @@ function DailyChallengeScreen() {
                 )}
               </>
             )}
-
           </>
         )}
-
       </div>
     </PhoneFrame>
   );

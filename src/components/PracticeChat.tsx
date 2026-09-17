@@ -246,9 +246,7 @@ export function PracticeChat({
 
       {phase === "closed" && close && (
         <div className="mt-4 animate-pop-in rounded-2xl bg-primary-soft p-4">
-          <p className="text-xs font-semibold text-primary">
-            {VERDICT_COPY[close.verdict].label}
-          </p>
+          <p className="text-xs font-semibold text-primary">{VERDICT_COPY[close.verdict].label}</p>
           <p className="mt-1 text-sm font-semibold text-accent-foreground">
             {VERDICT_COPY[close.verdict].blurb}
           </p>
@@ -309,9 +307,7 @@ const Card = ({ children }: { children: React.ReactNode }) => (
 
 const Heading = ({ name }: { name: string }) => (
   <div>
-    <p className="text-[11px] font-semibold text-primary">
-      Practice with {name}
-    </p>
+    <p className="text-[11px] font-semibold text-primary">Practice with {name}</p>
     <h3 className="mt-1 font-sans text-lg font-bold leading-snug">Explain it back</h3>
   </div>
 );

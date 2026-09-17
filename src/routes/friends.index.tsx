@@ -208,9 +208,9 @@ function FriendsScreen() {
               onClick={async () => {
                 if (!inviteLink) return;
                 if (typeof navigator !== "undefined" && navigator.share) {
-                  await navigator.share({ url: inviteLink, text: "Learn with me on Lamppost" }).catch(
-                    () => undefined,
-                  );
+                  await navigator
+                    .share({ url: inviteLink, text: "Learn with me on Lamppost" })
+                    .catch(() => undefined);
                 } else {
                   await navigator.clipboard?.writeText(inviteLink).catch(() => undefined);
                 }
@@ -330,7 +330,9 @@ function FriendsScreen() {
           ) : (data?.friends.length ?? 0) === 0 ? (
             <div className="mt-3 rounded-3xl bg-card p-5 text-center shadow-soft">
               <UserPlus className="mx-auto h-6 w-6 text-primary" />
-              <p className="mt-2 text-sm font-bold">Add friends to keep each other&apos;s streak alive</p>
+              <p className="mt-2 text-sm font-bold">
+                Add friends to keep each other&apos;s streak alive
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Search a handle above or send your invite link.
               </p>
@@ -373,12 +375,16 @@ function FriendsScreen() {
                       {shared === null ? (
                         <button
                           onClick={() =>
-                            void run(key, () => proposeSharedStreak({ data: { friendshipId: key } }))
+                            void run(key, () =>
+                              proposeSharedStreak({ data: { friendshipId: key } }),
+                            )
                           }
                           disabled={busy === key || atCap}
                           className="rounded-full bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
                         >
-                          {atCap ? `Max ${MAX_SHARED_STREAKS} shared streaks` : "Start a shared streak"}
+                          {atCap
+                            ? `Max ${MAX_SHARED_STREAKS} shared streaks`
+                            : "Start a shared streak"}
                         </button>
                       ) : shared.status === "pending" ? (
                         shared.proposedByMe ? (

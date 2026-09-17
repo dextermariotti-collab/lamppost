@@ -6,8 +6,7 @@ import type { Lesson } from "./courses";
 const Input = z.object({ lessonId: z.string().min(1) });
 
 export type LessonContentResult =
-  | { ok: true; lesson: Lesson; cached: boolean }
-  | { ok: false; reason: string };
+  { ok: true; lesson: Lesson; cached: boolean } | { ok: false; reason: string };
 
 /**
  * Fetches one curriculum lesson. Lessons are pre-generated and validated by the
@@ -21,9 +20,8 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
     const meta = LESSONS.find((l) => l.id === data.lessonId);
     if (!meta) return { ok: false, reason: "That lesson isn't part of the curriculum." };
 
-    const { readCachedLesson, isUsableLesson, ensureLessonContent } = await import(
-      "./curriculum-generate.server"
-    );
+    const { readCachedLesson, isUsableLesson, ensureLessonContent } =
+      await import("./curriculum-generate.server");
 
     const cached = await readCachedLesson(meta.id);
     if (isUsableLesson(cached)) return { ok: true, lesson: cached!, cached: true };

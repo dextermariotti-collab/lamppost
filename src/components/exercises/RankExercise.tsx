@@ -50,7 +50,13 @@ export function RankExerciseCard({
   const score = correctCount / solution.length;
 
   return (
-    <ExerciseShell kind="rank" index={index} total={total} showCount={showCount} passage={exercise.claim}>
+    <ExerciseShell
+      kind="rank"
+      index={index}
+      total={total}
+      showCount={showCount}
+      passage={exercise.claim}
+    >
       <ol className="mt-4 space-y-2">
         {shown.map((text, i) => {
           const rightSpot = answered && text === solution[i];

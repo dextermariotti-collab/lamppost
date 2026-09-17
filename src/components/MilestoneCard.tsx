@@ -27,9 +27,7 @@ export function MilestoneCard({
             <X className="h-4 w-4" />
           </button>
 
-          <p className="text-[10px] font-semibold opacity-80">
-            Lamppost
-          </p>
+          <p className="text-[10px] font-semibold opacity-80">Lamppost</p>
 
           <div
             aria-hidden

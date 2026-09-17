@@ -54,7 +54,13 @@ export function ChoiceExercise({
   const correct = answer === exercise.correct;
 
   return (
-    <ExerciseShell kind={exercise.kind} index={index} total={total} showCount={showCount} passage={passageFor(exercise)}>
+    <ExerciseShell
+      kind={exercise.kind}
+      index={index}
+      total={total}
+      showCount={showCount}
+      passage={passageFor(exercise)}
+    >
       <div className="mt-4 space-y-2">
         {exercise.options.map((option, i) => (
           <OptionButton

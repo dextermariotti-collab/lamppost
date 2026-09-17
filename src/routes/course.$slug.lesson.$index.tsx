@@ -88,7 +88,6 @@ function LessonScreen() {
     setSkippedWriting(false);
   }, [index]);
 
-
   // Old topic courses no longer exist: send any other slug to the curriculum.
   useEffect(() => {
     if (slugParam !== CURRICULUM_SLUG) {
@@ -208,9 +207,7 @@ function LessonScreen() {
     const scores = exercises.map((_, i) => attempts[i]?.score ?? 0);
     const answeredCount = exercises.filter((_, i) => attempts[i] !== undefined).length;
     const accuracy =
-      answeredCount > 0
-        ? Math.round((scores.reduce((a, b) => a + b, 0) / answeredCount) * 100)
-        : 0;
+      answeredCount > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / answeredCount) * 100) : 0;
     const xpEarned = Math.max(state.xp - xpAtStart.current, 0);
     const doneToday = state.history[dayKey()] ?? 0;
     const goal = state.dailyGoal;
@@ -319,7 +316,6 @@ function LessonScreen() {
       </PhoneFrame>
     );
   }
-
 
   return (
     <PhoneFrame showNav={false}>

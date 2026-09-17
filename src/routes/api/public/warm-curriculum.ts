@@ -39,8 +39,13 @@ export const Route = createFileRoute("/api/public/warm-curriculum")({
         if (!parsed.success) return new Response("Bad request", { status: 400 });
         const { limit, force, extraDrills } = parsed.data;
 
-        const { ensureLessonContent, readCachedLesson, isUsableLesson, poolCounts, generatePoolDrill } =
-          await import("@/lib/curriculum-generate.server");
+        const {
+          ensureLessonContent,
+          readCachedLesson,
+          isUsableLesson,
+          poolCounts,
+          generatePoolDrill,
+        } = await import("@/lib/curriculum-generate.server");
 
         const done: string[] = [];
         const failed: string[] = [];
