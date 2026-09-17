@@ -71,17 +71,23 @@ function LessonScreen() {
   /** Page 0 = concept card, 1..n = exercises, then written argument, then summary. */
   const [page, setPage] = useState(0);
   const [completing, setCompleting] = useState(false);
+  /** True once the celebration has played and the results screen is showing. */
+  const [finished, setFinished] = useState(false);
   const [socratic, setSocratic] = useState<{ index: number; correct: boolean } | null>(null);
   const [argumentGrade, setArgumentGrade] = useState<number | null>(null);
   const [skippedWriting, setSkippedWriting] = useState(false);
+  /** XP when the lesson opened, so the results screen can show what was earned. */
+  const xpAtStart = useRef(state.xp);
 
   useEffect(() => {
     setPage(0);
     setCompleting(false);
+    setFinished(false);
     setSocratic(null);
     setArgumentGrade(null);
     setSkippedWriting(false);
   }, [index]);
+
 
   // Old topic courses no longer exist: send any other slug to the curriculum.
   useEffect(() => {
