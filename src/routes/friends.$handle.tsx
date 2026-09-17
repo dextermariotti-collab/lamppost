@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Flame, Loader2, Lock, Trophy, UserMinus, UserPlus, Zap } from "lucide-react";
+import { Flame, Loader2, Lock, Swords, Trophy, UserMinus, UserPlus, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -9,6 +9,7 @@ import { achievementIcon } from "@/lib/achievements";
 import { useAccount, useRefreshAccount } from "@/lib/account";
 import { normalizeCompanion } from "@/lib/companions";
 import { monthYear } from "@/lib/days";
+import { challengeToDebate } from "@/lib/debate.functions";
 import { getFriendProfile, removeFriend, sendFriendRequest } from "@/lib/friends.functions";
 import { leagueFor } from "@/lib/progress";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ function FriendProfileScreen() {
   const refresh = useRefreshAccount();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [debateError, setDebateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (sessionReady && !signedIn) navigate({ to: "/auth", replace: true });
