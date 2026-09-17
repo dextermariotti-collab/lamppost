@@ -19,6 +19,7 @@ import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ProgressRing } from "@/components/ProgressRing";
 import { StreakFreezeCard } from "@/components/StreakFreezeCard";
+import { useMasteryAnalytics } from "@/lib/mastery";
 import { dayKey, deriveInsights, tierFor, useProgress, type Celebration } from "@/lib/progress";
 
 export const Route = createFileRoute("/progress")({
@@ -46,6 +47,8 @@ function ProgressScreen() {
   const { state, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
+  const analytics = useMasteryAnalytics();
+
 
   // Consume any queued celebration from a just-finished lesson or quiz.
   useEffect(() => {
