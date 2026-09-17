@@ -400,3 +400,18 @@ function Tile({
     </div>
   );
 }
+
+/** Two-tone bar used by the calibration chart. */
+function Bar({ pct, tone, label }: { pct: number; tone: "primary" | "muted"; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-11 text-[10px] font-bold text-muted-foreground">{label}</span>
+      <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+        <span
+          className={`block h-full rounded-full ${tone === "primary" ? "bg-primary" : "bg-foreground/25"}`}
+          style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+        />
+      </span>
+    </div>
+  );
+}
