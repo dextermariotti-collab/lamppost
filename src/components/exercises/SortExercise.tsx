@@ -17,12 +17,14 @@ export function SortExerciseCard({
   exercise,
   index,
   total,
+  showCount,
   answer,
   onAnswer,
 }: {
   exercise: SortExerciseData;
   index: number;
   total: number;
+  showCount?: boolean;
   answer: SortAnswer | undefined;
   onAnswer: (answer: SortAnswer, score: number) => void;
 }) {
@@ -33,7 +35,7 @@ export function SortExerciseCard({
   const correctCount = exercise.statements.filter((s, i) => shown[String(i)] === s.bucket).length;
 
   return (
-    <ExerciseShell kind="sort" index={index} total={total}>
+    <ExerciseShell kind="sort" index={index} total={total} showCount={showCount}>
       <p className="mt-3 text-[13px] font-semibold text-muted-foreground">
         A fact can be checked, an opinion is a preference, a value says what ought to matter.
       </p>
