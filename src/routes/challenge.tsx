@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
 import { CURRICULUM_SLUG } from "@/lib/curriculum";
-import { EXERCISE_LABEL } from "@/lib/exercises";
 import { useProgress } from "@/lib/progress";
 import { trackDrillResult } from "@/lib/review-drills";
 
