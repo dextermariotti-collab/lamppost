@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as DebatesRouteImport } from './routes/debates'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -20,6 +21,7 @@ import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as DebateIdRouteImport } from './routes/debate.$id'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsHandleRouteImport } from './routes/friends.$handle'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
@@ -52,6 +54,11 @@ const ChallengeRoute = ChallengeRouteImport.update({
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DebatesRoute = DebatesRouteImport.update({
+  id: '/debates',
+  path: '/debates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -87,6 +94,11 @@ const ScheduleRoute = ScheduleRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DebateIdRoute = DebateIdRouteImport.update({
+  id: '/debate/$id',
+  path: '/debate/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FriendsIndexRoute = FriendsIndexRouteImport.update({
@@ -160,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
   '/courses': typeof CoursesRoute
+  '/debates': typeof DebatesRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -167,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/debate/$id': typeof DebateIdRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
@@ -186,6 +200,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
   '/courses': typeof CoursesRoute
+  '/debates': typeof DebatesRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -193,6 +208,7 @@ export interface FileRoutesByTo {
   '/review': typeof ReviewRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/debate/$id': typeof DebateIdRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
@@ -213,6 +229,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
   '/courses': typeof CoursesRoute
+  '/debates': typeof DebatesRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -220,6 +237,7 @@ export interface FileRoutesById {
   '/review': typeof ReviewRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/debate/$id': typeof DebateIdRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
   '/legal/ai-content': typeof LegalAiContentRoute
@@ -241,6 +259,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/challenge'
     | '/courses'
+    | '/debates'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -248,6 +267,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/schedule'
     | '/settings'
+    | '/debate/$id'
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
@@ -267,6 +287,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/challenge'
     | '/courses'
+    | '/debates'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -274,6 +295,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/schedule'
     | '/settings'
+    | '/debate/$id'
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
@@ -293,6 +315,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/challenge'
     | '/courses'
+    | '/debates'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -300,6 +323,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/schedule'
     | '/settings'
+    | '/debate/$id'
     | '/friends/$handle'
     | '/invite/$code'
     | '/legal/ai-content'
@@ -320,6 +344,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ChallengeRoute: typeof ChallengeRoute
   CoursesRoute: typeof CoursesRoute
+  DebatesRoute: typeof DebatesRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
@@ -327,6 +352,7 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
+  DebateIdRoute: typeof DebateIdRoute
   FriendsHandleRoute: typeof FriendsHandleRoute
   InviteCodeRoute: typeof InviteCodeRoute
   LegalAiContentRoute: typeof LegalAiContentRoute
@@ -370,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/courses'
       fullPath: '/courses'
       preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/debates': {
+      id: '/debates'
+      path: '/debates'
+      fullPath: '/debates'
+      preLoaderRoute: typeof DebatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -419,6 +452,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/debate/$id': {
+      id: '/debate/$id'
+      path: '/debate/$id'
+      fullPath: '/debate/$id'
+      preLoaderRoute: typeof DebateIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/friends/': {
@@ -520,6 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ChallengeRoute: ChallengeRoute,
   CoursesRoute: CoursesRoute,
+  DebatesRoute: DebatesRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
@@ -527,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
+  DebateIdRoute: DebateIdRoute,
   FriendsHandleRoute: FriendsHandleRoute,
   InviteCodeRoute: InviteCodeRoute,
   LegalAiContentRoute: LegalAiContentRoute,
