@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
+import { SocraticPopup } from "@/components/SocraticPopup";
+import type { Exercise } from "@/lib/exercises";
+
 import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
