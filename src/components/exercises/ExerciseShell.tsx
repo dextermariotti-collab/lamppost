@@ -7,6 +7,7 @@ export function ExerciseShell({
   kind,
   index,
   total,
+  showCount = true,
   passage,
   children,
   footer,
@@ -14,6 +15,8 @@ export function ExerciseShell({
   kind: ExerciseKind;
   index: number;
   total: number;
+  /** Single-drill screens hide the counter so it isn't shown twice. */
+  showCount?: boolean;
   /** The argument, scenario or claim under examination. */
   passage?: ReactNode;
   children: ReactNode;
@@ -23,10 +26,13 @@ export function ExerciseShell({
     <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[11px] font-semibold text-primary">{EXERCISE_LABEL[kind]}</p>
-        <p className="text-[11px] font-semibold text-muted-foreground">
-          {index + 1} of {total}
-        </p>
+        {showCount && total > 1 ? (
+          <p className="text-[11px] font-semibold text-muted-foreground">
+            {index + 1} of {total}
+          </p>
+        ) : null}
       </div>
+
       <h2 className="mt-1 text-xl leading-snug">{EXERCISE_QUESTION[kind]}</h2>
       {passage ? (
         <div className="mt-4 rounded-2xl bg-primary-soft p-4 text-[15px] font-semibold leading-relaxed text-accent-foreground">
