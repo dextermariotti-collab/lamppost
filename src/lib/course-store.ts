@@ -16,6 +16,25 @@ function readStore(): Store {
   }
 }
 
+/**
+ * Change notifications are deferred and de-duplicated.
+ *
+ * Dispatching synchronously from inside `saveCourse` meant a listener that
+ * itself normalised and re-saved the course re-entered `saveCourse` on the same
+ * call stack — one blip of disagreement between two writers was enough to
+ * recurse until the stack blew up. A queued, guarded notification keeps writers
+ * and readers on separate turns of the event loop.
+ */
+let notifyQueued = false;
+function notify() {
+  if (typeof window === "undefined" || notifyQueued) return;
+  notifyQueued = true;
+  window.setTimeout(() => {
+    notifyQueued = false;
+    window.dispatchEvent(new Event(EVENT));
+  }, 0);
+}
+
 export function saveCourse(course: Course) {
   if (typeof window === "undefined") return;
   try {
@@ -25,7 +44,7 @@ export function saveCourse(course: Course) {
     if (store[course.slug] && JSON.stringify(store[course.slug]) === serialized) return;
     const next = { ...store, [course.slug]: course };
     window.localStorage.setItem(KEY, JSON.stringify(next));
-    window.dispatchEvent(new Event(EVENT));
+    notify();
   } catch {
     /* ignore */
   }
