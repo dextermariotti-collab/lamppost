@@ -9,12 +9,15 @@ export function ExerciseRunner({
   exercise,
   index,
   total,
+  showCount = true,
   answer,
   onAnswer,
 }: {
   exercise: Exercise;
   index: number;
   total: number;
+  /** Single-drill screens carry their own header, so the counter is hidden. */
+  showCount?: boolean;
   answer: unknown;
   onAnswer: (answer: unknown, score: number) => void;
 }) {
@@ -28,6 +31,7 @@ export function ExerciseRunner({
           exercise={exercise}
           index={index}
           total={total}
+          showCount={showCount}
           answer={typeof answer === "number" ? answer : undefined}
           onAnswer={onAnswer}
         />
@@ -38,6 +42,7 @@ export function ExerciseRunner({
           exercise={exercise}
           index={index}
           total={total}
+          showCount={showCount}
           answer={(answer as PredictAnswer | undefined) ?? undefined}
           onAnswer={onAnswer}
         />
@@ -48,6 +53,7 @@ export function ExerciseRunner({
           exercise={exercise}
           index={index}
           total={total}
+          showCount={showCount}
           answer={Array.isArray(answer) ? (answer as string[]) : undefined}
           onAnswer={onAnswer}
         />
@@ -58,6 +64,7 @@ export function ExerciseRunner({
           exercise={exercise}
           index={index}
           total={total}
+          showCount={showCount}
           answer={(answer as SortAnswer | undefined) ?? undefined}
           onAnswer={onAnswer}
         />
