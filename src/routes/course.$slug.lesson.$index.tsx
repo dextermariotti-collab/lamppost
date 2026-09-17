@@ -156,18 +156,12 @@ function LessonScreen() {
   };
 
   const finishLesson = () => {
-    if (completing) return;
+    if (completing || finished) return;
     completeLesson(slug, course.topic, lessonNumber - 1, course.lessons.length);
     setCompleting(true);
     window.setTimeout(() => {
-      if (lessonNumber < course.lessons.length) {
-        navigate({
-          to: "/course/$slug/lesson/$index",
-          params: { slug, index: String(lessonNumber + 1) },
-        });
-      } else {
-        navigate({ to: "/course/$slug", params: { slug } });
-      }
+      setCompleting(false);
+      setFinished(true);
     }, 1450);
   };
 
@@ -203,6 +197,123 @@ function LessonScreen() {
         : lessonNumber < course.lessons.length
           ? "Continue"
           : "Finish course";
+
+  if (finished) {
+    const scores = exercises.map((_, i) => attempts[i]?.score ?? 0);
+    const answeredCount = exercises.filter((_, i) => attempts[i] !== undefined).length;
+    const accuracy =
+      answeredCount > 0
+        ? Math.round((scores.reduce((a, b) => a + b, 0) / answeredCount) * 100)
+        : 0;
+    const xpEarned = Math.max(state.xp - xpAtStart.current, 0);
+    const doneToday = state.history[dayKey()] ?? 0;
+    const goal = state.dailyGoal;
+    const practised = Array.from(new Set(exercises.map((e) => EXERCISE_LABEL[e.kind])));
+    const nextMeta = lessonAt(lessonNumber);
+    const unitDone = !nextMeta || nextMeta.unitId !== meta?.unitId;
+    const unitTitle = unitById(meta?.unitId ?? "claims").title;
+
+    return (
+      <PhoneFrame showNav={false}>
+        <div className="px-5 py-8">
+          <div className="flex animate-pop-in flex-col items-center text-center">
+            <CompanionAvatar
+              companion={{ ...companion, expression: "excited" }}
+              size={unitDone ? 128 : 104}
+              pose="cheer"
+              animate
+            />
+            <p className="mt-4 text-sm font-bold text-primary">
+              {unitDone ? "Unit complete" : "Lesson complete"}
+            </p>
+            <h1 className="mt-2 text-3xl leading-tight">
+              {unitDone ? `${unitTitle} — done.` : "You trained your reasoning."}
+            </h1>
+            {unitDone && (
+              <p className="mt-2 max-w-[18rem] text-sm font-semibold text-muted-foreground">
+                Every lesson in this unit is behind you. The next unit builds straight on it.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            {[
+              { label: "Accuracy", value: `${accuracy}%` },
+              { label: "XP earned", value: `+${xpEarned}` },
+              { label: "Streak", value: `${state.streak}d` },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-2xl bg-card p-3 text-center shadow-soft">
+                <p className="text-xl font-bold text-foreground">{stat.value}</p>
+                <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
+            <p className="text-[11px] font-semibold text-primary">Today's goal</p>
+            <p className="mt-1 text-sm font-bold text-foreground">
+              {Math.min(doneToday, goal)} of {goal} lessons
+            </p>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-hero-gradient transition-all duration-700"
+                style={{ width: `${Math.min(100, Math.round((doneToday / goal) * 100))}%` }}
+              />
+            </div>
+            <p className="mt-4 text-[11px] font-semibold text-primary">What you practised</p>
+            <ul className="mt-2 space-y-1.5">
+              {practised.map((label) => (
+                <li key={label} className="flex items-center gap-2 text-[13px] font-semibold">
+                  <Check className="h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
+                  {label}
+                </li>
+              ))}
+              {written && (
+                <li className="flex items-center gap-2 text-[13px] font-semibold">
+                  <Check className="h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
+                  Writing an argument
+                </li>
+              )}
+            </ul>
+          </div>
+
+          <div className="mt-6 space-y-2">
+            {lessonNumber < course.lessons.length && (
+              <Button
+                onClick={() =>
+                  navigate({
+                    to: "/course/$slug/lesson/$index",
+                    params: { slug, index: String(lessonNumber + 1) },
+                  })
+                }
+                className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+              >
+                Continue to the next lesson
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              onClick={() => navigate({ to: "/" })}
+              className="h-12 w-full rounded-full text-base font-semibold"
+            >
+              Back to home
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate({ to: "/course/$slug", params: { slug } })}
+              className="h-10 w-full rounded-full text-sm font-bold text-muted-foreground"
+            >
+              See my path
+            </Button>
+          </div>
+        </div>
+      </PhoneFrame>
+    );
+  }
+
 
   return (
     <PhoneFrame showNav={false}>
