@@ -128,7 +128,55 @@ function FriendProfileScreen() {
           </div>
         )}
 
+        {isFriend && (
+          <div className="mt-8 rounded-3xl bg-card p-4 shadow-soft">
+            <div className="flex items-center gap-2">
+              <Swords aria-hidden className="h-4 w-4 text-primary" />
+              <p className="text-sm font-bold">Debate a friend</p>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              You both get the same motion and opposite sides. Each case is graded on the same rubric,
+              then shown side by side.
+            </p>
+            {debateError && (
+              <p className="mt-2 text-xs font-semibold text-destructive">{debateError}</p>
+            )}
+            <button
+              onClick={() => {
+                if (busy) return;
+                setBusy(true);
+                setDebateError(null);
+                void challengeToDebate({ data: { opponentId: person.id } })
+                  .then((result) => {
+                    if (result.id) navigate({ to: "/debate/$id", params: { id: result.id } });
+                    else setDebateError("That couldn't be started. Try again in a moment.");
+                  })
+                  .catch((error: unknown) =>
+                    setDebateError(
+                      error instanceof Error
+                        ? error.message
+                        : "That couldn't be started. Try again in a moment.",
+                    ),
+                  )
+                  .finally(() => setBusy(false));
+              }}
+              disabled={busy}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient py-3 text-sm font-bold text-primary-foreground shadow-card disabled:opacity-60"
+            >
+              <Swords className="h-4 w-4" />
+              {busy ? "Writing the motion…" : "Challenge to a debate"}
+            </button>
+            <button
+              onClick={() => navigate({ to: "/debates" })}
+              className="mt-2 h-9 w-full text-xs font-bold text-muted-foreground underline"
+            >
+              See all debates
+            </button>
+          </div>
+        )}
+
         <div className="mt-8">
+
           {isFriend ? (
             <button
               onClick={() => void act(() => removeFriend({ data: { friendshipId: friendshipId! } }))}
