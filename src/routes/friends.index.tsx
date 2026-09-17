@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Copy, Flame, Link2, Loader2, Search, UserPlus, X, Zap } from "lucide-react";
+import { Check, Copy, Flame, Link2, Loader2, Search, Swords, UserPlus, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { listDebates } from "@/lib/debate.functions";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Confetti } from "@/components/Confetti";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -93,6 +95,14 @@ function FriendsScreen() {
     }
   };
 
+  // Badge count: debates where it's this user's move, or a result they haven't seen.
+  const { data: debates } = useQuery({
+    queryKey: ["debates"],
+    queryFn: () => listDebates(),
+    enabled: signedIn,
+  });
+  const debateAlerts = (debates ?? []).filter((d) => d.myTurn || d.unseenResult).length;
+
   const inviteLink =
     data?.inviteCode && typeof window !== "undefined"
       ? `${window.location.origin}/invite/${data.inviteCode}`
@@ -167,7 +177,29 @@ function FriendsScreen() {
           </p>
         ) : null}
 
+        {/* Debates — badged when it's your move or a result is waiting */}
+        <Link
+          to="/debates"
+          className="mt-6 flex items-center gap-3 rounded-3xl bg-card p-4 shadow-soft"
+        >
+          <Swords aria-hidden className="h-4 w-4 text-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold">Debates</span>
+            <span className="block text-xs text-muted-foreground">
+              {debateAlerts > 0
+                ? `${debateAlerts} need${debateAlerts === 1 ? "s" : ""} you — your turn or a result is in`
+                : "Same motion, opposite sides, one rubric"}
+            </span>
+          </span>
+          {debateAlerts > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+              {debateAlerts}
+            </span>
+          )}
+        </Link>
+
         {/* Invite link */}
+
         <section className="mt-6 rounded-3xl bg-card p-4 shadow-soft">
           <div className="flex items-center gap-2">
             <Link2 className="h-4 w-4 text-primary" />

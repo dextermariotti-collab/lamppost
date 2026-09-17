@@ -48,7 +48,10 @@ export function getPracticeResult(slug: string, lessonIndex: number): Stored | u
 export function savePracticeResult(slug: string, lessonIndex: number, close: PracticeClose) {
   if (typeof window === "undefined") return;
   try {
-    const next: Store = { ...readStore(), [idFor(slug, lessonIndex)]: { ...close, at: Date.now() } };
+    const next: Store = {
+      ...readStore(),
+      [idFor(slug, lessonIndex)]: { ...close, at: Date.now() },
+    };
     window.localStorage.setItem(KEY, JSON.stringify(next));
     window.dispatchEvent(new Event("lamppost-reviews-change"));
   } catch {

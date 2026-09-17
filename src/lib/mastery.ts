@@ -121,7 +121,10 @@ export function writtenTrend(): { points: (WrittenScore & { pct: number })[] } {
   return {
     points: readWritten()
       .sort((a, b) => a.at - b.at)
-      .map((score) => ({ ...score, pct: Math.round((score.total / Math.max(score.max, 1)) * 100) })),
+      .map((score) => ({
+        ...score,
+        pct: Math.round((score.total / Math.max(score.max, 1)) * 100),
+      })),
   };
 }
 

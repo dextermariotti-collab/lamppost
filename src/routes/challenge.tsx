@@ -81,8 +81,8 @@ function DailyChallengeScreen() {
           <div className="mt-8 rounded-3xl border border-border p-5 text-center">
             <p className="text-sm font-bold">Finish your first lesson</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              The daily challenge draws on skills you've already unlocked, so it opens up once you've
-              completed a lesson.
+              The daily challenge draws on skills you've already unlocked, so it opens up once
+              you've completed a lesson.
             </p>
             <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
               <Link to="/course/$slug" params={{ slug: CURRICULUM_SLUG }}>

@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import { screenLocally } from "./moderation";
 import { parseGrade } from "./argument.functions";
 import { WRITTEN_TASKS, type ArgumentGrade } from "./exercises";
@@ -140,7 +142,7 @@ const COLUMNS =
   "id, challenger_id, opponent_id, topic, prompt, passage, challenger_side, opponent_side, challenger_answer, opponent_answer, challenger_scores, opponent_scores, challenger_total, opponent_total, challenger_tip, opponent_tip, max_score, status, challenger_seen_result, opponent_seen_result, created_at";
 
 async function loadProfiles(
-  supabase: { from: (t: string) => any },
+  supabase: SupabaseClient<Database>,
   ids: string[],
 ): Promise<Map<string, { handle: string; display_name: string | null }>> {
   if (ids.length === 0) return new Map();
@@ -168,10 +170,7 @@ export const challengeToDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ opponentId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as unknown as {
-      supabase: { from: (t: string) => any };
-      userId: string;
-    };
+    const { supabase, userId } = context;
     if (data.opponentId === userId) throw new Error("You can't debate yourself.");
 
     const key = process.env["LOVABLE_API_KEY"];
@@ -227,10 +226,7 @@ export const challengeToDebate = createServerFn({ method: "POST" })
 export const listDebates = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DebateSummary[]> => {
-    const { supabase, userId } = context as unknown as {
-      supabase: { from: (t: string) => any };
-      userId: string;
-    };
+    const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("debates")
       .select(COLUMNS)
@@ -249,10 +245,7 @@ export const getDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<DebateSummary | null> => {
-    const { supabase, userId } = context as unknown as {
-      supabase: { from: (t: string) => any };
-      userId: string;
-    };
+    const { supabase, userId } = context;
     const { data: row, error } = await supabase
       .from("debates")
       .select(COLUMNS)
@@ -273,14 +266,14 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), answer: z.string().min(1).max(4000) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as unknown as {
-      supabase: { from: (t: string) => any };
-      userId: string;
-    };
+    const { supabase, userId } = context;
     const screened = screenLocally(data.answer);
     if (!screened.allowed) return { ok: false as const, reason: screened.message };
     if (data.answer.trim().split(/\s+/).length < 25) {
-      return { ok: false as const, reason: "Write three to five sentences so there's a case to grade." };
+      return {
+        ok: false as const,
+        reason: "Write three to five sentences so there's a case to grade.",
+      };
     }
 
     const { data: row, error } = await supabase
@@ -297,7 +290,8 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     }
 
     const key = process.env["LOVABLE_API_KEY"];
-    if (!key) return { ok: false as const, reason: "Grading isn't configured for this project yet." };
+    if (!key)
+      return { ok: false as const, reason: "Grading isn't configured for this project yet." };
 
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
@@ -315,12 +309,14 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
         passage: typed.passage,
         prompt: `${typed.prompt} You are arguing ${side.toUpperCase()} the motion.`,
         answer: data.answer.trim(),
+        attempt: 1,
       }),
       maxRetries: 1,
     }).text;
 
     const parsed = parseGrade(graded, TASK.criteria);
-    if (!parsed) return { ok: false as const, reason: "The grader's reply couldn't be read. Try again." };
+    if (!parsed)
+      return { ok: false as const, reason: "The grader's reply couldn't be read. Try again." };
 
     const bothIn = (mine ? typed.opponent_answer : typed.challenger_answer) !== null;
     const patch = mine
@@ -350,10 +346,7 @@ export const markDebateSeen = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as unknown as {
-      supabase: { from: (t: string) => any };
-      userId: string;
-    };
+    const { supabase, userId } = context;
     const { data: row } = await supabase
       .from("debates")
       .select("id, challenger_id")

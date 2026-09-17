@@ -42,7 +42,7 @@
 - [x] Written argument graded 1–4 on claim/evidence/reasoning/counterargument, one revision, attempts stored
 - [x] Socratic mascot line after wrong answers and ~1 in 3 right ones, optional reply
 - [x] Home graph edges curve around unrelated nodes; locked-unit edges faded
-- [ ] Weight review intervals with drill accuracy (flaw + exercise scores)
+- [x] Review intervals now driven directly by drill accuracy (see pivot phase 4)
 
 ## Phase 3 — small cast
 
@@ -62,3 +62,16 @@
 - Cached lessons invalidated via `CONTENT_VERSION = 3` and cleared rows.
 - Three written task types (restate / make the case / critique) with matching passage, placeholder and rubric; grader scores against that rubric only and XP scales with score/max.
 - Fixed a localStorage save loop that overflowed the stack on the lesson screen.
+
+## Pivot phase 4 (done)
+- Written-task guidance moved after submission (was spoiling the answer).
+- Unfinished lessons always reload the current shared version (`useCurriculumLesson(index, completed)`); `CONTENT_VERSION = 4` regenerates every cached lesson.
+- Validation pass gained two checks: no invented studies/statistics presented as fact (hypotheticals must be labelled), and no giveaway wording or length tells in options.
+- Reviews are reasoning drills: `lamppost-review-drills-v1` queues drills missed or answered with low confidence, 1d → 3d → 7d → 14d, reset on a miss; each review is served as a FRESH variant from `drill_variants` (generated once, validated, shared).
+- Daily challenge: one seeded drill per day from unlocked skills, counts toward the streak (`/challenge`).
+- Onboarding survey: motivation, time-per-day (sets daily goal), optional 5-drill placement check that can mark the first unit-1 lessons known.
+- Progress page: per-unit mastery from real drill accuracy, calibration (stated confidence vs actual), written-score trend — each with an empty state.
+- Debate a friend (async): `debates` table, AI-written motion, assigned sides, both cases graded on the Make-the-case rubric, side-by-side result with winner and a tip each, badge on friends + debates list.
+
+### Open
+- [ ] Debate results are not emailed/pushed — badge only (in-app).

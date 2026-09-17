@@ -24,7 +24,10 @@ export const listAchievements = createServerFn({ method: "POST" })
           .select("total_xp, longest_streak, current_streak, daily_goal")
           .eq("id", userId)
           .maybeSingle(),
-        supabase.from("user_achievements").select("achievement_code, unlocked_at").eq("user_id", userId),
+        supabase
+          .from("user_achievements")
+          .select("achievement_code, unlocked_at")
+          .eq("user_id", userId),
       ]);
     if (catError) throw new Error(catError.message);
 
@@ -56,12 +59,10 @@ export const listAchievements = createServerFn({ method: "POST" })
 
     if (missing.length > 0) {
       const now = new Date().toISOString();
-      const { error } = await supabase
-        .from("user_achievements")
-        .upsert(
-          missing.map((code) => ({ user_id: userId, achievement_code: code, unlocked_at: now })),
-          { onConflict: "user_id,achievement_code" },
-        );
+      const { error } = await supabase.from("user_achievements").upsert(
+        missing.map((code) => ({ user_id: userId, achievement_code: code, unlocked_at: now })),
+        { onConflict: "user_id,achievement_code" },
+      );
       if (!error) for (const code of missing) already.set(code, now);
     }
 

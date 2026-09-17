@@ -163,7 +163,6 @@ function Home() {
           </section>
         )}
       </main>
-
     </PhoneFrame>
   );
 }

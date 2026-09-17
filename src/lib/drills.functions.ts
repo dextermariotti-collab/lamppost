@@ -79,12 +79,10 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const { screenOutput } = await import("./moderation.server");
-      const { variantSystemPrompt, variantPrompt, normalizeExercise } = await import(
-        "./exercise-ai.server"
-      );
-      const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } = await import(
-        "./exercise-validate.server"
-      );
+      const { variantSystemPrompt, variantPrompt, normalizeExercise } =
+        await import("./exercise-ai.server");
+      const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } =
+        await import("./exercise-validate.server");
 
       const gateway = createLovableAiGatewayProvider(key);
       const ask = async (system: string, prompt: string) =>
@@ -93,7 +91,10 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       const avoid = pool.slice(-4).map((row) => describeExercise(row.exercise).slice(0, 200));
 
       for (let attempt = 0; attempt < 2; attempt++) {
-        const text = await ask(variantSystemPrompt(data.kind), variantPrompt(meta, data.kind, avoid));
+        const text = await ask(
+          variantSystemPrompt(data.kind),
+          variantPrompt(meta, data.kind, avoid),
+        );
         const screened = screenOutput(text);
         if (!screened.allowed) return { ok: false, reason: screened.message };
 

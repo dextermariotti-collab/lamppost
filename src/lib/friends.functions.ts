@@ -92,7 +92,10 @@ export const listFriends = createServerFn({ method: "POST" })
           await supabase
             .from("shared_streaks")
             .select("id, friendship_id, status, current_count, last_extended_day, proposed_by")
-            .in("friendship_id", accepted.map((r) => r.id))
+            .in(
+              "friendship_id",
+              accepted.map((r) => r.id),
+            )
         ).data ?? [])
       : [];
 
@@ -140,7 +143,11 @@ export const listFriends = createServerFn({ method: "POST" })
             .from("shared_streaks")
             .update({ current_count: next.count, last_extended_day: next.lastExtendedDay })
             .eq("id", streak.id);
-          record = { ...streak, current_count: next.count, last_extended_day: next.lastExtendedDay };
+          record = {
+            ...streak,
+            current_count: next.count,
+            last_extended_day: next.lastExtendedDay,
+          };
         }
       }
       streakByFriendship.set(streak.friendship_id, record);
@@ -322,9 +329,7 @@ export const sendNudge = createServerFn({ method: "POST" })
       shared_streak_id: data.sharedStreakId ?? null,
     });
     if (error) {
-      throw new Error(
-        error.code === "23505" ? "You already nudged them today." : error.message,
-      );
+      throw new Error(error.code === "23505" ? "You already nudged them today." : error.message);
     }
     return { ok: true };
   });
@@ -350,7 +355,8 @@ export const listNudges = createServerFn({ method: "POST" })
     return (data ?? []).map((n) => ({
       id: n.id,
       sentAt: n.sent_at,
-      from: byId.get(n.from_user_id)?.display_name ?? byId.get(n.from_user_id)?.handle ?? "A friend",
+      from:
+        byId.get(n.from_user_id)?.display_name ?? byId.get(n.from_user_id)?.handle ?? "A friend",
     }));
   });
 
@@ -393,10 +399,17 @@ export const getFriendProfile = createServerFn({ method: "POST" })
     if (!profile) return null;
 
     const [{ data: badges }, { data: link }] = await Promise.all([
-      supabase.from("user_achievements").select("achievement_code, unlocked_at").eq("user_id", profile.id),
-      supabase.from("friendships").select("id, status").or(
-        `and(requester_id.eq.${userId},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${userId})`,
-      ).maybeSingle(),
+      supabase
+        .from("user_achievements")
+        .select("achievement_code, unlocked_at")
+        .eq("user_id", profile.id),
+      supabase
+        .from("friendships")
+        .select("id, status")
+        .or(
+          `and(requester_id.eq.${userId},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${userId})`,
+        )
+        .maybeSingle(),
     ]);
 
     return {

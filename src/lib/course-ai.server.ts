@@ -62,9 +62,7 @@ export function outlinePrompt(brief: CourseBrief) {
 }
 
 export function contentPrompt(brief: CourseBrief, courseTitle: string, stubs: LessonStub[]) {
-  const list = stubs
-    .map((s) => `index ${s.index}: "${s.title}" — ${s.subtitle}`)
-    .join("\n");
+  const list = stubs.map((s) => `index ${s.index}: "${s.title}" — ${s.subtitle}`).join("\n");
   return `Course: ${courseTitle}\n${briefPrompt(brief)}\n
 Write full content for these lessons of that course, in this order:\n${list}\n
 Each lesson needs ${quizCountFor(brief)} quiz question(s) in "quizzes".
@@ -96,7 +94,9 @@ function extractJson(text: string): Record<string, unknown> | null {
   if (start === -1 || end <= start) return null;
   try {
     const parsed: unknown = JSON.parse(text.slice(start, end + 1));
-    return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : null;
+    return typeof parsed === "object" && parsed !== null
+      ? (parsed as Record<string, unknown>)
+      : null;
   } catch {
     return null;
   }
@@ -226,11 +226,7 @@ export function parseOutline(text: string, brief: CourseBrief): CourseOutline | 
 }
 
 /** Merges AI lesson content onto the outline stubs, falling back per lesson. */
-export function parseLessonContent(
-  text: string,
-  stubs: LessonStub[],
-  quizCount: number,
-): Lesson[] {
+export function parseLessonContent(text: string, stubs: LessonStub[], quizCount: number): Lesson[] {
   const root = extractJson(text);
   const items = root ? asArray(pick(root, ["lessons", "content", "items"])) : [];
 
