@@ -457,14 +457,18 @@ function LessonScreen() {
         )}
 
         <div className="mt-6">
-          <Button
-            onClick={() => (onSummary ? finishLesson() : setPage((p) => p + 1))}
-            disabled={!canContinue || completing}
-            className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
-          >
-            {nextLabel}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          {/* Hidden until the drill is answered, so the card isn't cluttered. */}
+          {canContinue && (
+            <Button
+              onClick={() => (onSummary ? finishLesson() : setPage((p) => p + 1))}
+              disabled={completing}
+              className="h-12 w-full animate-pop-in rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
+            >
+              {nextLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
+
           <AiDisclaimer
             className="mt-4"
             fitness={needsFitnessDisclaimer(`${course.topic} ${lesson.title}`)}
