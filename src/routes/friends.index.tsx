@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Copy, Flame, Link2, Loader2, Search, UserPlus, X, Zap } from "lucide-react";
+import { Check, Copy, Flame, Link2, Loader2, Search, Swords, UserPlus, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { listDebates } from "@/lib/debate.functions";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Confetti } from "@/components/Confetti";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -93,6 +95,14 @@ function FriendsScreen() {
     }
   };
 
+  // Badge count: debates where it's this user's move, or a result they haven't seen.
+  const { data: debates } = useQuery({
+    queryKey: ["debates"],
+    queryFn: () => listDebates(),
+    enabled: signedIn,
+  });
+  const debateAlerts = (debates ?? []).filter((d) => d.myTurn || d.unseenResult).length;
+
   const inviteLink =
     data?.inviteCode && typeof window !== "undefined"
       ? `${window.location.origin}/invite/${data.inviteCode}`
@@ -168,7 +178,7 @@ function FriendsScreen() {
         ) : null}
 
         {/* Debates — badged when it's your move or a result is waiting */}
-        <RouterLink
+        <Link
           to="/debates"
           className="mt-6 flex items-center gap-3 rounded-3xl bg-card p-4 shadow-soft"
         >
@@ -186,7 +196,7 @@ function FriendsScreen() {
               {debateAlerts}
             </span>
           )}
-        </RouterLink>
+        </Link>
 
         {/* Invite link */}
 
