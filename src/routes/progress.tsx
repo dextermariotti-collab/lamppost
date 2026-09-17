@@ -219,62 +219,119 @@ function ProgressScreen() {
           <Tile label="Gems" value={hydrated ? state.gems : 0} icon={Gem} delay={140} />
         </div>
 
-        {/* Mastery tiers */}
-        <h2 className="mt-6 text-base">Mastery</h2>
-        {courses.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Start a course and your mastery tiers appear here.
+        {/* Per-skill mastery, from real drill accuracy */}
+        <h2 className="mt-6 text-base">Skill mastery</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          How often you get each unit's drills right — not how many lessons you've opened.
+        </p>
+        {!analytics || analytics.units.every((unit) => unit.answered === 0) ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Answer some drills and each skill's accuracy appears here.
           </p>
         ) : (
           <ul className="mt-3 space-y-3">
-            {courses.map(([slug, c], i) => {
-              const pct = c.total ? Math.round((c.completed / c.total) * 100) : 0;
+            {analytics.units.map((unit, i) => {
+              const pct = Math.round(unit.accuracy * 100);
               const tier = tierFor(pct);
               return (
-                <li
-                  key={slug}
-                  className="animate-rise-in rounded-2xl bg-card p-4 shadow-soft"
-                  style={{ animationDelay: `${i * 70}ms` }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      aria-hidden
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary ${
-                        pct === 100 ? "animate-pop-in" : ""
-                      }`}
-                    >
-                      {pct === 100 ? (
-                        <Trophy className="h-5 w-5" strokeWidth={2.2} />
-                      ) : (
-                        <GraduationCap className="h-5 w-5" strokeWidth={2.2} />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold">{c.topic}</span>
-                      <span className="block text-[11px] font-semibold text-primary">
-                        {tier.name}
+                <li key={unit.unitId} className="animate-rise-in" style={{ animationDelay: `${i * 50}ms` }}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="min-w-0 truncate text-sm font-bold">
+                      <span aria-hidden className="mr-1.5">
+                        {unit.emoji}
                       </span>
-                    </span>
-                    <CountUp
-                      value={hydrated ? pct : 0}
-                      className="text-sm font-extrabold text-muted-foreground"
-                      format={(n) => `${n}%`}
-                    />
+                      {unit.title}
+                    </p>
+                    <p className="shrink-0 text-[11px] font-bold text-muted-foreground">
+                      {unit.answered === 0 ? "not started" : `${pct}% · ${tier.name}`}
+                    </p>
                   </div>
-                  <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
+                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full bg-hero-gradient"
                       style={{
-                        width: `${hydrated ? pct : 0}%`,
-                        transition: "width 1.2s cubic-bezier(0.22, 1, 0.36, 1)",
+                        width: `${hydrated && unit.answered > 0 ? pct : 0}%`,
+                        transition: "width 1.1s cubic-bezier(0.22, 1, 0.36, 1)",
                       }}
                     />
                   </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {unit.answered} drill{unit.answered === 1 ? "" : "s"} answered
+                  </p>
                 </li>
               );
             })}
           </ul>
         )}
+
+        {/* Calibration: stated confidence vs what actually happened */}
+        <div className="mt-6 border-t border-border pt-5">
+          <h2 className="text-base">Calibration</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            From predict-then-reveal drills: how confident you said you were, against how often you
+            were right.
+          </p>
+          {!analytics || analytics.calibration.bands.length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Not enough predictions yet. Set a confidence level on a few predict drills and this
+              chart fills in.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {analytics.calibration.bands.map((band) => (
+                <li key={band.label}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="text-xs font-bold">Said {band.label}</p>
+                    <p className="text-[11px] font-bold text-muted-foreground">
+                      {band.actual}% right · {band.count} drill{band.count === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="mt-1.5 space-y-1">
+                    <Bar pct={band.stated} tone="muted" label="stated" />
+                    <Bar pct={band.actual} tone="primary" label="actual" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Written response trend */}
+        <div className="mt-6 border-t border-border pt-5">
+          <h2 className="text-base">Written responses</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Your rubric score on each graded written task, oldest to newest.
+          </p>
+          {!analytics || analytics.written.points.length < 2 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {analytics && analytics.written.points.length === 1
+                ? "One graded response so far. One more and the trend appears."
+                : "No graded written responses yet."}
+            </p>
+          ) : (
+            <>
+              <div className="mt-4 flex items-end gap-1.5">
+                {analytics.written.points.slice(-12).map((point, i) => (
+                  <div key={`${point.at}-${i}`} className="flex flex-1 flex-col items-center gap-1">
+                    <div
+                      className="w-full rounded-t-lg bg-hero-gradient"
+                      style={{
+                        height: `${12 + Math.round((point.pct / 100) * 68)}px`,
+                        transition: `height 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${i * 50}ms`,
+                      }}
+                    />
+                    <span className="text-[10px] font-bold text-muted-foreground">{point.pct}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Latest {analytics.written.points[analytics.written.points.length - 1]!.pct}% of the
+                rubric.
+              </p>
+            </>
+          )}
+        </div>
+
 
         {/* Week */}
         <div className="mt-6 border-t border-border pt-5">
