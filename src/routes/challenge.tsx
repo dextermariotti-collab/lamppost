@@ -53,15 +53,25 @@ function DailyChallengeScreen() {
   /** Show the done card once feedback has been read (or on a later visit). */
   const showDone = finished && (wrapped || !justAnswered);
 
-  const handleAnswer = (score: number) => {
+  /** The answered drill, kept so the companion can ask a follow-up about it. */
+  const [answered, setAnswered] = useState<{
+    exercise: Exercise;
+    answer: unknown;
+    correct: boolean;
+  } | null>(null);
+  const [socraticDone, setSocraticDone] = useState(false);
+
+  const handleAnswer = (score: number, _variant: number, answer: unknown, exercise: Exercise) => {
     if (finished || !challenge) return;
     const correct = score >= 1;
     setResult(correct);
     setJustAnswered(true);
+    setAnswered({ exercise, answer, correct });
     complete(correct);
     recordReview(correct);
     trackDrillResult(challenge.lessonId, challenge.kind, score);
   };
+
 
   return (
     <PhoneFrame>
