@@ -13,9 +13,7 @@ import { unitAccent } from "@/lib/unit-accent";
  * a single answer: an achievement unlock toast, and a skill level-up card. Both
  * fire once per genuine threshold crossing — never on a hidden roll.
  */
-type Item =
-  | { sort: "badge"; badge: BadgeState }
-  | { sort: "level"; level: UnitLevel };
+type Item = { sort: "badge"; badge: BadgeState } | { sort: "level"; level: UnitLevel };
 
 export function RewardHost() {
   const { state, hydrated } = useProgress();
@@ -100,7 +98,10 @@ export function RewardHost() {
           >
             {level.emoji}
           </span>
-          <p className="mt-4 text-[11px] font-bold uppercase tracking-wide" style={{ color: accent.color }}>
+          <p
+            className="mt-4 text-[11px] font-bold uppercase tracking-wide"
+            style={{ color: accent.color }}
+          >
             Skill level up
           </p>
           <h2 className="mt-1 text-2xl leading-tight">{level.title}</h2>
