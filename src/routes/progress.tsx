@@ -288,7 +288,7 @@ function ProgressScreen() {
         {/* Achievements: named tiers, honest thresholds */}
         <div className="mt-6 border-t border-border pt-5">
           <h2 className="text-base">Achievements</h2>
-          <BadgeShelf badges={badges} />
+          <BadgeShelf badges={badges ?? []} />
         </div>
 
         {/* Calibration: stated confidence vs what actually happened */}
