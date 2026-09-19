@@ -144,12 +144,10 @@ function Home() {
           <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: accent.color }}>
             {finished ? "Curriculum complete" : `${unit.emoji} ${unit.title}`}
           </p>
-          <h1 className="mt-1.5 text-2xl leading-tight">
-            {finished ? next?.title : next?.title}
-          </h1>
+          <h1 className="mt-1.5 text-2xl leading-tight">{next?.title}</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{next?.objective}</p>
           <p className="mt-3 text-xs text-muted-foreground">
-            about {minutes} min · lesson {Math.min(completed + 1, TOTAL_LESSONS)} of {TOTAL_LESSONS}
+            about {minutes} min · lesson {nextIndex + 1} of {TOTAL_LESSONS}
             {recommendation ? ` · ${recommendation.reason}` : ""}
           </p>
           <Button
