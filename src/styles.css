@@ -237,6 +237,11 @@
   color: var(--muted-foreground);
 }
 
+.knowledge-node-glow {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent),
+    0 0 22px color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
 .knowledge-progress-ring {
   filter: drop-shadow(0 0 6px color-mix(in oklab, var(--primary) 50%, transparent));
 }

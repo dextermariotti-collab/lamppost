@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Flame, Zap } from "lucide-react";
+import { ArrowRight, Expand, Maximize2, Play, Star, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { skillsToPractise } from "@/lib/rating";
 import { Button } from "@/components/ui/button";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { CompanionAura } from "@/components/CompanionAura";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ProgressRing } from "@/components/ProgressRing";
+import { StreakFlame } from "@/components/StreakCalendar";
 import { ThinkingGraph } from "@/components/ThinkingGraph";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { dayKey, useProgress } from "@/lib/progress";
+import { unitAccent } from "@/lib/unit-accent";
 import { reviewUrgencyFor, useDueDrills } from "@/lib/review-drills";
 
 export const Route = createFileRoute("/")({
@@ -68,6 +70,7 @@ function Home() {
   const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const { items: dueItems, total: dueTotal } = useDueDrills();
   const { challenge, doneToday: challengeDone } = useDailyChallenge(completed);
+  const [mapOpen, setMapOpen] = useState(false);
 
   const maxOverdue = dueItems[0]?.overdueDays ?? 0;
   const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
@@ -85,6 +88,9 @@ function Home() {
   const nextIndex = nextLessonIndex(completed);
   const next = lessonAt(nextIndex);
   const finished = completed >= TOTAL_LESSONS;
+  const unit = unitById(next?.unitId ?? "claims");
+  const accent = unitAccent(unit.id);
+  const minutes = Math.max(5, (next?.drills.length ?? 4) * 2);
 
   if (gate === "checking") {
     return (
@@ -97,120 +103,183 @@ function Home() {
   return (
     <PhoneFrame className="graph-home">
       <main className="min-h-full px-5 pb-10">
-        <header className="flex items-start justify-between gap-4 pt-7">
-          <div>
-            <h1 className="max-w-56 text-lg font-bold leading-snug">Your thinking map</h1>
-            <p className="mt-1 max-w-56 text-sm leading-relaxed text-muted-foreground">
-              Seven reasoning skills, and the ideas they share.
-            </p>
-          </div>
-
-          <Link
-            to="/profile"
-            aria-label="Open profile"
-            className="shrink-0 opacity-85 transition-opacity hover:opacity-100"
-          >
-            <CompanionAvatar
+        {/* Header: who you are, how you're doing today */}
+        <header className="flex items-center gap-3 pt-6">
+          <Link to="/profile" aria-label="Open profile" className="shrink-0">
+            <CompanionAura
               companion={{ ...companion, expression: urgency === "piling" ? "calm" : "happy" }}
-              size={44}
+              streak={state.streak}
+              size={46}
             />
           </Link>
+
+          <Link
+            to="/progress"
+            className="flex items-center gap-1.5 rounded-full px-1 py-1"
+            aria-label={`${state.streak} day streak`}
+          >
+            <StreakFlame streak={state.streak} />
+            <span className="text-base font-bold text-foreground">{state.streak}</span>
+          </Link>
+
+          <span className="flex items-center gap-1 text-sm font-bold text-muted-foreground">
+            <Star aria-hidden className="h-4 w-4 text-xp" />
+            {state.xp.toLocaleString()}
+          </span>
+
+          <span className="ml-auto shrink-0">
+            <ProgressRing pct={goalPct} size={44} stroke={5}>
+              <span className="text-[11px] font-bold text-foreground">
+                {Math.min(doneToday, state.dailyGoal)}/{state.dailyGoal}
+              </span>
+            </ProgressRing>
+          </span>
         </header>
 
-        <section className="mt-5 flex items-center gap-4 border-b border-border pb-5">
-          <ProgressRing pct={goalPct} size={64} stroke={7}>
-            <span className="text-sm font-bold text-foreground">
-              {Math.min(doneToday, state.dailyGoal)}/{state.dailyGoal}
-            </span>
-          </ProgressRing>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <Flame aria-hidden className="h-3.5 w-3.5 text-primary" />
-              <p className="text-sm font-bold text-foreground">
-                {state.streak} day{state.streak === 1 ? "" : "s"} in a row
-              </p>
-            </div>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {doneToday >= state.dailyGoal
-                ? "Daily goal met. Anything more is a bonus."
-                : `${state.dailyGoal - doneToday} more lesson${state.dailyGoal - doneToday === 1 ? "" : "s"} to hit today's goal.`}
-            </p>
-          </div>
-        </section>
-
-        <section className="mt-5">
-          <ThinkingGraph completed={completed} streak={state.streak} xp={state.xp} />
-        </section>
-
-        <section className="border-t border-border py-5">
-          <p className="text-xs font-bold text-primary">
-            {finished ? "Curriculum complete" : unitById(next?.unitId ?? "claims").title}
+        {/* The main action, unmissable and in this unit's colour */}
+        <section
+          className="mt-5 rounded-3xl border p-5"
+          style={{ background: accent.wash, borderColor: accent.border }}
+        >
+          <p
+            className="text-[11px] font-bold uppercase tracking-wide"
+            style={{ color: accent.color }}
+          >
+            {finished ? "Curriculum complete" : `${unit.emoji} ${unit.title}`}
+          </p>
+          <h1 className="mt-1.5 text-2xl leading-tight">{next?.title}</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{next?.objective}</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            about {minutes} min · lesson {nextIndex + 1} of {TOTAL_LESSONS}
+            {recommendation ? ` · ${recommendation.reason}` : ""}
           </p>
           <Button
             type="button"
-            variant="ghost"
             onClick={() =>
               navigate({
                 to: "/course/$slug/lesson/$index",
                 params: { slug: CURRICULUM_SLUG, index: String(nextIndex + 1) },
               })
             }
-            className="mt-1 h-auto w-full justify-between gap-3 whitespace-normal rounded-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
+            className="mt-4 h-12 w-full rounded-full text-base font-semibold"
+            style={{ background: accent.color, color: "var(--background)" }}
           >
-            <span className="min-w-0">
-              <span className="block text-base font-bold leading-snug text-foreground">
-                {finished ? `Revisit: ${next?.title}` : `Continue: ${next?.title}`}
-              </span>
-              <span className="mt-1 block text-sm font-normal leading-relaxed text-muted-foreground">
-                {next?.objective}
+            <Play aria-hidden className="h-4 w-4" />
+            {finished ? "Practise again" : "Start lesson"}
+          </Button>
+        </section>
+
+        {/* Daily challenge */}
+        {challenge && (
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/challenge" })}
+            className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left"
+          >
+            <span
+              aria-hidden
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-xp/15"
+            >
+              <Zap className="h-5 w-5 text-xp" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-foreground">Daily challenge</span>
+              <span className="block text-xs leading-relaxed text-muted-foreground">
+                {challengeDone
+                  ? "Done for today. A new one lands tomorrow."
+                  : `One drill from ${challenge.unitTitle}. Counts toward your streak.`}
               </span>
             </span>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-          </Button>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Lesson {Math.min(completed + 1, TOTAL_LESSONS)} of {TOTAL_LESSONS}
-            {recommendation ? ` · ${recommendation.reason}` : ""}
-          </p>
-        </section>
+            {!challengeDone && (
+              <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+            )}
+          </button>
+        )}
 
-        <section className="border-t border-border py-5">
-          <p className="text-sm font-bold text-foreground">Today’s review</p>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => navigate({ to: dueTotal === 0 ? "/schedule" : "/review" })}
-            className="mt-2 h-auto w-full justify-start whitespace-normal rounded-none bg-transparent p-0 text-left text-sm font-normal leading-relaxed text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground"
+        {/* Today's review */}
+        <button
+          type="button"
+          onClick={() => navigate({ to: dueTotal === 0 ? "/schedule" : "/review" })}
+          className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left"
+        >
+          <span
+            aria-hidden
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary"
           >
-            {dueTotal === 0
-              ? "Nothing due today. Every drill is sitting comfortably."
-              : urgency === "piling"
-                ? `${dueTotal} drills due. Oldest is ${maxOverdue} days overdue.`
-                : `${dueTotal} drill${dueTotal === 1 ? "" : "s"} due — new scenarios, same skills.`}
-          </Button>
-        </section>
+            {dueTotal}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-foreground">Today's review</span>
+            <span className="block text-xs leading-relaxed text-muted-foreground">
+              {dueTotal === 0
+                ? "Nothing due. Every drill is sitting comfortably."
+                : urgency === "piling"
+                  ? `Oldest is ${maxOverdue} days overdue.`
+                  : "New scenarios, same skills."}
+            </span>
+          </span>
+          <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
 
-        {challenge && (
-          <section className="border-t border-border py-5">
-            <div className="flex items-center gap-1.5">
-              <Zap aria-hidden className="h-3.5 w-3.5 text-primary" />
-              <p className="text-sm font-bold text-foreground">Daily challenge</p>
+        {/* The map sits below the action, as a preview you can open full screen */}
+        <section className="mt-6 border-t border-border pt-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-bold text-foreground">Your thinking map</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Seven reasoning skills, and the ideas they share.
+              </p>
             </div>
             <Button
               type="button"
               variant="ghost"
-              onClick={() => navigate({ to: "/challenge" })}
-              className="mt-2 h-auto w-full justify-between gap-3 whitespace-normal rounded-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
+              size="sm"
+              onClick={() => setMapOpen(true)}
+              className="shrink-0 gap-1.5 text-xs font-bold text-muted-foreground"
             >
-              <span className="min-w-0 text-sm font-normal leading-relaxed text-muted-foreground">
-                {challengeDone
-                  ? "Done for today. A new one lands tomorrow."
-                  : `One drill from ${challenge.unitTitle}. Keeps your streak alive.`}
-              </span>
-              {!challengeDone && <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              <Expand aria-hidden className="h-3.5 w-3.5" /> Expand
             </Button>
-          </section>
-        )}
+          </div>
+
+          <div className="relative mt-3 h-44 w-full overflow-hidden rounded-2xl border border-border">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 block origin-top scale-[0.38]"
+            >
+              <ThinkingGraph completed={completed} compact />
+            </span>
+            <button
+              type="button"
+              onClick={() => setMapOpen(true)}
+              aria-label="Expand your thinking map"
+              className="absolute inset-0 flex items-end justify-end p-2"
+            >
+              <span className="flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
+                <Maximize2 aria-hidden className="h-3 w-3" /> Tap to open
+              </span>
+            </button>
+          </div>
+        </section>
       </main>
+
+      {mapOpen && (
+        <div className="fixed inset-0 z-[60] overflow-y-auto bg-background px-5 pb-10">
+          <div className="flex items-center justify-between gap-3 pt-6">
+            <h2 className="text-lg font-bold">Your thinking map</h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Close map"
+              onClick={() => setMapOpen(false)}
+              className="h-11 w-11 rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <ThinkingGraph completed={completed} />
+        </div>
+      )}
     </PhoneFrame>
   );
 }

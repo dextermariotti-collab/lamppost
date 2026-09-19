@@ -60,7 +60,7 @@ const DEFAULT_STATE: ProgressState = {
 export const MAX_FREEZES = 2;
 export const FREEZE_COST = 60;
 
-const STREAK_MILESTONES = [7, 30, 100, 365];
+const STREAK_MILESTONES = [3, 7, 30, 100, 365];
 
 function daysBetween(from: string, to: string) {
   const a = new Date(`${from}T00:00:00Z`).getTime();
@@ -203,10 +203,12 @@ export function useProgress() {
       const next = fn(prev);
       try {
         window.localStorage.setItem(KEY, JSON.stringify(next));
-        window.dispatchEvent(new Event(PROGRESS_EVENT));
       } catch {
         /* ignore */
       }
+      // Broadcast after the render pass, so other screens never receive a state
+      // update while React is rendering this one.
+      queueMicrotask(() => window.dispatchEvent(new Event(PROGRESS_EVENT)));
       return next;
     });
   }, []);

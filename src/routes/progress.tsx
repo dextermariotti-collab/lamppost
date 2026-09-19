@@ -13,6 +13,12 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { StreakCalendar, StreakFlame } from "@/components/StreakCalendar";
+import { StreakSavedCard } from "@/components/StreakSavedCard";
+import { BadgeShelf } from "@/components/BadgeShelf";
+import { useBadges } from "@/lib/badges";
+import { unitLevels } from "@/lib/levels";
+import { useCompanion } from "@/lib/companion-store";
 import { Confetti } from "@/components/Confetti";
 import { CountUp } from "@/components/CountUp";
 import { MilestoneCard } from "@/components/MilestoneCard";
@@ -50,6 +56,9 @@ function ProgressScreen() {
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
   const analytics = useMasteryAnalytics();
+  const badges = useBadges(state);
+  const { companion } = useCompanion();
+  const levels = useMemo(() => (analytics ? unitLevels() : []), [analytics]);
 
   // Consume any queued celebration from a just-finished lesson or quiz.
   useEffect(() => {
@@ -125,15 +134,9 @@ function ProgressScreen() {
             style={{ opacity: insights.atRisk ? 0.35 : 0.75 + flameIntensity * 0.25 }}
           />
           <div className="flex items-end gap-3">
-            <Flame
-              aria-hidden="true"
-              className={
-                insights.atRisk
-                  ? "mb-2 h-7 w-7 text-muted-foreground"
-                  : "animate-flame mb-2 h-7 w-7 text-primary"
-              }
-              strokeWidth={2}
-            />
+            <span className="mb-2">
+              <StreakFlame streak={insights.atRisk ? 0 : state.streak} size={28} />
+            </span>
             <p className="font-display text-[3.5rem] leading-none font-extrabold">
               <CountUp value={hydrated ? state.streak : 0} duration={900} />
             </p>
@@ -150,26 +153,22 @@ function ProgressScreen() {
         </section>
 
         {state.freezeSaved && (
-          <div className="mt-4 flex animate-pop-in items-start gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4">
-            <Snowflake className="mt-0.5 h-5 w-5 shrink-0 text-primary" strokeWidth={2.2} />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-extrabold text-accent-foreground">
-                A freeze saved your streak
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                You missed {state.freezeSaved.days} day
-                {state.freezeSaved.days === 1 ? "" : "s"} and your streak carried on anyway.
-              </p>
-              <button
-                type="button"
-                onClick={clearFreezeSaved}
-                className="mt-2 text-xs font-extrabold text-primary"
-              >
-                Got it
-              </button>
-            </div>
-          </div>
+          <StreakSavedCard
+            days={state.freezeSaved.days}
+            streak={state.streak}
+            freezesLeft={state.freezes}
+            companion={companion}
+            onClose={clearFreezeSaved}
+          />
         )}
+
+        {/* Four weeks of real practice */}
+        <section className="mt-6 border-t border-border pt-5">
+          <h2 className="text-base">Your last four weeks</h2>
+          <div className="mt-3">
+            <StreakCalendar state={state} />
+          </div>
+        </section>
 
         <StreakFreezeCard freezes={state.freezes} gems={state.gems} onBuy={buyFreeze} />
 
@@ -263,7 +262,9 @@ function ProgressScreen() {
                       {unit.title}
                     </p>
                     <p className="shrink-0 text-[11px] font-bold text-muted-foreground">
-                      {unit.answered === 0 ? "not started" : `${pct}% · ${tier.name}`}
+                      {unit.answered === 0
+                        ? "not started"
+                        : `${pct}% · ${levels.find((l) => l.unitId === unit.unitId)?.level.name ?? tier.name}`}
                     </p>
                   </div>
                   <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
@@ -283,6 +284,12 @@ function ProgressScreen() {
             })}
           </ul>
         )}
+
+        {/* Achievements: named tiers, honest thresholds */}
+        <div className="mt-6 border-t border-border pt-5">
+          <h2 className="text-base">Achievements</h2>
+          <BadgeShelf badges={badges ?? []} />
+        </div>
 
         {/* Calibration: stated confidence vs what actually happened */}
         <div className="mt-6 border-t border-border pt-5">
