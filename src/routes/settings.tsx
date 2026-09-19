@@ -43,6 +43,7 @@ function SettingsScreen() {
   const [motivation, setMotivation] = useState<Motivation | null>(null);
   useEffect(() => setMotivation(readIntent().motivation), []);
   const { theme, setTheme } = useTheme();
+  const { prefs: feedback, set: setFeedback } = useFeedbackPrefs();
 
   const [name, setName] = useState("");
   const [handle, setHandle] = useState("");
