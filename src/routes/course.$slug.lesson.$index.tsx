@@ -23,6 +23,7 @@ import { dayKey, useProgress } from "@/lib/progress";
 import { recordWrittenScore } from "@/lib/mastery";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
+import { celebrateAnswer, comboBonus } from "@/components/AnswerFeedback";
 import type { PracticeClose } from "@/lib/practice";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
@@ -81,6 +82,8 @@ function LessonScreen() {
   /** Set after two or more missed drills: one easier drill plus a re-explanation. */
   const [easier, setEasier] = useState(false);
   const [easierDone, setEasierDone] = useState(false);
+  /** Consecutive correct drills in this lesson, for the combo bonus. */
+  const [combo, setCombo] = useState(0);
   /** XP when the lesson opened, so the results screen can show what was earned. */
   const xpAtStart = useRef(state.xp);
 
@@ -93,6 +96,7 @@ function LessonScreen() {
     setSkippedWriting(false);
     setEasier(false);
     setEasierDone(false);
+    setCombo(0);
   }, [index]);
 
   // Old topic courses no longer exist: send any other slug to the curriculum.
@@ -157,8 +161,18 @@ function LessonScreen() {
 
   const answerExercise = (answer: unknown, score: number) => {
     const fresh = record(exerciseIndex, answer, score);
-    if (fresh) recordExercise(score);
     const correct = score === 1;
+    const streakNow = correct ? combo + 1 : 0;
+    setCombo(streakNow);
+    const bonus = correct ? comboBonus(streakNow) : 0;
+    if (fresh) recordExercise(score, bonus);
+    celebrateAnswer({
+      correct,
+      xp: Math.max(5, Math.round(25 * Math.min(Math.max(score, 0), 1))),
+      combo: streakNow,
+      bonus,
+      ...(currentExercise ? { note: EXERCISE_LABEL[currentExercise.kind] } : {}),
+    });
     // Shaky drills earn a spaced review as a fresh variant of the same skill.
     if (meta && currentExercise) {
       const confidence = (answer as { confidence?: number } | null)?.confidence;

@@ -387,12 +387,12 @@ export function useProgress() {
   );
   /** XP per reasoning exercise, scaled by how much of it was right. */
   const recordExercise = useCallback(
-    (score: number) =>
+    (score: number, bonus = 0) =>
       update((prev) => {
         const clamped = Math.min(Math.max(score, 0), 1);
         return {
           ...prev,
-          xp: prev.xp + Math.max(5, Math.round(25 * clamped)),
+          xp: prev.xp + Math.max(5, Math.round(25 * clamped)) + Math.max(0, bonus),
           gems: prev.gems + (clamped === 1 ? 2 : 0),
         };
       }),
