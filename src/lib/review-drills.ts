@@ -124,7 +124,7 @@ export function gradeDrillReview(key: string, correct: boolean, variant?: number
   const box = correct ? Math.min(item.box + 1, DRILL_INTERVALS.length - 1) : 0;
   const seen = variant !== undefined ? [...new Set([...item.seen, variant])].slice(-20) : item.seen;
   // Once it comes back right, stop calling it a miss: it is upkeep from here.
-  const reason: DrillSchedule["reason"] = correct ? "practice" : "missed";
+  const reason: DrillItem["reason"] = correct ? "practice" : "missed";
   writeStore({
     ...store,
     [key]: {

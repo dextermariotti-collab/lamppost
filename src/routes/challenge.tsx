@@ -14,6 +14,7 @@ import { CURRICULUM_SLUG } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
+import { celebrateAnswer } from "@/components/AnswerFeedback";
 
 export const Route = createFileRoute("/challenge")({
   head: () => ({

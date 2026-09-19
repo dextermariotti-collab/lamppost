@@ -11,6 +11,7 @@ import { useProgress } from "@/lib/progress";
 import { EXERCISE_LABEL } from "@/lib/exercises";
 import { useDueDrills, type ScheduledDrill } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
+import { celebrateAnswer } from "@/components/AnswerFeedback";
 
 export const Route = createFileRoute("/review")({
   head: () => ({
@@ -65,6 +66,7 @@ function ReviewQueue() {
     if (correct) setRight((n) => n + 1);
     grade(item.key, correct, variant);
     recordReview(correct);
+    celebrateAnswer({ correct, xp: correct ? 15 : 5, note: EXERCISE_LABEL[item.kind] });
     recordDrillOutcome(item.lessonId, { score, difficulty });
   };
 
@@ -98,7 +100,9 @@ function ReviewQueue() {
               <p className="mt-1 text-xs text-muted-foreground">
                 {item.reason === "missed"
                   ? "You missed this one before. New scenario, same skill."
-                  : "You weren't sure last time. Here's a fresh one."}
+                  : item.reason === "unsure"
+                    ? "You weren't sure last time. Here's a fresh one."
+                    : "Keeping this skill fresh. New scenario, same skill."}
               </p>
             </div>
 
