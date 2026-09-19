@@ -203,10 +203,12 @@ export function useProgress() {
       const next = fn(prev);
       try {
         window.localStorage.setItem(KEY, JSON.stringify(next));
-        window.dispatchEvent(new Event(PROGRESS_EVENT));
       } catch {
         /* ignore */
       }
+      // Broadcast after the render pass, so other screens never receive a state
+      // update while React is rendering this one.
+      queueMicrotask(() => window.dispatchEvent(new Event(PROGRESS_EVENT)));
       return next;
     });
   }, []);
