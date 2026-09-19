@@ -367,9 +367,16 @@ function LessonScreen() {
       <ScreenHeader
         backTo="/course/$slug"
         right={
-          <span className="text-xs font-bold text-muted-foreground">
-            Lesson {lessonNumber} of {course.lessons.length}
-          </span>
+          combo >= 2 ? (
+            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary">
+              <Flame className="h-3.5 w-3.5" />
+              {combo} in a row
+            </span>
+          ) : (
+            <span className="text-xs font-bold text-muted-foreground">
+              Lesson {lessonNumber} of {course.lessons.length}
+            </span>
+          )
         }
       />
 
