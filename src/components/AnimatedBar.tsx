@@ -32,7 +32,9 @@ export function AnimatedBar({
         className="h-full rounded-full bg-hero-gradient"
         style={{
           width: `${width}%`,
-          transition: animate ? "width 1.1s cubic-bezier(0.22, 1, 0.36, 1)" : "width 300ms ease-out",
+          transition: animate
+            ? "width 1.1s cubic-bezier(0.22, 1, 0.36, 1)"
+            : "width 300ms ease-out",
         }}
       />
     </div>
