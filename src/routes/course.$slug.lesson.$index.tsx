@@ -270,9 +270,7 @@ function LessonScreen() {
 
     const perfect = answeredCount > 0 && accuracy === 100;
     const accent = unitAccent(meta?.unitId ?? "claims");
-    const unitLessonsDone = unitProgress(completedLessons).find(
-      (u) => u.unit.id === meta?.unitId,
-    );
+    const unitLessonsDone = unitProgress(completedLessons).find((u) => u.unit.id === meta?.unitId);
 
     return (
       <PhoneFrame showNav={false}>
@@ -313,7 +311,10 @@ function LessonScreen() {
               >
                 {unitById(meta?.unitId ?? "claims").emoji}
               </span>
-              <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: accent.color }}>
+              <p
+                className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wide"
+                style={{ color: accent.color }}
+              >
                 <Trophy className="h-3.5 w-3.5" /> Unit badge earned
               </p>
               <h2 className="mt-1 text-2xl leading-tight">{unitTitle}</h2>
@@ -365,7 +366,6 @@ function LessonScreen() {
               </div>
             </div>
           )}
-
 
           <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
             <p className="text-[11px] font-semibold text-primary">Today's goal</p>

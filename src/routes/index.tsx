@@ -141,7 +141,10 @@ function Home() {
           className="mt-5 rounded-3xl border p-5"
           style={{ background: accent.wash, borderColor: accent.border }}
         >
-          <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: accent.color }}>
+          <p
+            className="text-[11px] font-bold uppercase tracking-wide"
+            style={{ color: accent.color }}
+          >
             {finished ? "Curriculum complete" : `${unit.emoji} ${unit.title}`}
           </p>
           <h1 className="mt-1.5 text-2xl leading-tight">{next?.title}</h1>
@@ -187,7 +190,9 @@ function Home() {
                   : `One drill from ${challenge.unitTitle}. Counts toward your streak.`}
               </span>
             </span>
-            {!challengeDone && <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />}
+            {!challengeDone && (
+              <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+            )}
           </button>
         )}
 

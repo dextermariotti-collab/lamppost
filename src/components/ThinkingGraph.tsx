@@ -116,7 +116,7 @@ export function ThinkingGraph({
 
   return (
     <div>
-      <div className={`relative ${compact ? "h-[430px]" : "h-[430px]"}`} aria-label="Your critical thinking skills graph">
+      <div className="relative h-[430px]" aria-label="Your critical thinking skills graph">
         <svg
           className="pointer-events-none absolute inset-0 h-full w-full"
           viewBox="0 0 100 100"
@@ -234,7 +234,6 @@ export function ThinkingGraph({
             </div>
           );
         })}
-
       </div>
 
       {!compact && (
