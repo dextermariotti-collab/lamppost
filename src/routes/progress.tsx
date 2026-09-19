@@ -273,7 +273,7 @@ function ProgressScreen() {
                     <div
                       className="h-full rounded-full bg-hero-gradient"
                       style={{
-                        width: `${hydrated && unit.answered > 0 ? pct : 0}%`,
+                        width: `${unit.answered > 0 ? pct : 0}%`,
                         transition: "width 1.1s cubic-bezier(0.22, 1, 0.36, 1)",
                       }}
                     />
