@@ -129,6 +129,54 @@ function read(): ProgressState {
   }
 }
 
+// One module-level snapshot shared by every screen, signed in or not: each hook
+// instance subscribes to the same cached state instead of keeping its own copy,
+// so XP, gems, lessons and the streak can never differ between screens.
+let snapshot: ProgressState | null = null;
+
+function getSnapshot(): ProgressState {
+  if (!snapshot) snapshot = read();
+  return snapshot;
+}
+
+function getServerSnapshot(): ProgressState {
+  return DEFAULT_STATE;
+}
+
+const listeners = new Set<() => void>();
+
+function emit() {
+  snapshot = read();
+  listeners.forEach((fn) => fn());
+}
+
+function subscribe(fn: () => void) {
+  listeners.add(fn);
+  if (listeners.size === 1 && typeof window !== "undefined") {
+    window.addEventListener(PROGRESS_EVENT, emit);
+    window.addEventListener("storage", emit);
+  }
+  return () => {
+    listeners.delete(fn);
+    if (listeners.size === 0 && typeof window !== "undefined") {
+      window.removeEventListener(PROGRESS_EVENT, emit);
+      window.removeEventListener("storage", emit);
+    }
+  };
+}
+
+function writeState(next: ProgressState) {
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+  snapshot = next;
+  listeners.forEach((fn) => fn());
+  // Also notify anything listening on the DOM event (other tabs, non-hook code).
+  queueMicrotask(() => window.dispatchEvent(new Event(PROGRESS_EVENT)));
+}
+
 export type Tier = { name: string; emoji: string; min: number };
 
 export const TIERS: Tier[] = [
