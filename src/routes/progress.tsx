@@ -177,9 +177,10 @@ function ProgressScreen() {
           className="mt-6 flex animate-rise-in items-center gap-5 border-t border-border pt-5"
           style={{ animationDelay: "80ms" }}
         >
-          <ProgressRing pct={hydrated ? sessionPct : 0} size={104} stroke={10}>
+          <ProgressRing pct={sessionPct} size={104} stroke={10}>
             <span className="text-2xl font-extrabold">
-              <CountUp value={hydrated ? insights.doneToday : 0} duration={800} />
+              <CountUp value={insights.doneToday} duration={800} />
+
               <span className="text-sm text-muted-foreground">/{state.dailyGoal}</span>
             </span>
             <span className="text-[10px] font-bold text-muted-foreground">today</span>
