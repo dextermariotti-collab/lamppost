@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import { Check, Lock } from "lucide-react";
 import { useMemo, useState } from "react";
+import { readAttemptStore } from "@/lib/exercise-store";
+import { lessonAt } from "@/lib/curriculum";
 import { Button } from "@/components/ui/button";
 import {
   CURRICULUM_SLUG,
@@ -66,17 +69,29 @@ function routeEdge(fromId: string, toId: string) {
  */
 export function ThinkingGraph({
   completed,
-  streak,
-  xp,
+  compact = false,
 }: {
   completed: number;
-  streak: number;
-  xp: number;
+  /** Preview mode: no legend or detail panel, just the nodes and lines. */
+  compact?: boolean;
 }) {
   const [selected, setSelected] = useState<UnitLink | null>(null);
   const units = useMemo(() => unitProgress(completed), [completed]);
   const links = useMemo(() => unitLinks(), []);
   const currentUnitId = units.find((u) => u.state === "current")?.unit.id ?? units[0]?.unit.id;
+
+  // The skill practised most recently gets a soft glow, from real attempt times.
+  const recentUnitId = useMemo(() => {
+    let best: { unitId: string; at: number } | null = null;
+    for (const [key, attempt] of Object.entries(readAttemptStore())) {
+      const lessonId = key.split("#")[0] ?? "";
+      const index = lessonIndexOf(lessonId);
+      const unitId = index >= 0 ? lessonAt(index)?.unitId : undefined;
+      if (!unitId) continue;
+      if (!best || attempt.at > best.at) best = { unitId, at: attempt.at };
+    }
+    return best?.unitId ?? null;
+  }, [completed]);
 
   // Edges fade when neither end is reachable yet, so the lit path stays readable.
   const routes = useMemo(() => {
@@ -101,7 +116,7 @@ export function ThinkingGraph({
 
   return (
     <div>
-      <div className="relative h-[430px]" aria-label="Your critical thinking skills graph">
+      <div className={`relative ${compact ? "h-[430px]" : "h-[430px]"}`} aria-label="Your critical thinking skills graph">
         <svg
           className="pointer-events-none absolute inset-0 h-full w-full"
           viewBox="0 0 100 100"
@@ -165,7 +180,9 @@ export function ThinkingGraph({
                     unit.state === "locked" ? lessonIndexOf(firstLesson?.id ?? "") + 1 : target,
                   ),
                 }}
-                className={`knowledge-node knowledge-node-${state} relative flex items-center justify-center rounded-full text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                className={`knowledge-node knowledge-node-${state}${
+                  unit.unit.id === recentUnitId ? " knowledge-node-glow" : ""
+                } relative flex items-center justify-center rounded-full text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                 style={{ width: size, height: size }}
                 aria-label={`${unit.unit.title}, ${unit.completed} of ${unit.total} lessons complete`}
               >
@@ -190,21 +207,52 @@ export function ThinkingGraph({
                     />
                   )}
                 </svg>
-                <span className="relative max-w-[80%] text-balance text-[11px] font-bold leading-tight text-foreground">
+                <span
+                  className={`relative max-w-[80%] text-balance text-[11px] font-bold leading-tight ${
+                    state === "locked" ? "text-muted-foreground" : "text-foreground"
+                  }`}
+                >
                   {unit.unit.title}
                 </span>
+                {state === "locked" && (
+                  <span
+                    aria-hidden
+                    className="absolute bottom-1.5 flex h-4 w-4 items-center justify-center"
+                  >
+                    <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                  </span>
+                )}
+                {unit.state === "complete" && (
+                  <span
+                    aria-hidden
+                    className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-background"
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                )}
               </Link>
             </div>
           );
         })}
 
-        {/* The streak lives once on this screen, next to the daily-goal ring. */}
-        <div className="absolute right-1 top-1 z-30 text-right text-[11px] leading-relaxed text-muted-foreground">
-          <p>{xp.toLocaleString()} XP</p>
-        </div>
       </div>
 
-      {selected && (
+      {!compact && (
+        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 border-t border-border pt-3 text-[11px] text-muted-foreground">
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden className="h-2.5 w-2.5 rounded-full border border-border" /> locked
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden className="h-2.5 w-2.5 rounded-full border-2 border-primary" /> in
+            progress
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-primary" /> mastered
+          </li>
+        </ul>
+      )}
+
+      {selected && !compact && (
         <div role="status" className="border-t border-border py-4">
           <div className="flex items-start justify-between gap-4">
             <div>
