@@ -229,9 +229,10 @@ function ProgressScreen() {
 
         {/* Stats — unboxed, hairline-separated, quiet */}
         <div className="mt-6 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
-          <Tile label="Lessons" value={hydrated ? lessonsDone : 0} icon={Check} delay={0} />
-          <Tile label="Total XP" value={hydrated ? state.xp : 0} icon={Star} delay={70} />
-          <Tile label="Gems" value={hydrated ? state.gems : 0} icon={Gem} delay={140} />
+          <Tile label="Lessons" value={lessonsDone} icon={Check} delay={0} />
+          <Tile label="Total XP" value={state.xp} icon={Star} delay={70} />
+          <Tile label="Gems" value={state.gems} icon={Gem} delay={140} />
+
         </div>
 
         {/* Per-skill mastery, from real drill accuracy */}
