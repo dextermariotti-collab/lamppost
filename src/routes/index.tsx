@@ -241,19 +241,24 @@ function Home() {
             </Button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setMapOpen(true)}
-            aria-label="Expand your thinking map"
-            className="relative mt-3 block h-44 w-full overflow-hidden rounded-2xl border border-border"
-          >
-            <span className="pointer-events-none absolute inset-x-0 top-0 block origin-top scale-[0.38]">
+          <div className="relative mt-3 h-44 w-full overflow-hidden rounded-2xl border border-border">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 block origin-top scale-[0.38]"
+            >
               <ThinkingGraph completed={completed} compact />
             </span>
-            <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
-              <Maximize2 aria-hidden className="h-3 w-3" /> Tap to open
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setMapOpen(true)}
+              aria-label="Expand your thinking map"
+              className="absolute inset-0 flex items-end justify-end p-2"
+            >
+              <span className="flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
+                <Maximize2 aria-hidden className="h-3 w-3" /> Tap to open
+              </span>
+            </button>
+          </div>
         </section>
       </main>
 
