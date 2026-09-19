@@ -52,7 +52,7 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
+  const { state, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
   const analytics = useMasteryAnalytics();
