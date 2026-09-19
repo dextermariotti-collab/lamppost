@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronRight, Timer } from "lucide-react";
+import { Check, ChevronRight, Lock, Timer } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import {

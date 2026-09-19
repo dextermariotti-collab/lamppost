@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
 import { MOTIVATIONS, readIntent, saveIntent, type Motivation } from "@/lib/onboarding";
 import { useTheme } from "@/lib/theme";
+import { useFeedbackPrefs } from "@/lib/feedback";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/settings")({
@@ -205,6 +206,38 @@ function SettingsScreen() {
                     </button>
                   </li>
                 ))}
+              </ul>
+            </section>
+
+            <section className="mt-8">
+              <h2 className="text-sm font-bold">Sound and haptics</h2>
+              <ul className="mt-2">
+                <li className="flex items-center gap-3 border-b border-border py-4">
+                  <span className="flex-1">
+                    <span className="block text-sm font-bold">Sound effects</span>
+                    <span className="block text-[11px] text-muted-foreground">
+                      Short tones for right, wrong and milestones.
+                    </span>
+                  </span>
+                  <Switch
+                    checked={feedback.sound}
+                    onCheckedChange={(on) => setFeedback({ sound: on })}
+                    aria-label="Sound effects"
+                  />
+                </li>
+                <li className="flex items-center gap-3 border-b border-border py-4">
+                  <span className="flex-1">
+                    <span className="block text-sm font-bold">Haptics</span>
+                    <span className="block text-[11px] text-muted-foreground">
+                      A short buzz with each answer, where the device supports it.
+                    </span>
+                  </span>
+                  <Switch
+                    checked={feedback.haptics}
+                    onCheckedChange={(on) => setFeedback({ haptics: on })}
+                    aria-label="Haptics"
+                  />
+                </li>
               </ul>
             </section>
 
