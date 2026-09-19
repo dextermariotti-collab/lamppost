@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, Lightbulb } from "lucide-react";
+import { ArrowRight, Check, Flame, Lightbulb } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
