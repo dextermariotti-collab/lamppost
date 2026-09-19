@@ -138,7 +138,7 @@ function ProgressScreen() {
               <StreakFlame streak={insights.atRisk ? 0 : state.streak} size={28} />
             </span>
             <p className="font-display text-[3.5rem] leading-none font-extrabold">
-              <CountUp value={hydrated ? state.streak : 0} duration={900} />
+              <CountUp value={state.streak} duration={900} />
             </p>
             <p className="mb-2 text-sm font-semibold text-foreground">day streak</p>
           </div>
