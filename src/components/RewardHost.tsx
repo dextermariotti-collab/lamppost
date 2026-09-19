@@ -26,12 +26,16 @@ export function RewardHost() {
     const badges = drainNewUnlocks(computeBadges(state));
     const levels = drainLevelUps(unitLevels());
     if (badges.length === 0 && levels.length === 0) return;
-    setQueue((prev) => [
-      ...prev,
-      ...badges.map((badge) => ({ sort: "badge" as const, badge })),
-      ...levels.map((level) => ({ sort: "level" as const, level })),
-    ]);
-    playCue("levelup");
+    // Queued in a microtask so a store notification that lands mid-render of
+    // another screen never updates this component during that render.
+    queueMicrotask(() => {
+      setQueue((prev) => [
+        ...prev,
+        ...badges.map((badge) => ({ sort: "badge" as const, badge })),
+        ...levels.map((level) => ({ sort: "level" as const, level })),
+      ]);
+      playCue("levelup");
+    });
   }, [hydrated, state]);
 
   const current = queue[0];
