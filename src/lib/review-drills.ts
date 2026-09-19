@@ -32,7 +32,7 @@ export type DrillItem = {
   /** Variant numbers already served, so reviews stay fresh. */
   seen: number[];
   /** Why it entered the queue, shown in the schedule. */
-  reason: "missed" | "unsure";
+  reason: "missed" | "unsure" | "practice";
   at: number;
 };
 
@@ -123,9 +123,18 @@ export function gradeDrillReview(key: string, correct: boolean, variant?: number
   if (!item) return;
   const box = correct ? Math.min(item.box + 1, DRILL_INTERVALS.length - 1) : 0;
   const seen = variant !== undefined ? [...new Set([...item.seen, variant])].slice(-20) : item.seen;
+  // Once it comes back right, stop calling it a miss: it is upkeep from here.
+  const reason: DrillSchedule["reason"] = correct ? "practice" : "missed";
   writeStore({
     ...store,
-    [key]: { ...item, box, seen, due: shift(dayKey(), DRILL_INTERVALS[box]!), at: Date.now() },
+    [key]: {
+      ...item,
+      box,
+      seen,
+      reason,
+      due: shift(dayKey(), DRILL_INTERVALS[box]!),
+      at: Date.now(),
+    },
   });
 }
 
@@ -196,9 +205,17 @@ export function useDrillSchedule() {
 export function useDueDrills(limit = 8) {
   const { store, hydrated } = useDrillStore();
   // Due first, then weakest and least-recently-practised skills at the front.
-  const items = decorate(store)
+  const due = decorate(store)
     .filter((item) => item.dueInDays <= 0)
     .sort((a, b) => skillRating(a.lessonId).rating - skillRating(b.lessonId).rating);
+  // Interleave drill kinds so one session isn't three of the same exercise.
+  const items: typeof due = [];
+  const pool = [...due];
+  while (pool.length > 0) {
+    const lastKind = items[items.length - 1]?.kind;
+    const pickIndex = pool.findIndex((item) => item.kind !== lastKind);
+    items.push(...pool.splice(pickIndex === -1 ? 0 : pickIndex, 1));
+  }
   const grade = useCallback(
     (key: string, correct: boolean, variant?: number) => gradeDrillReview(key, correct, variant),
     [],
