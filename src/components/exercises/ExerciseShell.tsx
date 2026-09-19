@@ -65,9 +65,9 @@ export function OptionButton({
   const state = !answered
     ? "border-border hover:border-primary/50 hover:-translate-y-0.5"
     : isAnswer
-      ? "border-success bg-success/10"
+      ? `border-success bg-success/10${picked ? "" : " answer-right-pulse"}`
       : picked
-        ? "border-destructive bg-destructive/10"
+        ? "border-destructive bg-destructive/10 answer-shake"
         : "border-border opacity-60";
   return (
     <button
