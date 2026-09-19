@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronRight, Timer } from "lucide-react";
+import { Check, ChevronRight, Lock, Timer } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import {
@@ -88,15 +88,22 @@ function MyPath() {
                 className={`flex animate-rise-in items-center gap-3 rounded-3xl border-2 p-4 shadow-soft transition-transform hover:-translate-y-0.5 ${
                   unit.state === "complete"
                     ? "border-success/40 bg-success/5"
-                    : due > 0
-                      ? "border-primary/35 bg-card"
-                      : "border-transparent bg-card"
+                    : unit.state === "locked"
+                      ? "border-dashed border-border bg-card opacity-60"
+                      : due > 0
+                        ? "border-primary/35 bg-card"
+                        : "border-transparent bg-card"
                 }`}
               >
                 <div className="relative shrink-0">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-xl">
                     <span aria-hidden>{unit.unit.emoji}</span>
                   </div>
+                  {unit.state === "locked" && (
+                    <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground shadow-soft">
+                      <Lock className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                  )}
                   {unit.state === "complete" && (
                     <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-success text-success-foreground shadow-soft">
                       <Check className="h-3 w-3" strokeWidth={3} />
@@ -106,7 +113,7 @@ function MyPath() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-bold">
+                    <p className="line-clamp-2 text-sm font-bold">
                       Unit {i + 1} · {unit.unit.title}
                     </p>
                     {due > 0 && (
@@ -118,11 +125,13 @@ function MyPath() {
                   </div>
 
                   <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
-                    {unit.unit.blurb} · {unit.completed}/{unit.total} lessons
+                    {unit.state === "locked"
+                      ? "Locked · finish the units before it"
+                      : `${unit.unit.blurb} · ${unit.completed}/${unit.total} lessons`}
                   </p>
 
                   <div className="mt-2 flex items-center gap-2">
-                    <AnimatedBar pct={unit.pct} className="flex-1" />
+                    <AnimatedBar pct={unit.pct} className="flex-1" animate={false} />
                     <span className="text-[11px] font-bold text-muted-foreground">{unit.pct}%</span>
                   </div>
                 </div>

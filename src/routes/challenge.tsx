@@ -14,6 +14,7 @@ import { CURRICULUM_SLUG } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
+import { celebrateAnswer } from "@/components/AnswerFeedback";
 
 export const Route = createFileRoute("/challenge")({
   head: () => ({
@@ -80,6 +81,7 @@ function DailyChallengeScreen() {
     complete(correct);
     recordReview(correct);
     trackDrillResult(challenge.lessonId, challenge.kind, score);
+    celebrateAnswer({ correct, xp: correct ? 20 : 5, note: "Daily challenge" });
     recordDrillOutcome(challenge.lessonId, { score, difficulty });
   };
 
