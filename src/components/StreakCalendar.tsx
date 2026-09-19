@@ -89,7 +89,6 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
                   />
                 )}
               </span>
-
             </div>
           );
         })}

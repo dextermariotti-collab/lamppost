@@ -233,7 +233,6 @@ function ProgressScreen() {
           <Tile label="Lessons" value={lessonsDone} icon={Check} delay={0} />
           <Tile label="Total XP" value={state.xp} icon={Star} delay={70} />
           <Tile label="Gems" value={state.gems} icon={Gem} delay={140} />
-
         </div>
 
         {/* Per-skill mastery, from real drill accuracy */}
