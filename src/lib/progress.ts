@@ -226,39 +226,20 @@ export function leagueFor(xp: number) {
 }
 
 export function useProgress() {
-  const [state, setState] = useState<ProgressState>(DEFAULT_STATE);
-  const [hydrated, setHydrated] = useState(false);
+  // Every screen reads the same shared snapshot, so guests and signed-in users
+  // see identical XP, gems, lessons and streak on every screen.
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const hydrated = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const { userId } = useSessionUser();
   const lastSynced = useRef("");
   const pulled = useRef<string | null>(null);
 
-  // Every screen that reads progress shares one source of truth: writes from any
-  // hook instance are broadcast so no screen shows stale XP, gems or lessons.
-  useEffect(() => {
-    const sync = () => setState(read());
-    sync();
-    setHydrated(true);
-    window.addEventListener(PROGRESS_EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(PROGRESS_EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
   const update = useCallback((fn: (prev: ProgressState) => ProgressState) => {
-    setState((prev) => {
-      const next = fn(prev);
-      try {
-        window.localStorage.setItem(KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-      // Broadcast after the render pass, so other screens never receive a state
-      // update while React is rendering this one.
-      queueMicrotask(() => window.dispatchEvent(new Event(PROGRESS_EVENT)));
-      return next;
-    });
+    writeState(fn(getSnapshot()));
   }, []);
 
   // On sign-in, pull the account's numbers down so a new device isn't blank.
