@@ -52,7 +52,7 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
+  const { state, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
   const analytics = useMasteryAnalytics();
@@ -138,7 +138,7 @@ function ProgressScreen() {
               <StreakFlame streak={insights.atRisk ? 0 : state.streak} size={28} />
             </span>
             <p className="font-display text-[3.5rem] leading-none font-extrabold">
-              <CountUp value={hydrated ? state.streak : 0} duration={900} />
+              <CountUp value={state.streak} duration={900} />
             </p>
             <p className="mb-2 text-sm font-semibold text-foreground">day streak</p>
           </div>
@@ -177,9 +177,10 @@ function ProgressScreen() {
           className="mt-6 flex animate-rise-in items-center gap-5 border-t border-border pt-5"
           style={{ animationDelay: "80ms" }}
         >
-          <ProgressRing pct={hydrated ? sessionPct : 0} size={104} stroke={10}>
+          <ProgressRing pct={sessionPct} size={104} stroke={10}>
             <span className="text-2xl font-extrabold">
-              <CountUp value={hydrated ? insights.doneToday : 0} duration={800} />
+              <CountUp value={insights.doneToday} duration={800} />
+
               <span className="text-sm text-muted-foreground">/{state.dailyGoal}</span>
             </span>
             <span className="text-[10px] font-bold text-muted-foreground">today</span>
@@ -229,9 +230,9 @@ function ProgressScreen() {
 
         {/* Stats — unboxed, hairline-separated, quiet */}
         <div className="mt-6 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
-          <Tile label="Lessons" value={hydrated ? lessonsDone : 0} icon={Check} delay={0} />
-          <Tile label="Total XP" value={hydrated ? state.xp : 0} icon={Star} delay={70} />
-          <Tile label="Gems" value={hydrated ? state.gems : 0} icon={Gem} delay={140} />
+          <Tile label="Lessons" value={lessonsDone} icon={Check} delay={0} />
+          <Tile label="Total XP" value={state.xp} icon={Star} delay={70} />
+          <Tile label="Gems" value={state.gems} icon={Gem} delay={140} />
         </div>
 
         {/* Per-skill mastery, from real drill accuracy */}
@@ -271,7 +272,7 @@ function ProgressScreen() {
                     <div
                       className="h-full rounded-full bg-hero-gradient"
                       style={{
-                        width: `${hydrated && unit.answered > 0 ? pct : 0}%`,
+                        width: `${unit.answered > 0 ? pct : 0}%`,
                         transition: "width 1.1s cubic-bezier(0.22, 1, 0.36, 1)",
                       }}
                     />
@@ -378,7 +379,7 @@ function ProgressScreen() {
                       day.count > 0 ? "bg-hero-gradient" : "bg-muted"
                     } ${isToday && day.count > 0 ? "shadow-soft" : ""}`}
                     style={{
-                      height: `${hydrated ? height : 12}px`,
+                      height: `${height}px`,
                       transition: `height 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${i * 60}ms`,
                     }}
                   />

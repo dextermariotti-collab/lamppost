@@ -80,11 +80,15 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
                     : "bg-muted text-muted-foreground/45"
               } ${isToday ? "ring-2 ring-primary/50" : ""}`}
             >
-              {isFrozen ? (
-                <Snowflake aria-hidden className="h-3 w-3" />
-              ) : (
-                Number(day.slice(-2))
-              )}
+              <span className="relative inline-flex items-center justify-center leading-none">
+                {Number(day.slice(-2))}
+                {isFrozen && (
+                  <Snowflake
+                    aria-hidden
+                    className="absolute -top-1.5 -right-2 h-2.5 w-2.5 text-gem"
+                  />
+                )}
+              </span>
             </div>
           );
         })}
