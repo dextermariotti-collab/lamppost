@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AnswerFeedbackHost } from "../components/AnswerFeedback";
+import { RewardHost } from "../components/RewardHost";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../lib/theme";
 
@@ -134,6 +135,7 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <AnswerFeedbackHost />
+        <RewardHost />
       </ThemeProvider>
     </QueryClientProvider>
   );
