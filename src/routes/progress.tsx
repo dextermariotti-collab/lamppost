@@ -380,7 +380,7 @@ function ProgressScreen() {
                       day.count > 0 ? "bg-hero-gradient" : "bg-muted"
                     } ${isToday && day.count > 0 ? "shadow-soft" : ""}`}
                     style={{
-                      height: `${hydrated ? height : 12}px`,
+                      height: `${height}px`,
                       transition: `height 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${i * 60}ms`,
                     }}
                   />
