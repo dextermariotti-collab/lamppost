@@ -81,6 +81,7 @@ function DailyChallengeScreen() {
     complete(correct);
     recordReview(correct);
     trackDrillResult(challenge.lessonId, challenge.kind, score);
+    celebrateAnswer({ correct, xp: correct ? 20 : 5, note: "Daily challenge" });
     recordDrillOutcome(challenge.lessonId, { score, difficulty });
   };
 
