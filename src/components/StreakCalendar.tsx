@@ -1,4 +1,5 @@
 import { Flame, Snowflake } from "lucide-react";
+import { useEffect, useState } from "react";
 import { dayKey, type ProgressState } from "@/lib/progress";
 
 /** Streak milestones. The flame grows visibly at each one. */
@@ -57,7 +58,11 @@ function shift(key: string, days: number) {
  * finished, snowflakes are days a freeze covered, blanks are days missed.
  */
 export function StreakCalendar({ state }: { state: ProgressState }) {
+  // "Today" is the device's local day, which the server can't know.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const today = dayKey();
+  if (!mounted) return <div className="h-40 animate-pulse rounded-2xl bg-muted" aria-hidden />;
   const days = Array.from({ length: 28 }, (_, i) => shift(today, -(27 - i)));
   const frozen = new Set(state.freezeLog);
 
