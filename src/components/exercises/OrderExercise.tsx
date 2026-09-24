@@ -35,9 +35,14 @@ export function OrderExerciseCard({
   const shown = answer ?? order;
   const rightCount = shown.filter((text, i) => text === solution[i]).length;
 
-  const move = (from: number, to: number) => {
-    if (answered || to < 0 || to >= order.length) return;
+  // Moves by item identity against the latest state, so rapid taps never
+  // act on a stale index.
+  const move = (text: string, delta: number) => {
+    if (answered) return;
     setOrder((prev) => {
+      const from = prev.indexOf(text);
+      const to = from + delta;
+      if (from < 0 || to < 0 || to >= prev.length) return prev;
       const next = [...prev];
       const [item] = next.splice(from, 1);
       next.splice(to, 0, item!);
@@ -85,18 +90,18 @@ export function OrderExerciseCard({
                   <button
                     type="button"
                     aria-label={`Move "${text}" up`}
-                    onClick={() => move(i, i - 1)}
-                    className="rounded-full p-1 text-muted-foreground hover:text-primary"
+                    onClick={() => move(text, -1)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-primary"
                   >
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
                     aria-label={`Move "${text}" down`}
-                    onClick={() => move(i, i + 1)}
-                    className="rounded-full p-1 text-muted-foreground hover:text-primary"
+                    onClick={() => move(text, 1)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-primary"
                   >
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-5 w-5" />
                   </button>
                 </span>
               )}
