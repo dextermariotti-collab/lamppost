@@ -154,6 +154,19 @@ export function WrittenArgument({
             <PenLine className="h-4 w-4" />
             {busy ? "Reading your argument…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
           </Button>
+          {busy && (
+            <div className="mt-4 flex items-end gap-2" aria-live="polite" aria-busy="true">
+              <CompanionAvatar companion={companion} size={56} animate pose="peek" className="shrink-0" />
+              <div className="flex-1 space-y-2 rounded-2xl rounded-bl-sm border-2 border-primary/20 bg-primary-soft/60 px-4 py-3">
+                <p className="text-[13px] font-bold text-foreground">
+                  Reading it carefully against each criterion…
+                </p>
+                {[80, 95, 70, 88].map((w) => (
+                  <div key={w} className="h-2.5 animate-pulse rounded-full bg-primary/20" style={{ width: `${w}%` }} />
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
 
