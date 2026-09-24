@@ -597,7 +597,7 @@ function LessonScreen() {
           </div>
         )}
 
-        <div className="mt-6">
+        <div className="sticky bottom-3 z-20 mt-6">
           {/* Hidden until the drill is answered, so the card isn't cluttered. */}
           {canContinue && (
             <Button
