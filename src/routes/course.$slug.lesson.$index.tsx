@@ -342,7 +342,7 @@ function LessonScreen() {
                     accent: accent.color,
                   })
                 }
-                className="sticky-action mt-5 h-11 w-full rounded-full text-sm font-semibold"
+                className="mt-5 h-11 w-full rounded-full text-sm font-semibold"
               >
                 <Share2 className="h-4 w-4" /> Share this badge
               </Button>
