@@ -49,7 +49,7 @@ export function StreakFlame({
 function shift(key: string, days: number) {
   const d = new Date(`${key}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
-  return dayKey(d);
+  return d.toISOString().slice(0, 10);
 }
 
 /**

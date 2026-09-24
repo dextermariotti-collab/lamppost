@@ -43,7 +43,7 @@ export const drillKey = (lessonId: string, kind: ExerciseKind) => `${lessonId}#$
 function shift(day: string, days: number) {
   const d = new Date(`${day}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
-  return dayKey(d);
+  return d.toISOString().slice(0, 10);
 }
 
 function daysUntil(due: string, today = dayKey()) {
