@@ -132,7 +132,7 @@ export function RankExerciseCard({
           }
           className="mt-4 h-11 w-full rounded-full font-semibold"
         >
-          Check my ordering
+          Check my order
         </Button>
       ) : (
         <ExerciseFeedback
