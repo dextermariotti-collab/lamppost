@@ -96,7 +96,13 @@ export function trackDrillResult(
     const box = Math.min(existing.box + 1, DRILL_INTERVALS.length - 1);
     writeStore({
       ...store,
-      [key]: { ...existing, box, due: shift(today, DRILL_INTERVALS[box]!), at: Date.now() },
+      [key]: {
+        ...existing,
+        box,
+        reason: "practice",
+        due: shift(today, DRILL_INTERVALS[box]!),
+        at: Date.now(),
+      },
     });
     return;
   }
