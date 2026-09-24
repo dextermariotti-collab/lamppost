@@ -122,7 +122,7 @@ function ReviewQueue() {
                   setAnswered(false);
                   setStep((s) => s + 1);
                 }}
-                className="mt-5 h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                className="sticky-action mt-5 h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
               >
                 {step + 1 >= session!.length ? "Finish review" : "Next drill"}
                 <ArrowRight className="h-4 w-4" />

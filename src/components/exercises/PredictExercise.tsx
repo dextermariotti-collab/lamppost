@@ -89,7 +89,7 @@ export function PredictExerciseCard({
               choice !== null &&
               onAnswer({ choice, confidence }, choice === exercise.correct ? 1 : 0)
             }
-            className="mt-4 h-11 w-full rounded-full font-semibold"
+            className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
           >
             Lock in my call
           </Button>

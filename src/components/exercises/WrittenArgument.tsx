@@ -149,7 +149,7 @@ export function WrittenArgument({
               text.trim().length <
                 (written.type === "restate" || written.type === "testable" ? 12 : 20)
             }
-            className="mt-3 h-12 w-full rounded-full text-base font-semibold"
+            className="sticky-action mt-3 h-12 w-full rounded-full text-base font-semibold"
           >
             <PenLine className="h-4 w-4" />
             {busy ? "Reading your argument…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
