@@ -80,9 +80,22 @@ export const getDrillVariant = createServerFn({ method: "POST" })
         return { ok: false, reason: "This drill is still being prepared. Try again in a moment." };
       }
 
-      // Never repeat a drill this learner has already seen until the pool runs out.
-      const unseen = candidates.filter((row) => !data.seen.includes(row.variant));
-      const pool = unseen.length > 0 ? unseen : candidates;
+      // The lesson's own drills are seeded into the pool; a learner who played
+      // the lesson has seen those, so they never count as a "new scenario".
+      const lesson = await readCachedLesson(meta.id).catch(() => null);
+      const questionOf = (c: unknown) =>
+        String((c as { question?: string } | null)?.question ?? "").trim().toLowerCase();
+      const lessonQuestions = new Set(
+        ((lesson?.exercises ?? []) as unknown[]).map(questionOf).filter(Boolean),
+      );
+      const fresh = candidates.filter(
+        (row) => !data.seen.includes(row.variant) && !lessonQuestions.has(questionOf(row.content)),
+      );
+      // Out of unseen drills: least-recently-seen first, and top the pool up.
+      const lastSeenAt = (v: number) => data.seen.lastIndexOf(v);
+      const oldest = [...candidates].sort((a, b) => lastSeenAt(a.variant) - lastSeenAt(b.variant));
+      const pool = fresh.length > 0 ? fresh : oldest.slice(0, 1);
+      const exhausted = fresh.length === 0;
 
       // Then keep it near their rating, and in a setting their goal cares about.
       const nearest = Math.min(
@@ -97,7 +110,7 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       const chosen = source[Math.floor(Math.random() * source.length)]!;
 
       // Keep the pool healthy for next time, without making anyone wait for it.
-      if (ofKind.length < POOL_TARGET && meta.drills.includes(data.kind)) {
+      if ((exhausted || ofKind.length < POOL_TARGET) && meta.drills.includes(data.kind)) {
         const domain = wanted[Math.floor(Math.random() * wanted.length)];
         void import("./curriculum-generate.server")
           .then(({ generatePoolDrill }) =>

@@ -130,9 +130,9 @@ export function RankExerciseCard({
           onClick={() =>
             onAnswer(order, order.filter((t, i) => t === solution[i]).length / solution.length)
           }
-          className="mt-4 h-11 w-full rounded-full font-semibold"
+          className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
         >
-          Check my ordering
+          Check my order
         </Button>
       ) : (
         <ExerciseFeedback

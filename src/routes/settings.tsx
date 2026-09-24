@@ -57,11 +57,11 @@ function SettingsScreen() {
     setHandle(account.handle);
   }, [account]);
 
-  useEffect(() => {
-    if (sessionReady && !signedIn) navigate({ to: "/auth", replace: true });
-  }, [sessionReady, signedIn, navigate]);
+  // Guests keep full access to local preferences; only account bits need sign-in.
+  void sessionReady;
 
   const save = async (patch: Parameters<typeof updateMyProfile>[0]["data"]) => {
+    if (!signedIn) return;
     setSaving(true);
     setError(null);
     try {
@@ -80,7 +80,7 @@ function SettingsScreen() {
     <PhoneFrame>
       <ScreenHeader title="Settings" backTo="/profile" />
       <div className="px-5 pb-10">
-        {isLoading ? (
+        {isLoading && signedIn ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
@@ -114,6 +114,7 @@ function SettingsScreen() {
               </div>
             </section>
 
+            {signedIn && (
             <section className="mt-8">
               <h2 className="text-sm font-bold">Profile</h2>
               <label className="mt-3 block text-xs font-bold text-muted-foreground">
@@ -148,6 +149,7 @@ function SettingsScreen() {
               {error ? <p className="mt-2 text-xs text-flame">{error}</p> : null}
               {saved ? <p className="mt-2 text-xs text-success">Saved</p> : null}
             </section>
+            )}
 
             <section className="mt-8">
               <h2 className="text-sm font-bold">Daily goal</h2>
@@ -242,6 +244,8 @@ function SettingsScreen() {
               </ul>
             </section>
 
+            {signedIn ? (
+            <>
             <section className="mt-8">
               <h2 className="text-sm font-bold">Notifications</h2>
               <ul className="mt-2">
@@ -273,6 +277,19 @@ function SettingsScreen() {
             </section>
 
             <LegalAndDataSection />
+            </>
+            ) : (
+              <section className="mt-8 rounded-2xl border border-border p-4">
+                <h2 className="text-sm font-bold">Account</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Your settings are saved on this device. Sign in to sync them, manage
+                  notifications, or export and delete your data.
+                </p>
+                <Button type="button" className="mt-3 rounded-full" onClick={() => void navigate({ to: "/auth" })}>
+                  Sign in
+                </Button>
+              </section>
+            )}
           </>
         )}
       </div>

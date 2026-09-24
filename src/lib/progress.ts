@@ -109,21 +109,44 @@ const SURPRISES = [
   "Deep-focus bonus applied.",
 ];
 
+/** The device's LOCAL calendar day as YYYY-MM-DD — the day boundary everywhere. */
 export function dayKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${m}-${d}`;
 }
 
-function shiftDay(key: string, days: number) {
+/** Pure calendar arithmetic on a YYYY-MM-DD key (timezone-independent). */
+export function shiftDay(key: string, days: number) {
   const d = new Date(`${key}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
-  return dayKey(d);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Older versions keyed days in UTC, so evening activity could land on
+ * "tomorrow". Fold any future-dated keys back onto today.
+ */
+function migrateDays(state: ProgressState): ProgressState {
+  const today = dayKey();
+  const history: Record<string, number> = {};
+  let changed = false;
+  for (const [k, v] of Object.entries(state.history ?? {})) {
+    const key = k > today ? today : k;
+    if (key !== k) changed = true;
+    history[key] = (history[key] ?? 0) + v;
+  }
+  const last = state.lastActiveDay && state.lastActiveDay > today ? today : state.lastActiveDay;
+  const freezeLog = (state.freezeLog ?? []).map((k) => (k > today ? today : k));
+  if (!changed && last === state.lastActiveDay) return state;
+  return { ...state, history, lastActiveDay: last, freezeLog };
 }
 
 function read(): ProgressState {
   if (typeof window === "undefined") return DEFAULT_STATE;
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? { ...DEFAULT_STATE, ...(JSON.parse(raw) as ProgressState) } : DEFAULT_STATE;
+    return raw ? migrateDays({ ...DEFAULT_STATE, ...(JSON.parse(raw) as ProgressState) }) : DEFAULT_STATE;
   } catch {
     return DEFAULT_STATE;
   }
