@@ -93,14 +93,17 @@ function ProgressScreen() {
     .filter((c) => c.pct >= 60 && c.left > 0 && c.left <= 2)
     .sort((a, b) => b.pct - a.pct)[0];
 
+  // Local-day labels are only known in the browser; render them after mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const today = new Date();
   const week = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (6 - i));
     return {
       key: dayKey(d),
-      label: WEEK_LABELS[d.getDay()]!,
-      count: state.history[dayKey(d)] ?? 0,
+      label: mounted ? WEEK_LABELS[d.getDay()]! : "",
+      count: mounted ? (state.history[dayKey(d)] ?? 0) : 0,
     };
   });
   const weekMax = Math.max(1, ...week.map((d) => d.count));
