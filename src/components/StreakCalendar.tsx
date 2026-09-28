@@ -62,7 +62,7 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
   const frozen = new Set(state.freezeLog);
 
   return (
-    <div>
+    <div className="max-w-[440px]">
       <div className="grid grid-cols-7 gap-1.5">
         {days.map((day) => {
           const count = state.history[day] ?? 0;
