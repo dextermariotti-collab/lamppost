@@ -99,12 +99,20 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
 
 ## Security model (read before touching Supabase)
 
-- RLS is on for every table. The browser only writes **companion/settings columns** on `profiles`
-  directly (column-level `GRANT`). Progress columns (`total_xp`, `gems`, `current_streak`,
-  `longest_streak`, `last_active_day`), `daily_activity`, `user_achievements`, debate scores and
-  practice-session rows are written **only by server functions using the service-role client**
+- RLS is on for every table, and the browser roles hold **no write privilege** except a short
+  allowlist: companion/settings columns on `profiles` (column-level `GRANT`), friend requests,
+  nudges and content reports. Progress columns (`total_xp`, `gems`, streaks, `last_active_day`),
+  `daily_activity`, `user_achievements`, `shared_streaks`, debates, `argument_attempts` and
+  `practice_sessions` are written **only by server functions using the service-role client**
   (`client.server.ts`, loaded with a dynamic `import()` inside handlers so it never ships to the
-  browser). Don't add a client-side write path for these.
+  browser). Private `profiles` columns (invite code, goal, settings) are not readable by the
+  browser role either — read the owner's row on the server. Don't add a client-side write path
+  for any of this; `src/db/rls.test.ts` runs the real migrations in an in-memory Postgres and fails
+  if the allowlist grows. `syncProgress` (`profile.functions.ts`) is the only way progress reaches
+  the account: it recomputes the streak from stored activity and bounds XP/gems and back-dating
+  (`lib/progress-limits.ts`) — it cannot prove a lesson was done.
+- Migrations that tighten access ship **in the same PR as the code that needs them**, with a
+  tested rollback in `docs/rollback/` (never in `supabase/migrations/`, which is auto-applied).
 - `requireSupabaseAuth` verifies the bearer token and gives handlers a per-user client that
   respects RLS. Use it on every mutating server function. Public server functions (lesson fetch,
   drill pool, grader) call the AI gateway with server-held credentials — keep inputs bounded.
@@ -118,7 +126,8 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
 ## Testing
 
 Vitest (`npm test`). Pure logic (`lib/days.ts`, `lib/streak.ts`, `lib/progress-core.ts`, curriculum
-invariants) is tested in node; component tests use jsdom. Tests that depend on the timezone set it
+invariants, colour contrast of `styles.css`) is tested in node; component tests use jsdom; the
+database rules run against the real migrations in pglite (`src/db`). Tests that depend on the timezone set it
 explicitly (`process.env.TZ`) — the day-boundary suite simulates 9pm US Eastern. When you fix a bug
 in progress/streak/day logic, add the failing case to those suites first.
 
