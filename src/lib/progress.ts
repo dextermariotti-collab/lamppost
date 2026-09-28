@@ -1,127 +1,36 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
-import { argumentXpFor } from "./exercises";
+import { dayKey, shiftDay } from "./days";
+import {
+  DEFAULT_STATE,
+  applyArgument,
+  applyBuyFreeze,
+  applyExercise,
+  applyLessonComplete,
+  applyPractice,
+  applyReview,
+  applyUnlockLessons,
+  type ProgressState,
+} from "./progress-core";
+
+export {
+  DEFAULT_STATE,
+  FREEZE_COST,
+  LEAGUES,
+  MAX_FREEZES,
+  TIERS,
+  deriveInsights,
+  leagueFor,
+  tierFor,
+  type Celebration,
+  type ProgressState,
+  type Tier,
+} from "./progress-core";
+export { dayKey, shiftDay };
 
 const KEY = "lamppost-progress-v1";
 const PROGRESS_EVENT = "lamppost-progress-change";
-
-export type Celebration = {
-  kind: "lesson" | "streak" | "mastery";
-  title: string;
-  detail: string;
-  emoji: string;
-  bonusXp?: number | undefined;
-  big?: boolean | undefined;
-};
-
-export type ProgressState = {
-  streak: number;
-  longestStreak: number;
-  gems: number;
-  xp: number;
-  /** YYYY-MM-DD of the last day a lesson was completed */
-  lastActiveDay: string | null;
-  /** YYYY-MM-DD -> lessons completed that day */
-  history: Record<string, number>;
-  /** lessons the user aims to complete each day */
-  dailyGoal: number;
-  /** queued celebration, consumed by the progress screen */
-  celebration: Celebration | null;
-  /** slug -> number of lessons completed */
-  courses: Record<
-    string,
-    { topic: string; completed: number; total: number; lastActivityAt?: number }
-  >;
-  /** unused streak freezes held */
-  freezes: number;
-  /** YYYY-MM-DD days a freeze covered, so they're only spent once */
-  freezeLog: string[];
-  /** set when the last visit was rescued by a freeze, consumed by the UI */
-  freezeSaved: { days: number; day: string } | null;
-};
-
-const DEFAULT_STATE: ProgressState = {
-  streak: 0,
-  longestStreak: 0,
-  gems: 0,
-  xp: 0,
-  lastActiveDay: null,
-  history: {},
-  dailyGoal: 3,
-  celebration: null,
-  courses: {},
-  freezes: 1,
-  freezeLog: [],
-  freezeSaved: null,
-};
-
-/** Most freezes that can be held at once, and the gem price of one. */
-export const MAX_FREEZES = 2;
-export const FREEZE_COST = 60;
-
-const STREAK_MILESTONES = [3, 7, 30, 100, 365];
-
-function daysBetween(from: string, to: string) {
-  const a = new Date(`${from}T00:00:00Z`).getTime();
-  const b = new Date(`${to}T00:00:00Z`).getTime();
-  return Math.round((b - a) / 86_400_000);
-}
-
-/**
- * Streak forgiveness. A gap of missed days is covered by held freezes (one per
- * missed day) so the streak continues instead of resetting — loss aversion only
- * motivates while there's an escape valve. Every 7th day earns a freeze back.
- */
-function advanceStreak(prev: ProgressState, today: string) {
-  if (prev.lastActiveDay === today) {
-    return {
-      streak: prev.streak,
-      freezes: prev.freezes,
-      freezeLog: prev.freezeLog,
-      freezeSaved: prev.freezeSaved,
-    };
-  }
-  const gap = prev.lastActiveDay ? daysBetween(prev.lastActiveDay, today) - 1 : 0;
-  let streak = 1;
-  let freezes = prev.freezes;
-  let freezeLog = prev.freezeLog;
-  let freezeSaved: ProgressState["freezeSaved"] = null;
-
-  if (prev.lastActiveDay && gap <= 0) {
-    streak = prev.streak + 1;
-  } else if (prev.lastActiveDay && gap > 0 && gap <= freezes) {
-    const covered = Array.from({ length: gap }, (_, i) => shiftDay(today, -(i + 1)));
-    freezes -= gap;
-    freezeLog = [...prev.freezeLog, ...covered].slice(-30);
-    freezeSaved = { days: gap, day: today };
-    streak = prev.streak + 1;
-  }
-
-  if (streak > 0 && streak % 7 === 0) freezes = Math.min(MAX_FREEZES, freezes + 1);
-  return { streak, freezes, freezeLog, freezeSaved };
-}
-
-const SURPRISES = [
-  "Bonus XP — you showed up when it counted.",
-  "Momentum bonus unlocked.",
-  "Lucky drop: extra XP for a clean run.",
-  "Deep-focus bonus applied.",
-];
-
-/** The device's LOCAL calendar day as YYYY-MM-DD — the day boundary everywhere. */
-export function dayKey(date = new Date()) {
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${date.getFullYear()}-${m}-${d}`;
-}
-
-/** Pure calendar arithmetic on a YYYY-MM-DD key (timezone-independent). */
-export function shiftDay(key: string, days: number) {
-  const d = new Date(`${key}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
 
 /**
  * Older versions keyed days in UTC, so evening activity could land on
@@ -146,7 +55,9 @@ function read(): ProgressState {
   if (typeof window === "undefined") return DEFAULT_STATE;
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? migrateDays({ ...DEFAULT_STATE, ...(JSON.parse(raw) as ProgressState) }) : DEFAULT_STATE;
+    return raw
+      ? migrateDays({ ...DEFAULT_STATE, ...(JSON.parse(raw) as ProgressState) })
+      : DEFAULT_STATE;
   } catch {
     return DEFAULT_STATE;
   }
@@ -198,54 +109,6 @@ function writeState(next: ProgressState) {
   listeners.forEach((fn) => fn());
   // Also notify anything listening on the DOM event (other tabs, non-hook code).
   queueMicrotask(() => window.dispatchEvent(new Event(PROGRESS_EVENT)));
-}
-
-export type Tier = { name: string; emoji: string; min: number };
-
-export const TIERS: Tier[] = [
-  { name: "Novice", emoji: "🌱", min: 0 },
-  { name: "Learning", emoji: "📘", min: 25 },
-  { name: "Proficient", emoji: "🎯", min: 60 },
-  { name: "Mastered", emoji: "👑", min: 100 },
-];
-
-export function tierFor(pct: number): Tier {
-  return [...TIERS].reverse().find((t) => pct >= t.min) ?? TIERS[0]!;
-}
-
-/** Lessons done today, and how the week compares to previous weeks. */
-export function deriveInsights(state: ProgressState) {
-  const today = dayKey();
-  const doneToday = state.history[today] ?? 0;
-  const weekOf = (offset: number) =>
-    Array.from(
-      { length: 7 },
-      (_, i) => state.history[shiftDay(today, -(i + offset * 7))] ?? 0,
-    ).reduce((a, b) => a + b, 0);
-  const thisWeek = weekOf(0);
-  const past = [1, 2, 3, 4, 5, 6, 7, 8].map(weekOf).filter((v) => v > 0);
-  const beaten = past.filter((v) => thisWeek > v).length;
-  const percentile = past.length >= 2 ? Math.round((beaten / past.length) * 100) : null;
-  const hoursLeft = 24 - new Date().getHours();
-  return {
-    doneToday,
-    thisWeek,
-    percentile,
-    hoursLeft,
-    atRisk: doneToday === 0 && state.streak > 0 && hoursLeft <= 8,
-  };
-}
-
-export const LEAGUES: { name: string; min: number }[] = [
-  { name: "Novice", min: 0 },
-  { name: "Learning", min: 250 },
-  { name: "Proficient", min: 1000 },
-  { name: "Mastered", min: 2500 },
-];
-
-/** League tier derived from lifetime XP, reusing the mastery tier names. */
-export function leagueFor(xp: number) {
-  return [...LEAGUES].reverse().find((l) => xp >= l.min) ?? LEAGUES[0]!;
 }
 
 export function useProgress() {
@@ -318,162 +181,39 @@ export function useProgress() {
    */
   const unlockLessons = useCallback(
     (slug: string, topic: string, count: number, total: number) =>
-      update((prev) => {
-        const existing = prev.courses[slug] ?? { topic, completed: 0, total };
-        const completed = Math.max(existing.completed, Math.min(count, total));
-        if (completed === existing.completed) return prev;
-        return {
-          ...prev,
-          courses: { ...prev.courses, [slug]: { ...existing, topic, total, completed } },
-        };
-      }),
+      update((prev) => applyUnlockLessons(prev, slug, topic, count, total)),
     [update],
   );
 
   const completeLesson = useCallback(
     (slug: string, topic: string, index: number, total: number) =>
-      update((prev) => {
-        const existing = prev.courses[slug] ?? { topic, completed: 0, total };
-        const completed = Math.max(existing.completed, index + 1);
-        const gained = completed > existing.completed;
-        if (!gained) return prev;
-
-        const today = dayKey();
-        const history = { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 };
-        const advanced = advanceStreak(prev, today);
-        const streak = advanced.streak;
-        const longestStreak = Math.max(prev.longestStreak, streak);
-
-        const bonusXp = Math.random() < 0.25 ? 25 + Math.floor(Math.random() * 4) * 25 : undefined;
-        const pct = Math.round((completed / total) * 100);
-        const hitStreak = prev.lastActiveDay !== today && STREAK_MILESTONES.includes(streak);
-
-        const celebration: Celebration = hitStreak
-          ? {
-              kind: "streak",
-              title: `${streak}-day streak!`,
-              detail: `You've shown up ${streak} days in a row. That's how mastery compounds.`,
-              emoji: "🔥",
-              big: true,
-              bonusXp,
-            }
-          : pct === 100
-            ? {
-                kind: "mastery",
-                title: `${topic} mastered`,
-                detail: "Every lesson complete. Time to pick your next frontier.",
-                emoji: "👑",
-                big: true,
-                bonusXp,
-              }
-            : {
-                kind: "lesson",
-                title: "Lesson complete",
-                detail:
-                  bonusXp !== undefined
-                    ? SURPRISES[Math.floor(Math.random() * SURPRISES.length)]!
-                    : "+50 XP · one step closer.",
-                emoji: "✅",
-                bonusXp,
-              };
-
-        return {
-          ...prev,
-          xp: prev.xp + 50 + (bonusXp ?? 0),
-          gems: prev.gems + 10,
-          streak,
-          longestStreak,
-          freezes: advanced.freezes,
-          freezeLog: advanced.freezeLog,
-          freezeSaved: advanced.freezeSaved,
-          lastActiveDay: today,
-          history,
-          celebration,
-          courses: {
-            ...prev.courses,
-            [slug]: { topic, completed, total, lastActivityAt: Date.now() },
-          },
-        };
-      }),
+      update((prev) => applyLessonComplete(prev, { slug, topic, index, total }, dayKey())),
     [update],
   );
 
   /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
   const recordReview = useCallback(
-    (correct: boolean) =>
-      update((prev) => {
-        const today = dayKey();
-        const advanced = advanceStreak(prev, today);
-        const streak = advanced.streak;
-        return {
-          ...prev,
-          xp: prev.xp + (correct ? 20 : 5),
-          gems: prev.gems + (correct ? 2 : 0),
-          streak,
-          longestStreak: Math.max(prev.longestStreak, streak),
-          freezes: advanced.freezes,
-          freezeLog: advanced.freezeLog,
-          freezeSaved: advanced.freezeSaved,
-          lastActiveDay: today,
-          history: { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 },
-        };
-      }),
+    (correct: boolean) => update((prev) => applyReview(prev, correct, dayKey())),
     [update],
   );
 
-  /**
-   * An explain-it-back session. XP here is paid for the explanation, and the
-   * bonus specifically for linking the idea to an earlier one — the connections
-   * engine is the moat, so that is what the reward points at.
-   */
   const recordPractice = useCallback(
     (verdict: "solid" | "shaky" | "revisit", connectionMade: boolean) =>
-      update((prev) => {
-        const base = verdict === "solid" ? 30 : verdict === "shaky" ? 20 : 10;
-        const bonus = connectionMade ? 40 : 0;
-        return {
-          ...prev,
-          xp: prev.xp + base + bonus,
-          gems: prev.gems + (connectionMade ? 5 : 0),
-        };
-      }),
+      update((prev) => applyPractice(prev, verdict, connectionMade)),
     [update],
   );
-  /** XP per reasoning exercise, scaled by how much of it was right. */
+
   const recordExercise = useCallback(
-    (score: number, bonus = 0) =>
-      update((prev) => {
-        const clamped = Math.min(Math.max(score, 0), 1);
-        return {
-          ...prev,
-          xp: prev.xp + Math.max(5, Math.round(25 * clamped)) + Math.max(0, bonus),
-          gems: prev.gems + (clamped === 1 ? 2 : 0),
-        };
-      }),
+    (score: number, bonus = 0) => update((prev) => applyExercise(prev, score, bonus)),
     [update],
   );
 
-  /** The written argument pays by rubric score, not by length. */
   const recordArgument = useCallback(
-    (total: number, max: number) =>
-      update((prev) => ({
-        ...prev,
-        xp: prev.xp + argumentXpFor(total, max),
-        gems: prev.gems + (total / Math.max(max, 1) >= 0.75 ? 5 : 1),
-      })),
+    (total: number, max: number) => update((prev) => applyArgument(prev, total, max)),
     [update],
   );
 
-  /** Buy one freeze with gems, capped so it can't be stockpiled. */
-  const buyFreeze = useCallback(
-    () =>
-      update((prev) =>
-        prev.gems < FREEZE_COST || prev.freezes >= MAX_FREEZES
-          ? prev
-          : { ...prev, gems: prev.gems - FREEZE_COST, freezes: prev.freezes + 1 },
-      ),
-    [update],
-  );
+  const buyFreeze = useCallback(() => update((prev) => applyBuyFreeze(prev)), [update]);
 
   const clearFreezeSaved = useCallback(
     () => update((prev) => (prev.freezeSaved ? { ...prev, freezeSaved: null } : prev)),
