@@ -29,9 +29,11 @@ npx eslint <files>              # lint (prettier is an eslint rule)
 
 Baseline you should not make worse: `tsc` reports one pre-existing error
 (`src/routes/__root.tsx` `errorComponent` prop type) and eslint reports pre-existing
-`prettier/prettier` noise in a handful of files plus four non-prettier errors. Format only the
-files you touch; do not run `prettier --write .` (it rewrites ~10 unrelated files and creates
-sync conflicts with Lovable).
+`prettier/prettier` noise in a few generated or Lovable-authored files (`types.ts`, `badges.ts`,
+`BadgeIcon.tsx`, `CompanionAura.tsx`, `share-image.ts`, `settings.tsx`, `previewAuthStorage.ts`)
+plus three non-prettier errors (`prefer-const` in `previewAuthStorage.ts`, two `no-explicit-any`
+in `practice.functions.ts`). Format only the files you touch; do not run `prettier --write .` (it
+rewrites those unrelated files and creates sync conflicts with Lovable).
 
 **Dependencies.** `bun.lock` is the canonical lockfile but it points at Lovable's private
 package mirror, which returns 403 outside Lovable's sandbox. `package-lock.json` is stale and does
