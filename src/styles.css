@@ -45,6 +45,7 @@
   --color-subject-blue: var(--subject-blue);
   --color-graph-locked: var(--graph-locked);
   --color-graph-line: var(--graph-line);
+  --color-graph-edge: var(--graph-edge);
   --font-display: "Lora", ui-serif, Georgia, serif;
   --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
   --font-graph: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -93,6 +94,9 @@
   --subject-blue: oklch(0.51 0.08 235);
   --graph-locked: oklch(0.35429 0.02121 274.22);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
+  --graph-edge: oklch(0.4 0.02 280);
+  --graph-locked-border: oklch(0.5 0.02 274);
+  --graph-locked-text: oklch(0.27 0.02 280);
   --gradient-hero: linear-gradient(var(--primary), var(--primary));
 }
 
@@ -129,6 +133,9 @@
   --subject-blue: oklch(0.7 0.08 235);
   --graph-locked: oklch(0.35429 0.02121 274.22);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
+  --graph-edge: oklch(0.82 0.01 90);
+  --graph-locked-border: oklch(0.72 0.02 274);
+  --graph-locked-text: oklch(0.94 0.008 88);
 }
 
 @layer base {
@@ -182,8 +189,11 @@
   --border: oklch(0.72 0.015 78 / 0.45);
   --input: oklch(0.65 0.015 78 / 0.45);
   --ring: oklch(0.77634 0.1262 71.72);
-  --graph-locked: oklch(0.78 0.015 274.22);
+  --graph-locked: oklch(0.93 0.008 274);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
+  --graph-edge: oklch(0.4 0.02 280);
+  --graph-locked-border: oklch(0.5 0.02 274);
+  --graph-locked-text: oklch(0.27 0.02 280);
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-graph);
@@ -201,7 +211,10 @@
   --accent-foreground: oklch(0.94022 0.00702 88.64);
   --border: oklch(0.39611 0.01126 78.19 / 0.35);
   --input: oklch(0.39611 0.01126 78.19 / 0.45);
-  --graph-locked: oklch(0.35429 0.02121 274.22);
+  --graph-locked: oklch(0.3 0.02 274);
+  --graph-edge: oklch(0.82 0.01 90);
+  --graph-locked-border: oklch(0.72 0.02 274);
+  --graph-locked-text: oklch(0.94 0.008 88);
   color-scheme: dark;
 }
 
@@ -216,25 +229,30 @@
   font-family: var(--font-graph);
 }
 
+/* Thinking map. Every state keeps its label at >= 4.5:1 and its outline at >= 3:1. */
 .knowledge-node {
-  background-color: color-mix(in oklab, var(--graph-locked) 86%, transparent);
-  border: 1px solid color-mix(in oklab, var(--graph-locked) 82%, var(--foreground));
+  background-color: var(--card);
+  border: 2px solid var(--graph-locked-border);
+  color: var(--foreground);
 }
 
 .knowledge-node-active {
   background-color: color-mix(in oklab, var(--primary) 13%, var(--background));
-  border-color: color-mix(in oklab, var(--primary) 42%, var(--graph-locked));
+  border-color: color-mix(in oklab, var(--primary) 70%, var(--foreground));
   box-shadow: 0 0 24px -15px var(--primary);
 }
 
 .knowledge-node-recent {
   background-color: color-mix(in oklab, var(--primary) 20%, var(--background));
-  border-color: color-mix(in oklab, var(--primary) 58%, var(--graph-locked));
+  border-color: color-mix(in oklab, var(--primary) 70%, var(--foreground));
   box-shadow: 0 0 34px -12px var(--primary);
 }
 
+/* Locked is shown by the dashed outline and the lock, never by faded text. */
 .knowledge-node-locked {
-  color: var(--muted-foreground);
+  background-color: var(--graph-locked);
+  border-style: dashed;
+  color: var(--graph-locked-text);
 }
 
 .knowledge-node-glow {
@@ -252,19 +270,26 @@
 }
 
 .knowledge-connection {
-  stroke: var(--graph-line);
-  stroke-width: 0.45;
+  fill: none;
+  stroke: var(--graph-edge);
+  stroke-width: 2;
   stroke-linecap: round;
+  stroke-opacity: 0.8;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   animation: connection-draw 520ms ease-out forwards;
 }
 
+/* Edges into locked skills stay clearly visible, just quieter than the lit path. */
 .knowledge-connection-dim {
-  opacity: 0.3;
+  stroke-opacity: 0.55;
 }
 
-
+.knowledge-connection-selected {
+  stroke: var(--primary);
+  stroke-width: 3.5;
+  stroke-opacity: 1;
+}
 
 .course-expedition {
   --background: #383b47;
