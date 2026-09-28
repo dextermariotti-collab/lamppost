@@ -1,6 +1,7 @@
 import { Flame, Snowflake } from "lucide-react";
 import { useEffect, useState } from "react";
-import { dayKey, type ProgressState } from "@/lib/progress";
+import { dayKey } from "@/lib/days";
+import type { ProgressState } from "@/lib/progress-core";
 
 /** Streak milestones. The flame grows visibly at each one. */
 export const STREAK_TIERS = [3, 7, 30, 100];
