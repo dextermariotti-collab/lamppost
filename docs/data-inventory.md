@@ -23,6 +23,7 @@ Last checked: 2026-09-28.
 | `subscriptions` | plan status, provider customer/subscription ids, period end | yes | server only (payments not yet enabled) | deleted (cascade) |
 | `rate_limits` | fixed-window request counters: a policy name, an opaque caller key (`u:<user id>`, or `ip:` plus an HMAC of the network address — the address itself is never stored), a window start and a count | pseudonymous | server only | the account's `u:` rows are deleted; all rows are pruned after 3 days |
 | `server_locks` | short leases on jobs in progress (for example "generating lesson X") | no | server only | n/a (expire in minutes) |
+| `lesson_parts` | pieces of a lesson that isn't cached yet (idea card, drills, written task) while it is being written; cleared once the lesson is assembled | no (curriculum content, nothing about a learner) | server only | n/a (cleared on assembly; leftovers pruned after 2 days) |
 | `curriculum_lessons`, `drill_variants` | shared AI-generated lesson and drill content | no | server only | n/a |
 | `content_reports` | reason, free-text details, course slug/topic, lesson index/title, excerpt of flagged text, status | yes until anonymised | the reporting user | `user_id` set to null, report retained for audit |
 | `moderation_blocks` | refused topic text, category, stage (input/output) | pseudonymous | server only | `user_id` set to null, row retained for audit |

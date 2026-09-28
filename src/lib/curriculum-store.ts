@@ -109,7 +109,7 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
     void getCurriculumLesson({ data: { lessonId: meta.id } })
       .then((result) => {
         if (cancelled) return;
-        if (result.ok) {
+        if (result.ok && result.complete) {
           const merged: Lesson = {
             ...cleanLessonHypotheticals(result.lesson),
             title: meta.title,
@@ -119,7 +119,11 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
           storeLesson(index, merged);
           setLesson(merged);
         } else {
-          setError(result.reason);
+          setError(
+            result.ok
+              ? "This lesson is still being prepared. Give it a moment and try again."
+              : result.reason,
+          );
         }
       })
       .catch(() => {

@@ -561,6 +561,30 @@ export type Database = {
           },
         ]
       }
+      lesson_parts: {
+        Row: {
+          content: Json
+          content_version: number
+          created_at: string
+          lesson_id: string
+          part: string
+        }
+        Insert: {
+          content: Json
+          content_version: number
+          created_at?: string
+          lesson_id: string
+          part: string
+        }
+        Update: {
+          content?: Json
+          content_version?: number
+          created_at?: string
+          lesson_id?: string
+          part?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           bucket: string

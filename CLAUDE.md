@@ -93,6 +93,15 @@ and `routes/api/public/warm-curriculum.ts` (token-protected warm-up endpoint). B
 `CONTENT_VERSION` in `curriculum-generate.server.ts` whenever prompts, drill plans or validators
 change so stale cached lessons are regenerated.
 
+**A cold cache must not block a learner.** The warm-up writes whole lessons ahead of time, but a
+lesson that is missing (a `CONTENT_VERSION` bump before the warm-up has run) is written in parts on
+demand (`lib/lesson-parts.ts`, `lesson-parts.server.ts`, table `lesson_parts`): `getCurriculumLesson`
+returns as soon as the idea card exists, the browser then asks `getLessonPart` for each drill and the
+written task in parallel, and the request that stores the last part assembles the lesson into
+`curriculum_lessons`. `lib/lesson-loader.ts` drives this in the browser and the lesson screen shows
+the idea card and fills drills in as they arrive. Every part is generated under a per-part lease and
+the `lessonPart` rate limit; parts already written are read, never counted.
+
 ### UI shell
 Every screen renders inside `components/PhoneFrame.tsx` (bottom nav on phones, sidebar layout at
 ≥1024px). Design tokens are CSS variables in `src/styles.css`; `.graph-home` and

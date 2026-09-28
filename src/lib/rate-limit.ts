@@ -58,6 +58,18 @@ export const POLICIES = {
     ip: [t("hour", 30)],
     global: [t("hour", 40), t("day", 150)],
   },
+  /**
+   * Writing one part of a lesson that isn't cached yet (the idea card, a drill, the
+   * written task). A whole lesson is six or seven of these, so the numbers allow a
+   * few lessons an hour per caller. Parts already written are read, never counted.
+   */
+  lessonPart: {
+    label: "new lesson preparation",
+    guest: [t("hour", 40), t("day", 120)],
+    user: [t("hour", 80), t("day", 240)],
+    ip: [t("hour", 150)],
+    global: [t("hour", 300), t("day", 1500)],
+  },
   /** Topping up the shared drill pool in the background. */
   poolTopUp: {
     label: "new practice drills",
