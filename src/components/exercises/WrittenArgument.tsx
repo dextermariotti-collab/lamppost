@@ -1,5 +1,5 @@
-import { PenLine } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Loader2, PenLine } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
 import type { Companion } from "@/lib/companions";
@@ -13,6 +13,54 @@ import {
 } from "@/lib/exercises";
 import { weakestCriterion } from "@/lib/mastery";
 import { gradeArgument, saveArgumentAttempt } from "@/lib/argument.functions";
+
+/** What the grader is "doing", by seconds waited — so a 15–30s wait never looks frozen. */
+function gradingPhase(elapsed: number) {
+  if (elapsed < 4) return "Reading your argument…";
+  if (elapsed < 10) return "Checking it against each criterion…";
+  if (elapsed < 20) return "Writing your feedback…";
+  return "Still working — this is taking longer than usual. Your answer is safe.";
+}
+
+/**
+ * Shown for the whole time the grader runs (usually 10–20s). It sits directly
+ * above the submit button, in the flow of the page, rather than at the bottom of
+ * the card where the lesson's sticky footer used to cover it.
+ */
+function GradingProgress({ companion, elapsed }: { companion: Companion; elapsed: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="mt-4 flex items-end gap-2"
+    >
+      <CompanionAvatar companion={companion} size={56} animate pose="peek" className="shrink-0" />
+      <div className="flex-1 space-y-2 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-4 py-3">
+        <p className="flex items-center gap-2 text-[14px] font-bold text-foreground">
+          <Loader2 aria-hidden className="h-4 w-4 shrink-0 animate-spin" />
+          {gradingPhase(elapsed)}
+        </p>
+        <p className="text-[12px] font-semibold text-muted-foreground">
+          Grading usually takes 10–20 seconds · {elapsed}s
+        </p>
+        {[80, 95, 70].map((w) => (
+          <div
+            key={w}
+            className="h-2.5 animate-pulse rounded-full bg-primary/25"
+            style={{ width: `${w}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /**
  * The lesson's final step: write a short argument, get a rubric score with one
@@ -45,6 +93,7 @@ export function WrittenArgument({
   const [grade, setGrade] = useState<ArgumentGrade | null>(null);
   const [onTopic, setOnTopic] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [revising, setRevising] = useState(false);
   const task = WRITTEN_TASKS[written.type];
@@ -52,6 +101,14 @@ export function WrittenArgument({
 
   // Read after hydration: the weakest criterion lives in local history.
   useEffect(() => setFocus(weakestCriterion(task.criteria)?.criterion ?? null), [task.criteria]);
+
+  // Seconds waited, for the status line. Runs only while the grader is working.
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const tick = window.setInterval(() => setElapsed((n) => n + 1), 1000);
+    return () => window.clearInterval(tick);
+  }, [busy]);
 
   const submit = () => {
     if (busy || !text.trim()) return;
@@ -126,6 +183,7 @@ export function WrittenArgument({
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
+            readOnly={busy}
             rows={written.type === "restate" || written.type === "testable" ? 3 : 6}
             maxLength={3000}
             placeholder={task.placeholder}
@@ -141,6 +199,7 @@ export function WrittenArgument({
             {attempt === 2 && <span>Revision</span>}
           </div>
           {error && <p className="mt-2 text-[13px] font-semibold text-destructive">{error}</p>}
+          {busy && <GradingProgress companion={companion} elapsed={elapsed} />}
           <Button
             type="button"
             onClick={submit}
@@ -151,22 +210,9 @@ export function WrittenArgument({
             }
             className="sticky-action mt-3 h-12 w-full rounded-full text-base font-semibold"
           >
-            <PenLine className="h-4 w-4" />
-            {busy ? "Reading your argument…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />}
+            {busy ? "Grading…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
           </Button>
-          {busy && (
-            <div className="mt-4 flex items-end gap-2" aria-live="polite" aria-busy="true">
-              <CompanionAvatar companion={companion} size={56} animate pose="peek" className="shrink-0" />
-              <div className="flex-1 space-y-2 rounded-2xl rounded-bl-sm border-2 border-primary/20 bg-primary-soft/60 px-4 py-3">
-                <p className="text-[13px] font-bold text-foreground">
-                  Reading it carefully against each criterion…
-                </p>
-                {[80, 95, 70, 88].map((w) => (
-                  <div key={w} className="h-2.5 animate-pulse rounded-full bg-primary/20" style={{ width: `${w}%` }} />
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
 
