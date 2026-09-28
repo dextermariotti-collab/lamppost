@@ -47,7 +47,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const { state, registerCourse } = useProgress();
+  const { state, streak, registerCourse } = useProgress();
   const { companion } = useCompanion();
   // Makes sure the curriculum exists locally with its lesson titles.
   useCurriculumCourse();
@@ -108,7 +108,7 @@ function Home() {
           <Link to="/profile" aria-label="Open profile" className="shrink-0">
             <CompanionAura
               companion={{ ...companion, expression: urgency === "piling" ? "calm" : "happy" }}
-              streak={state.streak}
+              streak={streak}
               size={46}
             />
           </Link>
@@ -116,10 +116,10 @@ function Home() {
           <Link
             to="/progress"
             className="flex items-center gap-1.5 rounded-full px-1 py-1"
-            aria-label={`${state.streak} day streak`}
+            aria-label={`${streak} day streak`}
           >
-            <StreakFlame streak={state.streak} />
-            <span className="text-base font-bold text-foreground">{state.streak}</span>
+            <StreakFlame streak={streak} />
+            <span className="text-base font-bold text-foreground">{streak}</span>
           </Link>
 
           <span className="flex items-center gap-1 text-sm font-bold text-muted-foreground">

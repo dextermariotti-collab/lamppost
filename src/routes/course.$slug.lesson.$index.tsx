@@ -68,7 +68,15 @@ function LessonScreen() {
   const navigate = useNavigate();
   const course = useCurriculumCourse();
   const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
-  const { state, completeLesson, recordPractice, recordExercise, recordArgument } = useProgress();
+  const {
+    state,
+    streak,
+    hydrated,
+    completeLesson,
+    recordPractice,
+    recordExercise,
+    recordArgument,
+  } = useProgress();
   const completedLessons = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(
     lessonNumber - 1,
@@ -91,8 +99,17 @@ function LessonScreen() {
   const [easierDone, setEasierDone] = useState(false);
   /** Consecutive correct drills in this lesson, for the combo bonus. */
   const [combo, setCombo] = useState(0);
-  /** XP when the lesson opened, so the results screen can show what was earned. */
-  const xpAtStart = useRef(state.xp);
+  /**
+   * XP when the lesson opened, so the results screen can show what was earned.
+   * Captured once the real numbers have loaded (on a hard reload the first render
+   * only has the empty server placeholder) and again for each lesson.
+   */
+  const xpAtStart = useRef<number | null>(null);
+  const xpNow = useRef(state.xp);
+  xpNow.current = state.xp;
+  useEffect(() => {
+    if (hydrated) xpAtStart.current = xpNow.current;
+  }, [index, hydrated]);
 
   useEffect(() => {
     setPage(0);
@@ -255,7 +272,7 @@ function LessonScreen() {
     const answeredCount = exercises.filter((_, i) => attempts[i] !== undefined).length;
     const accuracy =
       answeredCount > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / answeredCount) * 100) : 0;
-    const xpEarned = Math.max(state.xp - xpAtStart.current, 0);
+    const xpEarned = Math.max(state.xp - (xpAtStart.current ?? state.xp), 0);
     const doneToday = state.history[dayKey()] ?? 0;
     const goal = state.dailyGoal;
     // Only what was actually done gets listed.
@@ -280,7 +297,7 @@ function LessonScreen() {
           <div className="relative z-30 flex animate-pop-in flex-col items-center text-center">
             <CompanionAura
               companion={{ ...companion, expression: "excited" }}
-              streak={state.streak}
+              streak={streak}
               size={unitDone ? 128 : 104}
               pose="cheer"
               animate
@@ -321,7 +338,7 @@ function LessonScreen() {
               <div className="mt-4 grid grid-cols-3 divide-x divide-border/60">
                 {[
                   { label: "accuracy", value: `${accuracy}%` },
-                  { label: "day streak", value: `${state.streak}` },
+                  { label: "day streak", value: `${streak}` },
                   { label: "lessons", value: `${unitLessonsDone?.completed ?? 0}` },
                 ].map((stat) => (
                   <div key={stat.label}>
@@ -337,7 +354,7 @@ function LessonScreen() {
                     unitTitle,
                     emoji: unitById(meta?.unitId ?? "claims").emoji,
                     accuracy,
-                    streak: state.streak,
+                    streak,
                     lessons: unitLessonsDone?.completed ?? 0,
                     accent: accent.color,
                   })
@@ -360,8 +377,8 @@ function LessonScreen() {
                   format={(n) => `+${n}`}
                 />
                 <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-foreground">
-                  <StreakFlame streak={state.streak} size={16} />
-                  {state.streak} day{state.streak === 1 ? "" : "s"}
+                  <StreakFlame streak={streak} size={16} />
+                  {streak} day{streak === 1 ? "" : "s"}
                 </p>
               </div>
             </div>

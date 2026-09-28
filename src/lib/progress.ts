@@ -13,12 +13,15 @@ import {
   applyPractice,
   applyReview,
   applyUnlockLessons,
+  effectiveStreak,
+  mergeAccountProgress,
   type ProgressState,
 } from "./progress-core";
 
 export {
   DEFAULT_STATE,
   FREEZE_COST,
+  effectiveStreak,
   LEAGUES,
   MAX_FREEZES,
   TIERS,
@@ -76,6 +79,9 @@ function getServerSnapshot(): ProgressState {
   return DEFAULT_STATE;
 }
 
+/** Accounts whose numbers were already folded in this page load (one pull, not one per screen). */
+const pulledAccounts = new Set<string>();
+
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -121,37 +127,28 @@ export function useProgress() {
   );
   const { userId } = useSessionUser();
   const lastSynced = useRef("");
-  const pulled = useRef<string | null>(null);
 
   const update = useCallback((fn: (prev: ProgressState) => ProgressState) => {
     writeState(fn(getSnapshot()));
   }, []);
 
   // On sign-in, pull the account's numbers down so a new device isn't blank.
+  // Once per account per page load, not once per screen that mounts this hook.
   useEffect(() => {
-    if (!hydrated || !userId || pulled.current === userId) return;
-    pulled.current = userId;
+    if (!hydrated || !userId || pulledAccounts.has(userId)) return;
+    pulledAccounts.add(userId);
     void getMyProfile()
       .then((profile) => {
-        if (!profile) return;
-        update((prev) => ({
-          ...prev,
-          xp: Math.max(prev.xp, profile.totalXp),
-          gems: Math.max(prev.gems, profile.gems),
-          streak: Math.max(prev.streak, profile.currentStreak),
-          longestStreak: Math.max(prev.longestStreak, profile.longestStreak),
-          lastActiveDay:
-            [prev.lastActiveDay, profile.lastActiveDay].filter(Boolean).sort().pop() ?? null,
-        }));
+        if (profile) update((prev) => mergeAccountProgress(prev, profile, dayKey()));
       })
-      .catch(() => undefined);
+      .catch(() => pulledAccounts.delete(userId));
   }, [hydrated, userId, update]);
 
   // Write-through sync: the account is the source of truth friends can see.
   useEffect(() => {
     if (!hydrated || !userId) return;
     const payload = {
-      streak: state.streak,
+      streak: effectiveStreak(state, dayKey()),
       longestStreak: state.longestStreak,
       totalXp: state.xp,
       gems: state.gems,
@@ -230,8 +227,12 @@ export function useProgress() {
     [update],
   );
 
+  // The one streak number every screen shows (see effectiveStreak).
+  const streak = hydrated ? effectiveStreak(state, dayKey()) : 0;
+
   return {
     state,
+    streak,
     hydrated,
     registerCourse,
     unlockLessons,

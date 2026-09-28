@@ -51,7 +51,7 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
+  const { state, streak, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
   const analytics = useMasteryAnalytics();
@@ -112,7 +112,7 @@ function ProgressScreen() {
         {celebration && (
           <MilestoneCard
             celebration={celebration}
-            streak={state.streak}
+            streak={streak}
             onClose={() => setCelebration(null)}
           />
         )}
@@ -127,7 +127,7 @@ function ProgressScreen() {
         {/* Streak — one quiet pool of lamplight, nothing else shouting */}
         <StreakHeadline
           hydrated={hydrated}
-          streak={state.streak}
+          streak={streak}
           longestStreak={state.longestStreak}
           atRisk={insights.atRisk}
           hoursLeft={insights.hoursLeft}
@@ -136,7 +136,7 @@ function ProgressScreen() {
         {state.freezeSaved && (
           <StreakSavedCard
             days={state.freezeSaved.days}
-            streak={state.streak}
+            streak={streak}
             freezesLeft={state.freezes}
             companion={companion}
             onClose={clearFreezeSaved}

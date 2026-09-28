@@ -5,6 +5,7 @@ import {
   applyLessonComplete,
   applyReview,
   deriveInsights,
+  mergeAccountProgress,
   type ProgressState,
 } from "./progress-core";
 
@@ -70,5 +71,67 @@ describe("deriveInsights", () => {
     const state = { ...DEFAULT_STATE, streak: 3, lastActiveDay: "2026-09-22" };
     expect(deriveInsights(state, new Date(2026, 8, 23, 20, 0)).atRisk).toBe(true);
     expect(deriveInsights(state, new Date(2026, 8, 23, 9, 0)).atRisk).toBe(false);
+  });
+});
+
+describe("mergeAccountProgress", () => {
+  const account = {
+    totalXp: 500,
+    gems: 30,
+    currentStreak: 5,
+    longestStreak: 9,
+    lastActiveDay: "2026-09-23",
+  };
+
+  it("fills a brand new device from the account", () => {
+    const next = mergeAccountProgress(DEFAULT_STATE, account, "2026-09-23");
+    expect(next).toMatchObject({
+      xp: 500,
+      gems: 30,
+      streak: 5,
+      longestStreak: 9,
+      lastActiveDay: "2026-09-23",
+    });
+  });
+
+  it("never lowers what this device has earned", () => {
+    const local = { ...DEFAULT_STATE, xp: 900, gems: 80, longestStreak: 12 };
+    const next = mergeAccountProgress(local, account, "2026-09-23");
+    expect([next.xp, next.gems, next.longestStreak]).toEqual([900, 80, 12]);
+  });
+
+  it("does not let a stale account streak overrule a fresher local one", () => {
+    // Local: 1-day streak earned today. Account: a 9-day streak that ended on Sep 10.
+    const local = { ...DEFAULT_STATE, streak: 1, lastActiveDay: "2026-09-23" };
+    const stale = { ...account, currentStreak: 9, lastActiveDay: "2026-09-10" };
+    const next = mergeAccountProgress(local, stale, "2026-09-23");
+    expect(next.streak).toBe(1);
+    expect(next.lastActiveDay).toBe("2026-09-23");
+  });
+
+  it("takes the higher streak when both sides were last active the same day", () => {
+    const local = { ...DEFAULT_STATE, streak: 1, lastActiveDay: "2026-09-23" };
+    expect(mergeAccountProgress(local, account, "2026-09-23").streak).toBe(5);
+  });
+
+  it("takes the account's streak when the account was active more recently", () => {
+    const local = { ...DEFAULT_STATE, streak: 3, lastActiveDay: "2026-09-21" };
+    const next = mergeAccountProgress(local, account, "2026-09-23");
+    expect(next.streak).toBe(5);
+    expect(next.lastActiveDay).toBe("2026-09-23");
+  });
+
+  it("ignores an account day that is later than any timezone could be on", () => {
+    const local = { ...DEFAULT_STATE, streak: 1, lastActiveDay: "2026-09-22" };
+    const odd = { ...account, currentStreak: 40, lastActiveDay: "2026-12-01" };
+    const next = mergeAccountProgress(local, odd, "2026-09-23");
+    expect(next.streak).toBe(1);
+    expect(next.lastActiveDay).toBe("2026-09-22");
+  });
+
+  it("returns the same object when there is nothing to change", () => {
+    const local = { ...DEFAULT_STATE, ...{ xp: 500, gems: 30, streak: 5, longestStreak: 9 } };
+    const same = { ...local, lastActiveDay: "2026-09-23" };
+    expect(mergeAccountProgress(same, account, "2026-09-23")).toBe(same);
   });
 });

@@ -50,7 +50,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfileScreen() {
-  const { state } = useProgress();
+  const { state, streak } = useProgress();
   const { companion, signedIn } = useCompanion();
   const { data: account } = useAccount();
   const { data: achievements } = useAchievements();
@@ -97,7 +97,7 @@ function ProfileScreen() {
         <div className="mt-5 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
           <Stat
             icon={<Flame className="h-4 w-4 text-primary" strokeWidth={2.2} />}
-            value={String(state.streak)}
+            value={String(streak)}
             label="Day streak"
           />
           <Stat

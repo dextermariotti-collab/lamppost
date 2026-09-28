@@ -1,6 +1,6 @@
 import { argumentXpFor } from "./exercises";
 import { dayKey, shiftDay } from "./days";
-import { FREEZE_COST, MAX_FREEZES, advanceStreak } from "./streak";
+import { FREEZE_COST, MAX_FREEZES, advanceStreak, effectiveStreak } from "./streak";
 
 /**
  * The pure half of the progress store: state shape, defaults, and every state
@@ -65,7 +65,7 @@ export const DEFAULT_STATE: ProgressState = {
   dayKeyVersion: DAY_KEY_VERSION,
 };
 
-export { FREEZE_COST, MAX_FREEZES };
+export { FREEZE_COST, MAX_FREEZES, effectiveStreak };
 
 const STREAK_MILESTONES = [3, 7, 30, 100, 365];
 
@@ -120,7 +120,7 @@ export function deriveInsights(state: ProgressState, now = new Date()) {
     thisWeek,
     percentile,
     hoursLeft,
-    atRisk: doneToday === 0 && state.streak > 0 && hoursLeft <= 8,
+    atRisk: doneToday === 0 && effectiveStreak(state, today) > 0 && hoursLeft <= 8,
   };
 }
 
@@ -145,7 +145,9 @@ export function applyLessonComplete(
 
   const bonusXp = random() < 0.25 ? 25 + Math.floor(random() * 4) * 25 : undefined;
   const pct = Math.round((completed / total) * 100);
-  const hitStreak = prev.lastActiveDay !== today && STREAK_MILESTONES.includes(streak);
+  const hitStreak =
+    (prev.lastActiveDay === null || prev.lastActiveDay < today) &&
+    STREAK_MILESTONES.includes(streak);
 
   const celebration: Celebration = hitStreak
     ? {
@@ -276,4 +278,57 @@ export function applyBuyFreeze(prev: ProgressState): ProgressState {
   return prev.gems < FREEZE_COST || prev.freezes >= MAX_FREEZES
     ? prev
     : { ...prev, gems: prev.gems - FREEZE_COST, freezes: prev.freezes + 1 };
+}
+
+/** The account's stored numbers, as returned by getMyProfile. */
+export type AccountProgress = {
+  totalXp: number;
+  gems: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDay: string | null;
+};
+
+/**
+ * Folds the signed-in account's numbers into this device's, so a new device
+ * isn't blank. XP, gems and the longest streak only ever go up. The account's
+ * *current* streak is only adopted when the account was active more recently
+ * than this device, or on the same day with a longer run — a stale number from
+ * an old sync must never overrule a fresher local streak (that is how one screen
+ * could show 1 while another showed 2).
+ */
+export function mergeAccountProgress(
+  prev: ProgressState,
+  account: AccountProgress,
+  today: string,
+): ProgressState {
+  // A local date can be at most one day ahead of UTC-based "today" bookkeeping.
+  const remoteDay =
+    account.lastActiveDay && account.lastActiveDay <= shiftDay(today, 1)
+      ? account.lastActiveDay
+      : null;
+  const localDay = prev.lastActiveDay;
+
+  const remoteIsFresher =
+    remoteDay !== null &&
+    (localDay === null ||
+      remoteDay > localDay ||
+      (remoteDay === localDay && account.currentStreak > prev.streak));
+
+  const next: ProgressState = {
+    ...prev,
+    xp: Math.max(prev.xp, account.totalXp),
+    gems: Math.max(prev.gems, account.gems),
+    longestStreak: Math.max(prev.longestStreak, account.longestStreak),
+    streak: remoteIsFresher ? Math.max(account.currentStreak, 0) : prev.streak,
+    lastActiveDay: remoteIsFresher ? remoteDay : localDay,
+  };
+
+  const unchanged =
+    next.xp === prev.xp &&
+    next.gems === prev.gems &&
+    next.longestStreak === prev.longestStreak &&
+    next.streak === prev.streak &&
+    next.lastActiveDay === prev.lastActiveDay;
+  return unchanged ? prev : next;
 }

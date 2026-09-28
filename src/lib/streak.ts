@@ -22,7 +22,9 @@ export type StreakState = {
  * motivates while there's an escape valve. Every 7th day earns a freeze back.
  */
 export function advanceStreak(prev: StreakState, today: string) {
-  if (prev.lastActiveDay === today) {
+  // Same day — or a clock that is behind the last active day (travelled west):
+  // either way no new day has been earned.
+  if (prev.lastActiveDay !== null && prev.lastActiveDay >= today) {
     return {
       streak: prev.streak,
       freezes: prev.freezes,
@@ -48,4 +50,23 @@ export function advanceStreak(prev: StreakState, today: string) {
 
   if (streak > 0 && streak % 7 === 0) freezes = Math.min(MAX_FREEZES, freezes + 1);
   return { streak, freezes, freezeLog, freezeSaved };
+}
+
+/**
+ * The streak to show right now. The stored counter only changes when a lesson,
+ * review or challenge is finished, so on its own it goes stale: after a missed
+ * day it would keep showing the old number until the next activity reset it.
+ * Every screen shows this instead, so the lesson-complete screen, Home, Progress,
+ * Profile and the course page cannot disagree.
+ *
+ * A streak is alive if the last active day is today or yesterday, or if the
+ * missed days in between are all covered by freezes still held.
+ */
+export function effectiveStreak(
+  state: Pick<StreakState, "streak" | "lastActiveDay" | "freezes">,
+  today: string,
+) {
+  if (state.lastActiveDay === null) return 0;
+  const missed = daysBetween(state.lastActiveDay, today) - 1;
+  return missed <= 0 || missed <= state.freezes ? state.streak : 0;
 }
