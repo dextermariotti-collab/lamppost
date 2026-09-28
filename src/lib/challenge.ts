@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
-import { dayKey } from "./progress";
+import { dayKey } from "./days";
 import { skillsToPractise } from "./rating";
 import type { ExerciseKind } from "./exercises";
 

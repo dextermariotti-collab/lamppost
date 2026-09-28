@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
 import { dayKey, shiftDay } from "./days";
+import { migrateHistoryToLocalDays, readActivityTimes } from "./progress-migrate";
 import {
+  DAY_KEY_VERSION,
   DEFAULT_STATE,
   applyArgument,
   applyBuyFreeze,
@@ -33,31 +35,28 @@ const KEY = "lamppost-progress-v1";
 const PROGRESS_EVENT = "lamppost-progress-change";
 
 /**
- * Older versions keyed days in UTC, so evening activity could land on
- * "tomorrow". Fold any future-dated keys back onto today.
+ * Loads the saved state. Progress written by older builds keyed days by their
+ * UTC date; it is upgraded to local days here, once, and saved straight back.
  */
-function migrateDays(state: ProgressState): ProgressState {
-  const today = dayKey();
-  const history: Record<string, number> = {};
-  let changed = false;
-  for (const [k, v] of Object.entries(state.history ?? {})) {
-    const key = k > today ? today : k;
-    if (key !== k) changed = true;
-    history[key] = (history[key] ?? 0) + v;
-  }
-  const last = state.lastActiveDay && state.lastActiveDay > today ? today : state.lastActiveDay;
-  const freezeLog = (state.freezeLog ?? []).map((k) => (k > today ? today : k));
-  if (!changed && last === state.lastActiveDay) return state;
-  return { ...state, history, lastActiveDay: last, freezeLog };
-}
-
 function read(): ProgressState {
   if (typeof window === "undefined") return DEFAULT_STATE;
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw
-      ? migrateDays({ ...DEFAULT_STATE, ...(JSON.parse(raw) as ProgressState) })
-      : DEFAULT_STATE;
+    if (!raw) return DEFAULT_STATE;
+    const parsed = JSON.parse(raw) as Partial<ProgressState>;
+    const loaded: ProgressState = {
+      ...DEFAULT_STATE,
+      ...parsed,
+      dayKeyVersion: typeof parsed.dayKeyVersion === "number" ? parsed.dayKeyVersion : 1,
+    };
+    if (loaded.dayKeyVersion >= DAY_KEY_VERSION) return loaded;
+    const migrated = migrateHistoryToLocalDays(loaded, readActivityTimes(window.localStorage));
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(migrated));
+    } catch {
+      /* the in-memory copy is still correct */
+    }
+    return migrated;
   } catch {
     return DEFAULT_STATE;
   }
@@ -158,6 +157,7 @@ export function useProgress() {
       gems: state.gems,
       lastActiveDay: state.lastActiveDay,
       history: state.history,
+      dayKeyVersion: state.dayKeyVersion,
     };
     const signature = JSON.stringify(payload);
     if (signature === lastSynced.current) return;

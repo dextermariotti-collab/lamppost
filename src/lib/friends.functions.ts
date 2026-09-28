@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { shiftUtcDay, utcDay } from "./days";
+import { shiftDay } from "./days";
+import { TodayInput, resolveToday } from "./client-day";
 import { MAX_SHARED_STREAKS, evaluateSharedStreak } from "./shared-streak";
 
 export type PersonCard = {
@@ -65,10 +66,11 @@ const toCard = (row: ProfileRow): PersonCard => ({
 
 export const listFriends = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<FriendsSnapshot> => {
+  .inputValidator((input: unknown) => TodayInput.parse(input))
+  .handler(async ({ data, context }): Promise<FriendsSnapshot> => {
     const { supabase, userId } = context;
-    const today = utcDay();
-    const yesterday = shiftUtcDay(today, -1);
+    const today = resolveToday(data);
+    const yesterday = shiftDay(today, -1);
 
     const [{ data: me }, { data: links, error: linkError }] = await Promise.all([
       supabase.from("profiles").select("invite_code").eq("id", userId).maybeSingle(),
@@ -321,12 +323,15 @@ export const respondToSharedStreak = createServerFn({ method: "POST" })
 
 export const sendNudge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { toUserId: string; sharedStreakId?: string }) => input)
+  .inputValidator((input: { toUserId: string; sharedStreakId?: string; today?: string }) => input)
   .handler(async ({ data, context }) => {
+    // "One nudge per friend per day" is counted on the sender's local day, the
+    // same day listFriends uses to say whether they've already nudged today.
     const { error } = await context.supabase.from("nudges").insert({
       from_user_id: context.userId,
       to_user_id: data.toUserId,
       shared_streak_id: data.sharedStreakId ?? null,
+      day: resolveToday(data),
     });
     if (error) {
       throw new Error(error.code === "23505" ? "You already nudged them today." : error.message);

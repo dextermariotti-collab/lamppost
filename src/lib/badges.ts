@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { LESSONS } from "./curriculum";
 import { readAttemptStore } from "./exercise-store";
 import { writtenTrend } from "./mastery";
-import { dayKey, type ProgressState } from "./progress";
+import { dayKey } from "./days";
+import type { ProgressState } from "./progress-core";
 
 /**
  * Tiered achievements, computed entirely from what the learner actually did.

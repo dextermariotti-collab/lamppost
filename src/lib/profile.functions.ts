@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { utcDay } from "./days";
+import { z } from "zod";
+import { acceptableHistory } from "./client-day";
+import { isDayKey, shiftDay, utcDay } from "./days";
 
 export type AccountProfile = {
   id: string;
@@ -106,51 +108,85 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const MAX_HISTORY_DAYS = 60;
+
+const SyncInput = z.object({
+  streak: z.number().int().min(0).max(100_000),
+  longestStreak: z.number().int().min(0).max(100_000),
+  totalXp: z.number().int().min(0).max(10_000_000),
+  gems: z.number().int().min(0).max(10_000_000),
+  lastActiveDay: z.string().nullable(),
+  history: z.record(z.string(), z.number()),
+  /** 2 = every day key is the device's local calendar day. Older clients omit it. */
+  dayKeyVersion: z.number().int().optional(),
+});
+
 /**
  * Write-through sync of the device's progress onto the account. Merge is
  * max-wins so replaying it is safe and no streak is ever lost.
+ *
+ * Days are the device's LOCAL calendar days, exactly as the client keys them, so
+ * the account agrees with the phone about which day an evening lesson belongs
+ * to. The only date the server checks is that a day isn't further ahead than any
+ * timezone on Earth could be right now.
  */
 export const syncProgress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: {
-      streak: number;
-      longestStreak: number;
-      totalXp: number;
-      gems: number;
-      lastActiveDay: string | null;
-      history: Record<string, number>;
-    }) => input,
-  )
+  .inputValidator((input: unknown) => SyncInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: current, error: readError } = await supabase
       .from("profiles")
-      .select("current_streak, longest_streak, total_xp, gems, last_active_day")
+      .select("current_streak, longest_streak, total_xp, gems, last_active_day, day_key_version")
       .eq("id", userId)
       .maybeSingle();
     if (readError) throw new Error(readError.message);
 
-    const today = utcDay();
-    const nextLastActive =
-      [data.lastActiveDay, current?.last_active_day].filter(Boolean).sort().pop() ?? null;
+    // UTC+14 is the furthest ahead a local date can be of the UTC date.
+    const latestAllowed = shiftDay(utcDay(), 1);
+    const lastActiveDay =
+      data.lastActiveDay && isDayKey(data.lastActiveDay) && data.lastActiveDay <= latestAllowed
+        ? data.lastActiveDay
+        : null;
+
+    // First sync from a client whose history is on local days: the account's
+    // UTC-keyed rows are replaced once, then the account is marked as migrated.
+    const upgrading = data.dayKeyVersion === 2 && (current?.day_key_version ?? 1) < 2;
+
+    const nextLastActive = upgrading
+      ? lastActiveDay
+      : ([lastActiveDay, current?.last_active_day].filter(Boolean).sort().pop() ?? null);
 
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
-        current_streak: Math.max(current?.current_streak ?? 0, data.streak),
+        current_streak: upgrading
+          ? data.streak
+          : Math.max(current?.current_streak ?? 0, data.streak),
         longest_streak: Math.max(current?.longest_streak ?? 0, data.longestStreak, data.streak),
         total_xp: Math.max(current?.total_xp ?? 0, data.totalXp),
         gems: Math.max(current?.gems ?? 0, data.gems),
         last_active_day: nextLastActive,
+        ...(upgrading ? { day_key_version: 2 } : {}),
       })
       .eq("id", userId);
     if (updateError) throw new Error(updateError.message);
 
-    const days = Object.entries(data.history)
-      .filter(([day, count]) => day <= today && count > 0)
-      .sort(([a], [b]) => (a < b ? 1 : -1))
-      .slice(0, 60);
+    const days = acceptableHistory(data.history, new Date(), MAX_HISTORY_DAYS);
+
+    if (upgrading && days.length > 0) {
+      const oldest = days[days.length - 1]![0];
+      const keep = new Set(days.map(([day]) => day));
+      const { data: stale } = await supabase
+        .from("daily_activity")
+        .select("day")
+        .eq("user_id", userId)
+        .gte("day", oldest);
+      const drop = (stale ?? []).map((row) => row.day).filter((day) => !keep.has(day));
+      if (drop.length > 0) {
+        await supabase.from("daily_activity").delete().eq("user_id", userId).in("day", drop);
+      }
+    }
 
     if (days.length > 0) {
       const { data: existing } = await supabase

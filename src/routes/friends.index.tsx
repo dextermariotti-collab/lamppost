@@ -9,6 +9,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useAccount, useFriends, useIncomingNudges, useRefreshAccount } from "@/lib/account";
 import { normalizeCompanion } from "@/lib/companions";
+import { dayKey } from "@/lib/days";
 import {
   proposeSharedStreak,
   removeFriend,
@@ -434,7 +435,11 @@ function FriendsScreen() {
                               onClick={() =>
                                 void run(key, () =>
                                   sendNudge({
-                                    data: { toUserId: friend.id, sharedStreakId: shared.id },
+                                    data: {
+                                      toUserId: friend.id,
+                                      sharedStreakId: shared.id,
+                                      today: dayKey(),
+                                    },
                                   }),
                                 )
                               }

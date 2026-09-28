@@ -451,6 +451,7 @@ export type Database = {
           created_at: string
           current_streak: number
           daily_goal: number
+          day_key_version: number
           display_name: string | null
           gems: number
           goal: string | null
@@ -473,6 +474,7 @@ export type Database = {
           created_at?: string
           current_streak?: number
           daily_goal?: number
+          day_key_version?: number
           display_name?: string | null
           gems?: number
           goal?: string | null
@@ -495,6 +497,7 @@ export type Database = {
           created_at?: string
           current_streak?: number
           daily_goal?: number
+          day_key_version?: number
           display_name?: string | null
           gems?: number
           goal?: string | null

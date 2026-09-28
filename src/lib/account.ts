@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { dayKey } from "./days";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile } from "./profile.functions";
 import { listAchievements } from "./achievements.functions";
@@ -20,7 +21,7 @@ export function useAchievements() {
   const { userId, ready } = useSessionUser();
   return useQuery({
     queryKey: ["achievements", userId],
-    queryFn: () => listAchievements(),
+    queryFn: () => listAchievements({ data: { today: dayKey() } }),
     enabled: ready && Boolean(userId),
     staleTime: 30_000,
   });
@@ -30,7 +31,7 @@ export function useFriends() {
   const { userId, ready } = useSessionUser();
   return useQuery({
     queryKey: ["friends", userId],
-    queryFn: () => listFriends(),
+    queryFn: () => listFriends({ data: { today: dayKey() } }),
     enabled: ready && Boolean(userId),
     staleTime: 15_000,
   });

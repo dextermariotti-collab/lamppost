@@ -42,7 +42,12 @@ export type ProgressState = {
   freezeLog: string[];
   /** set when the last visit was rescued by a freeze, consumed by the UI */
   freezeSaved: { days: number; day: string } | null;
+  /** 1 = day keys were UTC days (legacy); 2 = the device's local calendar days */
+  dayKeyVersion: number;
 };
+
+/** The day-key scheme this build writes. See progress-migrate.ts for the upgrade from 1. */
+export const DAY_KEY_VERSION = 2;
 
 export const DEFAULT_STATE: ProgressState = {
   streak: 0,
@@ -57,6 +62,7 @@ export const DEFAULT_STATE: ProgressState = {
   freezes: 1,
   freezeLog: [],
   freezeSaved: null,
+  dayKeyVersion: DAY_KEY_VERSION,
 };
 
 export { FREEZE_COST, MAX_FREEZES };
