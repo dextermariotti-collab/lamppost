@@ -99,6 +99,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       );
       await step("friendships", supabaseAdmin.from("friendships").delete().in("id", friendshipIds));
     }
+    await step("rate limits", supabaseAdmin.from("rate_limits").delete().eq("key", `u:${userId}`));
     await step("badges", supabaseAdmin.from("user_achievements").delete().eq("user_id", userId));
     await step("activity", supabaseAdmin.from("daily_activity").delete().eq("user_id", userId));
     // Safety records survive, detached from the person who filed them.

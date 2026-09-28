@@ -561,6 +561,42 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          hits: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          key: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      server_locks: {
+        Row: {
+          expires_at: string
+          key: string
+        }
+        Insert: {
+          expires_at: string
+          key: string
+        }
+        Update: {
+          expires_at?: string
+          key?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -628,7 +664,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acquire_lock: { Args: { _key: string; _ttl_seconds: number }; Returns: boolean }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      check_rate_limits: {
+        Args: { _checks: Json }
+        Returns: { allowed: boolean; retry_after: number; tier: string | null }[]
+      }
       has_friend_link: { Args: { _a: string; _b: string }; Returns: boolean }
       is_friendship_member: {
         Args: { _friendship_id: string; _user: string }
@@ -648,6 +689,7 @@ export type Database = {
         }[]
       }
       random_code: { Args: { len: number }; Returns: string }
+      release_lock: { Args: { _key: string }; Returns: undefined }
       search_profiles: {
         Args: { _query: string }
         Returns: {
