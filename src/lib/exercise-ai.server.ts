@@ -26,6 +26,7 @@ import {
 } from "./exercises";
 import type { Lesson } from "./courses";
 import { exercisesMatchPlan } from "./drill-plan";
+import { sayHypotheticalOnce } from "./hypothetical";
 
 /**
  * Lesson generation: one short concept card, the exact drills this lesson's
@@ -60,8 +61,10 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
   NEVER invent a study, statistic, institution or named source and present it as real. Either
   (a) describe a genuinely well-established, widely-reported finding you are confident about, or
   (b) begin the scenario with the exact words "Hypothetical scenario: " and keep every number inside
-  it clearly part of that hypothetical. Do not name researchers, universities, journals or years
-  unless the finding is genuinely famous.
+  it part of that scenario. That prefix is the ONLY place the word "hypothetical" may appear in the
+  whole drill: never write "in this hypothetical", "the hypothetical group" or "hypothetically" in
+  the scenario, question, options or explanation. Do not name researchers, universities, journals
+  or years unless the finding is genuinely famous.
   question asks the learner to predict the outcome. explanation reveals what happened; if the
   scenario was hypothetical, the explanation says what would follow and why, not what "was found".`,
   steelman: `{"kind":"steelman","view":string,"options":[string,string,string],"correct":number,"explanation":string}
@@ -94,8 +97,9 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
   items = 3 or 4 cards LISTED IN THE CORRECT ORDER, each max 18 words, with why = one sentence on
   why it sits there. Never include two cards whose order is arguable.`,
   numeric: `{"kind":"numeric","question":string,"scenario":string,"answer":number,"tolerance":number,"unit":string,"solution":string}
-  scenario = 2-4 sentences giving every number needed, all clearly hypothetical or genuinely
-  well-established. question = what to work out, max 16 words. answer = the single correct number,
+  scenario = 2-4 sentences giving every number needed, genuinely well-established or invented for the
+  drill (if invented, begin it with the exact words "Hypothetical scenario: ", which is the only
+  place the word "hypothetical" may appear in the drill). question = what to work out, max 16 words. answer = the single correct number,
   computable from the scenario alone. tolerance = allowed absolute difference (never zero).
   unit = "%", "£", "people" or "" as appropriate. solution = the working in max 45 words.`,
   slider: `{"kind":"slider","claim":string,"evidence":string,"direction":"up","size":number,"explanation":string}
@@ -145,7 +149,9 @@ export const HARD_RULES = `Hard rules for every drill:
 - "explanation" must agree with the keyed option and never argue for a different one.
 - Every drill must test THIS lesson's key idea and its named trap, not critical thinking in general.
 - NEVER present an invented study, statistic, institution or named source as real fact. Use a
-  genuinely well-established finding, or mark the whole scenario as hypothetical.
+  genuinely well-established finding, or mark the scenario as hypothetical ONCE, with the prefix
+  "Hypothetical scenario: " on the scenario itself. Never use the word "hypothetical" anywhere else in
+  that drill — not in the question, the options, the explanation or later sentences.
 - NO GIVEAWAY WORDING. Options must be the same style and within a few words of the same length, and
   must never contain their own justification: no "because…", "since…", "which shows…", "as habit was
   assumed, not created". State the outcome or diagnosis only; the reasoning belongs in "explanation".
@@ -338,7 +344,13 @@ function choiceSet(raw: Record<string, unknown>, max = 4) {
 
 const BUCKETS: SortBucket[] = ["fact", "opinion", "value"];
 
+/** Turns one raw model drill into a valid Exercise, saying "hypothetical" at most once. */
 export function normalizeExercise(raw: unknown): Exercise | null {
+  const drill = normalizeExerciseShape(raw);
+  return drill ? sayHypotheticalOnce(drill) : null;
+}
+
+function normalizeExerciseShape(raw: unknown): Exercise | null {
   const e = asObject(raw);
   const kind = str(pick(e, ["kind", "type"])).toLowerCase();
   const explanation = str(pick(e, ["explanation", "why", "rationale", "reveal"]));

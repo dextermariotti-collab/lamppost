@@ -26,8 +26,10 @@ For each drill, decide whether ALL of these hold:
    point only when the drill is about an unrelated topic or teaches a different skill entirely.
 4. The explanation/feedback agrees with the keyed answer and does not argue for another option.
 5. NO INVENTED FACTS. The drill must not present a made-up study, statistic, institution, researcher or
-   named source as though it were real. A scenario built on a hypothetical is fine ONLY if it is openly
-   marked as hypothetical (e.g. it begins "Hypothetical scenario:"). Fail any drill that says
+   named source as though it were real. A scenario built on an invention is fine ONLY if it is openly
+   marked once, by beginning "Hypothetical scenario:". (The word "hypothetical" appears there and
+   nowhere else in the drill; do not fail a drill for leaving it out of its question, options or
+   explanation.) Fail any drill that says
    researchers/scientists/a university found something specific unless that finding is genuinely
    famous and well established.
 6. NO GIVEAWAY WORDING. Options must be the same style and roughly the same length, and must not carry

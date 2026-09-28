@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { LESSONS } from "./curriculum";
 import type { Lesson } from "./courses";
+import { cleanLessonHypotheticals } from "./hypothetical";
 
 const Input = z.object({ lessonId: z.string().min(1) });
 
@@ -24,10 +25,12 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
       await import("./curriculum-generate.server");
 
     const cached = await readCachedLesson(meta.id);
-    if (isUsableLesson(cached, meta.drills)) return { ok: true, lesson: cached!, cached: true };
+    if (isUsableLesson(cached, meta.drills)) {
+      return { ok: true, lesson: cleanLessonHypotheticals(cached!), cached: true };
+    }
 
     const generated = await ensureLessonContent(meta.id);
-    if (generated.ok) return generated;
+    if (generated.ok) return { ...generated, lesson: cleanLessonHypotheticals(generated.lesson) };
 
     // Anything left over is a temporary condition from the learner's point of view.
     return {
