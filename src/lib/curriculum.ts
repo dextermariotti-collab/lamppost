@@ -35,10 +35,11 @@ export type CurriculumLesson = {
   keyIdea: string;
   trap: string;
   /**
-   * The only drill types that fit this objective, in the order they are shown.
-   * Generation never invents a drill type outside this list — a lesson about
-   * naming claims must not be asked to rank evidence, and rank-the-evidence
-   * only appears where there is real evidence for a stated claim.
+   * The only drill types that fit this objective, in the order they are shown:
+   * 4–5 of them, all different (see drill-plan.ts). Generation never invents a
+   * drill type outside this list — a lesson about naming claims must not be asked
+   * to rank evidence, and rank-the-evidence only appears where there is real
+   * evidence for a stated claim.
    */
   drills: ExerciseKind[];
   /** Which closing written task this objective calls for. */
@@ -105,7 +106,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   claims: [
     {
       id: "claims-the-actual-claim",
-      drills: ["claim", "flaw", "judge"],
+      drills: ["claim", "highlight", "flaw", "judge", "rewrite"],
       written: "restate",
       title: "What is actually claimed",
       objective: "Restate any argument's central claim in one precise sentence.",
@@ -116,7 +117,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "claims-hidden-assumptions",
-      drills: ["assumption", "flaw", "steelman"],
+      drills: ["assumption", "flaw", "judge", "steelman"],
       written: "critique",
       title: "Hidden assumptions",
       objective: "Surface the unstated beliefs an argument needs in order to work.",
@@ -127,7 +128,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "claims-facts-opinions-values",
-      drills: ["sort", "judge", "highlight"],
+      drills: ["sort", "judge", "highlight", "rewrite"],
       written: "critique",
       title: "Facts, opinions, values",
       objective: "Sort a statement into fact, opinion or value judgement before debating it.",
@@ -138,7 +139,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "claims-burden-of-proof",
-      drills: ["flaw", "judge", "assumption"],
+      drills: ["claim", "flaw", "judge", "assumption"],
       written: "critique",
       title: "Burden of proof",
       objective: "Identify who owes evidence in a disagreement, and how much.",
@@ -149,7 +150,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "claims-vague-language",
-      drills: ["highlight", "rewrite", "judge"],
+      drills: ["highlight", "rewrite", "judge", "flaw"],
       written: "testable",
       title: "Vague language",
       objective: "Spot words loose enough to make a claim unfalsifiable.",
@@ -162,7 +163,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   evidence: [
     {
       id: "evidence-types",
-      drills: ["rank", "judge", "order"],
+      drills: ["rank", "judge", "flaw", "assumption"],
       written: "critique",
       title: "Types of evidence",
       objective: "Rank the main kinds of evidence by what each one can actually show.",
@@ -173,7 +174,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "evidence-anecdote-vs-data",
-      drills: ["flaw", "rank", "predict"],
+      drills: ["flaw", "rank", "predict", "judge"],
       written: "case",
       title: "Anecdote vs data",
       objective: "Explain what a single vivid story can and cannot establish.",
@@ -184,7 +185,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "evidence-source-reliability",
-      drills: ["rank", "judge", "flaw"],
+      drills: ["rank", "highlight", "judge", "flaw"],
       written: "critique",
       title: "Source reliability",
       objective: "Judge a source by expertise, incentives and track record.",
@@ -195,7 +196,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "evidence-correlation-causation",
-      drills: ["judge", "flaw", "assumption"],
+      drills: ["judge", "flaw", "assumption", "predict", "rewrite"],
       written: "critique",
       title: "Correlation vs causation",
       objective: "Test whether a claimed cause survives confounders and reverse causation.",
@@ -206,7 +207,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "evidence-sample-cherry-picking",
-      drills: ["judge", "flaw", "rank"],
+      drills: ["judge", "flaw", "rank", "highlight"],
       written: "critique",
       title: "Samples and cherry-picking",
       objective: "Detect when a sample is too small or selected to flatter a conclusion.",
@@ -219,7 +220,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   fallacies: [
     {
       id: "fallacies-adhominem-strawman",
-      drills: ["judge", "flaw", "rewrite"],
+      drills: ["judge", "flaw", "steelman", "rewrite"],
       written: "critique",
       title: "Ad hominem and strawman",
       objective: "Tell an attack on a person or a distorted position from a real rebuttal.",
@@ -230,7 +231,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "fallacies-dilemma-slippery-slope",
-      drills: ["judge", "flaw", "rewrite"],
+      drills: ["highlight", "judge", "flaw", "rewrite"],
       written: "critique",
       title: "False dilemma, slippery slope",
       objective: "Spot fake either/or framings and unearned chains of consequence.",
@@ -241,7 +242,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "fallacies-authority-popularity",
-      drills: ["judge", "flaw", "rank"],
+      drills: ["judge", "flaw", "assumption", "rank"],
       written: "critique",
       title: "Authority and popularity",
       objective: "Separate legitimate expert testimony from appeals to status or crowds.",
@@ -252,7 +253,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "fallacies-circular-reasoning",
-      drills: ["flaw", "judge", "highlight"],
+      drills: ["flaw", "judge", "highlight", "rewrite"],
       written: "critique",
       title: "Circular reasoning",
       objective: "Notice when a conclusion is quietly used as its own premise.",
@@ -263,7 +264,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "fallacies-hasty-generalization",
-      drills: ["judge", "flaw", "rank"],
+      drills: ["judge", "flaw", "rank", "predict"],
       written: "critique",
       title: "Hasty generalisation",
       objective: "Catch conclusions drawn from too few or unrepresentative cases.",
@@ -276,7 +277,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   biases: [
     {
       id: "biases-confirmation",
-      drills: ["judge", "flaw", "predict"],
+      drills: ["highlight", "judge", "flaw", "predict", "slider"],
       written: "steelmanWrite",
       title: "Confirmation bias",
       objective: "Notice yourself seeking evidence that agrees with you, and correct for it.",
@@ -287,7 +288,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "biases-anchoring",
-      drills: ["numeric", "judge", "flaw"],
+      drills: ["numeric", "judge", "flaw", "predict"],
       written: "critique",
       title: "Anchoring",
       objective: "Recognise how a first number quietly sets your later judgements.",
@@ -298,7 +299,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "biases-availability",
-      drills: ["predict", "judge", "numeric"],
+      drills: ["predict", "judge", "numeric", "flaw"],
       written: "critique",
       title: "Availability",
       objective: "Adjust for risks that feel common only because they are memorable.",
@@ -309,7 +310,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "biases-sunk-cost",
-      drills: ["judge", "flaw", "predict"],
+      drills: ["judge", "flaw", "predict", "numeric"],
       written: "case",
       title: "Sunk cost",
       objective: "Decide from what is ahead rather than what you already spent.",
@@ -320,7 +321,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "biases-overconfidence",
-      drills: ["predict", "slider", "judge"],
+      drills: ["predict", "slider", "judge", "flaw"],
       written: "critique",
       title: "Overconfidence",
       objective: "Calibrate how sure you are against how often you are right.",
@@ -332,7 +333,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   arguments: [
     {
       id: "arguments-premise-conclusion",
-      drills: ["order", "claim", "judge"],
+      drills: ["claim", "order", "assumption", "judge", "flaw"],
       written: "case",
       title: "Premise to conclusion",
       objective: "Lay out any argument as explicit premises leading to a conclusion.",
@@ -343,7 +344,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "arguments-strong-vs-weak",
-      drills: ["rank", "flaw", "judge"],
+      drills: ["rank", "flaw", "judge", "assumption"],
       written: "critique",
       title: "Strong vs weak reasoning",
       objective: "Judge whether premises, if true, would actually support the conclusion.",
@@ -354,7 +355,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "arguments-steelmanning",
-      drills: ["steelman", "rewrite", "judge"],
+      drills: ["steelman", "rewrite", "judge", "flaw"],
       written: "steelmanWrite",
       title: "Steelmanning",
       objective: "State the strongest honest version of a view you disagree with.",
@@ -365,7 +366,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "arguments-counterarguments",
-      drills: ["judge", "steelman", "rewrite"],
+      drills: ["judge", "steelman", "rewrite", "assumption"],
       written: "case",
       title: "Counterarguments and rebuttals",
       objective: "Anticipate the best objection and answer it without dodging.",
@@ -376,7 +377,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "arguments-qualifying-claims",
-      drills: ["rewrite", "judge", "highlight"],
+      drills: ["highlight", "rewrite", "judge", "slider"],
       written: "testable",
       title: "Qualifying claims",
       objective: "State a claim with the scope and confidence the evidence supports.",
@@ -389,7 +390,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   probability: [
     {
       id: "probability-base-rates",
-      drills: ["numeric", "predict", "judge"],
+      drills: ["numeric", "predict", "judge", "flaw", "slider"],
       written: "critique",
       title: "Base rates",
       objective: "Start from how common something is before weighing specific signals.",
@@ -400,7 +401,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "probability-expected-value",
-      drills: ["numeric", "judge", "predict"],
+      drills: ["numeric", "judge", "predict", "flaw"],
       written: "case",
       title: "Expected value",
       objective: "Compare options by payoff weighted by probability, not by best case.",
@@ -411,7 +412,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "probability-thinking-in-bets",
-      drills: ["judge", "slider", "predict"],
+      drills: ["judge", "slider", "predict", "flaw"],
       written: "critique",
       title: "Thinking in bets",
       objective: "Judge a decision by its reasoning, not only by how it turned out.",
@@ -422,7 +423,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "probability-updating-beliefs",
-      drills: ["slider", "judge", "rank"],
+      drills: ["slider", "judge", "rank", "numeric"],
       written: "critique",
       title: "Updating on evidence",
       objective: "Move your confidence in proportion to how diagnostic new evidence is.",
@@ -433,7 +434,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "probability-second-order",
-      drills: ["predict", "judge", "order"],
+      drills: ["predict", "order", "judge", "flaw"],
       written: "case",
       title: "Second-order effects",
       objective: "Trace what happens after the obvious first consequence.",
@@ -446,7 +447,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
   media: [
     {
       id: "media-headlines-vs-findings",
-      drills: ["judge", "rewrite", "highlight"],
+      drills: ["highlight", "judge", "rewrite", "flaw"],
       written: "testable",
       title: "Headlines vs findings",
       objective: "Compare what a headline promises with what the study actually found.",
@@ -457,7 +458,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "media-misleading-charts",
-      drills: ["chart", "judge", "flaw"],
+      drills: ["chart", "numeric", "judge", "flaw", "highlight"],
       written: "critique",
       title: "Misleading charts and stats",
       objective: "Spot truncated axes, bad baselines and percentages without denominators.",
@@ -468,7 +469,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "media-manipulation",
-      drills: ["highlight", "judge", "flaw"],
+      drills: ["highlight", "judge", "flaw", "rewrite"],
       written: "critique",
       title: "Spotting manipulation",
       objective: "Recognise emotional framing, selective omission and manufactured urgency.",
@@ -479,7 +480,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "media-ai-answers",
-      drills: ["highlight", "judge", "rank"],
+      drills: ["highlight", "judge", "flaw", "rank"],
       written: "critique",
       title: "Evaluating AI answers",
       objective: "Check an AI answer for confident fabrication and missing sourcing.",
@@ -490,7 +491,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
     },
     {
       id: "media-lateral-reading",
-      drills: ["order", "rank", "judge"],
+      drills: ["order", "judge", "flaw", "assumption"],
       written: "case",
       title: "Lateral reading",
       objective: "Leave the page and check what other sources say about it.",

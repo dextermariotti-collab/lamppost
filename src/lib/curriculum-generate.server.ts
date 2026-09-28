@@ -1,6 +1,7 @@
 import { LESSONS, UNITS, type CurriculumLesson } from "./curriculum";
 import type { Lesson } from "./courses";
 import type { Exercise, ExerciseKind } from "./exercises";
+import { exercisesMatchPlan } from "./drill-plan";
 
 /**
  * Server-only lesson generation.
@@ -15,16 +16,18 @@ import type { Exercise, ExerciseKind } from "./exercises";
 
 export const MODEL = "google/gemini-3.6-flash";
 /** Bumped when the generation pipeline changes; invalidates cached lessons. */
-export const CONTENT_VERSION = 6;
+export const CONTENT_VERSION = 7;
 /** Regeneration rounds allowed for drills that fail review. */
 const MAX_REPAIRS = 2;
 /** Whole-lesson attempts before giving up on this request. */
 const MAX_ATTEMPTS = 3;
 
-export const isUsableLesson = (lesson: Lesson | undefined | null) =>
-  Boolean(
-    lesson?.contentVersion === CONTENT_VERSION && lesson.exercises && lesson.exercises.length >= 3,
-  );
+/**
+ * A cached lesson is only served if it is the current content version AND holds
+ * exactly the drills the curriculum plans for it (4–5 different types).
+ */
+export const isUsableLesson = (lesson: Lesson | undefined | null, plan: readonly ExerciseKind[]) =>
+  Boolean(lesson?.contentVersion === CONTENT_VERSION && exercisesMatchPlan(lesson.exercises, plan));
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
@@ -95,7 +98,7 @@ export async function ensureLessonContent(
 
   if (!opts.force) {
     const cached = await readCachedLesson(meta.id);
-    if (isUsableLesson(cached)) return { ok: true, lesson: cached!, cached: true };
+    if (isUsableLesson(cached, meta.drills)) return { ok: true, lesson: cached!, cached: true };
   }
 
   const key = process.env["LOVABLE_API_KEY"];
@@ -136,7 +139,7 @@ export async function ensureLessonContent(
         drills: meta.drills,
         written: meta.written,
       });
-      if (!lesson?.exercises || lesson.exercises.length < 3) {
+      if (!lesson?.exercises || !exercisesMatchPlan(lesson.exercises, meta.drills)) {
         console.warn(`[curriculum] ${meta.id}: reply unreadable (round ${round + 1})`);
         continue;
       }

@@ -63,7 +63,7 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       // Empty pool: seed it from this lesson's own validated drills.
       if (rows.length === 0) {
         const cached = await readCachedLesson(meta.id);
-        if (isUsableLesson(cached)) {
+        if (isUsableLesson(cached, meta.drills)) {
           await seedPoolFromLesson(meta.id, cached!.exercises!);
         } else {
           const generated = await ensureLessonContent(meta.id);

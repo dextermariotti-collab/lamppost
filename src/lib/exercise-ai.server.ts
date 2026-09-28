@@ -25,6 +25,7 @@ import {
   type WrittenTaskType,
 } from "./exercises";
 import type { Lesson } from "./courses";
+import { exercisesMatchPlan } from "./drill-plan";
 
 /**
  * Lesson generation: one short concept card, the exact drills this lesson's
@@ -170,7 +171,9 @@ Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly thi
 "concept.body" is AT MOST 80 words teaching the skill in plain language. "concept.example" is ONE
 concrete everyday example (max 40 words). "concept.title" is max 5 words.
 
-"exercises" has EXACTLY ${unique.length} entries, in this order, one per line below, and NO other kinds:
+"exercises" has EXACTLY ${unique.length} entries, in this order, one per line below, and NO other kinds.
+Each entry is a DIFFERENT drill type that makes the learner do a different kind of thinking; never write
+two drills that amount to the same task in different words:
 ${unique.map((kind, i) => `${i + 1} ${EXERCISE_LABEL[kind]} — ${KIND_SPEC[kind]}`).join("\n")}
 
 ${HARD_RULES}
@@ -638,7 +641,8 @@ export function parseExerciseLesson(
     .map(normalizeExercise)
     .filter((e): e is Exercise => e !== null);
   const exercises = drillsMatchingPlan(parsed, meta.drills);
-  if (!body || exercises.length < 3) return null;
+  // The whole plan (4–5 different drills) or nothing: a lesson with a drill missing is not cached.
+  if (!body || !exercisesMatchPlan(exercises, meta.drills)) return null;
 
   const writtenRaw = asObject(
     pick(root, ["written", "writtenArgument", "written_argument", "essay"]),

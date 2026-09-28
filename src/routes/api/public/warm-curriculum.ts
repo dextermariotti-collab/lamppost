@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/public/warm-curriculum")({
           }
           if (!force) {
             const cached = await readCachedLesson(lesson.id);
-            if (isUsableLesson(cached)) {
+            if (isUsableLesson(cached, lesson.drills)) {
               // Cached: only top the pool up if asked to.
               if (extraDrills > 0) {
                 const counts = await poolCounts(lesson.id);

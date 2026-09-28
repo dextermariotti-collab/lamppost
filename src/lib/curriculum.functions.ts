@@ -24,7 +24,7 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
       await import("./curriculum-generate.server");
 
     const cached = await readCachedLesson(meta.id);
-    if (isUsableLesson(cached)) return { ok: true, lesson: cached!, cached: true };
+    if (isUsableLesson(cached, meta.drills)) return { ok: true, lesson: cached!, cached: true };
 
     const generated = await ensureLessonContent(meta.id);
     if (generated.ok) return generated;
