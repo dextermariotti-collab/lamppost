@@ -70,7 +70,7 @@ export function PredictExerciseCard({
             className="flex items-baseline justify-between text-[13px] font-semibold text-muted-foreground"
           >
             How sure are you?
-            <span className="text-base font-bold text-primary">{confidence}%</span>
+            <span className="text-base font-bold text-primary-text">{confidence}%</span>
           </label>
           <input
             id={`confidence-${index}`}

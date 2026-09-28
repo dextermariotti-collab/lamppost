@@ -98,7 +98,7 @@ function AuthScreen() {
           onClick={google}
           className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-card p-4 text-sm font-extrabold shadow-soft transition-transform hover:-translate-y-0.5"
         >
-          <Sparkles className="h-4 w-4 text-primary" /> Continue with Google
+          <Sparkles className="h-4 w-4 text-primary-text" /> Continue with Google
         </button>
 
         <div className="my-4 flex items-center gap-3 text-[11px] font-bold text-muted-foreground">
@@ -146,22 +146,22 @@ function AuthScreen() {
 
         <button
           onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-          className="mt-4 text-xs font-bold text-primary"
+          className="mt-4 text-xs font-bold text-primary-text"
         >
           {mode === "signup" ? "Already have an account? Sign in" : "New here? Create an account"}
         </button>
 
         <p className="mt-4 text-[11px] leading-relaxed font-semibold text-muted-foreground">
           By continuing you agree to our{" "}
-          <Link to="/legal/terms" className="font-extrabold text-primary underline">
+          <Link to="/legal/terms" className="font-extrabold text-primary-text underline">
             Terms
           </Link>
           ,{" "}
-          <Link to="/legal/privacy" className="font-extrabold text-primary underline">
+          <Link to="/legal/privacy" className="font-extrabold text-primary-text underline">
             Privacy Policy
           </Link>{" "}
           and{" "}
-          <Link to="/legal/ai-content" className="font-extrabold text-primary underline">
+          <Link to="/legal/ai-content" className="font-extrabold text-primary-text underline">
             AI content notice
           </Link>
           . Lessons are AI-generated and may be wrong.

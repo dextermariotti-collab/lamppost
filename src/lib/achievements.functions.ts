@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { shiftUtcDay, utcDay } from "./days";
+import { shiftDay } from "./days";
+import { TodayInput, resolveToday } from "./client-day";
 import type { Badge } from "./achievements";
 
 /**
@@ -9,9 +10,11 @@ import type { Badge } from "./achievements";
  */
 export const listAchievements = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ badges: Badge[]; justUnlocked: string[] }> => {
+  .inputValidator((input: unknown) => TodayInput.parse(input))
+  .handler(async ({ data, context }): Promise<{ badges: Badge[]; justUnlocked: string[] }> => {
     const { supabase, userId } = context;
-    const today = utcDay();
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const today = resolveToday(data);
 
     const [{ data: catalogue, error: catError }, { data: profile }, { data: unlocked }] =
       await Promise.all([
@@ -19,7 +22,8 @@ export const listAchievements = createServerFn({ method: "POST" })
           .from("achievements")
           .select("code, name, description, icon, criteria, sort_order")
           .order("sort_order"),
-        supabase
+        // The daily goal is a private column, so the owner's row is read server-side.
+        admin
           .from("profiles")
           .select("total_xp, longest_streak, current_streak, daily_goal")
           .eq("id", userId)
@@ -31,7 +35,7 @@ export const listAchievements = createServerFn({ method: "POST" })
       ]);
     if (catError) throw new Error(catError.message);
 
-    const week = Array.from({ length: 7 }, (_, i) => shiftUtcDay(today, -i));
+    const week = Array.from({ length: 7 }, (_, i) => shiftDay(today, -i));
     const [{ data: activity }, { data: friendships }, { data: streaks }] = await Promise.all([
       supabase.from("daily_activity").select("day, lessons_completed").eq("user_id", userId),
       supabase.from("friendships").select("id").eq("status", "accepted"),
@@ -59,7 +63,8 @@ export const listAchievements = createServerFn({ method: "POST" })
 
     if (missing.length > 0) {
       const now = new Date().toISOString();
-      const { error } = await supabase.from("user_achievements").upsert(
+      // Badges are awarded here, from server-held numbers; the browser can't insert them.
+      const { error } = await admin.from("user_achievements").upsert(
         missing.map((code) => ({ user_id: userId, achievement_code: code, unlocked_at: now })),
         { onConflict: "user_id,achievement_code" },
       );

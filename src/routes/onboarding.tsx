@@ -165,7 +165,7 @@ function IntroStep({ onNext }: { onNext: () => void }) {
       <div className="mt-10">
         <CompanionAvatar companion={companionFromPreset("scout")} size={168} animate />
       </div>
-      <span className="mt-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+      <span className="mt-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary-text">
         <Icon className="h-5 w-5" />
       </span>
       <h1 className="mt-4 text-2xl leading-tight">{INTRO.title}</h1>
@@ -413,7 +413,7 @@ function PlacementStep({
 
   return (
     <div className="flex flex-1 flex-col">
-      <p className="mt-6 text-xs font-bold text-primary">Placement check · drill {step + 1}</p>
+      <p className="mt-6 text-xs font-bold text-primary-text">Placement check · drill {step + 1}</p>
       <DrillVariant
         key={`${pair.lessonId}-${step}`}
         lessonId={pair.lessonId}

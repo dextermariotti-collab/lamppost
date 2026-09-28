@@ -451,6 +451,7 @@ export type Database = {
           created_at: string
           current_streak: number
           daily_goal: number
+          day_key_version: number
           display_name: string | null
           gems: number
           goal: string | null
@@ -462,6 +463,7 @@ export type Database = {
           notify_nudges_email: boolean
           notify_nudges_inapp: boolean
           onboarding_completed: boolean
+          progress_synced_at: string | null
           total_xp: number
           updated_at: string
         }
@@ -473,6 +475,7 @@ export type Database = {
           created_at?: string
           current_streak?: number
           daily_goal?: number
+          day_key_version?: number
           display_name?: string | null
           gems?: number
           goal?: string | null
@@ -484,6 +487,7 @@ export type Database = {
           notify_nudges_email?: boolean
           notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
+          progress_synced_at?: string | null
           total_xp?: number
           updated_at?: string
         }
@@ -495,6 +499,7 @@ export type Database = {
           created_at?: string
           current_streak?: number
           daily_goal?: number
+          day_key_version?: number
           display_name?: string | null
           gems?: number
           goal?: string | null
@@ -506,6 +511,7 @@ export type Database = {
           notify_nudges_email?: boolean
           notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
+          progress_synced_at?: string | null
           total_xp?: number
           updated_at?: string
         }

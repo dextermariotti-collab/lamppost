@@ -28,7 +28,7 @@ export function LegalScreen({ doc, backTo = "/legal" }: { doc: LegalDoc; backTo?
           <section key={section.heading} className="mt-6">
             <h2 className="text-base font-extrabold">{section.heading}</h2>
             {section.review && (
-              <span className="mt-1 inline-block rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="mt-1 inline-block rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold text-primary-text">
                 Needs legal review
               </span>
             )}

@@ -4,21 +4,33 @@ Written against the real schema so the Privacy Policy's "what we collect" sectio
 reviewed for accuracy instead of adapted from a template. Update this file whenever the
 schema changes, then update `src/lib/legal.ts`.
 
-Last checked: 2026-08-28.
+Last checked: 2026-09-28.
 
 ## Backend tables (public schema)
 
-| Table | Data categories | Personal? | Deleted on account deletion |
-| --- | --- | --- | --- |
-| `profiles` | display name, handle, invite code, companion appearance (preset/palette/accessory/expression), onboarding flag, daily goal, notification prefs, current/longest streak, total XP, gems, last active day | yes | deleted |
-| `daily_activity` | per-day lesson counts | yes (behavioural) | deleted |
-| `user_achievements` | achievement codes + unlock timestamps | yes | deleted |
-| `achievements` | achievement catalogue (name, description, icon, criteria) | no | n/a |
-| `friendships` | requester/addressee ids, status, requested/accepted timestamps | yes (social graph) | deleted |
-| `shared_streaks` | friendship id, proposer, status, count, last extended day | yes (social) | deleted |
-| `nudges` | sender/recipient ids, shared streak id, day, read timestamp | yes (social) | deleted |
-| `content_reports` | reason, free-text details, course slug/topic, lesson index/title, excerpt of flagged text, status | yes until anonymised | `user_id` set to null, report retained for audit |
-| `moderation_blocks` | refused topic text, category, stage (input/output) | pseudonymous | `user_id` set to null, row retained for audit |
+| Table | Data categories | Personal? | Written by | Deleted on account deletion |
+| --- | --- | --- | --- | --- |
+| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems, last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
+| `daily_activity` | per-day lesson counts (device-local calendar days) | yes (behavioural) | server only | deleted |
+| `user_achievements` | achievement codes + unlock timestamps | yes | server only | deleted |
+| `achievements` | achievement catalogue (name, description, icon, criteria) | no | migrations | n/a |
+| `friendships` | requester/addressee ids, status, requested/accepted timestamps | yes (social graph) | the two users (request, accept, remove) | deleted |
+| `shared_streaks` | friendship id, proposer, status, count, last extended day | yes (social) | server only | deleted |
+| `nudges` | sender/recipient ids, shared streak id, day, read timestamp | yes (social) | sender inserts; recipient marks read | deleted |
+| `debates` | both participants, motion, both written answers, rubric scores and tips, winner status | yes (user-written text) | server only (it grades) | deleted (cascade) |
+| `argument_attempts` | lesson id, the learner's written answer, rubric scores, tip | yes (user-written text) | server only (the grader stores it) | deleted (cascade) |
+| `practice_sessions` | course/lesson, the tutor chat transcript, verdict, "remembered" sentence | yes (user-written text) | server only | deleted (cascade) |
+| `subscriptions` | plan status, provider customer/subscription ids, period end | yes | server only (payments not yet enabled) | deleted (cascade) |
+| `curriculum_lessons`, `drill_variants` | shared AI-generated lesson and drill content | no | server only | n/a |
+| `content_reports` | reason, free-text details, course slug/topic, lesson index/title, excerpt of flagged text, status | yes until anonymised | the reporting user | `user_id` set to null, report retained for audit |
+| `moderation_blocks` | refused topic text, category, stage (input/output) | pseudonymous | server only | `user_id` set to null, row retained for audit |
+
+"Server only" means the browser's database role has no write privilege on the table
+(see `supabase/migrations/20260928200000_lock_server_owned_writes.sql` and the tests in
+`src/db/rls.test.ts`); server functions write it with the service role after validating the
+request. Private `profiles` columns (invite code, goal, daily goal, notification settings and
+sync bookkeeping) are not readable through the browser role either, not even by friends; the
+server reads the owner's row.
 
 Identity itself (email address, password hash or Google identity, sessions) lives in the
 managed auth schema and is removed when the account is deleted.

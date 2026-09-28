@@ -98,7 +98,7 @@ export function AnswerFeedbackHost() {
               {correct ? "Nailed it." : "Not this time."}
             </p>
             {combo >= 3 ? (
-              <p className="mt-0.5 flex items-center gap-1 text-[11px] font-bold text-primary">
+              <p className="mt-0.5 flex items-center gap-1 text-[11px] font-bold text-primary-text">
                 <Flame className="h-3.5 w-3.5" />
                 {combo} in a row · +{bonus} bonus XP
               </p>

@@ -9,6 +9,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useAccount, useFriends, useIncomingNudges, useRefreshAccount } from "@/lib/account";
 import { normalizeCompanion } from "@/lib/companions";
+import { dayKey } from "@/lib/days";
 import {
   proposeSharedStreak,
   removeFriend,
@@ -182,7 +183,7 @@ function FriendsScreen() {
           to="/debates"
           className="mt-6 flex items-center gap-3 rounded-3xl bg-card p-4 shadow-soft"
         >
-          <Swords aria-hidden className="h-4 w-4 text-primary" />
+          <Swords aria-hidden className="h-4 w-4 text-primary-text" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold">Debates</span>
             <span className="block text-xs text-muted-foreground">
@@ -202,7 +203,7 @@ function FriendsScreen() {
 
         <section className="mt-6 rounded-3xl bg-card p-4 shadow-soft">
           <div className="flex items-center gap-2">
-            <Link2 className="h-4 w-4 text-primary" />
+            <Link2 className="h-4 w-4 text-primary-text" />
             <h2 className="flex-1 text-sm font-bold">Invite link</h2>
             <button
               onClick={async () => {
@@ -329,7 +330,7 @@ function FriendsScreen() {
             </div>
           ) : (data?.friends.length ?? 0) === 0 ? (
             <div className="mt-3 rounded-3xl bg-card p-5 text-center shadow-soft">
-              <UserPlus className="mx-auto h-6 w-6 text-primary" />
+              <UserPlus className="mx-auto h-6 w-6 text-primary-text" />
               <p className="mt-2 text-sm font-bold">
                 Add friends to keep each other&apos;s streak alive
               </p>
@@ -434,7 +435,11 @@ function FriendsScreen() {
                               onClick={() =>
                                 void run(key, () =>
                                   sendNudge({
-                                    data: { toUserId: friend.id, sharedStreakId: shared.id },
+                                    data: {
+                                      toUserId: friend.id,
+                                      sharedStreakId: shared.id,
+                                      today: dayKey(),
+                                    },
                                   }),
                                 )
                               }

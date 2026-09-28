@@ -68,7 +68,15 @@ function LessonScreen() {
   const navigate = useNavigate();
   const course = useCurriculumCourse();
   const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
-  const { state, completeLesson, recordPractice, recordExercise, recordArgument } = useProgress();
+  const {
+    state,
+    streak,
+    hydrated,
+    completeLesson,
+    recordPractice,
+    recordExercise,
+    recordArgument,
+  } = useProgress();
   const completedLessons = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(
     lessonNumber - 1,
@@ -91,8 +99,17 @@ function LessonScreen() {
   const [easierDone, setEasierDone] = useState(false);
   /** Consecutive correct drills in this lesson, for the combo bonus. */
   const [combo, setCombo] = useState(0);
-  /** XP when the lesson opened, so the results screen can show what was earned. */
-  const xpAtStart = useRef(state.xp);
+  /**
+   * XP when the lesson opened, so the results screen can show what was earned.
+   * Captured once the real numbers have loaded (on a hard reload the first render
+   * only has the empty server placeholder) and again for each lesson.
+   */
+  const xpAtStart = useRef<number | null>(null);
+  const xpNow = useRef(state.xp);
+  xpNow.current = state.xp;
+  useEffect(() => {
+    if (hydrated) xpAtStart.current = xpNow.current;
+  }, [index, hydrated]);
 
   useEffect(() => {
     setPage(0);
@@ -121,7 +138,7 @@ function LessonScreen() {
     return (
       <PhoneFrame showNav={false}>
         <div className="px-5 py-8">
-          <p className="text-xs font-bold text-primary">
+          <p className="text-xs font-bold text-primary-text">
             {unitById(meta?.unitId ?? "claims").title}
           </p>
           <h1 className="mt-1 text-2xl leading-tight">{meta?.title ?? "Loading lesson"}</h1>
@@ -255,7 +272,7 @@ function LessonScreen() {
     const answeredCount = exercises.filter((_, i) => attempts[i] !== undefined).length;
     const accuracy =
       answeredCount > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / answeredCount) * 100) : 0;
-    const xpEarned = Math.max(state.xp - xpAtStart.current, 0);
+    const xpEarned = Math.max(state.xp - (xpAtStart.current ?? state.xp), 0);
     const doneToday = state.history[dayKey()] ?? 0;
     const goal = state.dailyGoal;
     // Only what was actually done gets listed.
@@ -280,7 +297,7 @@ function LessonScreen() {
           <div className="relative z-30 flex animate-pop-in flex-col items-center text-center">
             <CompanionAura
               companion={{ ...companion, expression: "excited" }}
-              streak={state.streak}
+              streak={streak}
               size={unitDone ? 128 : 104}
               pose="cheer"
               animate
@@ -321,7 +338,7 @@ function LessonScreen() {
               <div className="mt-4 grid grid-cols-3 divide-x divide-border/60">
                 {[
                   { label: "accuracy", value: `${accuracy}%` },
-                  { label: "day streak", value: `${state.streak}` },
+                  { label: "day streak", value: `${streak}` },
                   { label: "lessons", value: `${unitLessonsDone?.completed ?? 0}` },
                 ].map((stat) => (
                   <div key={stat.label}>
@@ -337,9 +354,9 @@ function LessonScreen() {
                     unitTitle,
                     emoji: unitById(meta?.unitId ?? "claims").emoji,
                     accuracy,
-                    streak: state.streak,
+                    streak,
                     lessons: unitLessonsDone?.completed ?? 0,
-                    accent: accent.color,
+                    accent: accent.fixed,
                   })
                 }
                 className="mt-5 h-11 w-full rounded-full text-sm font-semibold"
@@ -360,15 +377,15 @@ function LessonScreen() {
                   format={(n) => `+${n}`}
                 />
                 <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-foreground">
-                  <StreakFlame streak={state.streak} size={16} />
-                  {state.streak} day{state.streak === 1 ? "" : "s"}
+                  <StreakFlame streak={streak} size={16} />
+                  {streak} day{streak === 1 ? "" : "s"}
                 </p>
               </div>
             </div>
           )}
 
           <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
-            <p className="text-[11px] font-semibold text-primary">Today's goal</p>
+            <p className="text-[11px] font-semibold text-primary-text">Today's goal</p>
             <p className="mt-1 text-sm font-bold text-foreground">
               {Math.min(doneToday, goal)} of {goal} lessons
             </p>
@@ -378,7 +395,7 @@ function LessonScreen() {
                 style={{ width: `${Math.min(100, Math.round((doneToday / goal) * 100))}%` }}
               />
             </div>
-            <p className="mt-4 text-[11px] font-semibold text-primary">What you practised</p>
+            <p className="mt-4 text-[11px] font-semibold text-primary-text">What you practised</p>
             <ul className="mt-2 space-y-1.5">
               {practised.map((label) => (
                 <li key={label} className="flex items-center gap-2 text-[13px] font-semibold">
@@ -436,7 +453,7 @@ function LessonScreen() {
         backTo="/course/$slug"
         right={
           combo >= 2 ? (
-            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary">
+            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">
               <Flame className="h-3.5 w-3.5" />
               {combo} in a row
             </span>
@@ -476,14 +493,14 @@ function LessonScreen() {
 
         {onConcept && (
           <article className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-            <p className="text-[11px] font-semibold text-primary">The idea</p>
+            <p className="text-[11px] font-semibold text-primary-text">The idea</p>
             <h2 className="mt-1 text-xl leading-snug">{lesson.concept?.title ?? lesson.title}</h2>
             <p className="mt-3 text-[15px] font-semibold leading-relaxed text-foreground/85">
               {lesson.concept?.body}
             </p>
             {lesson.concept?.example && (
               <div className="mt-4 flex gap-3 rounded-2xl bg-primary-soft p-4">
-                <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" />
                 <p className="text-[14px] font-semibold leading-relaxed text-accent-foreground">
                   {lesson.concept.example}
                 </p>
@@ -552,7 +569,6 @@ function LessonScreen() {
               objective={lesson.subtitle}
               written={written}
               companion={companion}
-              signedIn={!!userId}
               onGraded={(total, attempt, max, scores) => {
                 setArgumentGrade(total);
                 if (attempt === 1) recordArgument(total, max);
@@ -618,7 +634,7 @@ function LessonScreen() {
               <button
                 type="button"
                 onClick={() => setPage(writtenPage)}
-                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-primary"
+                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-primary-text"
               >
                 You've got this — skip ahead to the written task
               </button>
@@ -664,7 +680,7 @@ function LessonScreen() {
               size={112}
               pose="cheer"
             />
-            <p className="mt-5 text-sm font-bold text-primary">Lesson complete</p>
+            <p className="mt-5 text-sm font-bold text-primary-text">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You trained your reasoning.</h2>
             <p className="mt-3 text-sm font-semibold text-muted-foreground">
               +100 XP · Progress saved

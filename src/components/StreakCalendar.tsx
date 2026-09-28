@@ -1,6 +1,7 @@
 import { Flame, Snowflake } from "lucide-react";
 import { useEffect, useState } from "react";
-import { dayKey, type ProgressState } from "@/lib/progress";
+import { dayKey, shiftDay } from "@/lib/days";
+import type { ProgressState } from "@/lib/progress-core";
 
 /** Streak milestones. The flame grows visibly at each one. */
 export const STREAK_TIERS = [3, 7, 30, 100];
@@ -47,12 +48,6 @@ export function StreakFlame({
   );
 }
 
-function shift(key: string, days: number) {
-  const d = new Date(`${key}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 /**
  * The last four weeks of real practice. Filled squares are days lessons were
  * finished, snowflakes are days a freeze covered, blanks are days missed.
@@ -63,11 +58,11 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
   useEffect(() => setMounted(true), []);
   const today = dayKey();
   if (!mounted) return <div className="h-40 animate-pulse rounded-2xl bg-muted" aria-hidden />;
-  const days = Array.from({ length: 28 }, (_, i) => shift(today, -(27 - i)));
+  const days = Array.from({ length: 28 }, (_, i) => shiftDay(today, -(27 - i)));
   const frozen = new Set(state.freezeLog);
 
   return (
-    <div>
+    <div className="max-w-[440px]">
       <div className="grid grid-cols-7 gap-1.5">
         {days.map((day) => {
           const count = state.history[day] ?? 0;
@@ -82,7 +77,7 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
                   ? "bg-primary/85 text-primary-foreground"
                   : isFrozen
                     ? "bg-gem/20 text-gem"
-                    : "bg-muted text-muted-foreground/45"
+                    : "bg-muted text-muted-foreground"
               } ${isToday ? "ring-2 ring-primary/50" : ""}`}
             >
               <span className="relative inline-flex items-center justify-center leading-none">

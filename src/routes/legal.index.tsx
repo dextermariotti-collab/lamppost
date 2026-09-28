@@ -31,7 +31,7 @@ function LegalIndex() {
       <ScreenHeader title="Legal & policies" backTo="/settings" />
       <div className="px-5 pb-12">
         <div className="flex items-start gap-3 rounded-3xl bg-primary-soft p-4">
-          <ScrollText className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <ScrollText className="mt-0.5 h-5 w-5 shrink-0 text-primary-text" />
           <p className="text-xs leading-relaxed font-semibold text-accent-foreground">
             Lamppost writes every lesson with AI. These pages explain what that means, what data we
             keep, and how to report content. They are drafts pending legal review.

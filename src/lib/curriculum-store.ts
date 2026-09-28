@@ -9,6 +9,7 @@ import {
   lessonAt,
 } from "./curriculum";
 import { getCurriculumLesson } from "./curriculum.functions";
+import { cleanLessonHypotheticals } from "./hypothetical";
 
 /**
  * The fixed curriculum lives in the existing course store under one slug, so
@@ -96,7 +97,7 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
     const local = course.lessons[index];
 
     if (finished && hasLessonContent(local)) {
-      setLesson(local);
+      setLesson(cleanLessonHypotheticals(local!));
       setLoading(false);
       return;
     }
@@ -110,7 +111,7 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
         if (cancelled) return;
         if (result.ok) {
           const merged: Lesson = {
-            ...result.lesson,
+            ...cleanLessonHypotheticals(result.lesson),
             title: meta.title,
             subtitle: meta.objective,
             emoji: meta.emoji,

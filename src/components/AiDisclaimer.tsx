@@ -15,11 +15,11 @@ export function AiDisclaimer({ fitness = false, className = "" }: Props) {
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-start gap-2 rounded-2xl bg-muted/60 p-3">
-        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" />
         <p className="text-[11px] leading-relaxed font-semibold text-muted-foreground">
           AI-generated and may contain errors. Not professional, medical, legal or financial advice
           — verify anything important independently.{" "}
-          <Link to="/legal/ai-content" className="font-extrabold text-primary underline">
+          <Link to="/legal/ai-content" className="font-extrabold text-primary-text underline">
             How this works
           </Link>
         </p>

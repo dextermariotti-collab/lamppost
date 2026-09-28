@@ -6,16 +6,36 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const [profile, activity, achievements, friendships, nudges, reports] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+    // The profile has private columns (invite code, goal, settings) that the browser
+    // grant can't read, so the owner's row is read server-side.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [
+      profile,
+      activity,
+      achievements,
+      friendships,
+      sharedStreaks,
+      nudges,
+      reports,
+      argumentAttempts,
+      practiceSessions,
+      debates,
+      subscription,
+    ] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("daily_activity").select("*").eq("user_id", userId),
       supabase.from("user_achievements").select("*").eq("user_id", userId),
       supabase
         .from("friendships")
         .select("*")
         .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`),
+      supabase.from("shared_streaks").select("*"),
       supabase.from("nudges").select("*").or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`),
       supabase.from("content_reports").select("*").eq("user_id", userId),
+      supabase.from("argument_attempts").select("*").eq("user_id", userId),
+      supabase.from("practice_sessions").select("*").eq("user_id", userId),
+      supabase.from("debates").select("*"),
+      supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
     ]);
 
     return {
@@ -28,8 +48,13 @@ export const exportMyData = createServerFn({ method: "POST" })
       dailyActivity: activity.data ?? [],
       achievements: achievements.data ?? [],
       friendships: friendships.data ?? [],
+      sharedStreaks: sharedStreaks.data ?? [],
       nudges: nudges.data ?? [],
       contentReports: reports.data ?? [],
+      argumentAttempts: argumentAttempts.data ?? [],
+      practiceSessions: practiceSessions.data ?? [],
+      debates: debates.data ?? [],
+      subscription: subscription.data ?? null,
       note: "Courses, lesson progress and the review schedule are also stored locally on each device you use.",
     };
   });
@@ -55,20 +80,39 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
     const friendshipIds = (friendships ?? []).map((row) => row.id);
 
-    await supabaseAdmin
-      .from("nudges")
-      .delete()
-      .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
+    // Each step must succeed: a silent failure would leave personal rows behind for
+    // an account the person believes is gone.
+    const step = async (label: string, run: PromiseLike<{ error: { message: string } | null }>) => {
+      const { error } = await run;
+      if (error)
+        throw new Error(`Couldn't finish deleting your account (${label}). Please try again.`);
+    };
+
+    await step(
+      "nudges",
+      supabaseAdmin.from("nudges").delete().or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`),
+    );
     if (friendshipIds.length > 0) {
-      await supabaseAdmin.from("shared_streaks").delete().in("friendship_id", friendshipIds);
-      await supabaseAdmin.from("friendships").delete().in("id", friendshipIds);
+      await step(
+        "shared streaks",
+        supabaseAdmin.from("shared_streaks").delete().in("friendship_id", friendshipIds),
+      );
+      await step("friendships", supabaseAdmin.from("friendships").delete().in("id", friendshipIds));
     }
-    await supabaseAdmin.from("user_achievements").delete().eq("user_id", userId);
-    await supabaseAdmin.from("daily_activity").delete().eq("user_id", userId);
+    await step("badges", supabaseAdmin.from("user_achievements").delete().eq("user_id", userId));
+    await step("activity", supabaseAdmin.from("daily_activity").delete().eq("user_id", userId));
     // Safety records survive, detached from the person who filed them.
-    await supabaseAdmin.from("content_reports").update({ user_id: null }).eq("user_id", userId);
-    await supabaseAdmin.from("moderation_blocks").update({ user_id: null }).eq("user_id", userId);
-    await supabaseAdmin.from("profiles").delete().eq("id", userId);
+    await step(
+      "reports",
+      supabaseAdmin.from("content_reports").update({ user_id: null }).eq("user_id", userId),
+    );
+    await step(
+      "moderation records",
+      supabaseAdmin.from("moderation_blocks").update({ user_id: null }).eq("user_id", userId),
+    );
+    // Debates, graded attempts, practice sessions and the subscription row are removed
+    // with the sign-in identity (ON DELETE CASCADE on auth.users).
+    await step("profile", supabaseAdmin.from("profiles").delete().eq("id", userId));
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);

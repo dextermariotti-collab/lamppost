@@ -13,17 +13,16 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { StreakCalendar, StreakFlame } from "@/components/StreakCalendar";
+import { StreakCalendar } from "@/components/StreakCalendar";
 import { StreakSavedCard } from "@/components/StreakSavedCard";
 import { BadgeShelf } from "@/components/BadgeShelf";
 import { useBadges } from "@/lib/badges";
 import { unitLevels } from "@/lib/levels";
 import { useCompanion } from "@/lib/companion-store";
 import { Confetti } from "@/components/Confetti";
-import { CountUp } from "@/components/CountUp";
 import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { ProgressRing } from "@/components/ProgressRing";
+import { StatTiles, StreakHeadline, TodaySession } from "@/components/ProgressSummary";
 import { StreakFreezeCard } from "@/components/StreakFreezeCard";
 import { CURRICULUM_SLUG } from "@/lib/curriculum";
 import { useMasteryAnalytics } from "@/lib/mastery";
@@ -52,7 +51,7 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
+  const { state, streak, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
   const analytics = useMasteryAnalytics();
@@ -80,8 +79,6 @@ function ProgressScreen() {
   // One source of truth: the curriculum's own completed count, the same number
   // My Path and Home read (placement-unlocked lessons included).
   const lessonsDone = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
-  const sessionPct = Math.min(100, Math.round((insights.doneToday / state.dailyGoal) * 100));
-  const sessionDone = insights.doneToday >= state.dailyGoal;
 
   const nearMiss = courses
     .map(([slug, c]) => ({
@@ -108,8 +105,6 @@ function ProgressScreen() {
   });
   const weekMax = Math.max(1, ...week.map((d) => d.count));
 
-  const flameIntensity = Math.min(1, state.streak / 30);
-
   return (
     <PhoneFrame>
       <div className="relative px-5 pb-8">
@@ -117,7 +112,7 @@ function ProgressScreen() {
         {celebration && (
           <MilestoneCard
             celebration={celebration}
-            streak={state.streak}
+            streak={streak}
             onClose={() => setCelebration(null)}
           />
         )}
@@ -130,35 +125,18 @@ function ProgressScreen() {
         </p>
 
         {/* Streak — one quiet pool of lamplight, nothing else shouting */}
-        <section className="relative mt-7 animate-rise-in">
-          <span
-            aria-hidden="true"
-            className="lamplight-glow absolute -top-8 -left-6 -z-10 h-40 w-40 rounded-full"
-            style={{ opacity: insights.atRisk ? 0.35 : 0.75 + flameIntensity * 0.25 }}
-          />
-          <div className="flex items-end gap-3">
-            <span className="mb-2">
-              <StreakFlame streak={insights.atRisk ? 0 : state.streak} size={28} />
-            </span>
-            <p className="font-display text-[3.5rem] leading-none font-extrabold">
-              <CountUp value={state.streak} duration={900} />
-            </p>
-            <p className="mb-2 text-sm font-semibold text-foreground">day streak</p>
-          </div>
-          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-            <Trophy className="h-3.5 w-3.5" /> Longest {state.longestStreak} days
-          </p>
-          {insights.atRisk && (
-            <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-flame">
-              <Clock className="h-3.5 w-3.5" /> {insights.hoursLeft}h left to keep it alive
-            </p>
-          )}
-        </section>
+        <StreakHeadline
+          hydrated={hydrated}
+          streak={streak}
+          longestStreak={state.longestStreak}
+          atRisk={insights.atRisk}
+          hoursLeft={insights.hoursLeft}
+        />
 
         {state.freezeSaved && (
           <StreakSavedCard
             days={state.freezeSaved.days}
-            streak={state.streak}
+            streak={streak}
             freezesLeft={state.freezes}
             companion={companion}
             onClose={clearFreezeSaved}
@@ -176,39 +154,12 @@ function ProgressScreen() {
         <StreakFreezeCard freezes={state.freezes} gems={state.gems} onBuy={buyFreeze} />
 
         {/* Today's session */}
-        <section
-          className="mt-6 flex animate-rise-in items-center gap-5 border-t border-border pt-5"
-          style={{ animationDelay: "80ms" }}
-        >
-          <ProgressRing pct={sessionPct} size={104} stroke={10}>
-            <span className="text-2xl font-extrabold">
-              <CountUp value={insights.doneToday} duration={800} />
-
-              <span className="text-sm text-muted-foreground">/{state.dailyGoal}</span>
-            </span>
-            <span className="text-[10px] font-bold text-muted-foreground">today</span>
-          </ProgressRing>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-base">Today's session</h2>
-            <p className="mt-1 text-sm font-semibold text-muted-foreground">
-              {sessionDone
-                ? "Session complete. The streak is safe."
-                : `${state.dailyGoal - insights.doneToday} more lesson${
-                    state.dailyGoal - insights.doneToday === 1 ? "" : "s"
-                  } to close today out.`}
-            </p>
-            <p className="mt-1 text-sm font-semibold text-muted-foreground">
-              {dueTotal === 0
-                ? "Nothing due for review today."
-                : `${dueTotal} drill${dueTotal === 1 ? "" : "s"} due for review.`}
-            </p>
-            {sessionDone && (
-              <span className="mt-2 inline-flex animate-pop-in items-center gap-1.5 rounded-full bg-success/12 px-2.5 py-1 text-[11px] font-extrabold text-success">
-                <Sparkles className="h-3.5 w-3.5" /> Daily goal cleared
-              </span>
-            )}
-          </div>
-        </section>
+        <TodaySession
+          hydrated={hydrated}
+          doneToday={insights.doneToday}
+          dailyGoal={state.dailyGoal}
+          dueTotal={dueTotal}
+        />
 
         {/* Near-miss pull */}
         {nearMiss && (
@@ -218,7 +169,7 @@ function ProgressScreen() {
             className="mt-4 flex w-full animate-rise-in items-center gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4 text-left shadow-soft transition-transform hover:-translate-y-0.5"
             style={{ animationDelay: "120ms" }}
           >
-            <Target className="h-5 w-5 shrink-0 text-primary" />
+            <Target className="h-5 w-5 shrink-0 text-primary-text" />
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-extrabold text-accent-foreground">
                 {nearMiss.left} more lesson{nearMiss.left === 1 ? "" : "s"} to master{" "}
@@ -232,11 +183,7 @@ function ProgressScreen() {
         )}
 
         {/* Stats — unboxed, hairline-separated, quiet */}
-        <div className="mt-6 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
-          <Tile label="Lessons" value={lessonsDone} icon={Check} delay={0} />
-          <Tile label="Total XP" value={state.xp} icon={Star} delay={70} />
-          <Tile label="Gems" value={state.gems} icon={Gem} delay={140} />
-        </div>
+        <StatTiles hydrated={hydrated} lessons={lessonsDone} xp={state.xp} gems={state.gems} />
 
         {/* Per-skill mastery, from real drill accuracy */}
         <h2 className="mt-6 text-base">Skill mastery</h2>
@@ -388,7 +335,7 @@ function ProgressScreen() {
                   />
                   <span
                     className={`text-[11px] font-bold ${
-                      isToday ? "text-primary" : "text-muted-foreground"
+                      isToday ? "text-primary-text" : "text-muted-foreground"
                     }`}
                   >
                     {day.label}
@@ -400,28 +347,6 @@ function ProgressScreen() {
         </div>
       </div>
     </PhoneFrame>
-  );
-}
-
-function Tile({
-  label,
-  value,
-  icon: Icon,
-  delay,
-}: {
-  label: string;
-  value: number;
-  icon: typeof Check;
-  delay: number;
-}) {
-  return (
-    <div className="animate-rise-in px-3 text-center" style={{ animationDelay: `${delay}ms` }}>
-      <Icon aria-hidden="true" className="mx-auto h-4 w-4 text-primary" strokeWidth={2.2} />
-      <p className="mt-1.5 text-xl font-extrabold">
-        <CountUp value={value} />
-      </p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-    </div>
   );
 }
 

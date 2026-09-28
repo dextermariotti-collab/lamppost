@@ -99,7 +99,7 @@ export function RankExerciseCard({
                     type="button"
                     aria-label={`Move "${text}" up`}
                     onClick={() => move(i, i - 1)}
-                    className="rounded-full p-1 text-muted-foreground hover:text-primary"
+                    className="rounded-full p-1 text-muted-foreground hover:text-primary-text"
                   >
                     <ChevronUp className="h-4 w-4" />
                   </button>
@@ -107,7 +107,7 @@ export function RankExerciseCard({
                     type="button"
                     aria-label={`Move "${text}" down`}
                     onClick={() => move(i, i + 1)}
-                    className="rounded-full p-1 text-muted-foreground hover:text-primary"
+                    className="rounded-full p-1 text-muted-foreground hover:text-primary-text"
                   >
                     <ChevronDown className="h-4 w-4" />
                   </button>

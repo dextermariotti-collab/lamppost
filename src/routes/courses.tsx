@@ -117,7 +117,7 @@ function MyPath() {
                       Unit {i + 1} · {unit.unit.title}
                     </p>
                     {due > 0 && (
-                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary-text">
                         <Timer className="h-3 w-3" />
                         {due} due
                       </span>
@@ -145,7 +145,7 @@ function MyPath() {
         <Link
           to="/course/$slug"
           params={{ slug: CURRICULUM_SLUG }}
-          className="mt-5 flex items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-primary/40 p-5 text-sm font-bold text-primary"
+          className="mt-5 flex items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-primary/40 p-5 text-sm font-bold text-primary-text"
         >
           See the full route map
         </Link>

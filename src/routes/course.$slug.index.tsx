@@ -39,7 +39,7 @@ function CoursePath() {
   const slug = CURRICULUM_SLUG;
   const navigate = useNavigate();
   const course = useCurriculumCourse();
-  const { state, registerCourse } = useProgress();
+  const { state, streak, registerCourse } = useProgress();
   const { companion } = useCompanion();
 
   // There is only one curriculum now: any other slug redirects to it.
@@ -73,7 +73,7 @@ function CoursePath() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-1">
-              <StatPill icon={Flame} value={state.streak} />
+              <StatPill icon={Flame} value={streak} />
               <StatPill icon={Zap} value={state.xp} />
               <Button
                 variant="ghost"

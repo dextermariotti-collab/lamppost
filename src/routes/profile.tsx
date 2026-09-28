@@ -50,7 +50,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfileScreen() {
-  const { state } = useProgress();
+  const { state, streak } = useProgress();
   const { companion, signedIn } = useCompanion();
   const { data: account } = useAccount();
   const { data: achievements } = useAchievements();
@@ -96,17 +96,17 @@ function ProfileScreen() {
         {/* Stats — quiet, unboxed, one hairline band */}
         <div className="mt-5 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
           <Stat
-            icon={<Flame className="h-4 w-4 text-primary" strokeWidth={2.2} />}
-            value={String(state.streak)}
+            icon={<Flame className="h-4 w-4 text-primary-text" strokeWidth={2.2} />}
+            value={String(streak)}
             label="Day streak"
           />
           <Stat
-            icon={<Zap className="h-4 w-4 text-primary" strokeWidth={2.2} />}
+            icon={<Zap className="h-4 w-4 text-primary-text" strokeWidth={2.2} />}
             value={state.xp.toLocaleString()}
             label="Total XP"
           />
           <Stat
-            icon={<Trophy className="h-4 w-4 text-primary" strokeWidth={2.2} />}
+            icon={<Trophy className="h-4 w-4 text-primary-text" strokeWidth={2.2} />}
             value={league.name}
             label="League"
           />
@@ -158,7 +158,7 @@ function ProfileScreen() {
 
         {/* Friends */}
         <Link to="/friends" className="mt-6 flex items-center gap-3 border-t border-border pt-4">
-          <UserPlus className="h-5 w-5 text-primary" />
+          <UserPlus className="h-5 w-5 text-primary-text" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold">Add friends</span>
             <span className="block truncate text-xs text-muted-foreground">
@@ -225,7 +225,10 @@ function ProfileScreen() {
             Sign out
           </button>
         ) : (
-          <Link to="/auth" className="mt-8 flex items-center gap-2 text-xs font-bold text-primary">
+          <Link
+            to="/auth"
+            className="mt-8 flex items-center gap-2 text-xs font-bold text-primary-text"
+          >
             <LogIn className="h-3.5 w-3.5" />
             Sign in to save your progress
             <Sparkles className="h-3.5 w-3.5" />

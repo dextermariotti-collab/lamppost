@@ -18,7 +18,7 @@ export function PredictionCard({ prediction, companion, choice, onPick }: Props)
 
   return (
     <section className="mt-4 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-      <p className="text-[11px] font-semibold text-primary">Predict first</p>
+      <p className="text-[11px] font-semibold text-primary-text">Predict first</p>
       <h2 className="mt-1 text-xl leading-snug">{prediction.question}</h2>
 
       <div className="mt-4 space-y-2">

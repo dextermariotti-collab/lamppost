@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
-import { dayKey } from "./progress";
+import { dayKey, daysBetween, shiftDay } from "./days";
 import { skillRating } from "./rating";
 import type { ExerciseKind } from "./exercises";
 
@@ -40,16 +40,8 @@ type Store = Record<string, DrillItem>;
 
 export const drillKey = (lessonId: string, kind: ExerciseKind) => `${lessonId}#${kind}`;
 
-function shift(day: string, days: number) {
-  const d = new Date(`${day}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 function daysUntil(due: string, today = dayKey()) {
-  const a = new Date(`${today}T00:00:00Z`).getTime();
-  const b = new Date(`${due}T00:00:00Z`).getTime();
-  return Math.round((b - a) / 86_400_000);
+  return daysBetween(today, due);
 }
 
 function readStore(): Store {
@@ -100,7 +92,7 @@ export function trackDrillResult(
         ...existing,
         box,
         reason: "practice",
-        due: shift(today, DRILL_INTERVALS[box]!),
+        due: shiftDay(today, DRILL_INTERVALS[box]!),
         at: Date.now(),
       },
     });
@@ -114,7 +106,7 @@ export function trackDrillResult(
       lessonId,
       kind,
       box,
-      due: shift(today, DRILL_INTERVALS[box]!),
+      due: shiftDay(today, DRILL_INTERVALS[box]!),
       seen: existing?.seen ?? [],
       reason: shaky ? "missed" : "unsure",
       at: Date.now(),
@@ -138,7 +130,7 @@ export function gradeDrillReview(key: string, correct: boolean, variant?: number
       box,
       seen,
       reason,
-      due: shift(dayKey(), DRILL_INTERVALS[box]!),
+      due: shiftDay(dayKey(), DRILL_INTERVALS[box]!),
       at: Date.now(),
     },
   });

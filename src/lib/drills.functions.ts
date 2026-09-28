@@ -3,6 +3,7 @@ import { z } from "zod";
 import { LESSONS } from "./curriculum";
 import { EXERCISE_KINDS, type Exercise, type ExerciseKind } from "./exercises";
 import { MOTIVATION_IDS } from "./onboarding";
+import { sayHypotheticalOnce } from "./hypothetical";
 
 /**
  * Serves ONE fresh drill of a skill + type for reviews, the daily challenge and
@@ -63,7 +64,7 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       // Empty pool: seed it from this lesson's own validated drills.
       if (rows.length === 0) {
         const cached = await readCachedLesson(meta.id);
-        if (isUsableLesson(cached)) {
+        if (isUsableLesson(cached, meta.drills)) {
           await seedPoolFromLesson(meta.id, cached!.exercises!);
         } else {
           const generated = await ensureLessonContent(meta.id);
@@ -125,7 +126,7 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       return {
         ok: true,
         variant: chosen.variant,
-        exercise: chosen.content as unknown as Exercise,
+        exercise: sayHypotheticalOnce(chosen.content as unknown as Exercise),
         kind: chosen.kind as ExerciseKind,
         difficulty: chosen.difficulty ?? 2,
       };

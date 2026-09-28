@@ -93,7 +93,7 @@ function ReviewQueue() {
             </p>
 
             <div className="mt-4">
-              <p className="text-[11px] font-bold text-primary">
+              <p className="text-[11px] font-bold text-primary-text">
                 {item.lessonTitle} · {EXERCISE_LABEL[item.kind]}
                 {item.overdueDays > 0 && ` · ${item.overdueDays}d overdue`}
               </p>

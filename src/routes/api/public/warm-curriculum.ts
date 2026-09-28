@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { LESSONS } from "@/lib/curriculum";
+import { secretsMatch } from "@/lib/secure-compare";
 
 /**
  * Warm-up pass: pre-generates and validates curriculum lessons and seeds the
@@ -24,8 +25,11 @@ export const Route = createFileRoute("/api/public/warm-curriculum")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const token = process.env["WARM_TOKEN"] ?? "lamppost-warm";
-        if (request.headers.get("x-warm-token") !== token) {
+        // This endpoint spends AI credit, so it is off unless WARM_TOKEN is set on the
+        // server. (It used to fall back to a token that was printed in the source.)
+        const token = process.env["WARM_TOKEN"];
+        if (!token) return new Response("Warm-up is not configured", { status: 503 });
+        if (!secretsMatch(request.headers.get("x-warm-token"), token)) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -61,7 +65,7 @@ export const Route = createFileRoute("/api/public/warm-curriculum")({
           }
           if (!force) {
             const cached = await readCachedLesson(lesson.id);
-            if (isUsableLesson(cached)) {
+            if (isUsableLesson(cached, lesson.drills)) {
               // Cached: only top the pool up if asked to.
               if (extraDrills > 0) {
                 const counts = await poolCounts(lesson.id);

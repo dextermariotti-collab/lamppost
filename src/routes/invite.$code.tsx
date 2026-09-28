@@ -48,7 +48,7 @@ function InviteScreen() {
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         ) : !signedIn ? (
           <>
-            <UserPlus className="h-7 w-7 text-primary" />
+            <UserPlus className="h-7 w-7 text-primary-text" />
             <h1 className="mt-3 text-2xl">You&apos;ve been invited</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Sign in to accept the invite and start a shared streak.

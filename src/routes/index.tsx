@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Expand, Maximize2, Play, Star, X, Zap } from "lucide-react";
+import { ArrowRight, Expand, Play, Star, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { skillsToPractise } from "@/lib/rating";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const { state, registerCourse } = useProgress();
+  const { state, streak, registerCourse } = useProgress();
   const { companion } = useCompanion();
   // Makes sure the curriculum exists locally with its lesson titles.
   useCurriculumCourse();
@@ -108,7 +108,7 @@ function Home() {
           <Link to="/profile" aria-label="Open profile" className="shrink-0">
             <CompanionAura
               companion={{ ...companion, expression: urgency === "piling" ? "calm" : "happy" }}
-              streak={state.streak}
+              streak={streak}
               size={46}
             />
           </Link>
@@ -116,13 +116,13 @@ function Home() {
           <Link
             to="/progress"
             className="flex items-center gap-1.5 rounded-full px-1 py-1"
-            aria-label={`${state.streak} day streak`}
+            aria-label={`${streak} day streak`}
           >
-            <StreakFlame streak={state.streak} />
-            <span className="text-base font-bold text-foreground">{state.streak}</span>
+            <StreakFlame streak={streak} />
+            <span className="text-base font-bold text-foreground">{streak}</span>
           </Link>
 
-          <span className="flex items-center gap-1 text-sm font-bold text-muted-foreground">
+          <span className="flex items-center gap-1 text-sm font-bold text-foreground">
             <Star aria-hidden className="h-4 w-4 text-xp" />
             {state.xp.toLocaleString()}
           </span>
@@ -204,7 +204,7 @@ function Home() {
         >
           <span
             aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary-text"
           >
             {dueTotal}
           </span>
@@ -241,43 +241,30 @@ function Home() {
             </Button>
           </div>
 
-          <div className="relative mt-3 h-44 w-full overflow-hidden rounded-2xl border border-border">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 block origin-top scale-[0.38]"
-            >
-              <ThinkingGraph completed={completed} compact />
-            </span>
-            <button
-              type="button"
-              onClick={() => setMapOpen(true)}
-              aria-label="Expand your thinking map"
-              className="absolute inset-0 flex items-end justify-end p-2"
-            >
-              <span className="flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 text-[10px] font-bold text-muted-foreground">
-                <Maximize2 aria-hidden className="h-3 w-3" /> Tap to open
-              </span>
-            </button>
+          <div className="mt-3">
+            <ThinkingGraph completed={completed} compact />
           </div>
         </section>
       </main>
 
       {mapOpen && (
         <div className="fixed inset-0 z-[60] overflow-y-auto bg-background px-5 pb-10">
-          <div className="flex items-center justify-between gap-3 pt-6">
-            <h2 className="text-lg font-bold">Your thinking map</h2>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Close map"
-              onClick={() => setMapOpen(false)}
-              className="h-11 w-11 rounded-full"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+          <div className="mx-auto max-w-[600px]">
+            <div className="flex items-center justify-between gap-3 pt-6">
+              <h2 className="text-lg font-bold">Your thinking map</h2>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Close map"
+                onClick={() => setMapOpen(false)}
+                className="h-11 w-11 rounded-full"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <ThinkingGraph completed={completed} />
           </div>
-          <ThinkingGraph completed={completed} />
         </div>
       )}
     </PhoneFrame>

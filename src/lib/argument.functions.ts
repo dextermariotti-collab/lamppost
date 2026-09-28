@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { screenLocally } from "./moderation";
 import { WRITTEN_TASKS, type ArgumentGrade, type RubricCriterion } from "./exercises";
 
@@ -114,42 +113,40 @@ export const gradeArgument = createServerFn({ method: "POST" })
       const text = await result.text;
       const parsed = parseGrade(text, task.criteria);
       if (!parsed) return { ok: false, reason: "The grader's reply couldn't be read. Try again." };
+      await storeAttempt(data, parsed.grade);
       return { ok: true, ...parsed };
     } catch (error) {
       return { ok: false, reason: describe(error) };
     }
   });
 
-const SaveInput = z.object({
-  lessonId: z.string().min(1),
-  lessonTitle: z.string().min(1),
-  attempt: z.number().int().min(1).max(2),
-  answer: z.string().min(1).max(4000),
-  scores: z.record(z.string(), z.object({ score: z.number(), feedback: z.string() })),
-  tip: z.string(),
-  total: z.number(),
-  max: z.number(),
-});
-
-/** Stores one graded attempt for the signed-in learner. */
-export const saveArgumentAttempt = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => SaveInput.parse(input))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as unknown as {
-      supabase: { from: (t: string) => any };
-      userId: string;
-    };
-    const { error } = await supabase.from("argument_attempts").insert({
+/**
+ * Keeps a signed-in learner's graded attempt. It is written here, from the grade
+ * this function just produced, rather than relayed by the browser — so the stored
+ * scores are the grader's, not whatever a client claims. Guests are simply not
+ * stored. Never fails the grading itself.
+ */
+async function storeAttempt(
+  input: z.infer<typeof GradeInput>,
+  grade: ArgumentGrade,
+): Promise<void> {
+  try {
+    const { optionalUserId } = await import("./optional-auth.server");
+    const userId = await optionalUserId();
+    if (!userId) return;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("argument_attempts").insert({
       user_id: userId,
-      lesson_id: data.lessonId,
-      lesson_title: data.lessonTitle,
-      attempt: data.attempt,
-      answer: data.answer,
-      scores: data.scores,
-      tip: data.tip,
-      total: data.total,
+      lesson_id: input.lessonId,
+      lesson_title: input.lessonTitle,
+      attempt: input.attempt,
+      answer: input.answer,
+      scores: JSON.parse(JSON.stringify(grade.scores)),
+      tip: grade.tip,
+      total: grade.total,
     });
     if (error) console.error("Could not store argument attempt", error);
-    return { ok: !error };
-  });
+  } catch (error) {
+    console.error("Could not store argument attempt", error);
+  }
+}
