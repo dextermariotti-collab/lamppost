@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { screenLocally } from "./moderation";
 import { FREE_WEEKLY_PRACTICE, MAX_PRACTICE_TURNS, type PracticeTurn } from "./practice";
+import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
 /** Monday-start week key used for the free allowance window. */
 function weekStartIso() {
@@ -14,22 +15,27 @@ function weekStartIso() {
   return start.toISOString();
 }
 
+/** Longest reply a learner can send the tutor in one turn. */
+export const MAX_PRACTICE_ANSWER_CHARS = 1500;
+
 const ContextSchema = z.object({
-  slug: z.string().min(1),
-  lessonIndex: z.number().int().min(0),
-  topic: z.string().min(1),
-  lessonTitle: z.string().min(1),
-  lessonText: z.string(),
-  earlierLessons: z.array(z.string()),
-  companionName: z.string().min(1),
+  slug: z.string().min(1).max(120),
+  lessonIndex: z.number().int().min(0).max(200),
+  topic: z.string().min(1).max(200),
+  lessonTitle: z.string().min(1).max(200),
+  lessonText: z.string().max(6000),
+  earlierLessons: z.array(z.string().max(200)).max(40),
+  companionName: z.string().min(1).max(40),
 });
 
-const TurnSchema = z.object({
+export const TurnSchema = z.object({
   context: ContextSchema,
-  transcript: z.array(z.object({ role: z.enum(["tutor", "learner"]), text: z.string() })),
+  transcript: z
+    .array(z.object({ role: z.enum(["tutor", "learner"]), text: z.string().max(2000) }))
+    .max(MAX_PRACTICE_TURNS * 2 + 2),
   /** Empty on the opening turn. */
-  answer: z.string(),
-  sessionId: z.string().nullable(),
+  answer: z.string().max(MAX_PRACTICE_ANSWER_CHARS),
+  sessionId: z.string().uuid().nullable(),
 });
 
 export type PracticeAccess = {
@@ -52,7 +58,8 @@ export type PracticeReply =
       connectionMade: boolean;
       access: PracticeAccess;
     }
-  | { ok: false; reason: string; upgrade?: boolean; blocked?: boolean };
+  | { ok: false; reason: string; upgrade?: boolean; blocked?: boolean }
+  | LimitedFailure;
 
 type ModelReply = {
   reply: string;
@@ -203,6 +210,12 @@ export const practiceTurn = createServerFn({ method: "POST" })
         return { ok: false, reason: "Write a sentence or two first." };
       }
     }
+
+    // Counted before the session row exists, so a refused turn never uses up one of
+    // the week's free sessions.
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("practiceTurn");
+    if (!verdict.ok) return limitedFailure(verdict);
 
     // Session rows are what the free weekly allowance is counted from, so the browser
     // can't create, edit or delete them; they are written here with the service role.

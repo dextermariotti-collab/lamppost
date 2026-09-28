@@ -3,11 +3,12 @@ import { z } from "zod";
 import { LESSONS } from "./curriculum";
 import type { Lesson } from "./courses";
 import { cleanLessonHypotheticals } from "./hypothetical";
+import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
-const Input = z.object({ lessonId: z.string().min(1) });
+const Input = z.object({ lessonId: z.string().min(1).max(80) });
 
 export type LessonContentResult =
-  { ok: true; lesson: Lesson; cached: boolean } | { ok: false; reason: string };
+  { ok: true; lesson: Lesson; cached: boolean } | { ok: false; reason: string } | LimitedFailure;
 
 /**
  * Fetches one curriculum lesson. Lessons are pre-generated and validated by the
@@ -29,8 +30,20 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
       return { ok: true, lesson: cleanLessonHypotheticals(cached!), cached: true };
     }
 
-    const generated = await ensureLessonContent(meta.id);
-    if (generated.ok) return { ...generated, lesson: cleanLessonHypotheticals(generated.lesson) };
+    // A cache miss is the only path that spends AI credit. It is limited per caller
+    // and for the whole app, and only one request per lesson generates at a time —
+    // the rest are told it is being prepared, and find it cached on their retry.
+    const { guardedGeneration } = await import("./rate-limit.server");
+    const attempt = await guardedGeneration({
+      policy: "lessonGeneration",
+      lockKey: `gen:lesson:${meta.id}`,
+      lockTtlSeconds: 240,
+      run: () => ensureLessonContent(meta.id),
+    });
+    if (attempt.status === "limited") return limitedFailure(attempt);
+    if (attempt.status === "ran" && attempt.value.ok) {
+      return { ...attempt.value, lesson: cleanLessonHypotheticals(attempt.value.lesson) };
+    }
 
     // Anything left over is a temporary condition from the learner's point of view.
     return {

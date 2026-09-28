@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { BriefSchema, ChunkSchema, quizCountFor, type CourseOutline } from "./course-brief";
 import type { Lesson } from "./courses";
 import { screenLocally } from "./moderation";
+import { limitedFailure, type LimitedFailure } from "./rate-limit";
 import {
   CONTENT_SYSTEM,
   OUTLINE_SYSTEM,
@@ -12,10 +13,14 @@ import {
 } from "./course-ai.server";
 
 export type OutlineResult =
-  { ok: true; outline: CourseOutline } | { ok: false; reason: string; blocked?: boolean };
+  | { ok: true; outline: CourseOutline }
+  | { ok: false; reason: string; blocked?: boolean }
+  | LimitedFailure;
 
 export type ChunkResult =
-  { ok: true; lessons: Lesson[] } | { ok: false; reason: string; blocked?: boolean };
+  | { ok: true; lessons: Lesson[] }
+  | { ok: false; reason: string; blocked?: boolean }
+  | LimitedFailure;
 
 /** Turns provider errors into a short, human message for the UI. */
 function describe(error: unknown): string {
@@ -48,6 +53,13 @@ export const generateOutline = createServerFn({ method: "POST" })
     if (!key) {
       return { ok: false, reason: "AI isn't configured for this project yet." };
     }
+
+    // Free local screen first, then the limit, then the paid AI classifier.
+    const local = screenLocally(`${brief.topic} ${brief.goal}`);
+    if (!local.allowed) return { ok: false, reason: local.message, blocked: true };
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("topicGeneration");
+    if (!verdict.ok) return limitedFailure(verdict);
 
     const { screenTopicText, screenOutput, logModerationBlock } =
       await import("./moderation.server");
@@ -113,6 +125,9 @@ export const generateLessonChunk = createServerFn({ method: "POST" })
     if (!requested.allowed) {
       return { ok: false, reason: requested.message, blocked: true };
     }
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("topicGeneration");
+    if (!verdict.ok) return limitedFailure(verdict);
 
     try {
       const { streamText } = await import("ai");

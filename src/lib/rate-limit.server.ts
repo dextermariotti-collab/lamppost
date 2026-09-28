@@ -140,6 +140,23 @@ export function limiter(): Limiter {
   return shared;
 }
 
+/**
+ * A limiter that has already worked out who is calling. Use it for work that
+ * carries on after the response has been sent, when the request itself is no
+ * longer there to ask.
+ */
+export function limiterForRequest(): Limiter {
+  const who = requestIdentity();
+  who.catch(() => undefined);
+  return createLimiter({
+    identity: () => who,
+    rpc: async (fn, args) => {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      return await (supabaseAdmin.rpc as unknown as Rpc)(fn, args);
+    },
+  });
+}
+
 /* ---------------------------- guarded generation ---------------------------- */
 
 export type Guarded<T> =

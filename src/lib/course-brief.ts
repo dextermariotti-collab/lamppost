@@ -1,22 +1,22 @@
 import { z } from "zod";
 
 export const BriefSchema = z.object({
-  topic: z.string(),
-  lessons: z.number(),
-  difficulty: z.string(),
-  quizRigor: z.string(),
-  experience: z.string(),
-  focus: z.string(),
-  goal: z.string(),
+  topic: z.string().min(1).max(120),
+  lessons: z.number().int().min(1).max(12),
+  difficulty: z.string().max(40),
+  quizRigor: z.string().max(40),
+  experience: z.string().max(40),
+  focus: z.string().max(120),
+  goal: z.string().max(300),
 });
 
 export type CourseBrief = z.infer<typeof BriefSchema>;
 
 export const StubSchema = z.object({
-  index: z.number(),
-  title: z.string(),
-  subtitle: z.string(),
-  emoji: z.string(),
+  index: z.number().int().min(0).max(100),
+  title: z.string().max(160),
+  subtitle: z.string().max(300),
+  emoji: z.string().max(16),
 });
 
 export type LessonStub = z.infer<typeof StubSchema>;
@@ -31,8 +31,8 @@ export type CourseOutline = {
 
 export const ChunkSchema = z.object({
   brief: BriefSchema,
-  courseTitle: z.string(),
-  stubs: z.array(StubSchema),
+  courseTitle: z.string().max(160),
+  stubs: z.array(StubSchema).max(12),
 });
 
 export type ChunkInput = z.infer<typeof ChunkSchema>;

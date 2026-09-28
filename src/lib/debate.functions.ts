@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { screenLocally } from "./moderation";
+import { limitedFailure } from "./rate-limit";
 import { parseGrade } from "./argument.functions";
 import { WRITTEN_TASKS, type ArgumentGrade } from "./exercises";
 
@@ -176,6 +177,23 @@ export const challengeToDebate = createServerFn({ method: "POST" })
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("AI isn't configured for this project yet.");
 
+    // Debates are written by the server (the browser can't insert a pre-graded one),
+    // so the friendship is checked here: it must be one of the caller's own, accepted.
+    // It comes before the model call so a stranger can't spend credit on a motion.
+    const { data: friendship } = await supabase
+      .from("friendships")
+      .select("id")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${userId},addressee_id.eq.${data.opponentId}),and(requester_id.eq.${data.opponentId},addressee_id.eq.${userId})`,
+      )
+      .maybeSingle();
+    if (!friendship) throw new Error("You can only debate a friend.");
+
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("debateMotion");
+    if (!verdict.ok) throw new Error(verdict.message);
+
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const { screenOutput } = await import("./moderation.server");
@@ -203,18 +221,6 @@ export const challengeToDebate = createServerFn({ method: "POST" })
     if (!motion.passage || !motion.prompt) {
       throw new Error("A motion couldn't be written just now. Try again in a moment.");
     }
-
-    // Debates are written by the server (the browser can't insert a pre-graded one),
-    // so the friendship is checked here: it must be one of the caller's own, accepted.
-    const { data: friendship } = await supabase
-      .from("friendships")
-      .select("id")
-      .eq("status", "accepted")
-      .or(
-        `and(requester_id.eq.${userId},addressee_id.eq.${data.opponentId}),and(requester_id.eq.${data.opponentId},addressee_id.eq.${userId})`,
-      )
-      .maybeSingle();
-    if (!friendship) throw new Error("You can only debate a friend.");
 
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const challengerFirst = Math.random() < 0.5;
@@ -305,6 +311,10 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     const key = process.env["LOVABLE_API_KEY"];
     if (!key)
       return { ok: false as const, reason: "Grading isn't configured for this project yet." };
+
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("debateGrade");
+    if (!verdict.ok) return limitedFailure(verdict);
 
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");

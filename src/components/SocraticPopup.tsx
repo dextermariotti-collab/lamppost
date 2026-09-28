@@ -4,7 +4,11 @@ import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
 import { companionName, type Companion } from "@/lib/companions";
 import { describeAnswer, describeExercise, type Exercise } from "@/lib/exercises";
+import { isLimited } from "@/lib/rate-limit";
 import { socraticLine } from "@/lib/socratic.functions";
+
+/** The "needs a breather" note is shown once per visit, not after every answer. */
+let limitNoted = false;
 
 /**
  * The mascot's Socratic beat: after a wrong answer (and now and then after a
@@ -33,6 +37,7 @@ export function SocraticPopup({
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
   const asked = useRef(false);
   const name = companionName(companion);
 
@@ -54,11 +59,35 @@ export function SocraticPopup({
     })
       .then((result) => {
         if (result.ok) setQuestion(result.line);
+        else if (isLimited(result) && !limitNoted) {
+          limitNoted = true;
+          setNote(result.reason);
+        }
       })
       .catch(() => undefined);
   }, [name, lessonTitle, objective, exercise, answer, correct]);
 
-  if (!question) return null;
+  if (!question) {
+    if (!note) return null;
+    return (
+      <div
+        role="status"
+        className="mt-4 flex items-start gap-2 rounded-2xl border border-border bg-card px-4 py-3"
+      >
+        <p className="flex-1 text-[13px] font-semibold leading-snug text-muted-foreground">
+          {note}
+        </p>
+        <button
+          type="button"
+          aria-label="Dismiss"
+          onClick={onDismiss}
+          className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  }
 
   const send = () => {
     if (!reply.trim() || sending) return;
@@ -76,7 +105,15 @@ export function SocraticPopup({
         reply: reply.trim(),
       },
     })
-      .then((result) => setFeedback(result.ok ? result.line : "Let's keep to the lesson for now."))
+      .then((result) =>
+        setFeedback(
+          result.ok
+            ? result.line
+            : isLimited(result)
+              ? result.reason
+              : "Let's keep to the lesson for now.",
+        ),
+      )
       .catch(() => setFeedback("Let's keep to the lesson for now."))
       .finally(() => setSending(false));
   };

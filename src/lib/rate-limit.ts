@@ -123,6 +123,32 @@ export type Check = {
 
 export type LimitScope = "guest" | "user" | "ip" | "global" | "unavailable";
 
+/**
+ * What a refused call returns to the browser: a normal failure (`ok: false`) with
+ * a message the learner can read and a flag the UI can key off, so it can stop
+ * retrying and say when to come back.
+ */
+export type LimitedFailure = {
+  ok: false;
+  reason: string;
+  limited: true;
+  retryAfterSeconds: number;
+};
+
+export const limitedFailure = (verdict: {
+  message: string;
+  retryAfterSeconds: number;
+}): LimitedFailure => ({
+  ok: false,
+  reason: verdict.message,
+  limited: true,
+  retryAfterSeconds: verdict.retryAfterSeconds,
+});
+
+/** True for a result the server refused because a limit was reached. */
+export const isLimited = (result: { ok: boolean }): result is LimitedFailure =>
+  !result.ok && (result as Partial<LimitedFailure>).limited === true;
+
 const asChecks = (
   bucket: string,
   key: string,

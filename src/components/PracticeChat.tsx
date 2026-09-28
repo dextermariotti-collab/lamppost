@@ -13,7 +13,11 @@ import {
   type PracticeClose,
   type PracticeTurn,
 } from "@/lib/practice";
-import { practiceTurn, type PracticeAccess } from "@/lib/practice.functions";
+import {
+  MAX_PRACTICE_ANSWER_CHARS,
+  practiceTurn,
+  type PracticeAccess,
+} from "@/lib/practice.functions";
 
 type Props = {
   slug: string;
@@ -281,6 +285,7 @@ export function PracticeChat({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={3}
+            maxLength={MAX_PRACTICE_ANSWER_CHARS}
             placeholder="Explain it in your own words…"
             aria-label="Your explanation"
             className="w-full resize-none rounded-2xl border-2 border-border bg-background px-3.5 py-3 text-sm font-semibold outline-none placeholder:text-muted-foreground focus:border-primary"
