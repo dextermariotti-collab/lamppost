@@ -12,7 +12,7 @@ import {
   type WrittenPrompt,
 } from "@/lib/exercises";
 import { weakestCriterion } from "@/lib/mastery";
-import { gradeArgument, saveArgumentAttempt } from "@/lib/argument.functions";
+import { gradeArgument } from "@/lib/argument.functions";
 
 /** What the grader is "doing", by seconds waited — so a 15–30s wait never looks frozen. */
 function gradingPhase(elapsed: number) {
@@ -72,7 +72,6 @@ export function WrittenArgument({
   objective,
   written,
   companion,
-  signedIn,
   onGraded,
 }: {
   lessonId: string;
@@ -80,7 +79,6 @@ export function WrittenArgument({
   objective: string;
   written: WrittenPrompt;
   companion: Companion;
-  signedIn: boolean;
   onGraded: (
     total: number,
     attempt: number,
@@ -141,20 +139,6 @@ export function WrittenArgument({
           if (row) perCriterion[criterion] = row.score;
         }
         onGraded(result.grade.total, attempt, result.grade.max, perCriterion);
-        if (signedIn) {
-          void saveArgumentAttempt({
-            data: {
-              lessonId,
-              lessonTitle,
-              attempt,
-              answer: text.trim(),
-              scores: result.grade.scores,
-              tip: result.grade.tip,
-              total: result.grade.total,
-              max: result.grade.max,
-            },
-          }).catch(() => undefined);
-        }
       })
       .catch(() => setError("Grading couldn't run just now. Try again in a moment."))
       .finally(() => setBusy(false));

@@ -5,13 +5,9 @@ import { DEFAULT_COMPANION } from "@/lib/companions";
 
 const mocks = vi.hoisted(() => ({
   gradeArgument: vi.fn(),
-  saveArgumentAttempt: vi.fn(),
 }));
 
-vi.mock("@/lib/argument.functions", () => ({
-  gradeArgument: mocks.gradeArgument,
-  saveArgumentAttempt: mocks.saveArgumentAttempt,
-}));
+vi.mock("@/lib/argument.functions", () => ({ gradeArgument: mocks.gradeArgument }));
 
 import { WrittenArgument } from "./WrittenArgument";
 
@@ -45,7 +41,6 @@ function mount() {
       objective="Restate the claim."
       written={written}
       companion={DEFAULT_COMPANION}
-      signedIn={false}
       onGraded={() => undefined}
     />,
   );
@@ -67,7 +62,6 @@ describe("WrittenArgument while the grader is working", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mocks.gradeArgument.mockReset();
-    mocks.saveArgumentAttempt.mockReset();
     mocks.gradeArgument.mockImplementation(
       () =>
         new Promise((resolve, reject) => {

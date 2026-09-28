@@ -173,3 +173,66 @@ describe("one streak on every screen", () => {
     expect(home.result.current.state.xp).toBe(500);
   });
 });
+
+/**
+ * Guest mode keeps its progress on the device and must never call the account
+ * functions — the database rules make those sign-in only.
+ */
+describe("guest (signed-out) mode", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    mocks.session.userId = null;
+    mocks.getMyProfile.mockReset();
+    mocks.syncProgress.mockReset();
+    mocks.syncProgress.mockResolvedValue({ ok: true });
+  });
+
+  it("earns, saves and re-reads progress without any server call", async () => {
+    const { useProgress } = await loadStore();
+    const first = renderHook(() => useProgress());
+    act(() => first.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35));
+    act(() => first.result.current.recordExercise(1, 10));
+    act(() => first.result.current.recordReview(true));
+    act(() => first.result.current.recordArgument(12, 16));
+    act(() => first.result.current.recordPractice("solid", true));
+    act(() => first.result.current.setDailyGoal(4));
+    expect(first.result.current.state.xp).toBeGreaterThan(0);
+    expect(first.result.current.streak).toBe(1);
+
+    // A later visit in a new page load sees the same numbers, from localStorage alone.
+    const saved = JSON.parse(window.localStorage.getItem(KEY) ?? "{}");
+    expect(saved.xp).toBe(first.result.current.state.xp);
+    expect(saved.dailyGoal).toBe(4);
+    first.unmount();
+    const { useProgress: again } = await loadStore();
+    const second = renderHook(() => again());
+    expect(second.result.current.state.xp).toBe(saved.xp);
+    expect(second.result.current.streak).toBe(1);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mocks.getMyProfile).not.toHaveBeenCalled();
+    expect(mocks.syncProgress).not.toHaveBeenCalled();
+  });
+
+  it("only starts syncing once someone signs in", async () => {
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    expect(mocks.syncProgress).not.toHaveBeenCalled();
+
+    mocks.session.userId = "user-1";
+    mocks.getMyProfile.mockResolvedValue(null);
+    screen.rerender();
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalledTimes(1));
+    const sent = mocks.syncProgress.mock.calls[0]![0].data;
+    // The device sends what it did; the server works out the streak itself.
+    expect(Object.keys(sent).sort()).toEqual(
+      ["dayKeyVersion", "freezeLog", "gems", "history", "today", "totalXp"].sort(),
+    );
+    expect(sent.totalXp).toBe(screen.result.current.state.xp);
+  });
+});

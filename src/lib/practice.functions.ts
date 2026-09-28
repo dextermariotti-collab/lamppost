@@ -204,9 +204,26 @@ export const practiceTurn = createServerFn({ method: "POST" })
       }
     }
 
+    // Session rows are what the free weekly allowance is counted from, so the browser
+    // can't create, edit or delete them; they are written here with the service role.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+
     let sessionId = data.sessionId;
+    if (!opening) {
+      // A follow-up turn must belong to a real, unfinished session of this learner;
+      // otherwise a made-up id would get unlimited tutor turns without opening one.
+      const { data: existing } = await db
+        .from("practice_sessions")
+        .select("id, completed_at")
+        .eq("id", sessionId!)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!existing || existing.completed_at) {
+        return { ok: false, reason: "That practice session has ended. Start a new one." };
+      }
+    }
     if (opening) {
-      const { data: row, error } = await db
+      const { data: row, error } = await admin
         .from("practice_sessions")
         .insert({
           user_id: userId,
@@ -256,7 +273,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
         { role: "tutor", text: parsed.reply.trim() },
       ];
 
-      await db
+      await admin
         .from("practice_sessions")
         .update({
           transcript: nextTranscript,

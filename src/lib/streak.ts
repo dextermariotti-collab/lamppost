@@ -70,3 +70,34 @@ export function effectiveStreak(
   const missed = daysBetween(state.lastActiveDay, today) - 1;
   return missed <= 0 || missed <= state.freezes ? state.streak : 0;
 }
+
+/**
+ * The server's twin of the client's streak rules: the current streak recomputed
+ * from the days the account really has activity on, instead of trusting the
+ * number a browser sends. It is the run of consecutive active days ending at the
+ * most recent active day; a gap may be bridged by a freeze day the client logged,
+ * but only up to a plausible number of freezes (2, plus one per 3 active days),
+ * so a forged freeze log can't paper over a broken run. Frozen days keep the run
+ * alive without counting toward it, exactly as on the device.
+ */
+export function streakEndingAtLatest(
+  activeDays: Iterable<string>,
+  freezeDays: Iterable<string> = [],
+): { streak: number; lastActiveDay: string | null } {
+  const active = new Set(activeDays);
+  if (active.size === 0) return { streak: 0, lastActiveDay: null };
+  const frozen = new Set(freezeDays);
+  const lastActiveDay = [...active].sort().pop()!;
+  let budget = Math.min(frozen.size, MAX_FREEZES + Math.floor(active.size / 3));
+
+  let streak = 0;
+  let cursor = lastActiveDay;
+  // A run cannot be longer than the days we have been told about.
+  for (let guard = 0; guard < active.size + frozen.size + 1; guard++) {
+    if (active.has(cursor)) streak += 1;
+    else if (frozen.has(cursor) && budget > 0) budget -= 1;
+    else break;
+    cursor = shiftDay(cursor, -1);
+  }
+  return { streak, lastActiveDay };
+}

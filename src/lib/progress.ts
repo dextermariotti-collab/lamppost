@@ -148,12 +148,11 @@ export function useProgress() {
   useEffect(() => {
     if (!hydrated || !userId) return;
     const payload = {
-      streak: effectiveStreak(state, dayKey()),
-      longestStreak: state.longestStreak,
       totalXp: state.xp,
       gems: state.gems,
-      lastActiveDay: state.lastActiveDay,
       history: state.history,
+      freezeLog: state.freezeLog,
+      today: dayKey(),
       dayKeyVersion: state.dayKeyVersion,
     };
     const signature = JSON.stringify(payload);

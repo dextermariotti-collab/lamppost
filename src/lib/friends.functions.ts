@@ -72,8 +72,13 @@ export const listFriends = createServerFn({ method: "POST" })
     const today = resolveToday(data);
     const yesterday = shiftDay(today, -1);
 
+    // The invite code is a private column and pending requesters' profiles are not
+    // readable through the browser grant, so both are read server-side. The ids come
+    // from the caller's own (RLS-filtered) friendships, so only people they are
+    // linked to are ever returned, and only public columns.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const [{ data: me }, { data: links, error: linkError }] = await Promise.all([
-      supabase.from("profiles").select("invite_code").eq("id", userId).maybeSingle(),
+      admin.from("profiles").select("invite_code").eq("id", userId).maybeSingle(),
       supabase.from("friendships").select("id, requester_id, addressee_id, status"),
     ]);
     if (linkError) throw new Error(linkError.message);
@@ -84,7 +89,7 @@ export const listFriends = createServerFn({ method: "POST" })
     const ids = rows.map(otherId);
 
     const profiles = ids.length
-      ? ((await supabase.from("profiles").select(PROFILE_COLUMNS).in("id", ids)).data ?? [])
+      ? ((await admin.from("profiles").select(PROFILE_COLUMNS).in("id", ids)).data ?? [])
       : [];
     const byId = new Map(profiles.map((p) => [p.id, p as ProfileRow]));
 
@@ -141,7 +146,7 @@ export const listFriends = createServerFn({ method: "POST" })
           yesterday,
         });
         if (next.changed) {
-          await supabase
+          await admin
             .from("shared_streaks")
             .update({ current_count: next.count, last_extended_day: next.lastExtendedDay })
             .eq("id", streak.id);
@@ -271,6 +276,15 @@ export const proposeSharedStreak = createServerFn({ method: "POST" })
   .inputValidator((input: { friendshipId: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // Shared streaks are written by the server, so membership is checked here:
+    // the friendship must be one of the caller's own (RLS) and already accepted.
+    const { data: friendship } = await supabase
+      .from("friendships")
+      .select("id")
+      .eq("id", data.friendshipId)
+      .eq("status", "accepted")
+      .maybeSingle();
+    if (!friendship) throw new Error("You can only start a shared streak with a friend.");
     const { count } = await supabase
       .from("shared_streaks")
       .select("id", { count: "exact", head: true })
@@ -280,7 +294,8 @@ export const proposeSharedStreak = createServerFn({ method: "POST" })
         `You can keep ${MAX_SHARED_STREAKS} shared streaks going at once. End one to start another.`,
       );
     }
-    const { error } = await supabase.from("shared_streaks").insert({
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { error } = await admin.from("shared_streaks").insert({
       friendship_id: data.friendshipId,
       proposed_by: userId,
       status: "pending",
@@ -308,12 +323,15 @@ export const respondToSharedStreak = createServerFn({ method: "POST" })
     if (streak.proposed_by === userId && data.accept) {
       throw new Error("Your friend still needs to accept this one.");
     }
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     if (!data.accept) {
-      const { error } = await supabase.from("shared_streaks").delete().eq("id", streak.id);
+      const { error } = await admin.from("shared_streaks").delete().eq("id", streak.id);
       if (error) throw new Error(error.message);
       return { ok: true };
     }
-    const { error } = await supabase
+    // Accepting an already-running streak must not restart its count.
+    if (streak.status !== "pending") return { ok: true };
+    const { error } = await admin
       .from("shared_streaks")
       .update({ status: "active", started_at: new Date().toISOString(), current_count: 0 })
       .eq("id", streak.id);
@@ -395,27 +413,35 @@ export const getFriendProfile = createServerFn({ method: "POST" })
   .inputValidator((input: { handle: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: profile, error } = await supabase
+    // Only accepted friends' rows are readable through the browser grant, but this
+    // page also shows people with a pending request. Look the person up with the
+    // service role, and return them only if the caller is linked to them (or it is
+    // themselves) — and only public columns.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: profile, error } = await admin
       .from("profiles")
       .select(`${PROFILE_COLUMNS}, longest_streak, created_at`)
-      .ilike("handle", data.handle)
+      .ilike(
+        "handle",
+        data.handle.replace(/[\\%_]/g, (c) => `\\${c}`),
+      )
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!profile) return null;
 
-    const [{ data: badges }, { data: link }] = await Promise.all([
-      supabase
-        .from("user_achievements")
-        .select("achievement_code, unlocked_at")
-        .eq("user_id", profile.id),
-      supabase
-        .from("friendships")
-        .select("id, status")
-        .or(
-          `and(requester_id.eq.${userId},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${userId})`,
-        )
-        .maybeSingle(),
-    ]);
+    const { data: link } = await supabase
+      .from("friendships")
+      .select("id, status")
+      .or(
+        `and(requester_id.eq.${userId},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${userId})`,
+      )
+      .maybeSingle();
+    if (profile.id !== userId && !link) return null;
+
+    const { data: badges } = await supabase
+      .from("user_achievements")
+      .select("achievement_code, unlocked_at")
+      .eq("user_id", profile.id);
 
     return {
       person: toCard(profile as ProfileRow),

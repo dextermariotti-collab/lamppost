@@ -204,8 +204,21 @@ export const challengeToDebate = createServerFn({ method: "POST" })
       throw new Error("A motion couldn't be written just now. Try again in a moment.");
     }
 
+    // Debates are written by the server (the browser can't insert a pre-graded one),
+    // so the friendship is checked here: it must be one of the caller's own, accepted.
+    const { data: friendship } = await supabase
+      .from("friendships")
+      .select("id")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${userId},addressee_id.eq.${data.opponentId}),and(requester_id.eq.${data.opponentId},addressee_id.eq.${userId})`,
+      )
+      .maybeSingle();
+    if (!friendship) throw new Error("You can only debate a friend.");
+
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const challengerFirst = Math.random() < 0.5;
-    const { data: row, error } = await supabase
+    const { data: row, error } = await admin
       .from("debates")
       .insert({
         challenger_id: userId,
@@ -333,13 +346,30 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
           opponent_tip: parsed.grade.tip,
         };
 
-    const { error: updateError } = await supabase
+    // Answers and scores are stored by the server, which graded them; the row was
+    // read through the caller's own access above, so they are a participant.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { error: updateError } = await admin
       .from("debates")
       .update({ ...patch, ...(bothIn ? { status: "graded" } : {}) })
       .eq("id", typed.id);
     if (updateError) throw new Error(updateError.message);
 
-    return { ok: true as const, graded: bothIn, total: parsed.grade.total, max: parsed.grade.max };
+    // Both sides can submit at the same moment; whoever lands second closes the debate.
+    let closed = bothIn;
+    if (!bothIn) {
+      const { data: latest } = await admin
+        .from("debates")
+        .select("challenger_answer, opponent_answer")
+        .eq("id", typed.id)
+        .maybeSingle();
+      if (latest?.challenger_answer && latest.opponent_answer) {
+        await admin.from("debates").update({ status: "graded" }).eq("id", typed.id);
+        closed = true;
+      }
+    }
+
+    return { ok: true as const, graded: closed, total: parsed.grade.total, max: parsed.grade.max };
   });
 
 export const markDebateSeen = createServerFn({ method: "POST" })

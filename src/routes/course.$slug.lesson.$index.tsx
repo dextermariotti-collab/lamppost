@@ -569,7 +569,6 @@ function LessonScreen() {
               objective={lesson.subtitle}
               written={written}
               companion={companion}
-              signedIn={!!userId}
               onGraded={(total, attempt, max, scores) => {
                 setArgumentGrade(total);
                 if (attempt === 1) recordArgument(total, max);

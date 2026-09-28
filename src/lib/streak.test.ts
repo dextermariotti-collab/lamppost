@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MAX_FREEZES, advanceStreak, effectiveStreak, type StreakState } from "./streak";
+import {
+  MAX_FREEZES,
+  advanceStreak,
+  effectiveStreak,
+  streakEndingAtLatest,
+  type StreakState,
+} from "./streak";
 
 const base: StreakState = {
   streak: 0,
@@ -102,5 +108,48 @@ describe("effectiveStreak — the one number every screen shows", () => {
         else expect(after).toBe(1);
       }
     }
+  });
+});
+
+describe("streakEndingAtLatest (the server's streak)", () => {
+  it("is 0 with no activity", () => {
+    expect(streakEndingAtLatest([])).toEqual({ streak: 0, lastActiveDay: null });
+  });
+
+  it("counts the run of consecutive days ending at the latest one", () => {
+    const days = ["2026-09-19", "2026-09-21", "2026-09-22", "2026-09-23"];
+    expect(streakEndingAtLatest(days)).toEqual({ streak: 3, lastActiveDay: "2026-09-23" });
+  });
+
+  it("agrees with the device: the streak the client shows after each new day", () => {
+    let state: StreakState = { ...base, freezes: 0 };
+    const days: string[] = [];
+    for (const day of ["2026-09-20", "2026-09-21", "2026-09-22", "2026-09-25", "2026-09-26"]) {
+      const next = advanceStreak(state, day);
+      state = { ...state, ...next, lastActiveDay: day };
+      days.push(day);
+      expect(streakEndingAtLatest(days).streak).toBe(state.streak);
+    }
+  });
+
+  it("lets a freeze day bridge a gap without adding to the count", () => {
+    const days = ["2026-09-20", "2026-09-21", "2026-09-23", "2026-09-24"];
+    expect(streakEndingAtLatest(days, ["2026-09-22"]).streak).toBe(4);
+    expect(streakEndingAtLatest(days).streak).toBe(2);
+  });
+
+  it("does not let a forged freeze log invent a long streak", () => {
+    const active = ["2026-09-01", "2026-09-30"];
+    const forged = Array.from(
+      { length: 28 },
+      (_, i) => `2026-09-${String(i + 2).padStart(2, "0")}`,
+    );
+    // Two active days can bridge at most MAX_FREEZES gaps, nowhere near 28.
+    const { streak } = streakEndingAtLatest(active, forged);
+    expect(streak).toBeLessThanOrEqual(1 + MAX_FREEZES);
+  });
+
+  it("ignores freeze days that touch nothing", () => {
+    expect(streakEndingAtLatest(["2026-09-23"], ["2026-09-10", "2026-09-11"]).streak).toBe(1);
   });
 });
