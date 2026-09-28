@@ -28,7 +28,7 @@ export function ExerciseShell({
   return (
     <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[11px] font-semibold text-primary">{EXERCISE_LABEL[kind]}</p>
+        <p className="text-[11px] font-semibold text-primary-text">{EXERCISE_LABEL[kind]}</p>
         {showCount && total > 1 ? (
           <p className="text-[11px] font-semibold text-muted-foreground">
             {index + 1} of {total}

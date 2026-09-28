@@ -61,7 +61,7 @@ function ReasonChip({ item }: { item: ScheduledDrill }) {
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-bold ${
-        missed ? "text-destructive" : "text-primary"
+        missed ? "text-destructive" : "text-primary-text"
       }`}
     >
       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
@@ -87,7 +87,7 @@ function ReviewSchedule() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <p className="text-sm font-bold text-primary">Review schedule</p>
+          <p className="text-sm font-bold text-primary-text">Review schedule</p>
           <span className="w-9" />
         </div>
 
@@ -112,7 +112,7 @@ function ReviewSchedule() {
 
         {hydrated && items.length === 0 && (
           <div className="mt-8 rounded-2xl border border-border p-5 text-center">
-            <Sparkles aria-hidden="true" className="mx-auto h-5 w-5 text-primary" />
+            <Sparkles aria-hidden="true" className="mx-auto h-5 w-5 text-primary-text" />
             <p className="mt-2 text-sm font-bold">Nothing queued yet</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Nothing you've answered has needed a second look. Drills you get wrong will show up

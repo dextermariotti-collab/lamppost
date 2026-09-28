@@ -27,7 +27,7 @@ export function StreakFreezeCard({
             className="absolute inset-0 rounded-full bg-primary/15 blur-md"
           />
           <Snowflake
-            className={`relative h-8 w-8 ${freezes > 0 ? "text-primary" : "text-muted-foreground/50"}`}
+            className={`relative h-8 w-8 ${freezes > 0 ? "text-primary-text" : "text-muted-foreground"}`}
             strokeWidth={2.2}
           />
         </div>

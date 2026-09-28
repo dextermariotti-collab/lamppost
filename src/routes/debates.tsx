@@ -46,7 +46,7 @@ function DebatesScreen() {
     <PhoneFrame>
       <ScreenHeader backTo="/friends" />
       <main className="px-5 pb-10">
-        <div className="flex items-center gap-2 text-primary">
+        <div className="flex items-center gap-2 text-primary-text">
           <Swords aria-hidden className="h-4 w-4" />
           <p className="text-xs font-bold">Debates</p>
         </div>

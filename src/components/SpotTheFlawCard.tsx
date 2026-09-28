@@ -18,11 +18,11 @@ export function SpotTheFlawCard({ drill, companion, choice, onPick }: Props) {
 
   return (
     <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-      <p className="text-[11px] font-semibold text-primary">Spot the flaw</p>
+      <p className="text-[11px] font-semibold text-primary-text">Spot the flaw</p>
       <h2 className="mt-1 text-xl leading-snug">What's wrong with this reasoning?</h2>
 
       <blockquote className="mt-4 flex gap-3 rounded-2xl bg-primary-soft p-4">
-        <Quote aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <Quote aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" />
         <p className="text-[15px] leading-relaxed font-semibold text-accent-foreground">
           {drill.claim}
         </p>

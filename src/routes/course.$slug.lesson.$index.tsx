@@ -138,7 +138,7 @@ function LessonScreen() {
     return (
       <PhoneFrame showNav={false}>
         <div className="px-5 py-8">
-          <p className="text-xs font-bold text-primary">
+          <p className="text-xs font-bold text-primary-text">
             {unitById(meta?.unitId ?? "claims").title}
           </p>
           <h1 className="mt-1 text-2xl leading-tight">{meta?.title ?? "Loading lesson"}</h1>
@@ -356,7 +356,7 @@ function LessonScreen() {
                     accuracy,
                     streak,
                     lessons: unitLessonsDone?.completed ?? 0,
-                    accent: accent.color,
+                    accent: accent.fixed,
                   })
                 }
                 className="mt-5 h-11 w-full rounded-full text-sm font-semibold"
@@ -385,7 +385,7 @@ function LessonScreen() {
           )}
 
           <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
-            <p className="text-[11px] font-semibold text-primary">Today's goal</p>
+            <p className="text-[11px] font-semibold text-primary-text">Today's goal</p>
             <p className="mt-1 text-sm font-bold text-foreground">
               {Math.min(doneToday, goal)} of {goal} lessons
             </p>
@@ -395,7 +395,7 @@ function LessonScreen() {
                 style={{ width: `${Math.min(100, Math.round((doneToday / goal) * 100))}%` }}
               />
             </div>
-            <p className="mt-4 text-[11px] font-semibold text-primary">What you practised</p>
+            <p className="mt-4 text-[11px] font-semibold text-primary-text">What you practised</p>
             <ul className="mt-2 space-y-1.5">
               {practised.map((label) => (
                 <li key={label} className="flex items-center gap-2 text-[13px] font-semibold">
@@ -453,7 +453,7 @@ function LessonScreen() {
         backTo="/course/$slug"
         right={
           combo >= 2 ? (
-            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary">
+            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">
               <Flame className="h-3.5 w-3.5" />
               {combo} in a row
             </span>
@@ -493,14 +493,14 @@ function LessonScreen() {
 
         {onConcept && (
           <article className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-            <p className="text-[11px] font-semibold text-primary">The idea</p>
+            <p className="text-[11px] font-semibold text-primary-text">The idea</p>
             <h2 className="mt-1 text-xl leading-snug">{lesson.concept?.title ?? lesson.title}</h2>
             <p className="mt-3 text-[15px] font-semibold leading-relaxed text-foreground/85">
               {lesson.concept?.body}
             </p>
             {lesson.concept?.example && (
               <div className="mt-4 flex gap-3 rounded-2xl bg-primary-soft p-4">
-                <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary-text" />
                 <p className="text-[14px] font-semibold leading-relaxed text-accent-foreground">
                   {lesson.concept.example}
                 </p>
@@ -635,7 +635,7 @@ function LessonScreen() {
               <button
                 type="button"
                 onClick={() => setPage(writtenPage)}
-                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-primary"
+                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-primary-text"
               >
                 You've got this — skip ahead to the written task
               </button>
@@ -681,7 +681,7 @@ function LessonScreen() {
               size={112}
               pose="cheer"
             />
-            <p className="mt-5 text-sm font-bold text-primary">Lesson complete</p>
+            <p className="mt-5 text-sm font-bold text-primary-text">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You trained your reasoning.</h2>
             <p className="mt-3 text-sm font-semibold text-muted-foreground">
               +100 XP · Progress saved

@@ -77,7 +77,7 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
                   ? "bg-primary/85 text-primary-foreground"
                   : isFrozen
                     ? "bg-gem/20 text-gem"
-                    : "bg-muted text-muted-foreground/45"
+                    : "bg-muted text-muted-foreground"
               } ${isToday ? "ring-2 ring-primary/50" : ""}`}
             >
               <span className="relative inline-flex items-center justify-center leading-none">

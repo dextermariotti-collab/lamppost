@@ -61,7 +61,7 @@ function NavItem({
       to={to}
       className={cn(
         "flex flex-col items-center gap-1 pb-1 text-[10px] font-semibold transition-colors duration-200",
-        active ? "text-primary" : "text-muted-foreground",
+        active ? "text-primary-text" : "text-muted-foreground",
       )}
     >
       <Icon className="h-5 w-5" />

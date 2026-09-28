@@ -142,7 +142,7 @@ export function StatTile({
 }) {
   return (
     <div className="animate-rise-in px-3 text-center" style={{ animationDelay: `${delay}ms` }}>
-      <Icon aria-hidden="true" className="mx-auto h-4 w-4 text-primary" strokeWidth={2.2} />
+      <Icon aria-hidden="true" className="mx-auto h-4 w-4 text-primary-text" strokeWidth={2.2} />
       <p className="mt-1.5 text-xl font-extrabold">
         {value === null ? PENDING : <CountUp value={value} />}
       </p>

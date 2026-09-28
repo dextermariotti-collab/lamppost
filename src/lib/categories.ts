@@ -48,7 +48,7 @@ export const CATEGORIES: Category[] = [
     id: "tech",
     label: "Tech",
     icon: Code2,
-    tile: "bg-primary/15 text-primary",
+    tile: "bg-primary/15 text-primary-text",
     keywords: [
       "code",
       "coding",
@@ -109,7 +109,7 @@ export const CATEGORIES: Category[] = [
     id: "music",
     label: "Music",
     icon: Music,
-    tile: "bg-primary-glow/20 text-primary",
+    tile: "bg-primary-glow/20 text-primary-text",
     keywords: [
       "music",
       "guitar",
@@ -208,7 +208,7 @@ export const CATEGORIES: Category[] = [
     id: "writing",
     label: "Writing",
     icon: BookOpen,
-    tile: "bg-primary/15 text-primary",
+    tile: "bg-primary/15 text-primary-text",
     keywords: ["writ", "story", "poet", "essay", "journal", "screenplay", "book"],
   },
 ];
@@ -217,7 +217,7 @@ const FALLBACK: Category = {
   id: "general",
   label: "General",
   icon: Sparkles,
-  tile: "bg-primary-soft text-primary",
+  tile: "bg-primary-soft text-primary-text",
   keywords: [],
 };
 

@@ -20,6 +20,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
   --color-primary-soft: var(--primary-soft);
   --color-primary-glow: var(--primary-glow);
   --color-secondary: var(--secondary);
@@ -65,10 +66,12 @@
   --card-foreground: oklch(0.25 0.025 288);
   --popover: oklch(0.995 0.002 95);
   --popover-foreground: oklch(0.25 0.025 288);
-  --primary: oklch(0.66 0.145 292);
+  --primary: oklch(0.52 0.16 292);
   --primary-foreground: oklch(0.99 0.004 290);
+  /* Accent as text/icons on the page: the same hue, kept at >= 4.5:1. */
+  --primary-text: oklch(0.52 0.16 292);
   --primary-soft: oklch(0.94 0.025 291);
-  --primary-glow: oklch(0.66 0.145 292);
+  --primary-glow: oklch(0.52 0.16 292);
   --secondary: oklch(0.95 0.016 291);
   --secondary-foreground: oklch(0.3 0.04 290);
   --muted: oklch(0.95 0.008 290);
@@ -77,14 +80,16 @@
   --accent-foreground: oklch(0.32 0.055 291);
   --destructive: oklch(0.55 0.23 20);
   --destructive-foreground: oklch(0.99 0.005 292);
-  --success: oklch(0.6 0.17 155);
+  --success: oklch(0.52 0.15 155);
   --success-foreground: oklch(0.99 0.005 292);
-  --flame: oklch(0.62 0.21 38);
-  --gem: oklch(0.62 0.14 200);
-  --xp: oklch(0.72 0.17 80);
+  --flame: oklch(0.55 0.2 38);
+  --gem: oklch(0.5 0.13 200);
+  --xp: oklch(0.62 0.15 80);
+  /* Lightness of the per-unit accents: dark enough to be text on light pages. */
+  --unit-accent-l: 0.5;
   --border: oklch(0.89 0.018 291);
   --input: oklch(0.86 0.024 291);
-  --ring: oklch(0.66 0.145 292);
+  --ring: oklch(0.52 0.16 292);
   --paper-rule: oklch(0.68 0.04 145 / 0.18);
   --paper-margin: oklch(0.66 0.08 30 / 0.2);
   --paper-grain: oklch(0.31 0.035 150 / 0.025);
@@ -92,9 +97,9 @@
   --subject-forest: oklch(0.42 0.08 148);
   --subject-terracotta: oklch(0.56 0.11 38);
   --subject-blue: oklch(0.51 0.08 235);
-  --graph-locked: oklch(0.35429 0.02121 274.22);
+  --graph-locked: oklch(0.93 0.008 274);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
-  --graph-edge: oklch(0.4 0.02 280);
+  --graph-edge: oklch(0.33 0.02 280);
   --graph-locked-border: oklch(0.5 0.02 274);
   --graph-locked-text: oklch(0.27 0.02 280);
   --gradient-hero: linear-gradient(var(--primary), var(--primary));
@@ -109,6 +114,7 @@
   --popover: oklch(0.26 0.026 292);
   --popover-foreground: oklch(0.95 0.008 292);
   --primary: oklch(0.72 0.14 292);
+  --primary-text: oklch(0.72 0.14 292);
   --primary-foreground: oklch(0.2 0.02 292);
   --primary-soft: oklch(0.32 0.05 292);
   --primary-glow: oklch(0.72 0.14 292);
@@ -118,9 +124,14 @@
   --muted-foreground: oklch(0.74 0.02 292);
   --accent: oklch(0.32 0.05 292);
   --accent-foreground: oklch(0.95 0.008 292);
-  --destructive: oklch(0.6 0.2 20);
-  --destructive-foreground: oklch(0.99 0.005 292);
+  --destructive: oklch(0.7 0.19 20);
+  --destructive-foreground: oklch(0.2 0.02 20);
   --success: oklch(0.68 0.15 155);
+  --success-foreground: oklch(0.2 0.02 155);
+  --flame: oklch(0.72 0.19 38);
+  --gem: oklch(0.76 0.13 200);
+  --xp: oklch(0.8 0.15 80);
+  --unit-accent-l: 0.75;
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.72 0.14 292);
@@ -131,7 +142,7 @@
   --subject-forest: oklch(0.71 0.08 148);
   --subject-terracotta: oklch(0.72 0.1 38);
   --subject-blue: oklch(0.7 0.08 235);
-  --graph-locked: oklch(0.35429 0.02121 274.22);
+  --graph-locked: oklch(0.3 0.02 274);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
   --graph-edge: oklch(0.82 0.01 90);
   --graph-locked-border: oklch(0.72 0.02 274);
@@ -181,6 +192,8 @@
   --card-foreground: oklch(0.25 0.025 288);
   --primary: oklch(0.77634 0.1262 71.72);
   --primary-foreground: oklch(0.25 0.025 288);
+  /* Amber is a fill here; as text it is darkened to a deep amber. */
+  --primary-text: oklch(0.5 0.11 70);
   --primary-soft: oklch(0.77634 0.1262 71.72 / 0.12);
   --muted: oklch(0.92 0.01 85);
   --muted-foreground: oklch(0.5 0.02 280);
@@ -191,7 +204,7 @@
   --ring: oklch(0.77634 0.1262 71.72);
   --graph-locked: oklch(0.93 0.008 274);
   --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
-  --graph-edge: oklch(0.4 0.02 280);
+  --graph-edge: oklch(0.33 0.02 280);
   --graph-locked-border: oklch(0.5 0.02 274);
   --graph-locked-text: oklch(0.27 0.02 280);
   background-color: var(--background);
@@ -206,7 +219,8 @@
   --card-foreground: oklch(0.94022 0.00702 88.64);
   --primary-foreground: oklch(0.19794 0.01411 278.64);
   --muted: oklch(0.35429 0.02121 274.22);
-  --muted-foreground: oklch(0.63785 0.01674 273.72);
+  --muted-foreground: oklch(0.78 0.015 273.72);
+  --primary-text: oklch(0.77634 0.1262 71.72);
   --accent: oklch(0.35429 0.02121 274.22);
   --accent-foreground: oklch(0.94022 0.00702 88.64);
   --border: oklch(0.39611 0.01126 78.19 / 0.35);
@@ -282,7 +296,7 @@
 
 /* Edges into locked skills stay clearly visible, just quieter than the lit path. */
 .knowledge-connection-dim {
-  stroke-opacity: 0.55;
+  stroke-opacity: 0.6;
 }
 
 .knowledge-connection-selected {

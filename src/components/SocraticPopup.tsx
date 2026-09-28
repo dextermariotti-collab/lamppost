@@ -136,7 +136,7 @@ export function SocraticPopup({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="mt-1.5 text-[12px] font-bold text-primary hover:underline"
+            className="mt-1.5 text-[12px] font-bold text-primary-text hover:underline"
           >
             Tap to answer (optional)
           </button>

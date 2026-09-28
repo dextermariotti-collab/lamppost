@@ -34,7 +34,7 @@ function GradeCard({ label, grade, tip }: { label: string; grade: ArgumentGrade;
     <div className="rounded-3xl bg-card p-4 shadow-soft">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-bold">{label}</p>
-        <p className="text-sm font-bold text-primary">
+        <p className="text-sm font-bold text-primary-text">
           {grade.total}/{grade.max}
         </p>
       </div>
@@ -120,7 +120,7 @@ function DebateScreen() {
     <PhoneFrame>
       <ScreenHeader backTo="/debates" />
       <main className="px-5 pb-10">
-        <div className="flex items-center gap-2 text-primary">
+        <div className="flex items-center gap-2 text-primary-text">
           <Swords aria-hidden className="h-4 w-4" />
           <p className="text-xs font-bold">Debate · {data.topic}</p>
         </div>
@@ -176,7 +176,7 @@ function DebateScreen() {
         {data.status === "graded" && data.myGrade && data.theirGrade && (
           <div className="mt-6 space-y-4">
             <div className="flex flex-col items-center rounded-3xl bg-primary-soft p-5 text-center">
-              <Trophy aria-hidden className="h-6 w-6 text-primary" />
+              <Trophy aria-hidden className="h-6 w-6 text-primary-text" />
               <p className="mt-2 text-lg font-bold">
                 {data.winner === "you"
                   ? "You took it"
@@ -197,7 +197,7 @@ function DebateScreen() {
             />
 
             <div className="rounded-3xl border border-border p-4">
-              <p className="text-xs font-bold text-primary">What they wrote</p>
+              <p className="text-xs font-bold text-primary-text">What they wrote</p>
               <p className="mt-1 text-[13px] font-semibold leading-relaxed text-muted-foreground">
                 {data.theirAnswer}
               </p>

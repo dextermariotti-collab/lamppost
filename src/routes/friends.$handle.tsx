@@ -110,7 +110,7 @@ function FriendProfileScreen() {
             label="Total XP"
           />
           <Tile
-            icon={<Trophy className="h-[18px] w-[18px] text-primary" />}
+            icon={<Trophy className="h-[18px] w-[18px] text-primary-text" />}
             value={league.name}
             label="League"
           />
@@ -144,7 +144,7 @@ function FriendProfileScreen() {
         {isFriend && (
           <div className="mt-8 rounded-3xl bg-card p-4 shadow-soft">
             <div className="flex items-center gap-2">
-              <Swords aria-hidden className="h-4 w-4 text-primary" />
+              <Swords aria-hidden className="h-4 w-4 text-primary-text" />
               <p className="text-sm font-bold">Debate a friend</p>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">

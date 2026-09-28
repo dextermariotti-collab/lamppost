@@ -94,14 +94,14 @@ function PremiumScreen() {
         </section>
 
         <section className="mt-4 rounded-3xl border-2 border-primary/40 bg-primary-soft p-5">
-          <p className="text-[11px] font-semibold text-primary">With Practice</p>
+          <p className="text-[11px] font-semibold text-primary-text">With Practice</p>
           <ul className="mt-3 space-y-2">
             {PAID.map((item) => (
               <li
                 key={item}
                 className="flex items-start gap-2.5 text-sm font-semibold text-accent-foreground"
               >
-                <Check className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-primary/20 p-0.5 text-primary" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-primary/20 p-0.5 text-primary-text" />
                 {item}
               </li>
             ))}
@@ -109,7 +109,7 @@ function PremiumScreen() {
 
           {subscribed ? (
             <div className="mt-4 rounded-2xl bg-background/70 p-3 text-center">
-              <p className="text-sm font-semibold text-primary">Practice is active</p>
+              <p className="text-sm font-semibold text-primary-text">Practice is active</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Manage or cancel your subscription any time from Settings.
               </p>
@@ -137,7 +137,7 @@ function PremiumScreen() {
 
         {!userId && (
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            <Link to="/auth" className="font-bold text-primary">
+            <Link to="/auth" className="font-bold text-primary-text">
               Sign in
             </Link>{" "}
             to use your free weekly sessions.

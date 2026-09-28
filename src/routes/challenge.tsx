@@ -100,7 +100,7 @@ function DailyChallengeScreen() {
           <span className="w-9" />
         </div>
 
-        <div className="mt-2 flex items-center gap-2 text-primary">
+        <div className="mt-2 flex items-center gap-2 text-primary-text">
           <Zap aria-hidden className="h-4 w-4" />
           <p className="text-xs font-bold">One drill. Counts towards your streak.</p>
         </div>
@@ -132,7 +132,7 @@ function DailyChallengeScreen() {
                   size={112}
                   animate
                 />
-                <div className="mt-4 flex items-center gap-2 text-primary">
+                <div className="mt-4 flex items-center gap-2 text-primary-text">
                   <Flame aria-hidden className="h-5 w-5" />
                   <p className="text-sm font-bold">Today's challenge is done</p>
                 </div>

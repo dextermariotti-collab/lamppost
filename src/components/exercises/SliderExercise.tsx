@@ -51,7 +51,7 @@ export function SliderExerciseCard({
         <div className="mt-4">
           <p className="flex items-baseline justify-between text-[13px] font-semibold text-muted-foreground">
             Confidence before any new evidence
-            <span className="text-base font-bold text-primary">{before}%</span>
+            <span className="text-base font-bold text-primary-text">{before}%</span>
           </p>
           <input
             aria-label="Confidence before"
@@ -81,7 +81,7 @@ export function SliderExerciseCard({
           </div>
           <p className="mt-4 flex items-baseline justify-between text-[13px] font-semibold text-muted-foreground">
             {answered ? "You moved to" : "Confidence now"}
-            <span className="text-base font-bold text-primary">
+            <span className="text-base font-bold text-primary-text">
               {answered ? answer.after : after}%
             </span>
           </p>

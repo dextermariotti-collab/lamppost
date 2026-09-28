@@ -107,7 +107,7 @@ export function WrittenArgument({
 
   return (
     <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
-      <p className="text-[11px] font-semibold text-primary">{task.label}</p>
+      <p className="text-[11px] font-semibold text-primary-text">{task.label}</p>
       <h2 className="mt-1 text-xl leading-snug">{written.prompt}</h2>
       <blockquote className="mt-3 rounded-2xl border-l-4 border-primary/40 bg-muted/50 px-4 py-3 text-[13px] font-semibold leading-relaxed text-foreground">
         {written.passage}
@@ -116,7 +116,7 @@ export function WrittenArgument({
           until after submission — shown before, it hands over the answer. */}
 
       {showEditor && focus && (
-        <p className="mt-3 text-[13px] font-bold text-primary">
+        <p className="mt-3 text-[13px] font-bold text-primary-text">
           This time, focus on {CRITERION_LABEL[focus].toLowerCase()} — it's been your weakest part.
         </p>
       )}
@@ -217,7 +217,7 @@ export function WrittenArgument({
 
           {written.guidance && (
             <div className="rounded-2xl border border-dashed border-primary/40 p-3">
-              <p className="text-[11px] font-bold text-primary">What a strong answer does</p>
+              <p className="text-[11px] font-bold text-primary-text">What a strong answer does</p>
               <p className="mt-1 text-[13px] font-semibold leading-snug text-muted-foreground">
                 {written.guidance}
               </p>

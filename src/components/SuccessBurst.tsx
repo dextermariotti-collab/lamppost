@@ -16,7 +16,7 @@ export function SuccessBurst({ compact = false }: { compact?: boolean }) {
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <Sparkles
           key={i}
-          className="success-spark absolute left-1/2 top-1/2 h-4 w-4 text-primary"
+          className="success-spark absolute left-1/2 top-1/2 h-4 w-4 text-primary-text"
           style={{ "--spark-angle": `${i * 60}deg` } as CSSProperties}
         />
       ))}

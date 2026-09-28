@@ -91,7 +91,7 @@ export function OrderExerciseCard({
                     type="button"
                     aria-label={`Move "${text}" up`}
                     onClick={() => move(text, -1)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-primary"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-primary-text"
                   >
                     <ChevronUp className="h-5 w-5" />
                   </button>
@@ -99,7 +99,7 @@ export function OrderExerciseCard({
                     type="button"
                     aria-label={`Move "${text}" down`}
                     onClick={() => move(text, 1)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-primary"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:text-primary-text"
                   >
                     <ChevronDown className="h-5 w-5" />
                   </button>

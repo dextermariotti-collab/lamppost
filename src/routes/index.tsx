@@ -122,7 +122,7 @@ function Home() {
             <span className="text-base font-bold text-foreground">{streak}</span>
           </Link>
 
-          <span className="flex items-center gap-1 text-sm font-bold text-muted-foreground">
+          <span className="flex items-center gap-1 text-sm font-bold text-foreground">
             <Star aria-hidden className="h-4 w-4 text-xp" />
             {state.xp.toLocaleString()}
           </span>
@@ -204,7 +204,7 @@ function Home() {
         >
           <span
             aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary-text"
           >
             {dueTotal}
           </span>

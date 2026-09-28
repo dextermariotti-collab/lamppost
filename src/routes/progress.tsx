@@ -169,7 +169,7 @@ function ProgressScreen() {
             className="mt-4 flex w-full animate-rise-in items-center gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4 text-left shadow-soft transition-transform hover:-translate-y-0.5"
             style={{ animationDelay: "120ms" }}
           >
-            <Target className="h-5 w-5 shrink-0 text-primary" />
+            <Target className="h-5 w-5 shrink-0 text-primary-text" />
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-extrabold text-accent-foreground">
                 {nearMiss.left} more lesson{nearMiss.left === 1 ? "" : "s"} to master{" "}
@@ -335,7 +335,7 @@ function ProgressScreen() {
                   />
                   <span
                     className={`text-[11px] font-bold ${
-                      isToday ? "text-primary" : "text-muted-foreground"
+                      isToday ? "text-primary-text" : "text-muted-foreground"
                     }`}
                   >
                     {day.label}
