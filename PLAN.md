@@ -235,3 +235,14 @@ SVG. `axe-core` and `lighthouse` are used from a scratch directory outside the r
 `npm run build` before every commit; `npm test`, `tsc` (baseline: the one existing `__root.tsx` error),
 `eslint` on touched files. Real-browser checks (Playwright) for the signup flow, a full lesson, the
 component keyboard paths, and the 375px/desktop sweep.
+
+## 7. Changes from this plan (added at the end of the pass)
+
+- **No `delete_user_data` migration.** Every table already cascades (or sets null) from the sign-in identity, so
+  deleting the identity does it all in one step. `src/db/deletion.test.ts` enforces that for every table.
+- **`profile_visibility` shipped in the third migration**, not the first, so the social-safety pieces are one
+  reviewable change: `20260930100200_blocks_reports_visibility.sql`.
+- **Reports about people** stay, unlinked, if the reporter deletes their account (like content reports), and go
+  with the reported person's account.
+- **Not built:** the PWA, web-push reminders and the Playwright suite from the earlier plan (paused, see
+  SUMMARY.md).
