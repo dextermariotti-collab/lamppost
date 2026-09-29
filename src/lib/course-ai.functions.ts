@@ -66,6 +66,7 @@ export const generateOutline = createServerFn({ method: "POST" })
 
     // Input pass: nothing is generated for a disallowed topic.
     const gate = await screenTopicText(brief.topic, brief.goal, key);
+    if (!gate.allowed && gate.unavailable) return { ok: false, reason: gate.message };
     if (!gate.allowed) {
       void logModerationBlock({
         topic: brief.topic,

@@ -9,6 +9,15 @@ vi.mock("./rate-limit.server", () => ({ limiter: () => ({ enforce }) }));
 const model = vi.hoisted(() => ({ streamText: vi.fn() }));
 vi.mock("ai", () => model);
 vi.mock("./ai-gateway.server", () => ({ createLovableAiGatewayProvider: () => () => "model" }));
+const moderation = vi.hoisted(() => ({
+  screenTopicText: vi.fn(),
+  screenOutput: vi.fn(() => ({ allowed: true })),
+  logModerationBlock: vi.fn(),
+}));
+vi.mock("./moderation.server", async () => ({
+  ...(await vi.importActual<typeof import("./moderation.server")>("./moderation.server")),
+  ...moderation,
+}));
 
 const lesson = LESSONS[0]!;
 const refusal = {
@@ -172,6 +181,23 @@ describe("course generation", () => {
     const { generateOutline } = await import("./course-ai.functions");
     expect(await generateOutline({ data: brief })).toEqual(limitedResult);
     expect(enforce).toHaveBeenCalledWith("topicGeneration");
+    expect(model.streamText).not.toHaveBeenCalled();
+  });
+
+  it("stops, without blaming the topic or logging a block, when the topic check can't run", async () => {
+    moderation.screenTopicText.mockResolvedValue({
+      allowed: false,
+      category: "other",
+      message: "Topic checks are temporarily unavailable, so nothing was created.",
+      unavailable: true,
+    });
+    const { generateOutline } = await import("./course-ai.functions");
+    const result = await generateOutline({ data: brief });
+    expect(result).toEqual({
+      ok: false,
+      reason: "Topic checks are temporarily unavailable, so nothing was created.",
+    });
+    expect(moderation.logModerationBlock).not.toHaveBeenCalled();
     expect(model.streamText).not.toHaveBeenCalled();
   });
 
