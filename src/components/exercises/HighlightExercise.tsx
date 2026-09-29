@@ -41,32 +41,45 @@ export function HighlightExerciseCard({
       showCount={showCount}
       question={exercise.question}
     >
-      <p className="mt-4 flex flex-wrap gap-x-1 gap-y-1.5 rounded-2xl bg-primary-soft p-4 text-[15px] leading-relaxed">
+      <div
+        role="group"
+        aria-label="The passage. Press a word to pick it."
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-1 rounded-2xl bg-primary-soft p-3 text-[15px] leading-snug"
+      >
         {exercise.tokens.map((token, i) => {
           const isPicked = shown.includes(i);
           const isTarget = targets.has(i);
           const state = !answered
             ? isPicked
-              ? "bg-primary text-primary-foreground"
-              : "text-accent-foreground hover:bg-primary/15"
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-primary/25 bg-background/70 text-accent-foreground hover:border-primary/60"
             : isTarget
-              ? "bg-success/25 text-foreground underline decoration-success decoration-2"
+              ? "border-success bg-success/25 text-foreground underline decoration-success decoration-2"
               : isPicked
-                ? "bg-destructive/20 text-foreground line-through"
-                : "text-accent-foreground/70";
+                ? "border-destructive/60 bg-destructive/15 text-foreground line-through"
+                : "border-transparent text-accent-foreground/70";
           return (
             <button
               key={`${token}-${i}`}
               type="button"
               aria-pressed={isPicked}
               onClick={() => toggle(i)}
-              className={`rounded-md px-1 font-semibold transition-colors ${state}`}
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border-2 px-2.5 font-semibold transition-colors ${state}`}
             >
               {token}
+              {answered && isTarget && (
+                <span className="sr-only">
+                  {" "}
+                  (one to tap{isPicked ? ", you got it" : ", you missed it"})
+                </span>
+              )}
+              {answered && !isTarget && isPicked && (
+                <span className="sr-only"> (not one to tap)</span>
+              )}
             </button>
           );
         })}
-      </p>
+      </div>
 
       {!answered ? (
         <Button

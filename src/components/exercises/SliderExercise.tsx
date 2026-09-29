@@ -55,13 +55,14 @@ export function SliderExerciseCard({
           </p>
           <input
             aria-label="Confidence before"
+            aria-valuetext={`${before} percent`}
             type="range"
             min={0}
             max={100}
             step={5}
             value={before}
             onChange={(event) => setBefore(Number(event.target.value))}
-            className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+            className="range-touch mt-1"
           />
           <Button
             type="button"
@@ -87,6 +88,7 @@ export function SliderExerciseCard({
           </p>
           <input
             aria-label="Confidence after"
+            aria-valuetext={`${answered ? answer.after : after} percent`}
             type="range"
             min={0}
             max={100}
@@ -94,7 +96,7 @@ export function SliderExerciseCard({
             disabled={answered}
             value={answered ? answer.after : after}
             onChange={(event) => setAfter(Number(event.target.value))}
-            className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary disabled:opacity-70"
+            className="range-touch mt-1"
           />
           <p className="mt-1 text-[12px] font-semibold text-muted-foreground">
             You started at {answered ? answer.before : before}%.
