@@ -1,6 +1,7 @@
 import { argumentXpFor } from "./exercises";
 import { dayKey, shiftDay } from "./days";
 import { FREEZE_COST, MAX_FREEZES, advanceStreak, effectiveStreak } from "./streak";
+import type { ChestRecord } from "./rewards";
 
 /**
  * The pure half of the progress store: state shape, defaults, and every state
@@ -21,10 +22,26 @@ export type Celebration = {
 export type ProgressState = {
   streak: number;
   longestStreak: number;
-  /** Spendable gems: earned minus spent. */
+  /** Spendable gems: earned plus granted, minus spent. */
   gems: number;
-  /** Lifetime gems spent. Lifetime earned is `gems + gemsSpent`, which is what an account is told. */
+  /** Lifetime gems spent. */
   gemsSpent: number;
+  /**
+   * Lifetime gems the SERVER has handed out (reward chests opened while signed in).
+   * Lifetime earned on this device is `gems + gemsSpent - gemsGranted`, which is what
+   * a sync tells the account; grants are the account's to report, not the device's.
+   */
+  gemsGranted: number;
+  /** Hint tokens held: each takes a hint without the half-XP cost. */
+  hintTokens: number;
+  /** Ids of the companion cosmetics unlocked with gems. */
+  cosmetics: string[];
+  /** Reward chests opened today (`day` is the local day the count belongs to). */
+  chests: { day: string | null; opened: number };
+  /** The last chests opened, newest first. */
+  chestHistory: ChestRecord[];
+  /** Monday-start week -> XP earned on this device that week. Kept for the last few weeks. */
+  weeklyXp: Record<string, number>;
   xp: number;
   /** YYYY-MM-DD of the last day a lesson was completed */
   lastActiveDay: string | null;
@@ -57,6 +74,12 @@ export const DEFAULT_STATE: ProgressState = {
   longestStreak: 0,
   gems: 0,
   gemsSpent: 0,
+  gemsGranted: 0,
+  hintTokens: 0,
+  cosmetics: [],
+  chests: { day: null, opened: 0 },
+  chestHistory: [],
+  weeklyXp: {},
   xp: 0,
   lastActiveDay: null,
   history: {},
@@ -278,8 +301,8 @@ export function applyArgument(prev: ProgressState, total: number, max: number): 
 }
 
 /** Lifetime gems this device has earned: what a sync tells the account. */
-export const gemsEarned = (state: Pick<ProgressState, "gems" | "gemsSpent">) =>
-  state.gems + state.gemsSpent;
+export const gemsEarned = (state: Pick<ProgressState, "gems" | "gemsSpent" | "gemsGranted">) =>
+  state.gems + state.gemsSpent - state.gemsGranted;
 
 /** Whether a freeze can be bought right now (enough gems, room to hold another). */
 export const canBuyFreeze = (state: Pick<ProgressState, "gems" | "freezes">) =>
@@ -302,19 +325,32 @@ export function applyBuyFreeze(prev: ProgressState): ProgressState {
     : prev;
 }
 
-/** The account's wallet after the server spent or refused a spend. */
-export type ServerWallet = { spent: number };
+/**
+ * The account's lifetime spend and lifetime server grants, as the server reports
+ * them. `granted` is left out by replies that don't carry it.
+ */
+export type ServerWallet = { spent: number; granted?: number };
 
 /**
- * Takes the account's lifetime spend as the truth (gems earned here stay earned),
- * so the balance shown is what the server would let the learner spend. Only ever
- * moves spend up: an older reply can't refund gems.
+ * Takes the account's lifetime spend (and grants) as the truth, so the balance shown
+ * is what the server would let the learner spend. Both only ever move up: an older
+ * reply can't refund gems or take a grant back.
  */
 export function adoptWallet(prev: ProgressState, wallet: ServerWallet): ProgressState {
   if (!Number.isFinite(wallet.spent)) return prev;
   const spent = Math.max(prev.gemsSpent, wallet.spent);
-  if (spent === prev.gemsSpent) return prev;
-  return { ...prev, gemsSpent: spent, gems: Math.max(gemsEarned(prev) - spent, 0) };
+  const granted =
+    typeof wallet.granted === "number" && Number.isFinite(wallet.granted)
+      ? Math.max(prev.gemsGranted, wallet.granted)
+      : prev.gemsGranted;
+  if (spent === prev.gemsSpent && granted === prev.gemsGranted) return prev;
+  const earned = gemsEarned(prev);
+  return {
+    ...prev,
+    gemsSpent: spent,
+    gemsGranted: granted,
+    gems: Math.max(earned + granted - spent, 0),
+  };
 }
 
 /** A freeze the server sold: the gems are gone on the account, and the freeze is held here. */
@@ -327,8 +363,9 @@ export function applyServerPurchase(prev: ProgressState, wallet: ServerWallet): 
 export type AccountProgress = {
   totalXp: number;
   gems: number;
-  /** Lifetime gems the account has earned, and spent. */
+  /** Lifetime gems the account has earned, been granted by the server, and spent. */
   gemsEarned: number;
+  gemsGranted: number;
   gemsSpent: number;
   currentStreak: number;
   longestStreak: number;
@@ -364,12 +401,14 @@ export function mergeAccountProgress(
   // Earned and spent each only ever rise; the balance is whatever is left.
   const earned = Math.max(gemsEarned(prev), account.gemsEarned);
   const spent = Math.max(prev.gemsSpent, account.gemsSpent);
+  const granted = Math.max(prev.gemsGranted, account.gemsGranted);
 
   const next: ProgressState = {
     ...prev,
     xp: Math.max(prev.xp, account.totalXp),
-    gems: Math.max(earned - spent, 0),
+    gems: Math.max(earned + granted - spent, 0),
     gemsSpent: spent,
+    gemsGranted: granted,
     longestStreak: Math.max(prev.longestStreak, account.longestStreak),
     streak: remoteIsFresher ? Math.max(account.currentStreak, 0) : prev.streak,
     lastActiveDay: remoteIsFresher ? remoteDay : localDay,
@@ -379,6 +418,7 @@ export function mergeAccountProgress(
     next.xp === prev.xp &&
     next.gems === prev.gems &&
     next.gemsSpent === prev.gemsSpent &&
+    next.gemsGranted === prev.gemsGranted &&
     next.longestStreak === prev.longestStreak &&
     next.streak === prev.streak &&
     next.lastActiveDay === prev.lastActiveDay;

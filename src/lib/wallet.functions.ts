@@ -4,8 +4,15 @@ import { limitedFailure, type LimitedFailure } from "./rate-limit";
 import { FREEZE_COST } from "./streak";
 
 export type BuyFreezeResult =
-  | { ok: true; balance: number; spent: number }
-  | { ok: false; reason: "not-enough-gems"; message: string; balance: number; spent: number }
+  | { ok: true; balance: number; spent: number; granted: number }
+  | {
+      ok: false;
+      reason: "not-enough-gems";
+      message: string;
+      balance: number;
+      spent: number;
+      granted: number;
+    }
   | { ok: false; reason: "error"; message: string }
   | LimitedFailure;
 
@@ -13,7 +20,7 @@ export type BuyFreezeResult =
 export async function spendGems(
   userId: string,
   cost: number,
-): Promise<{ ok: boolean; balance: number; spent: number }> {
+): Promise<{ ok: boolean; balance: number; spent: number; granted: number }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.rpc("spend_gems", { _user: userId, _cost: cost });
   const row = data?.[0];
@@ -39,13 +46,16 @@ export const buyStreakFreeze = createServerFn({ method: "POST" })
 
     try {
       const result = await spendGems(context.userId, FREEZE_COST);
-      if (result.ok) return { ok: true, balance: result.balance, spent: result.spent };
+      if (result.ok) {
+        return { ok: true, balance: result.balance, spent: result.spent, granted: result.granted };
+      }
       return {
         ok: false,
         reason: "not-enough-gems",
         message: "You don't have enough gems for that yet.",
         balance: result.balance,
         spent: result.spent,
+        granted: result.granted,
       };
     } catch (error) {
       console.error("Streak freeze purchase failed", error);

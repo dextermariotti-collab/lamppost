@@ -5,7 +5,9 @@ import {
   MAX_XP_PER_DAY,
   activityToStore,
   boundedTotal,
+  firstSyncCarryOver,
   growthAllowance,
+  weeklyXpCredit,
 } from "./progress-limits";
 
 const now = new Date("2026-09-24T01:30:00Z"); // 9:30pm Sep 23 in Eastern
@@ -79,5 +81,62 @@ describe("growthAllowance / boundedTotal", () => {
     expect(boundedTotal(500, 9_999_999, allowance)).toBe(500 + allowance);
     expect(boundedTotal(500, 100, allowance)).toBe(500);
     expect(boundedTotal(500, -50, allowance)).toBe(500);
+  });
+});
+
+describe("firstSyncCarryOver", () => {
+  const isCosmetic = (id: string) => ["crown", "bow"].includes(id);
+  const carry = (claim: Parameters<typeof firstSyncCarryOver>[0]["claim"], earned = 500) =>
+    firstSyncCarryOver({ claim, earnedPlusGranted: earned, maxHintTokens: 5, isCosmetic });
+
+  it("brings across what a signed-out learner spent and unlocked", () => {
+    expect(carry({ gemsSpent: 160, hintTokens: 2, cosmetics: ["crown", "bow"] })).toEqual({
+      gemsSpent: 160,
+      hintTokens: 2,
+      cosmetics: ["crown", "bow"],
+    });
+  });
+
+  it("never lets someone have spent more than they earned", () => {
+    expect(carry({ gemsSpent: 99_999, hintTokens: 0, cosmetics: [] }, 300).gemsSpent).toBe(300);
+    expect(carry({ gemsSpent: -50, hintTokens: 0, cosmetics: [] }).gemsSpent).toBe(0);
+  });
+
+  it("caps hint tokens at the pouch", () => {
+    expect(carry({ gemsSpent: 0, hintTokens: 99, cosmetics: [] }).hintTokens).toBe(5);
+    expect(carry({ gemsSpent: 0, hintTokens: -3, cosmetics: [] }).hintTokens).toBe(0);
+  });
+
+  it("only unlocks things that exist, once each", () => {
+    expect(
+      carry({ gemsSpent: 0, hintTokens: 0, cosmetics: ["crown", "crown", "godmode", "hat"] })
+        .cosmetics,
+    ).toEqual(["crown"]);
+  });
+
+  it("carries nothing when nothing was claimed", () => {
+    expect(carry(undefined)).toEqual({ gemsSpent: 0, hintTokens: 0, cosmetics: [] });
+  });
+
+  it("rounds a fractional claim down", () => {
+    expect(carry({ gemsSpent: 60.9, hintTokens: 1.9, cosmetics: [] })).toMatchObject({
+      gemsSpent: 60,
+      hintTokens: 1,
+    });
+  });
+});
+
+describe("weeklyXpCredit", () => {
+  it("credits the growth in the account's XP since the last sync", () => {
+    expect(weeklyXpCredit({ firstSync: false, before: 300, after: 380 })).toBe(80);
+  });
+
+  it("credits nothing on the first sync, which imports everything from before signing in", () => {
+    expect(weeklyXpCredit({ firstSync: true, before: 0, after: 4000 })).toBe(0);
+  });
+
+  it("credits nothing when XP didn't grow", () => {
+    expect(weeklyXpCredit({ firstSync: false, before: 300, after: 300 })).toBe(0);
+    expect(weeklyXpCredit({ firstSync: false, before: 300, after: 100 })).toBe(0);
   });
 });

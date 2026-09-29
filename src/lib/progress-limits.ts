@@ -59,3 +59,43 @@ export function growthAllowance(opts: {
 export function boundedTotal(existing: number, claimed: number, allowance: number): number {
   return Math.max(existing, Math.min(Math.max(claimed, 0), existing + allowance));
 }
+
+/**
+ * What a device's first sync may carry over from before it had an account.
+ *
+ * A signed-out learner spends gems and unlocks things on the device, where the
+ * account cannot see it. Without this, signing in would give those gems back (the
+ * account has never heard of the spend) and the things would vanish. So the FIRST
+ * sync, and only the first, accepts the device's word for it, bounded by what the
+ * account can bear: nobody spends more than they earned, holds more hint tokens
+ * than the pouch, or unlocks anything outside the catalogue. All of it is low-stakes
+ * (cosmetics and hints), which is why the device's word is enough.
+ */
+export function firstSyncCarryOver(input: {
+  claim: { gemsSpent: number; hintTokens: number; cosmetics: string[] } | undefined;
+  earnedPlusGranted: number;
+  maxHintTokens: number;
+  isCosmetic: (id: string) => boolean;
+}): { gemsSpent: number; hintTokens: number; cosmetics: string[] } {
+  const claim = input.claim ?? { gemsSpent: 0, hintTokens: 0, cosmetics: [] };
+  return {
+    gemsSpent: Math.max(0, Math.min(Math.floor(claim.gemsSpent), input.earnedPlusGranted)),
+    hintTokens: Math.max(0, Math.min(Math.floor(claim.hintTokens), input.maxHintTokens)),
+    cosmetics: Array.from(new Set(claim.cosmetics.filter(input.isCosmetic))),
+  };
+}
+
+/**
+ * The XP to credit to this week's league total for a sync. It is the growth in the
+ * account's bounded XP total since the last sync, so it can never exceed what the
+ * account was allowed to gain; and the first sync credits nothing, because that one
+ * imports everything done before signing in, which is not this week's.
+ */
+export function weeklyXpCredit(input: {
+  firstSync: boolean;
+  before: number;
+  after: number;
+}): number {
+  if (input.firstSync) return 0;
+  return Math.max(0, input.after - input.before);
+}

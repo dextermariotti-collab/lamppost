@@ -73,8 +73,9 @@ describe("policies protect the expensive paths", () => {
   });
 
   it("does not offer guests a policy for signed-in-only actions", () => {
-    expect(POLICIES.buyFreeze.guest).toEqual([]);
-    expect(POLICIES.practiceTurn.guest).toEqual([]);
+    for (const name of ["buyFreeze", "shop", "openChest", "leagueView", "practiceTurn"] as const) {
+      expect(POLICIES[name].guest, name).toEqual([]);
+    }
   });
 });
 

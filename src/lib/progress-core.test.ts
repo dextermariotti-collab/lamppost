@@ -121,6 +121,7 @@ describe("mergeAccountProgress", () => {
     totalXp: 500,
     gems: 30,
     gemsEarned: 30,
+    gemsGranted: 0,
     gemsSpent: 0,
     currentStreak: 5,
     longestStreak: 9,
