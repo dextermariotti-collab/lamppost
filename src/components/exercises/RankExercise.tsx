@@ -1,7 +1,7 @@
-import { ChevronDown, ChevronUp, GripVertical } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ExerciseFeedback, ExerciseShell } from "./ExerciseShell";
+import { ReorderList } from "./ReorderList";
 import type { RankExercise as RankExerciseData } from "@/lib/exercises";
 
 /** Stable starting order that isn't the answer. */
@@ -32,7 +32,6 @@ export function RankExerciseCard({
 }) {
   const solution = exercise.items.map((i) => i.text);
   const [order, setOrder] = useState<string[]>(() => scramble(solution));
-  const [dragging, setDragging] = useState<number | null>(null);
   const answered = answer !== undefined;
   const shown = answer ?? order;
 
@@ -57,72 +56,14 @@ export function RankExerciseCard({
       showCount={showCount}
       passage={exercise.claim}
     >
-      <ol className="mt-4 space-y-2">
-        {shown.map((text, i) => {
-          const rightSpot = answered && text === solution[i];
-          return (
-            <li
-              key={text}
-              draggable={!answered}
-              onDragStart={() => setDragging(i)}
-              onDragOver={(event) => {
-                event.preventDefault();
-                if (dragging !== null && dragging !== i) {
-                  move(dragging, i);
-                  setDragging(i);
-                }
-              }}
-              onDragEnd={() => setDragging(null)}
-              className={`flex items-start gap-2 rounded-2xl border-2 px-3 py-3 text-sm font-semibold transition-all ${
-                answered
-                  ? rightSpot
-                    ? "border-success bg-success/10"
-                    : "border-destructive/50 bg-destructive/5"
-                  : "border-border bg-background"
-              }`}
-            >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-accent-foreground">
-                {i + 1}
-              </span>
-              <span className="flex-1">
-                {text}
-                {answered && (
-                  <span className="mt-1 block text-[12px] font-semibold text-muted-foreground">
-                    {rightSpot ? "" : `Belongs at ${solution.indexOf(text) + 1}. `}
-                    {exercise.items.find((item) => item.text === text)?.why}
-                  </span>
-                )}
-              </span>
-              {!answered && (
-                <span className="flex shrink-0 flex-col">
-                  <button
-                    type="button"
-                    aria-label={`Move "${text}" up`}
-                    onClick={() => move(i, i - 1)}
-                    className="rounded-full p-1 text-muted-foreground hover:text-primary-text"
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Move "${text}" down`}
-                    onClick={() => move(i, i + 1)}
-                    className="rounded-full p-1 text-muted-foreground hover:text-primary-text"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                </span>
-              )}
-              {!answered && (
-                <GripVertical
-                  aria-hidden
-                  className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/60"
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
+      <ReorderList
+        order={shown}
+        solution={solution}
+        answered={answered}
+        whyOf={(text) => exercise.items.find((item) => item.text === text)?.why}
+        onMove={move}
+        dragging
+      />
 
       {!answered ? (
         <Button
