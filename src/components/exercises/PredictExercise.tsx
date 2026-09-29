@@ -74,13 +74,14 @@ export function PredictExerciseCard({
           </label>
           <input
             id={`confidence-${index}`}
+            aria-valuetext={`${confidence} percent`}
             type="range"
             min={0}
             max={100}
             step={5}
             value={confidence}
             onChange={(event) => setConfidence(Number(event.target.value))}
-            className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+            className="range-touch mt-1"
           />
           <Button
             type="button"
