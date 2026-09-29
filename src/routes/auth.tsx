@@ -195,7 +195,9 @@ function AuthScreen() {
               id="signup-needs"
               className="text-center text-xs font-semibold text-muted-foreground"
             >
-              Enter your date of birth and tick the box above to continue.
+              {consent.band === null
+                ? "Enter your date of birth and tick the box above to continue."
+                : "Tick the boxes above to continue."}
             </p>
           )}
         </form>
