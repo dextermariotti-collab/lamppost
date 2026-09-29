@@ -12,6 +12,7 @@ import { ExerciseRunner } from "@/components/exercises/ExerciseRunner";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { WrittenArgument } from "@/components/exercises/WrittenArgument";
 import { PartsStatus, PendingPart } from "@/components/LessonParts";
+import { ChestOffer } from "@/components/ChestOffer";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
@@ -438,6 +439,8 @@ function LessonScreen() {
               )}
             </ul>
           </div>
+
+          <ChestOffer source="lesson" className="relative z-30 mt-4" />
 
           <div className="mt-6 flex flex-col gap-2">
             {lessonNumber < course.lessons.length && (

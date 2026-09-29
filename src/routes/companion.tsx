@@ -1,11 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Check, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
+import { useProgress } from "@/lib/progress";
+import { cosmeticById, isCosmetic } from "@/lib/rewards";
 import {
   COMPANION_ACCESSORIES,
   COMPANION_EXPRESSIONS,
@@ -46,6 +48,9 @@ export const Route = createFileRoute("/companion")({
 function CompanionScreen() {
   const navigate = useNavigate();
   const { companion, loaded, save } = useCompanion();
+  const { state } = useProgress();
+  /** Whether a colour or accessory can be worn: free ones always, unlockable ones once owned. */
+  const wearable = (id: string) => !isCosmetic(id) || state.cosmetics.includes(id);
   const [draft, setDraft] = useState<Companion>(companion);
   const [saving, setSaving] = useState(false);
 
@@ -97,34 +102,58 @@ function CompanionScreen() {
         </div>
 
         <Row label="Colour">
-          {COMPANION_PALETTES.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setDraft((prev) => ({ ...prev, palette: p.id }))}
-              aria-label={p.name}
-              aria-pressed={draft.palette === p.id}
-              className={cn(
-                "h-9 w-9 rounded-full transition-transform",
-                draft.palette === p.id
-                  ? "scale-105 ring-2 ring-primary ring-offset-2 ring-offset-background"
-                  : "hover:scale-105",
-              )}
-              style={{ background: paletteById(p.id).base }}
-            />
-          ))}
+          {COMPANION_PALETTES.map((p) => {
+            const locked = !wearable(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => setDraft((prev) => ({ ...prev, palette: p.id }))}
+                disabled={locked}
+                aria-label={locked ? `${p.name}, locked, ${cosmeticById(p.id)?.cost} gems` : p.name}
+                aria-pressed={draft.palette === p.id}
+                className={cn(
+                  "relative flex h-11 w-11 items-center justify-center rounded-full transition-transform",
+                  draft.palette === p.id
+                    ? "scale-105 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                    : "hover:scale-105",
+                  locked && "opacity-50",
+                )}
+                style={{ background: paletteById(p.id).base }}
+              >
+                {locked && <Lock aria-hidden className="h-4 w-4 text-white drop-shadow" />}
+              </button>
+            );
+          })}
         </Row>
 
         <Row label="Accessory">
-          {COMPANION_ACCESSORIES.map((a) => (
-            <Chip
-              key={a.id}
-              active={draft.accessory === a.id}
-              onClick={() => setDraft((prev) => ({ ...prev, accessory: a.id }))}
-            >
-              {a.name}
-            </Chip>
-          ))}
+          {COMPANION_ACCESSORIES.map((a) => {
+            const locked = !wearable(a.id);
+            return (
+              <Chip
+                key={a.id}
+                active={draft.accessory === a.id}
+                disabled={locked}
+                onClick={() => setDraft((prev) => ({ ...prev, accessory: a.id }))}
+              >
+                {locked && <Lock aria-hidden className="mr-1 inline h-3 w-3" />}
+                {a.name}
+                {locked && (
+                  <span className="sr-only">, locked, {cosmeticById(a.id)?.cost} gems</span>
+                )}
+              </Chip>
+            );
+          })}
         </Row>
+        {COMPANION_ACCESSORIES.some((a) => !wearable(a.id)) ||
+        COMPANION_PALETTES.some((p) => !wearable(p.id)) ? (
+          <p className="mt-3 text-[13px] text-muted-foreground">
+            Locked ones can be unlocked with gems.{" "}
+            <Link to="/rewards" className="font-semibold text-primary-text underline">
+              See what's available
+            </Link>
+          </p>
+        ) : null}
 
         <Row label="Mood">
           {COMPANION_EXPRESSIONS.map((e) => (
@@ -161,20 +190,24 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function Chip({
   active,
+  disabled = false,
   onClick,
   children,
 }: {
   active: boolean;
+  disabled?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "rounded-full px-3 py-2 text-xs font-semibold transition-all",
+        "min-h-11 rounded-full px-4 py-2 text-xs font-semibold transition-all",
         active ? "bg-primary text-primary-foreground shadow-soft" : "bg-card shadow-soft",
+        disabled && "opacity-50",
       )}
     >
       {children}

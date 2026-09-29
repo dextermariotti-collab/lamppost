@@ -8,9 +8,13 @@ import {
   MAX_XP_PER_DAY,
   activityToStore,
   boundedTotal,
+  firstSyncCarryOver,
   growthAllowance,
+  weeklyXpCredit,
 } from "./progress-limits";
 import { streakEndingAtLatest } from "./streak";
+import { MAX_HINT_TOKENS, isCosmetic } from "./rewards";
+import { weekStartOf } from "./weeks";
 
 export type AccountProfile = {
   id: string;
@@ -28,7 +32,11 @@ export type AccountProfile = {
   /** Spendable gems: earned minus spent. */
   gems: number;
   gemsEarned: number;
+  gemsGranted: number;
   gemsSpent: number;
+  hintTokens: number;
+  /** 0-4: the learner's tier in their friends league. */
+  leagueTier: number;
   lastActiveDay: string | null;
   companion: {
     preset: string;
@@ -39,7 +47,7 @@ export type AccountProfile = {
 };
 
 const SELECT =
-  "id, display_name, handle, invite_code, created_at, daily_goal, notify_nudges_inapp, notify_nudges_email, current_streak, longest_streak, total_xp, gems, gems_earned, gems_spent, last_active_day, companion_preset, companion_palette, companion_accessory, companion_expression";
+  "id, display_name, handle, invite_code, created_at, daily_goal, notify_nudges_inapp, notify_nudges_email, current_streak, longest_streak, total_xp, gems, gems_earned, gems_granted, gems_spent, hint_tokens, league_tier, last_active_day, companion_preset, companion_palette, companion_accessory, companion_expression";
 
 export const getMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -70,7 +78,10 @@ export const getMyProfile = createServerFn({ method: "POST" })
       totalXp: data.total_xp,
       gems: data.gems,
       gemsEarned: data.gems_earned,
+      gemsGranted: data.gems_granted,
       gemsSpent: data.gems_spent,
+      hintTokens: data.hint_tokens,
+      leagueTier: data.league_tier,
       lastActiveDay: data.last_active_day,
       companion: {
         preset: data.companion_preset,
@@ -138,6 +149,17 @@ const SyncInput = z.object({
   today: z.string().optional(),
   /** 2 = every day key is the device's local calendar day. Older clients omit it. */
   dayKeyVersion: z.number().int().optional(),
+  /**
+   * What the device spent and unlocked before it had an account. Read only on the
+   * account's first sync (see firstSyncCarryOver); ignored ever after.
+   */
+  carryOver: z
+    .object({
+      gemsSpent: z.number().int().min(0).max(10_000_000),
+      hintTokens: z.number().int().min(0).max(99),
+      cosmetics: z.array(z.string().max(40)).max(20),
+    })
+    .optional(),
 });
 
 /** How many days of activity are read back to recompute the streak. */
@@ -156,9 +178,13 @@ const STREAK_WINDOW_DAYS = 400;
  *   the request, so it can also go down (the old max-wins merge kept a broken
  *   streak forever);
  * - XP and lifetime gems earned only ever rise, by at most a generous per-day
- *   allowance for the time since the last sync. Gems SPENT are not accepted here at
- *   all: they change only when the server sells something (wallet.functions.ts), and
- *   the balance is earned minus spent.
+ *   allowance for the time since the last sync. Gems SPENT and gems GRANTED are not
+ *   accepted here: they change only when the server sells or hands out something
+ *   (wallet.functions.ts, rewards.functions.ts). The one exception is the account's
+ *   first sync, which carries across what the device spent and unlocked before it
+ *   had an account, bounded (firstSyncCarryOver).
+ * - the XP an account gains is also credited to the week it was synced in, for the
+ *   friends league, except on the first sync.
  *
  * Lessons are completed in the browser, so this bounds a forged request rather
  * than proving a lesson was done.
@@ -175,7 +201,7 @@ export const syncProgress = createServerFn({ method: "POST" })
     const { data: current, error: readError } = await admin
       .from("profiles")
       .select(
-        "current_streak, longest_streak, total_xp, gems_earned, gems_spent, last_active_day, day_key_version, progress_synced_at",
+        "current_streak, longest_streak, total_xp, gems_earned, gems_granted, gems_spent, hint_tokens, last_active_day, day_key_version, progress_synced_at",
       )
       .eq("id", userId)
       .maybeSingle();
@@ -247,25 +273,60 @@ export const syncProgress = createServerFn({ method: "POST" })
       activeDays: days.length,
       now,
     });
+    const firstSync = lastSyncedAt === null;
+    const earned = boundedTotal(current.gems_earned, data.gemsEarned ?? data.gems ?? 0, gemCap);
+    const carry = firstSync
+      ? firstSyncCarryOver({
+          claim: data.carryOver,
+          earnedPlusGranted: earned + current.gems_granted,
+          maxHintTokens: MAX_HINT_TOKENS,
+          isCosmetic,
+        })
+      : null;
     const next = {
       current_streak: streak,
       longest_streak: Math.max(current.longest_streak, streak),
       total_xp: boundedTotal(current.total_xp, data.totalXp, xpCap),
-      gems_earned: boundedTotal(current.gems_earned, data.gemsEarned ?? data.gems ?? 0, gemCap),
+      gems_earned: earned,
       last_active_day: lastActiveDay,
       progress_synced_at: now.toISOString(),
       ...(upgrading ? { day_key_version: 2 } : {}),
+      // Only the account's first sync may bring across what was spent before it existed.
+      ...(carry
+        ? {
+            gems_spent: Math.max(current.gems_spent, carry.gemsSpent),
+            hint_tokens: Math.max(current.hint_tokens, carry.hintTokens),
+          }
+        : {}),
     };
     const { error: updateError } = await admin.from("profiles").update(next).eq("id", userId);
     if (updateError) throw new Error(updateError.message);
 
+    if (carry && carry.cosmetics.length > 0) {
+      await admin.from("user_cosmetics").upsert(
+        carry.cosmetics.map((item) => ({ user_id: userId, item })),
+        { onConflict: "user_id,item", ignoreDuplicates: true },
+      );
+    }
+
+    const credit = weeklyXpCredit({ firstSync, before: current.total_xp, after: next.total_xp });
+    if (credit > 0) {
+      await admin.rpc("record_weekly_xp", {
+        _user: userId,
+        _week: weekStartOf(today),
+        _delta: credit,
+      });
+    }
+
+    const spent = next.gems_spent ?? current.gems_spent;
     return {
       ok: true as const,
       streak: next.current_streak,
       longestStreak: next.longest_streak,
       totalXp: next.total_xp,
-      gems: next.gems_earned - current.gems_spent,
-      gemsSpent: current.gems_spent,
+      gems: next.gems_earned + current.gems_granted - spent,
+      gemsSpent: spent,
+      gemsGranted: current.gems_granted,
       lastActiveDay: next.last_active_day,
     };
   });

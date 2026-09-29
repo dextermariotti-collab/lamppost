@@ -57,7 +57,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 
 | Key | Module | Holds |
 | --- | --- | --- |
-| `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, per-day `history`, per-course lesson counts |
+| `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history`, per-course lesson counts |
 | `lamppost-courses-v1` | `lib/course-store.ts`, `lib/curriculum-store.ts` | the curriculum course + downloaded lesson content |
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
 | `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d) |
@@ -81,6 +81,26 @@ prove a lesson was done** — see "Security model".
   animate a value up from an initial `0`** — on first client render `useSyncExternalStore` returns
   the SSR snapshot (all zeros) and an animation that never runs leaves the zeros on screen (this
   regressed once already; see `components/CountUp.tsx` and its test).
+
+### Rewards and the friends league
+Gems buy streak freezes, hint tokens and companion cosmetics; reward chests (one per lesson, review
+or challenge finished, **at most 3 a day, never for sale**) pay out gems or a hint token from a
+published table. Rules and numbers live in `lib/rewards.ts` (the same table the server rolls from
+and `ChestOdds` prints, so the odds shown are the odds used); `lib/rewards-state.ts` holds the
+signed-out state transitions. Signed in, the account owns every balance: `openChest`, `buyHintToken`
+and `unlockCosmetic` (`rewards.functions.ts`) call SQL functions that check and change the wallet in
+one statement, and the device only adopts their answer (`adoptRewards`). The wallet is
+`gems_earned` (device-reported, bounded) + `gems_granted` (server) − `gems_spent` (server); a new
+grant goes in `gems_granted`, never `gems_earned`. The **first** sync after sign-in carries over a
+guest's spend, hint tokens and cosmetics (`firstSyncCarryOver`) so signing in never refunds or
+loses them.
+
+The league (`lib/league.ts`, `league.functions.ts`, `/league`) compares weekly XP among accepted
+friends only (`league_standings` joins through `are_friends`). Weeks start Monday in local day keys
+(`lib/weeks.ts`). Only the most recent finished week is judged, once (`apply_league_result` is
+idempotent), and a quiet week never demotes anyone. No copy in these screens may create urgency:
+no countdowns, "only N left", or guilt notifications. The Monday recap (`lib/recap.ts`) is built
+from the device's own history and shows nothing for an empty week.
 
 ### Lesson content pipeline
 `lib/curriculum.ts` is the single source of truth for the 35 lessons (objective, key idea, the trap
@@ -127,6 +147,12 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
   `spend_gems()` function, which checks and updates in one atomic statement); the balance is the
   difference. Signed-out learners spend locally. Any new thing gems can buy goes through
   `spendGems` in `wallet.functions.ts` with a server-held price, never a price from the request.
+- **Chests, hint tokens, cosmetics and league results are server-only writes** (`reward_chests`,
+  `user_cosmetics`, `xp_weekly`, `league_results`, and `profiles.gems_granted` / `hint_tokens` /
+  `league_tier`), through service-role SQL functions that browser roles cannot run. The rollback
+  is `docs/rollback/20260929110000_rewards_and_league.down.sql`. What a companion wears is still an
+  ordinary profile column the browser can write, so the cosmetic lock on `/companion` is UX, not
+  enforcement; it protects no balance.
 - **Public AI endpoints are rate limited in the database** (`lib/rate-limit.ts` holds the numbers,
   `rate-limit.server.ts` enforces them and **fails closed**). Cached content is served without
   touching the limiter; only a cache miss that would call the model is counted, under a per-job

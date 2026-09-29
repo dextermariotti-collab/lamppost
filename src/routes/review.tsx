@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { AnimatedBar } from "@/components/AnimatedBar";
+import { ChestOffer } from "@/components/ChestOffer";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
@@ -146,6 +147,7 @@ function ReviewQueue() {
                 ? "Drills you miss — or aren't sure about — come back here as new scenarios. Nothing is waiting today."
                 : `${right} of ${session!.length} handled. The ones you missed return tomorrow with new material.`}
             </p>
+            {session!.length > 0 && <ChestOffer source="review" className="mt-6 w-full max-w-sm" />}
             <Button
               onClick={() => navigate({ to: "/" })}
               className="mt-6 h-12 rounded-full bg-hero-gradient px-6 text-sm font-semibold shadow-card"

@@ -25,19 +25,26 @@ beforeEach(() => {
 
 describe("buyStreakFreeze", () => {
   it("spends the server-held price from the caller's own account", async () => {
-    rpc.mockResolvedValue({ data: [{ ok: true, balance: 40, spent: 60 }], error: null });
-    expect(await buy()).toEqual({ ok: true, balance: 40, spent: 60 });
+    rpc.mockResolvedValue({
+      data: [{ ok: true, balance: 40, spent: 60, granted: 15 }],
+      error: null,
+    });
+    expect(await buy()).toEqual({ ok: true, balance: 40, spent: 60, granted: 15 });
     expect(rpc).toHaveBeenCalledWith("spend_gems", { _user: USER, _cost: FREEZE_COST });
   });
 
   it("says so, with the account's real numbers, when there aren't enough gems", async () => {
-    rpc.mockResolvedValue({ data: [{ ok: false, balance: 20, spent: 100 }], error: null });
+    rpc.mockResolvedValue({
+      data: [{ ok: false, balance: 20, spent: 100, granted: 15 }],
+      error: null,
+    });
     expect(await buy()).toEqual({
       ok: false,
       reason: "not-enough-gems",
       message: "You don't have enough gems for that yet.",
       balance: 20,
       spent: 100,
+      granted: 15,
     });
   });
 

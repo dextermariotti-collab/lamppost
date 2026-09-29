@@ -182,6 +182,36 @@ export function CompanionAvatar({
             <rect x="58" y="76" width="9" height="17" rx="4.5" fill={p.accent} />
           </>
         );
+      case "headphones":
+        return (
+          <>
+            <path
+              d="M22 48C22 26 33 15 50 15s28 11 28 33"
+              fill="none"
+              stroke={p.accent}
+              strokeWidth="4.5"
+              strokeLinecap="round"
+            />
+            <rect x="16" y="42" width="11" height="20" rx="5.5" fill={p.accent} />
+            <rect x="73" y="42" width="11" height="20" rx="5.5" fill={p.accent} />
+          </>
+        );
+      case "bow":
+        return (
+          <>
+            <path d="M63 21 78 12v19z" fill={p.accent} />
+            <path d="M63 21 48 12v19z" fill={p.accent} />
+            <circle cx="63" cy="21" r="4.4" fill={p.soft} />
+          </>
+        );
+      case "crown":
+        return (
+          <>
+            <path d="M33 25 37 8l9 10 4-13 4 13 9-10 4 17z" fill="#f5b53d" />
+            <rect x="33" y="22" width="34" height="5.5" rx="2.5" fill="#e09b1a" />
+            <circle cx="50" cy="9" r="2.4" fill="#fff" />
+          </>
+        );
       default:
         return null;
     }

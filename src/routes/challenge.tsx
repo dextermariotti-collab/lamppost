@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Flame, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ChestOffer } from "@/components/ChestOffer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { SocraticPopup } from "@/components/SocraticPopup";
@@ -141,6 +142,7 @@ function DailyChallengeScreen() {
                     ? "Called it. A new challenge lands tomorrow."
                     : "Missed — so that skill is back in your review queue with new material."}
                 </p>
+                <ChestOffer source="challenge" className="mt-6 w-full max-w-sm" />
                 <Button
                   onClick={() => navigate({ to: "/" })}
                   className="mt-6 h-12 rounded-full bg-hero-gradient px-6 text-sm font-semibold shadow-card"

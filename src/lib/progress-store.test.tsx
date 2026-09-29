@@ -7,6 +7,11 @@ const mocks = vi.hoisted(() => ({
   getMyProfile: vi.fn(),
   syncProgress: vi.fn(),
   buyStreakFreeze: vi.fn(),
+  getRewards: vi.fn(),
+  openChest: vi.fn(),
+  buyHintToken: vi.fn(),
+  spendHintToken: vi.fn(),
+  unlockCosmetic: vi.fn(),
 }));
 
 vi.mock("./companion-store", () => ({ useSessionUser: () => mocks.session }));
@@ -15,6 +20,13 @@ vi.mock("./profile.functions", () => ({
   syncProgress: mocks.syncProgress,
 }));
 vi.mock("./wallet.functions", () => ({ buyStreakFreeze: mocks.buyStreakFreeze }));
+vi.mock("./rewards.functions", () => ({
+  getRewards: mocks.getRewards,
+  openChest: mocks.openChest,
+  buyHintToken: mocks.buyHintToken,
+  spendHintToken: mocks.spendHintToken,
+  unlockCosmetic: mocks.unlockCosmetic,
+}));
 
 const KEY = "lamppost-progress-v1";
 
@@ -236,7 +248,15 @@ describe("guest (signed-out) mode", () => {
     const sent = mocks.syncProgress.mock.calls[0]![0].data;
     // The device sends what it did; the server works out the streak itself.
     expect(Object.keys(sent).sort()).toEqual(
-      ["dayKeyVersion", "freezeLog", "gemsEarned", "history", "today", "totalXp"].sort(),
+      [
+        "carryOver",
+        "dayKeyVersion",
+        "freezeLog",
+        "gemsEarned",
+        "history",
+        "today",
+        "totalXp",
+      ].sort(),
     );
     expect(sent.totalXp).toBe(screen.result.current.state.xp);
     // Gems are reported as lifetime earnings; what was spent is the server's to say.
@@ -434,5 +454,266 @@ describe("buying a streak freeze", () => {
     const screen = renderHook(() => useProgress());
     await waitFor(() => expect(screen.result.current.state.gems).toBe(40));
     expect(screen.result.current.state.gemsSpent).toBe(60);
+  });
+});
+
+/**
+ * Reward chests, hint tokens and cosmetics. Signed out they live on the device;
+ * signed in the account does the opening and the charging and the device only takes
+ * its answer.
+ */
+describe("rewards", () => {
+  const snapshot = (over: Record<string, unknown> = {}) => ({
+    spent: 0,
+    granted: 0,
+    hintTokens: 0,
+    cosmetics: [],
+    chests: { day: "", opened: 0 },
+    history: [],
+    ...over,
+  });
+  const account = (over: Record<string, unknown> = {}) => ({
+    ok: true,
+    streak: 0,
+    longestStreak: 0,
+    totalXp: 0,
+    gems: 0,
+    gemsSpent: 0,
+    gemsGranted: 0,
+    lastActiveDay: null,
+    ...over,
+  });
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    mocks.session.userId = null;
+    for (const fn of Object.values(mocks))
+      if (typeof fn === "function") (fn as ReturnType<typeof vi.fn>).mockReset();
+    mocks.getMyProfile.mockResolvedValue(null);
+    mocks.getRewards.mockResolvedValue(snapshot());
+    mocks.syncProgress.mockResolvedValue(account());
+  });
+
+  it("as a guest opens a chest on the device, but only for something done today", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.99); // the rarest prize
+    const { useProgress, dayKey } = await loadStore();
+    seed({ history: {} });
+    const screen = renderHook(() => useProgress());
+    let none: { ok: boolean } | undefined;
+    await act(async () => {
+      none = await screen.result.current.openChest("lesson");
+    });
+    expect(none?.ok).toBe(false);
+    expect(screen.result.current.state.gems).toBe(0);
+
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    const before = screen.result.current.state.gems;
+    let opened: { ok: boolean; record?: { amount: number } } | undefined;
+    await act(async () => {
+      opened = await screen.result.current.openChest("lesson");
+    });
+    expect(opened).toMatchObject({ ok: true, record: { amount: 40 } });
+    expect(screen.result.current.state.gems).toBe(before + 40);
+    expect(screen.result.current.state.chests).toEqual({ day: dayKey(), opened: 1 });
+    expect(mocks.openChest).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+
+  it("as a guest can't open more than were earned", async () => {
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    const results: boolean[] = [];
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        results.push((await screen.result.current.openChest("lesson")).ok);
+      });
+    }
+    // One lesson done today, so one chest.
+    expect(results).toEqual([true, false, false]);
+  });
+
+  it("when signed in has the account open the chest and takes its answer", async () => {
+    mocks.session.userId = "user-1";
+    seed({ gems: 10 });
+    const { useProgress, dayKey } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    const record = { day: dayKey(), source: "lesson", kind: "gems", amount: 20, converted: false };
+    mocks.openChest.mockResolvedValue({
+      ok: true,
+      record,
+      snapshot: snapshot({ granted: 20, chests: { day: dayKey(), opened: 1 }, history: [record] }),
+    });
+    const gemsBefore = screen.result.current.state.gems;
+    mocks.syncProgress.mockClear();
+
+    let opened: unknown;
+    await act(async () => {
+      opened = await screen.result.current.openChest("lesson");
+    });
+    expect(opened).toEqual({ ok: true, record });
+    // The account is brought up to date first: a chest is for something already synced.
+    expect(mocks.syncProgress).toHaveBeenCalledTimes(1);
+    expect(mocks.openChest.mock.calls[0]![0]).toEqual({
+      data: { today: dayKey(), source: "lesson" },
+    });
+    expect(screen.result.current.state.gems).toBe(gemsBefore + 20);
+    expect(screen.result.current.state.gemsGranted).toBe(20);
+    expect(screen.result.current.state.chestHistory).toEqual([record]);
+  });
+
+  it("when signed in gives nothing on the device if the account says no", async () => {
+    mocks.session.userId = "user-1";
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    mocks.openChest.mockResolvedValue({
+      ok: false,
+      reason: "daily-limit",
+      message: "That's all the chests for today.",
+    });
+    const gems = screen.result.current.state.gems;
+    let result: unknown;
+    await act(async () => {
+      result = await screen.result.current.openChest("lesson");
+    });
+    expect(result).toEqual({ ok: false, message: "That's all the chests for today." });
+    expect(screen.result.current.state.gems).toBe(gems);
+    expect(screen.result.current.state.chests.opened).toBe(0);
+  });
+
+  it("as a guest buys a hint token and uses it, without any server call", async () => {
+    seed({ gems: 100 });
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    await act(async () => {
+      expect((await screen.result.current.buyHint()).ok).toBe(true);
+    });
+    expect(screen.result.current.state).toMatchObject({ gems: 80, gemsSpent: 20, hintTokens: 1 });
+    let used = false;
+    await act(async () => {
+      used = await screen.result.current.spendHint();
+    });
+    expect(used).toBe(true);
+    expect(screen.result.current.state.hintTokens).toBe(0);
+    await act(async () => {
+      used = await screen.result.current.spendHint();
+    });
+    expect(used).toBe(false);
+    expect(mocks.buyHintToken).not.toHaveBeenCalled();
+    expect(mocks.spendHintToken).not.toHaveBeenCalled();
+  });
+
+  it("when signed in shows a hint only if the account had a token to spend", async () => {
+    mocks.session.userId = "user-1";
+    mocks.getRewards.mockResolvedValue(snapshot({ hintTokens: 2 }));
+    seed({ hintTokens: 2 });
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    mocks.spendHintToken.mockResolvedValueOnce({ ok: true, hintTokens: 1 });
+    let used = false;
+    await act(async () => {
+      used = await screen.result.current.spendHint();
+    });
+    expect(used).toBe(true);
+    expect(screen.result.current.state.hintTokens).toBe(1);
+
+    // Another device used the last one: the account says no, and the device catches up.
+    mocks.spendHintToken.mockResolvedValueOnce({ ok: false, hintTokens: 0 });
+    await act(async () => {
+      used = await screen.result.current.spendHint();
+    });
+    expect(used).toBe(false);
+    expect(screen.result.current.state.hintTokens).toBe(0);
+  });
+
+  it("unlocks a cosmetic as a guest, and the account does it when signed in", async () => {
+    seed({ gems: 300 });
+    let loaded = await loadStore();
+    let screen = renderHook(() => loaded.useProgress());
+    await act(async () => {
+      expect((await screen.result.current.unlockCosmetic("crown")).ok).toBe(true);
+    });
+    expect(screen.result.current.state).toMatchObject({ gems: 100, cosmetics: ["crown"] });
+    expect(mocks.unlockCosmetic).not.toHaveBeenCalled();
+    cleanup();
+
+    window.localStorage.clear();
+    mocks.session.userId = "user-1";
+    seed({ gems: 300 });
+    mocks.unlockCosmetic.mockResolvedValue({
+      ok: true,
+      snapshot: snapshot({ spent: 200, cosmetics: ["crown"] }),
+    });
+    loaded = await loadStore();
+    screen = renderHook(() => loaded.useProgress());
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    await act(async () => {
+      expect((await screen.result.current.unlockCosmetic("crown")).ok).toBe(true);
+    });
+    expect(mocks.unlockCosmetic.mock.calls[0]![0].data.id).toBe("crown");
+    expect(screen.result.current.state).toMatchObject({ gems: 100, cosmetics: ["crown"] });
+  });
+
+  it("pulls hint tokens, cosmetics and chests from the account when signing in", async () => {
+    mocks.session.userId = "user-1";
+    mocks.getRewards.mockResolvedValue(
+      snapshot({ hintTokens: 3, cosmetics: ["bow"], granted: 15 }),
+    );
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    await waitFor(() => expect(screen.result.current.state.hintTokens).toBe(3));
+    expect(screen.result.current.state.cosmetics).toEqual(["bow"]);
+    expect(screen.result.current.state.gemsGranted).toBe(15);
+  });
+
+  it("sends what was spent and unlocked before signing in with the first sync", async () => {
+    mocks.session.userId = "user-1";
+    seed({ gems: 40, gemsSpent: 160, hintTokens: 1, cosmetics: ["crown"] });
+    const { useProgress } = await loadStore();
+    renderHook(() => useProgress());
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    expect(mocks.syncProgress.mock.calls[0]![0].data.carryOver).toEqual({
+      gemsSpent: 160,
+      hintTokens: 1,
+      cosmetics: ["crown"],
+    });
+  });
+
+  it("counts XP earned towards the week it was earned in, but not XP folded in from the account", async () => {
+    mocks.session.userId = "user-1";
+    mocks.getMyProfile.mockResolvedValue({
+      totalXp: 900,
+      gems: 0,
+      gemsEarned: 0,
+      gemsGranted: 0,
+      gemsSpent: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastActiveDay: null,
+    });
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    await waitFor(() => expect(screen.result.current.state.xp).toBe(900));
+    expect(screen.result.current.state.weeklyXp).toEqual({});
+
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    const weeks = Object.values(screen.result.current.state.weeklyXp);
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0]).toBe(screen.result.current.state.xp - 900);
   });
 });

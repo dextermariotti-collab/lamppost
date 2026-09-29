@@ -15,11 +15,13 @@ import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
+import { Route as LeagueRouteImport } from './routes/league'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DebateIdRouteImport } from './routes/debate.$id'
@@ -68,6 +70,11 @@ const DebatesRoute = DebatesRouteImport.update({
   path: '/debates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeagueRoute = LeagueRouteImport.update({
+  id: '/league',
+  path: '/league',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -91,6 +98,11 @@ const ProgressRoute = ProgressRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RewardsRoute = RewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScheduleRoute = ScheduleRouteImport.update({
@@ -186,11 +198,13 @@ export interface FileRoutesByFullPath {
   '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/debate/$id': typeof DebateIdRoute
@@ -216,11 +230,13 @@ export interface FileRoutesByTo {
   '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/debate/$id': typeof DebateIdRoute
@@ -247,11 +263,13 @@ export interface FileRoutesById {
   '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/debate/$id': typeof DebateIdRoute
@@ -279,11 +297,13 @@ export interface FileRouteTypes {
     | '/companion'
     | '/courses'
     | '/debates'
+    | '/league'
     | '/onboarding'
     | '/premium'
     | '/profile'
     | '/progress'
     | '/review'
+    | '/rewards'
     | '/schedule'
     | '/settings'
     | '/debate/$id'
@@ -309,11 +329,13 @@ export interface FileRouteTypes {
     | '/companion'
     | '/courses'
     | '/debates'
+    | '/league'
     | '/onboarding'
     | '/premium'
     | '/profile'
     | '/progress'
     | '/review'
+    | '/rewards'
     | '/schedule'
     | '/settings'
     | '/debate/$id'
@@ -339,11 +361,13 @@ export interface FileRouteTypes {
     | '/companion'
     | '/courses'
     | '/debates'
+    | '/league'
     | '/onboarding'
     | '/premium'
     | '/profile'
     | '/progress'
     | '/review'
+    | '/rewards'
     | '/schedule'
     | '/settings'
     | '/debate/$id'
@@ -370,11 +394,13 @@ export interface RootRouteChildren {
   CompanionRoute: typeof CompanionRoute
   CoursesRoute: typeof CoursesRoute
   DebatesRoute: typeof DebatesRoute
+  LeagueRoute: typeof LeagueRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
   ReviewRoute: typeof ReviewRoute
+  RewardsRoute: typeof RewardsRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
   DebateIdRoute: typeof DebateIdRoute
@@ -438,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DebatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/league': {
+      id: '/league'
+      path: '/league'
+      fullPath: '/league'
+      preLoaderRoute: typeof LeagueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -471,6 +504,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rewards': {
+      id: '/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof RewardsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedule': {
@@ -602,11 +642,13 @@ const rootRouteChildren: RootRouteChildren = {
   CompanionRoute: CompanionRoute,
   CoursesRoute: CoursesRoute,
   DebatesRoute: DebatesRoute,
+  LeagueRoute: LeagueRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
   ReviewRoute: ReviewRoute,
+  RewardsRoute: RewardsRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
   DebateIdRoute: DebateIdRoute,
