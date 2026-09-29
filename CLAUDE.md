@@ -164,6 +164,16 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
   holds a person's data must reference `auth.users` with `ON DELETE CASCADE` (or `SET NULL` for safety
   records); `src/db/deletion.test.ts` and `src/db/rls-audit.test.ts` fail otherwise, and fail if a public
   table is added without RLS.
+- **Social safety.** `profiles.profile_visibility` is `minimal` (name, handle and avatar only) unless the
+  person turns on sharing; friends can then also see streak, XP, badges and activity, and both people
+  must share to be in each other's league. The RLS policies on `profiles`, `daily_activity` and
+  `user_achievements` go through `shares_progress_with()`, and any server function that returns a
+  friend's numbers must go through `toCard(row, true)` in `friends.functions.ts` (which checks it too).
+  Blocks and reports are written only by `safety.functions.ts` (`block_user()` ends the friendship, its
+  shared streak, nudges and open debates in one transaction; a trigger refuses requests between a blocked
+  pair). Search and invite lookup never return a streak. Every model call passes its system prompt through
+  `withGuardrails()` (`ai-guardrails.server.ts`); `ai-guardrails.test.ts` scans the source and fails if a
+  call skips it.
 - **Public AI endpoints are rate limited in the database** (`lib/rate-limit.ts` holds the numbers,
   `rate-limit.server.ts` enforces them and **fails closed**). Cached content is served without
   touching the limiter; only a cache miss that would call the model is counted, under a per-job

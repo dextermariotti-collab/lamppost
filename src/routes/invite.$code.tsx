@@ -80,8 +80,7 @@ function InviteScreen() {
             </span>
             <h1 className="mt-4 text-2xl">{data.displayName ?? data.handle} invited you</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              @{data.handle} · {data.currentStreak} day streak. Become friends and keep each
-              other&apos;s streak alive.
+              @{data.handle}. Become friends to keep each other&apos;s streak alive.
             </p>
             {state === "sent" ? (
               <p className="mt-5 text-sm font-bold text-success">

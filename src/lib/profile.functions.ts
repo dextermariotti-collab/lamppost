@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { DEFAULT_VISIBILITY, isVisibility, type Visibility } from "./safety";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { resolveToday } from "./client-day";
@@ -47,6 +48,8 @@ export type AccountProfile = {
   };
   /** What the account has agreed to; `known: false` until the consent migration is applied. */
   consent: ConsentState;
+  /** What friends can see. `minimal` (name and avatar) until the person turns sharing on. */
+  visibility: Visibility;
 };
 
 const SELECT =
@@ -67,6 +70,12 @@ export const getMyProfile = createServerFn({ method: "POST" })
     if (!data) return null;
     const { readConsent } = await import("./consent.server");
     const consent = await readConsent(context.userId);
+    // Read on its own so an account still loads if the column isn't there yet.
+    const { data: visible } = await supabaseAdmin
+      .from("profiles")
+      .select("profile_visibility")
+      .eq("id", context.userId)
+      .maybeSingle();
     const email = (context.claims as { email?: string } | null)?.email ?? null;
     return {
       id: data.id,
@@ -95,6 +104,9 @@ export const getMyProfile = createServerFn({ method: "POST" })
         expression: data.companion_expression,
       },
       consent,
+      visibility: isVisibility(visible?.profile_visibility)
+        ? visible.profile_visibility
+        : DEFAULT_VISIBILITY,
     };
   });
 

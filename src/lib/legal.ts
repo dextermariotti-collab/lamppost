@@ -121,8 +121,9 @@ export const PRIVACY: LegalDoc = {
       heading: "Who can see what about you",
       body: [
         "By default your profile is minimal: other people can see your display name and your companion, and nothing else.",
-        'If you turn on "Let friends see my progress" in Settings, people you have accepted as friends can also see your streak, XP and league tier. People you haven\'t accepted as friends never see them.',
-        "Friends see the streak you agreed to share when you start a shared streak with them, and whether you have done something today only if you share your progress.",
+        "If you turn on \"Share my progress with friends\" (in Settings or on the Friends screen), people you have accepted as friends can also see your streak, XP, badges and league tier, and you appear in your friends' weekly league. People you haven't accepted as friends never see them.",
+        "When you start a shared streak with a friend, that friend sees the streak and whether you have done something today, even if you don\'t share your progress more widely.",
+        "If someone blocks you, you can no longer find or add them, and you aren't told. If someone reports you, a person at [COMPANY NAME] reads the report; we don't tell you who sent it.",
         "You can remove a friend, block someone, or report someone at any time. There is no messaging. The only text of yours another person can see is your case in a debate you chose to take part in, and only once both sides have written theirs.",
       ],
     },
@@ -130,7 +131,7 @@ export const PRIVACY: LegalDoc = {
       heading: "How long we keep it",
       review: true,
       body: [
-        "We keep your account information while your account exists. When you delete your account we delete your profile, progress, rewards, friendships, writing, conversations and results. Reports you filed are kept for safety records but no longer linked to you, and refusal logs are kept without your identity.",
+        "We keep your account information while your account exists. When you delete your account we delete your profile, progress, rewards, friendships, writing, conversations and results. Reports you filed are kept for safety records but no longer linked to you, reports other people made about you are deleted with your account, and refusal logs are kept without your identity.",
         "Request counters used to limit abuse are removed after about three days.",
         "[CONFIRM: how long the hosting provider keeps database backups, and say so here.]",
         "If you never make an account, we hold no account data about you.",

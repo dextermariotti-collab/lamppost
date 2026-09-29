@@ -69,6 +69,14 @@ export async function seedPersonData(db: PGlite, person: string, friend: string)
     );
     await db.query(`SELECT public.record_consent($1, 't', 'p', '18+', false)`, [person]);
     await db.query(`INSERT INTO content_reports (user_id, reason) VALUES ($1,'other')`, [person]);
+    await db.query(`INSERT INTO user_blocks (blocker_id, blocked_id) VALUES ($1,$2)`, [
+      person,
+      friend,
+    ]);
+    await db.query(
+      `INSERT INTO user_reports (reporter_id, reported_user_id, reason) VALUES ($1,$2,'other')`,
+      [person, friend],
+    );
     await db.query(
       `INSERT INTO moderation_blocks (user_id, topic, category, stage) VALUES ($1,'x','other','input')`,
       [person],

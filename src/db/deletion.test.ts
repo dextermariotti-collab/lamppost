@@ -93,6 +93,7 @@ describe("deleting a real account", () => {
       ["xp_weekly", "user_id"],
       ["league_results", "user_id"],
       ["consent_records", "user_id"],
+      ["user_blocks", "blocker_id"],
     ] as const;
     for (const [table, column] of gone) {
       const left = await db.query(`SELECT 1 FROM ${table} WHERE ${column} = $1`, [ALICE]);
@@ -103,6 +104,10 @@ describe("deleting a real account", () => {
       `SELECT user_id FROM content_reports`,
     );
     expect(report.rows).toEqual([{ user_id: null }]);
+    const filed = await db.query<{ reporter_id: string | null; reported_user_id: string }>(
+      `SELECT reporter_id, reported_user_id FROM user_reports`,
+    );
+    expect(filed.rows).toEqual([{ reporter_id: null, reported_user_id: BOB }]);
     const block = await db.query<{ user_id: string | null }>(
       `SELECT user_id FROM moderation_blocks`,
     );

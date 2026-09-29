@@ -498,6 +498,7 @@ export type Database = {
           league_tier: number
           longest_streak: number
           notify_nudges_email: boolean
+          profile_visibility: string
           notify_nudges_inapp: boolean
           onboarding_completed: boolean
           privacy_version: string | null
@@ -532,6 +533,7 @@ export type Database = {
           league_tier?: number
           longest_streak?: number
           notify_nudges_email?: boolean
+          profile_visibility?: string
           notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
           privacy_version?: string | null
@@ -566,6 +568,7 @@ export type Database = {
           league_tier?: number
           longest_streak?: number
           notify_nudges_email?: boolean
+          profile_visibility?: string
           notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
           privacy_version?: string | null
@@ -792,6 +795,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reported_user_id: string
+          reporter_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_code: string
@@ -828,6 +879,9 @@ export type Database = {
     Functions: {
       acquire_lock: { Args: { _key: string; _ttl_seconds: number }; Returns: boolean }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      block_user: { Args: { _blocked: string; _blocker: string }; Returns: undefined }
+      blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
+      shares_progress_with: { Args: { _owner: string; _viewer: string }; Returns: boolean }
       check_rate_limits: {
         Args: { _checks: Json }
         Returns: { allowed: boolean; retry_after: number; tier: string | null }[]

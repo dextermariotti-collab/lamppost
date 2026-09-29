@@ -52,6 +52,8 @@ export function fakeAdmin(tables: Record<string, FakeTable> = {}) {
       "limit",
       "or",
       "not",
+      "ilike",
+      "is",
     ]) {
       chain[method] = record(method);
     }

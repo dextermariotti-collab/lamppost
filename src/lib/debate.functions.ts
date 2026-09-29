@@ -142,12 +142,20 @@ function toSummary(
 const COLUMNS =
   "id, challenger_id, opponent_id, topic, prompt, passage, challenger_side, opponent_side, challenger_answer, opponent_answer, challenger_scores, opponent_scores, challenger_total, opponent_total, challenger_tip, opponent_tip, max_score, status, challenger_seen_result, opponent_seen_result, created_at";
 
+/**
+ * Names of the people in the caller's own debates. The ids come from rows the caller can
+ * already read, and only a name and handle are returned, so this reads with the service role:
+ * a friend who has not chosen to share progress is still someone you can debate.
+ */
 async function loadProfiles(
-  supabase: SupabaseClient<Database>,
   ids: string[],
 ): Promise<Map<string, { handle: string; display_name: string | null }>> {
   if (ids.length === 0) return new Map();
-  const { data } = await supabase.from("profiles").select("id, handle, display_name").in("id", ids);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("profiles")
+    .select("id, handle, display_name")
+    .in("id", ids);
   return new Map(
     ((data ?? []) as { id: string; handle: string; display_name: string | null }[]).map((p) => [
       p.id,
@@ -255,7 +263,6 @@ export const listDebates = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const rows = (data ?? []) as Row[];
     const profiles = await loadProfiles(
-      supabase,
       rows.map((r) => (r.challenger_id === userId ? r.opponent_id : r.challenger_id)),
     );
     return rows.map((row) => toSummary(row, userId, profiles));
@@ -274,7 +281,7 @@ export const getDebate = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!row) return null;
     const typed = row as Row;
-    const profiles = await loadProfiles(supabase, [
+    const profiles = await loadProfiles([
       typed.challenger_id === userId ? typed.opponent_id : typed.challenger_id,
     ]);
     return toSummary(typed, userId, profiles);

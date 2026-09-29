@@ -142,6 +142,14 @@ export const POLICIES = {
     ip: [t("hour", 120)],
     global: [],
   },
+  /** Blocking, unblocking and reporting people. Signed-in only. */
+  safety: {
+    label: "safety actions",
+    guest: [],
+    user: [t("minute", 10), t("hour", 60)],
+    ip: [t("hour", 240)],
+    global: [],
+  },
   /** Spending gems. Signed-in only. */
   buyFreeze: {
     label: "streak freeze purchases",

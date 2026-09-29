@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Flame, Loader2, Lock, Swords, Trophy, UserMinus, UserPlus, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { BlockPersonButton, ReportPersonButton } from "@/components/PersonSafety";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { achievementIcon } from "@/lib/achievements";
@@ -69,9 +70,10 @@ function FriendProfileScreen() {
     );
   }
 
-  const { person, longestStreak, joinedAt, badges, friendshipId, friendshipStatus } = data;
+  const { person, longestStreak, joinedAt, badges, friendshipId, friendshipStatus, isSelf } = data;
   const league = leagueFor(person.totalXp ?? 0);
   const isFriend = friendshipStatus === "accepted";
+  const name = person.displayName ?? person.handle;
 
   const act = async (fn: () => Promise<unknown>) => {
     setBusy(true);
@@ -94,31 +96,47 @@ function FriendProfileScreen() {
           </span>
           <div className="min-w-0">
             <p className="truncate text-base font-bold">{person.displayName ?? person.handle}</p>
-            <p className="text-[13px] text-muted-foreground">Joined {monthYear(joinedAt)}</p>
+            {joinedAt && (
+              <p className="text-[13px] text-muted-foreground">Joined {monthYear(joinedAt)}</p>
+            )}
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          <Tile
-            icon={<Flame className="h-[18px] w-[18px] text-flame" />}
-            value={String(person.currentStreak)}
-            label="Day streak"
-          />
-          <Tile
-            icon={<Zap className="h-[18px] w-[18px] text-xp" />}
-            value={(person.totalXp ?? 0).toLocaleString()}
-            label="Total XP"
-          />
-          <Tile
-            icon={<Trophy className="h-[18px] w-[18px] text-primary-text" />}
-            value={league.name}
-            label="League"
-          />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">Longest streak: {longestStreak} days</p>
+        {person.sharesProgress ? (
+          <>
+            <div className="mt-5 grid grid-cols-3 gap-2">
+              <Tile
+                icon={<Flame className="h-[18px] w-[18px] text-flame" />}
+                value={String(person.currentStreak ?? 0)}
+                label="Day streak"
+              />
+              <Tile
+                icon={<Zap className="h-[18px] w-[18px] text-xp" />}
+                value={(person.totalXp ?? 0).toLocaleString()}
+                label="Total XP"
+              />
+              <Tile
+                icon={<Trophy className="h-[18px] w-[18px] text-primary-text" />}
+                value={league.name}
+                label="League"
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Longest streak: {longestStreak ?? 0} days
+            </p>
+          </>
+        ) : (
+          <p className="mt-5 flex items-start gap-2 rounded-2xl bg-muted/60 p-3 text-xs font-semibold text-muted-foreground">
+            <Lock aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {name} keeps their progress private. Friends see a name and an avatar until they choose
+            to share more.
+          </p>
+        )}
 
         <h2 className="mt-6 text-sm font-bold">Achievements</h2>
-        {badges.length === 0 ? (
+        {!person.sharesProgress ? (
+          <p className="mt-2 text-xs text-muted-foreground">Not shared.</p>
+        ) : badges.length === 0 ? (
           <p className="mt-2 text-xs text-muted-foreground">No badges yet.</p>
         ) : (
           <div className="-mx-5 mt-3 flex gap-4 overflow-x-auto px-5 pb-1">
@@ -189,15 +207,15 @@ function FriendProfileScreen() {
         )}
 
         <div className="mt-8">
-          {isFriend ? (
+          {isSelf ? null : isFriend ? (
             <button
               onClick={() =>
                 void act(() => removeFriend({ data: { friendshipId: friendshipId! } }))
               }
               disabled={busy}
-              className="flex items-center gap-2 text-xs text-muted-foreground underline disabled:opacity-60"
+              className="flex min-h-11 items-center gap-2 px-1 text-xs font-semibold text-muted-foreground underline disabled:opacity-60"
             >
-              <UserMinus className="h-3.5 w-3.5" />
+              <UserMinus aria-hidden className="h-3.5 w-3.5" />
               Remove friend
             </button>
           ) : friendshipStatus === "pending" ? (
@@ -213,6 +231,18 @@ function FriendProfileScreen() {
               <UserPlus className="h-4 w-4" />
               Add friend
             </button>
+          )}
+          {!isSelf && (
+            <div className="mt-2 flex flex-wrap gap-x-4">
+              <ReportPersonButton person={{ id: person.id, name }} />
+              <BlockPersonButton
+                person={{ id: person.id, name }}
+                onBlocked={() => {
+                  refresh();
+                  navigate({ to: "/friends" });
+                }}
+              />
+            </div>
           )}
         </div>
       </div>

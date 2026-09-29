@@ -80,12 +80,19 @@ describe("exporting the data", () => {
       profiles: { single: { id: USER, handle: "dex" } },
       consent_records: { rows: [{ terms_version: "2026-09-30", age_band: "18+" }] },
       reward_chests: { rows: [{ amount: 5 }] },
+      user_reports: { rows: [{ id: "r1", reason: "spam" }] },
     });
-    const userClient = fakeAdmin().client;
+    const userClient = fakeAdmin({ user_blocks: { rows: [{ blocked_id: "x" }] } }).client;
     const out = (await run("exportMyData", undefined, userClient)) as Record<string, unknown>;
     expect(out["consentRecords"]).toEqual([{ terms_version: "2026-09-30", age_band: "18+" }]);
     expect(out["rewardChests"]).toEqual([{ amount: 5 }]);
     expect(out["account"]).toEqual({ id: USER, email: "a@example.test" });
+    expect(out["blockedPeople"]).toEqual([{ blocked_id: "x" }]);
+    expect(out["reportsYouSent"]).toEqual([{ id: "r1", reason: "spam" }]);
+    // Reports are only ever looked up by who SENT them, never by who they were about.
+    const reports = state.admin!.calls.find((c) => c.table === "user_reports")!;
+    expect(filteredTo(reports, "reporter_id", USER)).toBe(true);
+    expect(filteredTo(reports, "reported_user_id", USER)).toBe(false);
     for (const table of [
       "consent_records",
       "reward_chests",

@@ -178,7 +178,8 @@ describe("everything the app still does from the browser keeps working", () => {
     );
   });
 
-  it("lets a user read their own row and a friend's public columns", async () => {
+  it("lets a user read their own row and the public columns of a friend who shares", async () => {
+    await db.query(`UPDATE profiles SET profile_visibility = 'friends' WHERE id = $1`, [BOB]);
     const own = await asUser(ALICE, () =>
       attempt(db, `SELECT handle, total_xp, companion_preset FROM profiles WHERE id=$1`, [ALICE]),
     );
@@ -191,6 +192,7 @@ describe("everything the app still does from the browser keeps working", () => {
       ),
     );
     expect(friend.ok && friend.rows).toHaveLength(1);
+    await db.query(`UPDATE profiles SET profile_visibility = 'minimal' WHERE id = $1`, [BOB]);
   });
 
   it("handles friend requests, acceptance and nudges", async () => {

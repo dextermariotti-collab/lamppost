@@ -3,13 +3,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { shiftDay } from "./days";
 import { TodayInput, resolveToday } from "./client-day";
 import { MAX_SHARED_STREAKS, evaluateSharedStreak } from "./shared-streak";
+import { isVisibility, DEFAULT_VISIBILITY, type Visibility } from "./safety";
 
 export type PersonCard = {
   id: string;
   displayName: string | null;
   handle: string;
-  currentStreak: number;
+  /** Null unless this is a friend who has chosen to share progress with friends. */
+  currentStreak: number | null;
   totalXp?: number;
+  /** Whether streak, XP and activity are shown for this person. */
+  sharesProgress: boolean;
   companion: { preset: string; palette: string; accessory: string; expression: string };
 };
 
@@ -31,38 +35,49 @@ export type FriendsSnapshot = {
   incoming: (PersonCard & { friendshipId: string })[];
   outgoing: (PersonCard & { friendshipId: string })[];
   inviteCode: string;
+  /** What the caller currently shares with friends. */
+  myVisibility: Visibility;
   activeSharedStreaks: number;
   bestSharedStreak: number;
 };
 
 const PROFILE_COLUMNS =
-  "id, display_name, handle, current_streak, total_xp, companion_preset, companion_palette, companion_accessory, companion_expression";
+  "id, display_name, handle, current_streak, total_xp, profile_visibility, companion_preset, companion_palette, companion_accessory, companion_expression";
 
 type ProfileRow = {
   id: string;
   display_name: string | null;
   handle: string;
-  current_streak: number;
+  current_streak: number | null;
   total_xp: number;
+  profile_visibility?: string;
   companion_preset: string;
   companion_palette: string;
   companion_accessory: string;
   companion_expression: string;
 };
 
-const toCard = (row: ProfileRow): PersonCard => ({
-  id: row.id,
-  displayName: row.display_name,
-  handle: row.handle,
-  currentStreak: row.current_streak,
-  totalXp: row.total_xp,
-  companion: {
-    preset: row.companion_preset,
-    palette: row.companion_palette,
-    accessory: row.companion_accessory,
-    expression: row.companion_expression,
-  },
-});
+/**
+ * What another person is allowed to see. Anyone sees a name, handle and avatar. Streak and XP
+ * are included only for an accepted friend who has chosen to share them (`asFriend`).
+ */
+const toCard = (row: ProfileRow, asFriend = false): PersonCard => {
+  const shares = asFriend && row.profile_visibility === "friends";
+  return {
+    id: row.id,
+    displayName: row.display_name,
+    handle: row.handle,
+    currentStreak: shares ? row.current_streak : null,
+    ...(shares ? { totalXp: row.total_xp } : {}),
+    sharesProgress: shares,
+    companion: {
+      preset: row.companion_preset,
+      palette: row.companion_palette,
+      accessory: row.companion_accessory,
+      expression: row.companion_expression,
+    },
+  };
+};
 
 export const listFriends = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -78,7 +93,11 @@ export const listFriends = createServerFn({ method: "POST" })
     // linked to are ever returned, and only public columns.
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const [{ data: me }, { data: links, error: linkError }] = await Promise.all([
-      admin.from("profiles").select("invite_code").eq("id", userId).maybeSingle(),
+      admin
+        .from("profiles")
+        .select("invite_code, profile_visibility")
+        .eq("id", userId)
+        .maybeSingle(),
       supabase.from("friendships").select("id, requester_id, addressee_id, status"),
     ]);
     if (linkError) throw new Error(linkError.message);
@@ -106,10 +125,13 @@ export const listFriends = createServerFn({ method: "POST" })
         ).data ?? [])
       : [];
 
+    // A shared streak needs both people's activity, so it is read with the service role for the
+    // caller and their accepted friends only. Whether a friend's activity is SHOWN still
+    // depends on them sharing (below).
     const activityIds = [userId, ...accepted.map(otherId)];
     const activity =
       (
-        await supabase
+        await admin
           .from("daily_activity")
           .select("user_id, day, lessons_completed")
           .in("user_id", activityIds)
@@ -164,11 +186,14 @@ export const listFriends = createServerFn({ method: "POST" })
       const profile = byId.get(otherId(link));
       if (!profile) return [];
       const streak = streakByFriendship.get(link.id);
+      const card = toCard(profile, true);
       return [
         {
-          ...toCard(profile),
+          ...card,
           friendshipId: link.id,
-          activeToday: activeToday.has(profile.id),
+          // Accepting a shared streak means sharing whether you practised today with that friend.
+          activeToday:
+            (card.sharesProgress || streak?.status === "active") && activeToday.has(profile.id),
           nudgedToday: nudgedToday.has(profile.id),
           sharedStreak: streak
             ? {
@@ -202,6 +227,9 @@ export const listFriends = createServerFn({ method: "POST" })
       incoming: pending("incoming"),
       outgoing: pending("outgoing"),
       inviteCode: me?.invite_code ?? "",
+      myVisibility: isVisibility(me?.profile_visibility)
+        ? me.profile_visibility
+        : DEFAULT_VISIBILITY,
       activeSharedStreaks: friends.filter((f) => f.sharedStreak?.status === "active").length,
       bestSharedStreak: friends.reduce((max, f) => Math.max(max, f.sharedStreak?.count ?? 0), 0),
     };
@@ -231,8 +259,12 @@ export const sendFriendRequest = createServerFn({ method: "POST" })
       status: "pending",
     });
     if (error) {
+      // A refused request (for example, between people where one has blocked the other) gets
+      // the same plain message as any other failure, so it never reveals a block.
       throw new Error(
-        error.code === "23505" ? "You're already connected with them." : error.message,
+        error.code === "23505"
+          ? "You're already connected with them."
+          : "That request could not be sent.",
       );
     }
     return { ok: true };
@@ -370,9 +402,10 @@ export const listNudges = createServerFn({ method: "POST" })
       .limit(10);
     if (error) throw new Error(error.message);
     const senders = (data ?? []).map((n) => n.from_user_id);
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const profiles = senders.length
-      ? ((await supabase.from("profiles").select("id, display_name, handle").in("id", senders))
-          .data ?? [])
+      ? ((await admin.from("profiles").select("id, display_name, handle").in("id", senders)).data ??
+        [])
       : [];
     const byId = new Map(profiles.map((p) => [p.id, p]));
     return (data ?? []).map((n) => ({
@@ -407,6 +440,13 @@ export const resolveInvite = createServerFn({ method: "POST" })
     if (!row || row.id === context.userId) return null;
     return toCard({ ...row, total_xp: 0 } as ProfileRow);
   });
+
+/** The owner always sees their own numbers, whatever they share with others. */
+const ownProgress = (profile: { current_streak: number; total_xp: number }) => ({
+  currentStreak: profile.current_streak,
+  totalXp: profile.total_xp,
+  sharesProgress: true,
+});
 
 export const getFriendProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -443,11 +483,17 @@ export const getFriendProfile = createServerFn({ method: "POST" })
       .select("achievement_code, unlocked_at")
       .eq("user_id", profile.id);
 
+    const isSelf = profile.id === userId;
+    const card = toCard(profile as ProfileRow, link?.status === "accepted");
+    const visible = isSelf || card.sharesProgress;
     return {
-      person: toCard(profile as ProfileRow),
-      longestStreak: profile.longest_streak,
-      joinedAt: profile.created_at,
-      badges: (badges ?? []).map((b) => ({ code: b.achievement_code, unlockedAt: b.unlocked_at })),
+      person: isSelf ? { ...toCard(profile as ProfileRow, true), ...ownProgress(profile) } : card,
+      longestStreak: visible ? profile.longest_streak : null,
+      joinedAt: visible ? profile.created_at : null,
+      badges: visible
+        ? (badges ?? []).map((b) => ({ code: b.achievement_code, unlockedAt: b.unlocked_at }))
+        : [],
+      isSelf,
       friendshipId: link?.id ?? null,
       friendshipStatus: (link?.status as "pending" | "accepted" | undefined) ?? null,
     };

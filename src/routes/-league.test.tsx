@@ -101,7 +101,7 @@ describe("Friends league screen", () => {
     h.getLeague.mockResolvedValue(view([member("me", 0, null)]));
     await mount();
     expect(await screen.findByText(/add a friend to start/i)).toBeTruthy();
-    expect(screen.getByRole("link", { name: /find a friend/i }).getAttribute("href")).toBe(
+    expect(screen.getByRole("link", { name: /friends and sharing/i }).getAttribute("href")).toBe(
       "/friends",
     );
     expect(screen.queryByRole("heading", { name: "Standings" })).toBeNull();
@@ -175,7 +175,7 @@ describe("Friends league screen", () => {
     h.getLeague.mockResolvedValue(view([member("me", 0, null)]));
     await mount();
     expect(await screen.findByText(/only people you have added/i)).toBeTruthy();
-    expect(screen.getByText(/friends can see your weekly xp and tier/i)).toBeTruthy();
+    expect(screen.getByText(/only in a friend.s league if you both share/i)).toBeTruthy();
     expect(screen.getByText(/earn nothing and unlock nothing/i)).toBeTruthy();
     expect(screen.getByText(/nobody drops a tier for being away/i)).toBeTruthy();
   });

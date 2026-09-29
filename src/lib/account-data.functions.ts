@@ -26,6 +26,8 @@ export const exportMyData = createServerFn({ method: "POST" })
       cosmetics,
       weeklyXp,
       leagueResults,
+      blocks,
+      peopleReports,
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("daily_activity").select("*").eq("user_id", userId),
@@ -47,6 +49,12 @@ export const exportMyData = createServerFn({ method: "POST" })
       supabaseAdmin.from("user_cosmetics").select("*").eq("user_id", userId),
       supabaseAdmin.from("xp_weekly").select("*").eq("user_id", userId),
       supabaseAdmin.from("league_results").select("*").eq("user_id", userId),
+      // People you blocked, and reports you sent about people. Never who blocked or reported you.
+      supabase.from("user_blocks").select("*").eq("blocker_id", userId),
+      supabaseAdmin
+        .from("user_reports")
+        .select("id, reported_user_id, reason, details, status, created_at")
+        .eq("reporter_id", userId),
     ]);
 
     return {
@@ -71,6 +79,8 @@ export const exportMyData = createServerFn({ method: "POST" })
       cosmetics: cosmetics.data ?? [],
       weeklyXp: weeklyXp.data ?? [],
       leagueResults: leagueResults.data ?? [],
+      blockedPeople: blocks.data ?? [],
+      reportsYouSent: peopleReports.data ?? [],
       note: "Courses, lesson progress and the review schedule are also stored locally on each device you use.",
     };
   });

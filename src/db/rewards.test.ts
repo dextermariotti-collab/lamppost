@@ -353,7 +353,11 @@ describe("weekly XP and the friends league", () => {
     expect(r.rows).toEqual([{ xp: 50 }]);
   });
 
-  it("lists the learner and their accepted friends, and nobody else", async () => {
+  it("lists the learner and their accepted friends who share, and nobody else", async () => {
+    // Both people have to have chosen to share progress with friends.
+    await db.query(`UPDATE profiles SET profile_visibility = 'friends' WHERE id = ANY($1)`, [
+      [ALICE, BOB],
+    ]);
     await call(`SELECT record_weekly_xp($1, '2026-09-21', 120)`, [BOB]);
     await call(`SELECT record_weekly_xp($1, '2026-09-21', 999)`, [CAROL]); // pending request only
     await call(`SELECT record_weekly_xp($1, '2026-09-21', 999)`, [DAN]); // a stranger

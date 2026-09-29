@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
+  Ban,
   Check,
   Copy,
   Flame,
@@ -17,6 +18,8 @@ import { useQuery } from "@tanstack/react-query";
 import { listDebates } from "@/lib/debate.functions";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Confetti } from "@/components/Confetti";
+import { BlockPersonButton } from "@/components/PersonSafety";
+import { ShareProgressToggle } from "@/components/ShareProgressToggle";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useAccount, useFriends, useIncomingNudges, useRefreshAccount } from "@/lib/account";
@@ -169,7 +172,7 @@ function FriendsScreen() {
                     {person.displayName ?? person.handle}
                   </span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    @{person.handle} · {person.currentStreak} day streak
+                    @{person.handle}
                   </span>
                 </span>
                 <button
@@ -262,6 +265,15 @@ function FriendsScreen() {
           ) : null}
         </section>
 
+        {data ? (
+          <section
+            aria-label="What friends can see"
+            className="mt-6 rounded-3xl bg-card p-4 shadow-soft"
+          >
+            <ShareProgressToggle visibility={data.myVisibility} onChanged={refresh} />
+          </section>
+        ) : null}
+
         {/* Requests */}
         {(data?.incoming.length ?? 0) > 0 ? (
           <section className="mt-6">
@@ -293,9 +305,9 @@ function FriendsScreen() {
                         true,
                       )
                     }
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card"
                   >
-                    <Check className="h-4 w-4" />
+                    <Check aria-hidden className="h-4 w-4" />
                   </button>
                   <button
                     aria-label="Decline request"
@@ -306,10 +318,18 @@ function FriendsScreen() {
                         }),
                       )
                     }
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground"
                   >
-                    <X className="h-4 w-4" />
+                    <X aria-hidden className="h-4 w-4" />
                   </button>
+                  <BlockPersonButton
+                    person={{ id: person.id, name: person.displayName ?? person.handle }}
+                    onBlocked={refresh}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                  >
+                    <Ban aria-hidden className="h-4 w-4" />
+                    <span className="sr-only">Block {person.displayName ?? person.handle}</span>
+                  </BlockPersonButton>
                 </li>
               ))}
             </ul>
@@ -381,12 +401,20 @@ function FriendsScreen() {
                           <span className="block truncate text-sm font-bold">
                             {friend.displayName ?? friend.handle}
                           </span>
-                          <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Flame className="h-3 w-3 text-flame" />
-                            {friend.currentStreak}
-                            <Zap className="h-3 w-3 text-xp" />
-                            {(friend.totalXp ?? 0).toLocaleString()}
-                          </span>
+                          {friend.sharesProgress ? (
+                            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Flame aria-hidden className="h-3 w-3 text-flame" />
+                              <span className="sr-only">Streak</span>
+                              {friend.currentStreak ?? 0}
+                              <Zap aria-hidden className="h-3 w-3 text-xp" />
+                              <span className="sr-only">XP</span>
+                              {(friend.totalXp ?? 0).toLocaleString()}
+                            </span>
+                          ) : (
+                            <span className="block text-xs text-muted-foreground">
+                              Progress is private
+                            </span>
+                          )}
                         </span>
                       </Link>
                       {shared?.status === "active" ? (

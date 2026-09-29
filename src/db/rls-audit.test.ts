@@ -120,6 +120,7 @@ describe("the policies on people's data", () => {
       "reward_chests",
       "server_locks",
       "user_cosmetics",
+      "user_reports",
       "xp_weekly",
     ];
     for (const name of serverOnly) {
@@ -149,23 +150,44 @@ describe("what people can actually see of someone with data in every table", () 
     expect(await visibleAbout(CAROL)).toEqual({});
   });
 
-  it("a friend sees only what friends are meant to: the shared items and public profile columns", async () => {
+  it("a friend sees only the pair's shared items by default", async () => {
     const seen = Object.keys(await visibleAbout(BOB)).sort();
     expect(seen).toEqual(
       [
-        "daily_activity", // how much they did each day (friends' streak view)
         "debates", // a debate Bob is in
         "friendships", // the friendship itself
         "nudges", // a nudge sent to Bob
-        "profiles", // public columns only, checked below
         "shared_streaks", // a streak Bob shares
-        "user_achievements", // badges
       ].sort(),
     );
   });
 
+  it("a friend also sees progress, activity and badges once the person chooses to share", async () => {
+    await db.query(`UPDATE profiles SET profile_visibility = 'friends' WHERE id = $1`, [ALICE]);
+    try {
+      const seen = Object.keys(await visibleAbout(BOB)).sort();
+      expect(seen).toEqual(
+        [
+          "daily_activity", // how much they did each day (friends' streak view)
+          "debates",
+          "friendships",
+          "nudges",
+          "profiles", // public columns only, checked below
+          "shared_streaks",
+          "user_achievements", // badges
+        ].sort(),
+      );
+      // A stranger still sees nothing.
+      expect(await visibleAbout(CAROL)).toEqual({});
+    } finally {
+      await db.query(`UPDATE profiles SET profile_visibility = 'minimal' WHERE id = $1`, [ALICE]);
+    }
+  });
+
   it("the friend's view of the profile can't reach the private columns", async () => {
+    await db.query(`UPDATE profiles SET profile_visibility = 'friends' WHERE id = $1`, [ALICE]);
     for (const column of [
+      "profile_visibility",
       "invite_code",
       "goal",
       "daily_goal",
@@ -179,6 +201,7 @@ describe("what people can actually see of someone with data in every table", () 
       );
       expect(r.ok, column).toBe(false);
     }
+    await db.query(`UPDATE profiles SET profile_visibility = 'minimal' WHERE id = $1`, [ALICE]);
   });
 
   it("someone reading their own data sees all of it", async () => {

@@ -3,6 +3,7 @@ import { Loader2, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { LegalLinksSection } from "@/components/LegalLinksSection";
+import { PrivacySafetySection } from "@/components/PrivacySafetySection";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { DeviceDataSection, YourDataSection } from "@/components/YourDataSection";
 import { Switch } from "@/components/ui/switch";
@@ -275,6 +276,7 @@ function SettingsScreen() {
               </ul>
             </section>
 
+            <PrivacySafetySection />
             <YourDataSection />
             </>
             ) : (

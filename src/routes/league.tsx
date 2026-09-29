@@ -144,11 +144,12 @@ function League({ view }: { view: LeagueView }) {
         <section className="mt-6 rounded-3xl border border-border p-5 text-center">
           <p className="text-sm font-bold">Add a friend to start</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            The league is only ever the people you have added. It takes {LEAGUE_MIN_GROUP} of you
+            The league is only ever the people you have added, and only those who have chosen to
+            share their progress with friends, you included. It takes {LEAGUE_MIN_GROUP} of you
             earning at least {LEAGUE_MIN_XP} XP in a week for anyone to move.
           </p>
           <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
-            <Link to="/friends">Find a friend</Link>
+            <Link to="/friends">Friends and sharing</Link>
           </Button>
         </section>
       ) : (
@@ -253,8 +254,9 @@ function HowItWorks() {
         <li>A week off changes nothing. Nobody drops a tier for being away.</li>
         <li>Tiers are just names. They earn nothing and unlock nothing.</li>
         <li>
-          Your friends can see your weekly XP and tier here, as they can already see your streak and
-          total XP. Removing a friend takes you out of each other's league.
+          You are only in a friend's league if you both share your progress with friends, which you
+          can change on the Friends screen at any time. Removing or blocking someone takes you out
+          of each other's league.
         </li>
       </ul>
     </section>
