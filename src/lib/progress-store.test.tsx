@@ -603,12 +603,12 @@ describe("rewards", () => {
     expect(screen.result.current.state).toMatchObject({ gems: 80, gemsSpent: 20, hintTokens: 1 });
     let used = false;
     await act(async () => {
-      used = await screen.result.current.useHint();
+      used = await screen.result.current.spendHint();
     });
     expect(used).toBe(true);
     expect(screen.result.current.state.hintTokens).toBe(0);
     await act(async () => {
-      used = await screen.result.current.useHint();
+      used = await screen.result.current.spendHint();
     });
     expect(used).toBe(false);
     expect(mocks.buyHintToken).not.toHaveBeenCalled();
@@ -625,7 +625,7 @@ describe("rewards", () => {
     mocks.spendHintToken.mockResolvedValueOnce({ ok: true, hintTokens: 1 });
     let used = false;
     await act(async () => {
-      used = await screen.result.current.useHint();
+      used = await screen.result.current.spendHint();
     });
     expect(used).toBe(true);
     expect(screen.result.current.state.hintTokens).toBe(1);
@@ -633,7 +633,7 @@ describe("rewards", () => {
     // Another device used the last one: the account says no, and the device catches up.
     mocks.spendHintToken.mockResolvedValueOnce({ ok: false, hintTokens: 0 });
     await act(async () => {
-      used = await screen.result.current.useHint();
+      used = await screen.result.current.spendHint();
     });
     expect(used).toBe(false);
     expect(screen.result.current.state.hintTokens).toBe(0);

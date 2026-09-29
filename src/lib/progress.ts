@@ -435,7 +435,7 @@ export function useProgress() {
    * Spends a hint token. Signed in, the account says whether there was one; the
    * hint is shown only if it did. Returns whether a token was used.
    */
-  const useHint = useCallback(async (): Promise<boolean> => {
+  const spendHint = useCallback(async (): Promise<boolean> => {
     if (getSnapshot().hintTokens <= 0) return false;
     if (!userId) {
       update((prev) => applyUseHint(prev));
@@ -484,7 +484,7 @@ export function useProgress() {
     openChest,
     buyHint,
     unlockCosmetic,
-    useHint,
+    spendHint,
     clearFreezeSaved,
     clearCelebration,
     setDailyGoal,

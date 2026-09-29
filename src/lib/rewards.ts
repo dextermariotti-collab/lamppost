@@ -107,3 +107,11 @@ export function secureRandom(): number {
   crypto.getRandomValues(buffer);
   return buffer[0]! / 2 ** 32;
 }
+
+/** What came out of a chest, in a sentence. */
+export function describePrize(record: ChestRecord): string {
+  if (record.kind === "hint") return `${record.amount} hint token${record.amount === 1 ? "" : "s"}`;
+  return record.converted
+    ? `${record.amount} gems. Your hint pouch was full, so the hint token became gems.`
+    : `${record.amount} gems`;
+}

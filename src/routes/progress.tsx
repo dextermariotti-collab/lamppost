@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowRight,
   Check,
   Clock,
   Flame,
@@ -152,6 +153,14 @@ function ProgressScreen() {
         </section>
 
         <StreakFreezeCard freezes={state.freezes} gems={state.gems} onBuy={buyFreeze} />
+
+        <Link
+          to="/rewards"
+          className="mt-3 flex min-h-11 items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground"
+        >
+          <span>Rewards: chests, hint tokens and cosmetics</span>
+          <ArrowRight aria-hidden className="h-4 w-4 text-muted-foreground" />
+        </Link>
 
         {/* Today's session */}
         <TodaySession

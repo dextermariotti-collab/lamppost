@@ -20,6 +20,7 @@ import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DebateIdRouteImport } from './routes/debate.$id'
@@ -91,6 +92,11 @@ const ProgressRoute = ProgressRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RewardsRoute = RewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScheduleRoute = ScheduleRouteImport.update({
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/debate/$id': typeof DebateIdRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/debate/$id': typeof DebateIdRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/progress': typeof ProgressRoute
   '/review': typeof ReviewRoute
+  '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
   '/debate/$id': typeof DebateIdRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/progress'
     | '/review'
+    | '/rewards'
     | '/schedule'
     | '/settings'
     | '/debate/$id'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/progress'
     | '/review'
+    | '/rewards'
     | '/schedule'
     | '/settings'
     | '/debate/$id'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/progress'
     | '/review'
+    | '/rewards'
     | '/schedule'
     | '/settings'
     | '/debate/$id'
@@ -375,6 +387,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ProgressRoute: typeof ProgressRoute
   ReviewRoute: typeof ReviewRoute
+  RewardsRoute: typeof RewardsRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
   DebateIdRoute: typeof DebateIdRoute
@@ -471,6 +484,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rewards': {
+      id: '/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof RewardsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedule': {
@@ -607,6 +627,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ProgressRoute: ProgressRoute,
   ReviewRoute: ReviewRoute,
+  RewardsRoute: RewardsRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
   DebateIdRoute: DebateIdRoute,
