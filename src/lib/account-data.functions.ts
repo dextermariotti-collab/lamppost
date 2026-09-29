@@ -21,6 +21,10 @@ export const exportMyData = createServerFn({ method: "POST" })
       practiceSessions,
       debates,
       subscription,
+      rewardChests,
+      cosmetics,
+      weeklyXp,
+      leagueResults,
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("daily_activity").select("*").eq("user_id", userId),
@@ -36,6 +40,11 @@ export const exportMyData = createServerFn({ method: "POST" })
       supabase.from("practice_sessions").select("*").eq("user_id", userId),
       supabase.from("debates").select("*"),
       supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
+      // Rewards and league rows are server-only (the browser role can't read them).
+      supabaseAdmin.from("reward_chests").select("*").eq("user_id", userId),
+      supabaseAdmin.from("user_cosmetics").select("*").eq("user_id", userId),
+      supabaseAdmin.from("xp_weekly").select("*").eq("user_id", userId),
+      supabaseAdmin.from("league_results").select("*").eq("user_id", userId),
     ]);
 
     return {
@@ -55,6 +64,10 @@ export const exportMyData = createServerFn({ method: "POST" })
       practiceSessions: practiceSessions.data ?? [],
       debates: debates.data ?? [],
       subscription: subscription.data ?? null,
+      rewardChests: rewardChests.data ?? [],
+      cosmetics: cosmetics.data ?? [],
+      weeklyXp: weeklyXp.data ?? [],
+      leagueResults: leagueResults.data ?? [],
       note: "Courses, lesson progress and the review schedule are also stored locally on each device you use.",
     };
   });
@@ -111,8 +124,9 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       "moderation records",
       supabaseAdmin.from("moderation_blocks").update({ user_id: null }).eq("user_id", userId),
     );
-    // Debates, graded attempts, practice sessions and the subscription row are removed
-    // with the sign-in identity (ON DELETE CASCADE on auth.users).
+    // Debates, graded attempts, practice sessions, rewards, league results and the
+    // subscription row are removed with the sign-in identity (ON DELETE CASCADE on
+    // auth.users).
     await step("profile", supabaseAdmin.from("profiles").delete().eq("id", userId));
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);

@@ -10,9 +10,13 @@ Last checked: 2026-09-28.
 
 | Table | Data categories | Personal? | Written by | Deleted on account deletion |
 | --- | --- | --- | --- | --- |
-| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime spent and the balance between them), last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
+| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime granted by reward chests, lifetime spent, and the balance between them), hint tokens held, friends-league tier, last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
 | `daily_activity` | per-day lesson counts (device-local calendar days) | yes (behavioural) | server only | deleted |
 | `user_achievements` | achievement codes + unlock timestamps | yes | server only | deleted |
+| `reward_chests` | one row per reward chest opened: local day, source (lesson, review or challenge), what was inside (gems or a hint token), and whether a full hint pouch turned it into gems | yes (behavioural) | server only (the wallet functions) | deleted (cascade) |
+| `user_cosmetics` | ids of the companion colours and accessories unlocked with gems, and when | yes | server only | deleted (cascade) |
+| `xp_weekly` | XP credited to each Monday-start week (used by the friends league and the weekly recap) | yes (behavioural) | server only (the progress sync) | deleted (cascade) |
+| `league_results` | one row per settled league week: the week, XP, rank, how many took part, tier before and after | yes (behavioural, visible to nobody else) | server only | deleted (cascade) |
 | `achievements` | achievement catalogue (name, description, icon, criteria) | no | migrations | n/a |
 | `friendships` | requester/addressee ids, status, requested/accepted timestamps | yes (social graph) | the two users (request, accept, remove) | deleted |
 | `shared_streaks` | friendship id, proposer, status, count, last extended day | yes (social) | server only | deleted |

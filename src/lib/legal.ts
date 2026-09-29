@@ -46,8 +46,8 @@ export const PRIVACY: LegalDoc = {
       body: [
         "Account data: your email address and sign-in identity (email/password or Google), created when you sign up.",
         "Profile data: display name, handle, invite code, chosen companion character, daily lesson goal, and notification preferences.",
-        "Learning data: courses you generate, your course setup answers (length, difficulty, quiz rigor, experience level, focus, and the free-text goal you type), lesson and review progress, streaks, XP, gems, achievements, and per-day activity counts.",
-        "Social data: friend requests and friendships, shared streaks, and nudges you send or receive.",
+        "Learning data: courses you generate, your course setup answers (length, difficulty, quiz rigor, experience level, focus, and the free-text goal you type), lesson and review progress, streaks, XP, gems, hint tokens, unlocked companion cosmetics, reward chests you have opened, achievements, and per-day activity and weekly XP counts.",
+        "Social data: friend requests and friendships, shared streaks, and nudges you send or receive. Your friends can also see your weekly XP and league tier in the friends league, as they can already see your streak and total XP. Nobody who is not your friend can.",
         "Safety data: content reports you file, including the reason, your notes, and an excerpt of the flagged lesson.",
         "Device and technical data: standard request data such as IP address and user agent, used for security and abuse prevention.",
         "We do not ask for health records, precise location, payment details, or government identifiers. If you type health or fitness details into a course setup field, that free text is stored with your course request.",
@@ -88,7 +88,7 @@ export const PRIVACY: LegalDoc = {
     {
       heading: "Your rights",
       body: [
-        "You can export a machine-readable copy of your data and permanently delete your account from Settings → Legal & your data. Deletion removes your profile, progress, activity history, friendships, shared streaks, and nudges, and detaches your identity from any safety records; it is not a deactivation.",
+        "You can export a machine-readable copy of your data and permanently delete your account from Settings → Legal & your data. Deletion removes your profile, progress, activity history, rewards, league results, friendships, shared streaks, and nudges, and detaches your identity from any safety records; it is not a deactivation.",
         "Depending on where you live you may also have rights to correction, restriction, objection, or complaint to a regulator.",
         `For any request you cannot complete in the app, contact ${PRIVACY_CONTACT}.`,
       ],
