@@ -106,7 +106,7 @@ function AuthScreen() {
   if (signingUp && consent.blocked) {
     return (
       <PhoneFrame showNav={false}>
-        <main className="flex min-h-full flex-col px-6 pb-8">
+        <div className="flex min-h-full flex-col px-6 pb-8">
           <div className="mt-10">
             <UnderAgeNotice />
           </div>
@@ -117,7 +117,7 @@ function AuthScreen() {
           >
             I already have an account
           </button>
-        </main>
+        </div>
       </PhoneFrame>
     );
   }

@@ -78,17 +78,17 @@ function ReviewSchedule() {
 
   return (
     <PhoneFrame>
-      <main className="min-h-full px-5 pb-10">
+      <div className="min-h-full px-5 pb-10">
         <div className="flex items-center justify-between py-3">
           <Link
             to="/"
             aria-label="Back home"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-foreground"
+            className="-ml-1 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <p className="text-sm font-bold text-primary-text">Review schedule</p>
-          <span className="w-9" />
+          <span className="w-11" />
         </div>
 
         <h1 className="mt-2 text-[1.9rem] leading-tight">What comes back next</h1>
@@ -162,7 +162,7 @@ function ReviewSchedule() {
             </ul>
           </section>
         ))}
-      </main>
+      </div>
     </PhoneFrame>
   );
 }

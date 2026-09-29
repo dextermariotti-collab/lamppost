@@ -78,12 +78,12 @@ function ReviewQueue() {
           <Link
             to="/"
             aria-label="Back home"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-foreground"
+            className="-ml-1 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <p className="text-xs font-bold text-muted-foreground">Daily review</p>
-          <span className="w-9" />
+          <span className="w-11" />
         </div>
 
         {!done && item && (

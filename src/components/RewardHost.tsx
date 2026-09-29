@@ -93,7 +93,7 @@ export function RewardHost() {
           type="button"
           onClick={dismiss}
           aria-label="Close"
-          className="absolute right-3 top-3 z-40 flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+          className="absolute right-2 top-2 z-40 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
         >
           <X className="h-4 w-4" />
         </button>

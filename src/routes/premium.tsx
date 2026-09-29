@@ -62,7 +62,7 @@ function PremiumScreen() {
   return (
     <PhoneFrame>
       <ScreenHeader backTo="/" />
-      <main className="px-5 pb-10">
+      <div className="px-5 pb-10">
         <div className="relative mt-2 text-center">
           <span
             aria-hidden="true"
@@ -145,7 +145,7 @@ function PremiumScreen() {
             to use your free weekly sessions.
           </p>
         )}
-      </main>
+      </div>
     </PhoneFrame>
   );
 }

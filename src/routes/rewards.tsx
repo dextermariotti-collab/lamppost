@@ -52,7 +52,7 @@ function RewardsScreen() {
   return (
     <PhoneFrame>
       <ScreenHeader title="Rewards" backTo="/progress" />
-      <main className="px-5 pb-10">
+      <div className="px-5 pb-10">
         <section className="mt-5 flex items-center gap-4 rounded-3xl bg-card p-5 shadow-soft">
           <span
             aria-hidden
@@ -109,7 +109,7 @@ function RewardsScreen() {
             ))}
           </ul>
         </section>
-      </main>
+      </div>
     </PhoneFrame>
   );
 }

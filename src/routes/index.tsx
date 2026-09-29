@@ -104,7 +104,7 @@ function Home() {
 
   return (
     <PhoneFrame className="graph-home">
-      <main className="min-h-full px-5 pb-10">
+      <div className="min-h-full px-5 pb-10">
         {/* Header: who you are, how you're doing today */}
         <header className="flex items-center gap-3 pt-6">
           <Link to="/profile" aria-label="Open profile" className="shrink-0">
@@ -249,7 +249,7 @@ function Home() {
             <ThinkingGraph completed={completed} compact />
           </div>
         </section>
-      </main>
+      </div>
 
       {mapOpen && (
         <div className="fixed inset-0 z-[60] overflow-y-auto bg-background px-5 pb-10">

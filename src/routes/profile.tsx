@@ -67,6 +67,7 @@ function ProfileScreen() {
   return (
     <PhoneFrame>
       <div className="px-5 pb-10">
+        <h1 className="sr-only">Profile</h1>
         {/* Identity */}
         <header className="flex items-center gap-3 pt-5">
           <Link
@@ -88,7 +89,7 @@ function ProfileScreen() {
           <Link
             to="/settings"
             aria-label="Account settings"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Settings className="h-5 w-5" />
           </Link>

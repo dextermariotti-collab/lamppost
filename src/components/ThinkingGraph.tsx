@@ -98,7 +98,7 @@ export function ThinkingGraph({
               aria-label={`Open connection: ${edge.links.map((l) => l.concept).join("; ")}`}
               aria-pressed={edge.key === selectedKey}
               onClick={() => setSelectedKey(edge.key === selectedKey ? null : edge.key)}
-              className="absolute z-10 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 hover:bg-primary/15"
+              className="absolute z-10 h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 hover:bg-primary/15"
               style={{
                 left: `${(edge.handle.x / GRAPH_W) * 100}%`,
                 top: `${(edge.handle.y / GRAPH_H) * 100}%`,

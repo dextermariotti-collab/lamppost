@@ -93,12 +93,16 @@ function DailyChallengeScreen() {
           <Link
             to="/"
             aria-label="Back home"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-foreground"
+            className="-ml-1 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <p className="text-xs font-bold text-muted-foreground">Daily challenge</p>
-          <span className="w-9" />
+          {challenge ? (
+            <p className="text-xs font-bold text-muted-foreground">Daily challenge</p>
+          ) : (
+            <h1 className="text-xs font-bold text-muted-foreground">Daily challenge</h1>
+          )}
+          <span className="w-11" />
         </div>
 
         <div className="mt-2 flex items-center gap-2 text-primary-text">

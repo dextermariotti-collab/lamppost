@@ -117,19 +117,29 @@ function SettingsScreen() {
             {signedIn && (
             <section className="mt-8">
               <h2 className="text-sm font-bold">Profile</h2>
-              <label className="mt-3 block text-xs font-bold text-muted-foreground">
+              <label
+                htmlFor="settings-display-name"
+                className="mt-3 block text-xs font-bold text-muted-foreground"
+              >
                 Display name
               </label>
               <input
+                id="settings-display-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={displayNameFor(account ?? null)}
                 className="mt-1 w-full rounded-2xl bg-card px-4 py-3 text-sm shadow-soft outline-none ring-primary/30 focus:ring-2"
               />
-              <label className="mt-3 block text-xs font-bold text-muted-foreground">Handle</label>
+              <label
+                htmlFor="settings-handle"
+                className="mt-3 block text-xs font-bold text-muted-foreground"
+              >
+                Handle
+              </label>
               <div className="mt-1 flex items-center rounded-2xl bg-card px-4 shadow-soft ring-primary/30 focus-within:ring-2">
                 <span className="text-sm text-muted-foreground">@</span>
                 <input
+                  id="settings-handle"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value.toLowerCase())}
                   className="w-full bg-transparent py-3 pl-1 text-sm outline-none"

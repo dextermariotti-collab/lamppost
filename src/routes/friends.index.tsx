@@ -149,12 +149,13 @@ function FriendsScreen() {
         ) : null}
 
         {/* Search */}
-        <div className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 shadow-soft">
-          <Search className="h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 shadow-soft focus-within:ring-2 focus-within:ring-ring">
+          <Search aria-hidden className="h-4 w-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name or handle"
+            aria-label="Search by name or handle"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {searching ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : null}

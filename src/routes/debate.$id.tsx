@@ -120,7 +120,7 @@ function DebateScreen() {
   return (
     <PhoneFrame>
       <ScreenHeader backTo="/debates" />
-      <main className="px-5 pb-10">
+      <div className="px-5 pb-10">
         <div className="flex items-center gap-2 text-primary-text">
           <Swords aria-hidden className="h-4 w-4" />
           <p className="text-xs font-bold">Debate · {data.topic}</p>
@@ -207,7 +207,7 @@ function DebateScreen() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </PhoneFrame>
   );
 }

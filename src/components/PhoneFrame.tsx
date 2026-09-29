@@ -44,11 +44,24 @@ export function PhoneFrame({
           className,
         )}
       >
+        <a
+          href="#main-content"
+          className="sr-only rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
+        >
+          Skip to content
+        </a>
+
         {showNav && <SideNav pathname={pathname} />}
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="flex-1 overflow-y-auto overscroll-contain">
-            <div className="mx-auto w-full lg:max-w-[720px]">{children}</div>
+            <main
+              id="main-content"
+              tabIndex={-1}
+              className="mx-auto w-full outline-none lg:max-w-[720px]"
+            >
+              {children}
+            </main>
           </div>
 
           {showNav && (

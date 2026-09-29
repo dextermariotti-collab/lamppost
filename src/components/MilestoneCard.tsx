@@ -22,7 +22,7 @@ export function MilestoneCard({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20 transition-transform hover:scale-105"
+            className="absolute top-2 right-2 flex h-11 w-11 items-center justify-center rounded-full bg-primary-foreground/20 transition-transform hover:scale-105"
           >
             <X className="h-4 w-4" />
           </button>

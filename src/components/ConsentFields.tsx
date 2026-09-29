@@ -23,7 +23,7 @@ const field =
 export function UnderAgeNotice({ children }: { children?: React.ReactNode }) {
   return (
     <div role="alert" className="rounded-3xl bg-card p-5 text-center shadow-soft">
-      <h2 className="text-lg">You can't make an account</h2>
+      <h1 className="text-lg">You can't make an account</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         Lamppost accounts aren't available for you. We haven't saved anything you entered.
       </p>

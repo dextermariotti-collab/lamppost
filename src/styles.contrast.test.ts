@@ -110,3 +110,22 @@ describe("unit accents", () => {
     }
   });
 });
+
+/** The course map re-themes itself dark with its own tokens; its text has to be readable too. */
+describe("course map theme", () => {
+  const tokens = { ...root, ...readTokens(css, ".course-expedition") };
+
+  it("keeps body and muted text readable on every surface", () => {
+    for (const bg of ["background", "card", "muted"]) {
+      expect(ratio(tokens, "foreground", bg), `foreground on ${bg}`).toBeGreaterThanOrEqual(TEXT);
+      expect(
+        ratio(tokens, "muted-foreground", bg),
+        `muted-foreground on ${bg}`,
+      ).toBeGreaterThanOrEqual(TEXT);
+    }
+  });
+
+  it("puts readable text on the filled primary button", () => {
+    expect(ratio(tokens, "primary-foreground", "primary")).toBeGreaterThanOrEqual(TEXT);
+  });
+});
