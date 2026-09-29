@@ -1,7 +1,7 @@
 # Revision pass: interactive lessons, legal and safety
 
 Branch `revamp/interactive-legal`, based on the head of PR #4 (so it carries the still-open PRs #2, #3 and #4).
-Nothing was pushed to `main` and no PR was opened. 17 commits, each built (`npm run build`) before it was made.
+Nothing was pushed to `main` and no PR was opened. 19 commits, each built (`npm run build`) before it was made.
 Tests: 1,230 passing (`npm test`). Typecheck and lint are at the baseline in `CLAUDE.md`.
 
 ## What changed, by feature
@@ -54,8 +54,8 @@ only on request and is disclosed.
 
 ### 3. Polish (Part 3)
 
-No console errors and no failed loads on any of the 30 routes at 375px or desktop, light or dark. Screens
-checked by eye at both widths. New screens have empty, loading and error states. What I could not do is in the
+No console errors and no failed loads on any of the 30 routes at 375px or desktop, light or dark. Key screens
+spot-checked by eye at both widths. New screens have empty, loading and error states. What I could not do is in the
 checklist below.
 
 ## Decisions I made without you
@@ -137,7 +137,7 @@ automatically).
 **Unfinished / paused:**
 - The installable PWA, web-push reminders and the Playwright end-to-end suite from the earlier plan (PRs 5,
   5b, 6) are paused. The Lighthouse baseline (mobile: performance 66, accessibility 100, best practices 96,
-  SEO 92, PWA 38) is in the earlier conversation notes.
+  SEO 92, PWA 38; Lighthouse 11, production build, gzip).
 - I walked lesson 1 end to end in a real browser and checked every step of every lesson in jsdom (renders, axe
   clean in two states), but did not drive all 35 lessons in a browser. Signed-in screens (Friends, Settings'
   account section) were checked in jsdom, not with a real account, because there is no test login here.
