@@ -66,7 +66,7 @@ Never fail a drill for missing fields that its type does not have.
 
 ${CONTENT_POLICY_RULES}`;
 
-function answerKey(exercise: Exercise) {
+export function answerKey(exercise: Exercise) {
   if ("correct" in exercise && typeof exercise.correct === "number") {
     return `Answer key: option index ${exercise.correct} — "${exercise.options[exercise.correct]}"`;
   }

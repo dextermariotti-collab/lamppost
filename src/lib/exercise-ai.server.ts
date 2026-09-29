@@ -26,6 +26,7 @@ import {
 } from "./exercises";
 import type { Lesson } from "./courses";
 import { exercisesMatchPlan } from "./drill-plan";
+import { exerciseProblems } from "./exercise-rules";
 import { sayHypotheticalOnce } from "./hypothetical";
 
 /**
@@ -476,18 +477,40 @@ function shuffled(options: string[], correct: number) {
   return { options: order.map((i) => options[i]!), correct: order.indexOf(correct) };
 }
 
+/**
+ * The keyed option, as an index into `options`. A model sometimes names the
+ * answer by its text or writes the index as a string; anything else — no key, an
+ * index outside the list — is not guessed at, because a drill keyed to the wrong
+ * option teaches the wrong thing.
+ */
+function keyedIndex(raw: unknown, options: string[]): number | null {
+  let index = raw;
+  if (typeof raw === "string") {
+    const wanted = raw.trim().toLowerCase();
+    const byText = options.findIndex((option) => option.trim().toLowerCase() === wanted);
+    if (byText >= 0) return byText;
+    if (!/^\d+$/.test(wanted)) return null;
+    index = Number(wanted);
+  }
+  return typeof index === "number" &&
+    Number.isInteger(index) &&
+    index >= 0 &&
+    index < options.length
+    ? index
+    : null;
+}
+
 function choiceSet(raw: Record<string, unknown>, max = 4) {
   const options = asArray(pick(raw, ["options", "answers", "choices", "diagnoses", "candidates"]))
     .map((o) => (typeof o === "string" ? o.trim() : str(pick(asObject(o), ["text", "option"]))))
     .filter(Boolean)
     .slice(0, max);
   if (options.length < 2) return null;
-  const correctRaw = pick(raw, ["correct", "correct_index", "correctIndex", "answer_index"]);
-  const correct = Math.min(
-    Math.max(typeof correctRaw === "number" ? correctRaw : 0, 0),
-    options.length - 1,
+  const correct = keyedIndex(
+    pick(raw, ["correct", "correct_index", "correctIndex", "answer_index"]),
+    options,
   );
-  return shuffled(options, correct);
+  return correct === null ? null : shuffled(options, correct);
 }
 
 const BUCKETS: SortBucket[] = ["fact", "opinion", "value"];
@@ -495,7 +518,15 @@ const BUCKETS: SortBucket[] = ["fact", "opinion", "value"];
 /** Turns one raw model drill into a valid Exercise, saying "hypothetical" at most once. */
 export function normalizeExercise(raw: unknown): Exercise | null {
   const drill = normalizeExerciseShape(raw);
-  return drill ? sayHypotheticalOnce(drill) : null;
+  if (!drill) return null;
+  const cleaned = sayHypotheticalOnce(drill);
+  // A drill that breaks a structural rule is dropped here, before anyone spends a review on it.
+  const problems = exerciseProblems(cleaned);
+  if (problems.length > 0) {
+    console.warn(`[drill] ${cleaned.kind} rejected: ${problems.join("; ")}`);
+    return null;
+  }
+  return cleaned;
 }
 
 function normalizeExerciseShape(raw: unknown): Exercise | null {
@@ -702,7 +733,12 @@ function normalizeExerciseShape(raw: unknown): Exercise | null {
       question,
       scenario,
       answer,
-      tolerance: Number.isFinite(tolerance) && tolerance > 0 ? tolerance : Math.abs(answer) * 0.1,
+      tolerance:
+        Number.isFinite(tolerance) && tolerance > 0
+          ? tolerance
+          : answer === 0
+            ? 0.5
+            : Math.abs(answer) * 0.1,
       ...(unit ? { unit } : {}),
       solution,
     };
