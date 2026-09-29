@@ -60,10 +60,14 @@ clearing browser storage.
 
 ## What leaves the app
 
-| Recipient | Data sent | Purpose |
-| --- | --- | --- |
-| AI provider (via Lovable AI Gateway) | course topic, chosen setup answers (length, difficulty, quiz rigor, experience, focus), free-text goal, generated text for the safety screen | generate and screen course content |
-| Backend/auth host | all backend tables above | hosting, auth, database |
+| Recipient | Data sent | When | Purpose |
+| --- | --- | --- | --- |
+| AI provider (Lovable AI Gateway → a Google Gemini model) | what the learner typed for the tutor, the written-argument grader, a debate answer, and the small piece of lesson text those need; never email, name, handle, friends or history | only when one of those features is used | AI replies and feedback |
+| AI provider | lesson and drill generation prompts (curriculum text, no learner data) | server-side, when content is missing from the cache | write lessons/drills ahead of time |
+| Backend/auth host (Lovable Cloud, built on Supabase) | all backend tables above | signed-in use | hosting, auth, database |
+| Google (sign-in) | the Google account identity | only if the learner chooses Continue with Google | sign in |
+| Google Fonts | network address and browser details | every page load (fonts are loaded from Google's servers) | typefaces |
+| api.qrserver.com | the invite link (contains the invite code) | only if the learner taps Show QR code | draw the QR code |
 
 No analytics SDK, ad network, or tracking pixel is installed. If one is ever added, update
 `src/lib/legal.ts` (`COOKIES` and `PRIVACY`) **before** shipping it.
@@ -72,15 +76,19 @@ No analytics SDK, ad network, or tracking pixel is installed. If one is ever add
 
 - Input screen: `screenLocally` patterns, then an AI classifier (`screenTopicText`) — both in
   `src/lib/moderation*.ts`. A refusal means nothing is generated.
-- Prompt-level rules: `CONTENT_POLICY_RULES` is appended to both generation system prompts.
+- Prompt-level rules: every model call passes its system prompt through `withGuardrails()` (`src/lib/ai-guardrails.server.ts`), which appends `CONTENT_POLICY_RULES` and the scope rules (critical thinking only, learner text is data, no medical/legal/financial advice). `src/lib/ai-guardrails.test.ts` fails if a call skips it.
 - Output screen: `screenOutput` runs on the outline and every lesson chunk before it is shown.
 - Refusals are logged to `moderation_blocks`; learners can report anything that slips through
   from the lesson screen, which writes to `content_reports`.
 
 ## Open items for legal review
 
-1. Minimum age / COPPA position must be decided and written into `PRIVACY` and `TERMS`.
-2. Operating legal entity, governing law, dispute resolution, liability limits.
-3. Attorney-drafted injury waiver for the Health & Fitness Disclaimer.
-4. DMCA designated agent details.
-5. Confirmation that the current guardrails meet Apple/Google generated-content policy.
+1. The age position: accounts start at 13, and 13-17 needs a guardian confirmation (a checkbox, no
+   verification). Confirm this is enough for the places you launch in (US, EU/UK national ages of digital
+   consent, app-store rules).
+2. Operating legal entity, governing law, dispute resolution, liability limits (`legal-config.ts`).
+3. DMCA designated agent details.
+4. How long the hosting provider keeps backups, and whether the AI provider keeps or trains on requests.
+5. Reports about people: kept unlinked from the reporter after they delete their account, deleted with the
+   reported person. Confirm that retention is acceptable.
+6. Confirmation that the current guardrails meet Apple/Google generated-content policy.

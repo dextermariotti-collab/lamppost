@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FriendRow, FriendsSnapshot } from "@/lib/friends.functions";
@@ -125,6 +125,14 @@ describe("Friends screen", () => {
     const decline = screen.getByRole("button", { name: "Decline request" });
     const block = screen.getByRole("button", { name: /block stranger/i });
     for (const button of [accept, decline, block]) expect(button.className).toMatch(/h-11 w-11/);
+  });
+
+  it("only asks the QR service to draw the invite link after being asked to", () => {
+    mount();
+    expect(document.querySelector("img[src*='qrserver']")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show QR code" }));
+    expect(document.querySelector("img[src*='qrserver']")).not.toBeNull();
+    expect(screen.getByText(/third-party QR service/i)).toBeTruthy();
   });
 
   it("doesn't show anything about a searched stranger beyond name and handle", () => {

@@ -105,11 +105,12 @@ export const PRIVACY: LegalDoc = {
       heading: "Who else handles your information",
       review: true,
       body: [
-        "These companies process information on our behalf. We don't let them use it for their own advertising.",
+        "These companies handle some information so the app works. We don't sell your information and we show no ads; what each company does with what it receives is governed by its own terms.",
         {
           list: [
             "Lovable (Lovable Cloud): runs our database, sign-in and servers, and the AI gateway described above. Database and sign-in are built on Supabase.",
             "Google: if you choose Continue with Google, Google signs you in. Separately, this app loads its text fonts from Google Fonts, so when a page loads, your browser contacts Google's font servers and Google sees your network address and browser details. We do not choose what Google does with that.",
+            "QR code service (only if you ask for it): if you tap Show QR code on the Friends screen, your invite link is sent to api.qrserver.com so it can draw the code. Nothing is sent unless you tap.",
             "Email delivery: confirmation emails are sent through our sign-in provider.",
           ],
         },

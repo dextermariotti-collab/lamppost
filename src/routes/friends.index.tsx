@@ -72,6 +72,7 @@ function FriendsScreen() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showQr, setShowQr] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
 
   useEffect(() => {
@@ -254,15 +255,27 @@ function FriendsScreen() {
             </button>
           </div>
           <p className="mt-2 break-all text-xs text-muted-foreground">{inviteLink || "—"}</p>
-          {inviteLink ? (
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteLink)}`}
-              alt="QR code for your Lamppost invite link"
-              loading="lazy"
-              width={120}
-              height={120}
-              className="mx-auto mt-3 rounded-xl bg-background p-2"
-            />
+          {inviteLink && showQr ? (
+            <>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteLink)}`}
+                alt="QR code for your Lamppost invite link"
+                width={120}
+                height={120}
+                className="mx-auto mt-3 rounded-xl bg-background p-2"
+              />
+              <p className="mt-1 text-center text-[11px] text-muted-foreground">
+                Drawn by a third-party QR service, which received your invite link.
+              </p>
+            </>
+          ) : inviteLink ? (
+            <button
+              type="button"
+              onClick={() => setShowQr(true)}
+              className="mt-2 min-h-11 text-xs font-bold text-primary-text underline"
+            >
+              Show QR code
+            </button>
           ) : null}
         </section>
 
