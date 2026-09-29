@@ -14,6 +14,7 @@ const UNITS: Record<string, () => Promise<{ default: Unit }>> = {
   evidence: () => import("./evidence"),
   fallacies: () => import("./fallacies"),
   biases: () => import("./biases"),
+  arguments: () => import("./arguments"),
 };
 
 export const authoredUnits = () => Object.keys(UNITS);
