@@ -620,11 +620,11 @@ const claims: Record<string, LessonScript> = {
         options: [
           { text: "The old mill is haunted by the ghost of a miller." },
           {
-            text: "The library is closed on Sundays.",
+            text: "The library is closed on Sundays, as it has been for years.",
             whyNot: "Ordinary and easy to check: a small amount of evidence settles it.",
           },
           {
-            text: "A new tram line will open next year.",
+            text: "A new tram line will open on the high street next year.",
             whyNot: "Plausible. A council notice or timetable would be enough.",
           },
         ],

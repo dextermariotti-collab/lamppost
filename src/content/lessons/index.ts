@@ -11,6 +11,8 @@ type Unit = Record<string, LessonScript>;
 
 const UNITS: Record<string, () => Promise<{ default: Unit }>> = {
   claims: () => import("./claims"),
+  evidence: () => import("./evidence"),
+  fallacies: () => import("./fallacies"),
 };
 
 export const authoredUnits = () => Object.keys(UNITS);

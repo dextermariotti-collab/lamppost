@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LESSONS, UNITS, unitById } from "@/lib/curriculum";
 import { isInteractive, wordCount, type LessonScript, type LessonStep } from "@/lib/steps/types";
+import { describeCorrelations } from "@/lib/steps/checks";
 import { authoredUnits, loadLessonScript, validateScript } from "./index";
 
 /**
@@ -238,6 +239,22 @@ describe("the authored lessons", () => {
   });
 });
 
+describe("the charts tell the story they claim to", () => {
+  it("show a strong overall link that disappears inside every group", () => {
+    const causes = [...loaded.values()].flatMap((script) =>
+      script.steps.filter((s) => s.kind === "cause"),
+    );
+    for (const step of causes) {
+      if (step.kind !== "cause") continue;
+      const view = describeCorrelations(step);
+      expect(Math.abs(view.overall ?? 0), `${step.id} overall`).toBeGreaterThanOrEqual(0.7);
+      for (const group of view.perGroup) {
+        expect(Math.abs(group.r ?? 0), `${step.id} ${group.label}`).toBeLessThan(0.4);
+      }
+    }
+  });
+});
+
 describe("answers aren't predictable", () => {
   const choiceLike = () =>
     [...loaded.values()].flatMap((script) =>
@@ -260,24 +277,23 @@ describe("answers aren't predictable", () => {
   });
 
   it("never makes the right answer far longer than the wrong ones", () => {
+    const tooLong: string[] = [];
     for (const s of choiceLike().filter((x) => x.options.length >= 3)) {
       const wrong = s.options.filter((_, i) => i !== s.correct).map((o) => o.text.length);
       const right = s.options[s.correct]!.text.length;
-      expect(
-        right / Math.max(...wrong),
-        `${s.id}: ${right} vs ${wrong.join("/")}`,
-      ).toBeLessThanOrEqual(1.6);
+      if (right / Math.max(...wrong) > 1.6) tooLong.push(`${s.id}: ${right} vs ${wrong.join("/")}`);
     }
+    expect(tooLong).toEqual([]);
   });
 
-  it("doesn't make the right answer the longest one every time", () => {
+  it("only rarely makes the right answer noticeably longer than every wrong one", () => {
     const steps = choiceLike().filter((s) => s.options.length >= 3);
     if (steps.length < 12) return;
-    const longest = steps.filter((s) => {
-      const lengths = s.options.map((o) => o.text.length);
-      return lengths[s.correct] === Math.max(...lengths);
+    const giveaway = steps.filter((s) => {
+      const wrong = s.options.filter((_, i) => i !== s.correct).map((o) => o.text.length);
+      return s.options[s.correct]!.text.length > 1.15 * Math.max(...wrong);
     });
-    expect(longest.length / steps.length).toBeLessThan(0.5);
+    expect(giveaway.length / steps.length).toBeLessThan(0.25);
   });
 });
 
