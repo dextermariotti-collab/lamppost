@@ -21,6 +21,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       practiceSessions,
       debates,
       subscription,
+      consentRecords,
       rewardChests,
       cosmetics,
       weeklyXp,
@@ -40,6 +41,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       supabase.from("practice_sessions").select("*").eq("user_id", userId),
       supabase.from("debates").select("*"),
       supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
+      supabaseAdmin.from("consent_records").select("*").eq("user_id", userId),
       // Rewards and league rows are server-only (the browser role can't read them).
       supabaseAdmin.from("reward_chests").select("*").eq("user_id", userId),
       supabaseAdmin.from("user_cosmetics").select("*").eq("user_id", userId),
@@ -64,6 +66,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       practiceSessions: practiceSessions.data ?? [],
       debates: debates.data ?? [],
       subscription: subscription.data ?? null,
+      consentRecords: consentRecords.data ?? [],
       rewardChests: rewardChests.data ?? [],
       cosmetics: cosmetics.data ?? [],
       weeklyXp: weeklyXp.data ?? [],
@@ -73,9 +76,13 @@ export const exportMyData = createServerFn({ method: "POST" })
   });
 
 /**
- * Permanent deletion, not deactivation: personal rows are removed, safety
- * records are anonymised so moderation stays auditable, and the sign-in
- * identity itself is deleted.
+ * Permanent deletion, not deactivation. Removing the sign-in identity is one database
+ * step that takes everything the person owns with it: every table that holds their data
+ * references it with ON DELETE CASCADE (or SET NULL for safety records, which stay for
+ * audit but are no longer linked to them). `src/db/deletion.test.ts` fails if a table is
+ * ever added that doesn't. Doing it first means there is no half-deleted state: it either
+ * all goes or nothing does. Only the abuse-limiting counters, which have no foreign key,
+ * are removed afterwards.
  */
 export const deleteMyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -87,49 +94,15 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: friendships } = await supabaseAdmin
-      .from("friendships")
-      .select("id")
-      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
-    const friendshipIds = (friendships ?? []).map((row) => row.id);
-
-    // Each step must succeed: a silent failure would leave personal rows behind for
-    // an account the person believes is gone.
-    const step = async (label: string, run: PromiseLike<{ error: { message: string } | null }>) => {
-      const { error } = await run;
-      if (error)
-        throw new Error(`Couldn't finish deleting your account (${label}). Please try again.`);
-    };
-
-    await step(
-      "nudges",
-      supabaseAdmin.from("nudges").delete().or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`),
-    );
-    if (friendshipIds.length > 0) {
-      await step(
-        "shared streaks",
-        supabaseAdmin.from("shared_streaks").delete().in("friendship_id", friendshipIds),
-      );
-      await step("friendships", supabaseAdmin.from("friendships").delete().in("id", friendshipIds));
-    }
-    await step("rate limits", supabaseAdmin.from("rate_limits").delete().eq("key", `u:${userId}`));
-    await step("badges", supabaseAdmin.from("user_achievements").delete().eq("user_id", userId));
-    await step("activity", supabaseAdmin.from("daily_activity").delete().eq("user_id", userId));
-    // Safety records survive, detached from the person who filed them.
-    await step(
-      "reports",
-      supabaseAdmin.from("content_reports").update({ user_id: null }).eq("user_id", userId),
-    );
-    await step(
-      "moderation records",
-      supabaseAdmin.from("moderation_blocks").update({ user_id: null }).eq("user_id", userId),
-    );
-    // Debates, graded attempts, practice sessions, rewards, league results and the
-    // subscription row are removed with the sign-in identity (ON DELETE CASCADE on
-    // auth.users).
-    await step("profile", supabaseAdmin.from("profiles").delete().eq("id", userId));
-
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Account deletion failed", error);
+      throw new Error("Couldn't finish deleting your account. Please try again.");
+    }
+
+    // Counters keyed by the account (no foreign key). Pseudonymous and pruned after
+    // a few days anyway, so a failure here doesn't undo the deletion.
+    const cleanup = await supabaseAdmin.from("rate_limits").delete().eq("key", `u:${userId}`);
+    if (cleanup.error) console.error("Rate limit cleanup after deletion failed", cleanup.error);
     return { ok: true };
   });

@@ -4,15 +4,16 @@ Written against the real schema so the Privacy Policy's "what we collect" sectio
 reviewed for accuracy instead of adapted from a template. Update this file whenever the
 schema changes, then update `src/lib/legal.ts`.
 
-Last checked: 2026-09-28.
+Last checked: 2026-09-30.
 
 ## Backend tables (public schema)
 
 | Table | Data categories | Personal? | Written by | Deleted on account deletion |
 | --- | --- | --- | --- | --- |
-| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime granted by reward chests, lifetime spent, and the balance between them), hint tokens held, friends-league tier, last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
+| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime granted by reward chests, lifetime spent, and the balance between them), hint tokens held, friends-league tier, terms and privacy-policy versions accepted and when (server time), age band (`13-17` or `18+`, never the date of birth) and the guardian confirmation for 13-17, last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
 | `daily_activity` | per-day lesson counts (device-local calendar days) | yes (behavioural) | server only | deleted |
 | `user_achievements` | achievement codes + unlock timestamps | yes | server only | deleted |
+| `consent_records` | every acceptance of the Terms and Privacy Policy: versions, server time, age band, guardian confirmation (the profile holds only the latest) | yes | server only (`record_consent`) | deleted (cascade) |
 | `reward_chests` | one row per reward chest opened: local day, source (lesson, review or challenge), what was inside (gems or a hint token), and whether a full hint pouch turned it into gems | yes (behavioural) | server only (the wallet functions) | deleted (cascade) |
 | `user_cosmetics` | ids of the companion colours and accessories unlocked with gems, and when | yes | server only | deleted (cascade) |
 | `xp_weekly` | XP credited to each Monday-start week (used by the friends league and the weekly recap) | yes (behavioural) | server only (the progress sync) | deleted (cascade) |

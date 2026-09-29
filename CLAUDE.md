@@ -153,6 +153,17 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
   is `docs/rollback/20260929110000_rewards_and_league.down.sql`. What a companion wears is still an
   ordinary profile column the browser can write, so the cosmetic lock on `/companion` is UX, not
   enforcement; it protects no balance.
+- **Consent and age.** `record_consent` (service role only) stamps the acceptance time on the server and
+  is the only writer of `profiles.terms_version/privacy_version/terms_accepted_at/age_band/guardian_confirmed`
+  and `consent_records`. Only an age band is stored, never a date of birth. A signed-in account that has not
+  accepted the current `TERMS_VERSION`/`PRIVACY_VERSION` (`lib/legal-config.ts`) is sent to `/consent` by
+  `ConsentGate`; an unmigrated database reads as "unknown" and enforces nothing. Bump the version constants
+  when a legal document changes in a way people should be asked about again. Every fact only the owner can
+  supply (company, contact email, state, dates) is a `[PLACEHOLDER]` in `legal-config.ts`.
+- **Account deletion is one step:** removing the sign-in identity cascades to every table. A new table that
+  holds a person's data must reference `auth.users` with `ON DELETE CASCADE` (or `SET NULL` for safety
+  records); `src/db/deletion.test.ts` and `src/db/rls-audit.test.ts` fail otherwise, and fail if a public
+  table is added without RLS.
 - **Public AI endpoints are rate limited in the database** (`lib/rate-limit.ts` holds the numbers,
   `rate-limit.server.ts` enforces them and **fails closed**). Cached content is served without
   touching the limiter; only a cache miss that would call the model is counted, under a per-job
