@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { LegalFooter } from "@/components/LegalFooter";
 import { ArrowRight, Check, Compass, Sparkles, Wand2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/onboarding")({
       {
         name: "description",
         content:
-          "Tell Lamppost why you want to think sharper, how much time you have each day, and meet the companion who trains with you.",
+          "Tell Lamppost what brings you here and how much time you have each day, and meet the companion who practises with you.",
       },
       { property: "og:title", content: "Get set up — Lamppost" },
       {
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/onboarding")({
 const INTRO = {
   icon: Wand2,
   title: "Think clearer, argue better",
-  body: "Seven units, from naming hidden assumptions to reading charts, headlines and AI answers with a sharper eye. Short daily drills, reviews timed to when you'd forget, and a companion who keeps you honest.",
+  body: "Seven units, from naming hidden assumptions to reading charts, headlines and AI answers more carefully. Short daily drills, reviews that come back after 1, 3, 7 and 14 days, and a companion who practises alongside you.",
 } as const;
 
 /** Steps, in order. The stepper dots and the flow both read from this. */
@@ -154,6 +155,7 @@ function Onboarding() {
           />
         )}
       </div>
+      <LegalFooter />
     </PhoneFrame>
   );
 }
@@ -231,7 +233,7 @@ function WhyStep({
 
   return (
     <div className="flex flex-1 animate-rise-in flex-col">
-      <h1 className="mt-6 text-2xl leading-tight">Why do you want to think sharper?</h1>
+      <h1 className="mt-6 text-2xl leading-tight">What brings you to Lamppost?</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         It shapes the examples you'll see. Pick the closest one.
       </p>

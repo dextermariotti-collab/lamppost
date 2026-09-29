@@ -1,4 +1,5 @@
 import { useServerFn } from "@tanstack/react-start";
+import { CONTACT_EMAIL } from "@/lib/legal-config";
 import { Check, Flag, Loader2 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -116,7 +117,7 @@ export function ReportContentButton({ context }: Props) {
                 Send report
               </button>
               <p className="mt-2 text-center text-[11px] font-semibold text-muted-foreground">
-                Urgent safety concern? Email safety@lamppost.app.
+                Urgent safety concern? Email {CONTACT_EMAIL}.
               </p>
             </div>
           )}

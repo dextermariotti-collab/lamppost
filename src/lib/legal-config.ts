@@ -25,6 +25,12 @@ export const ADULT_AGE = 18;
 
 export const isPlaceholder = (value: string) => value.startsWith("[") && value.endsWith("]");
 
+/** True while any fact only the owner can supply is still a [PLACEHOLDER]. */
+export const hasOpenPlaceholders = () =>
+  [COMPANY_NAME, CONTACT_EMAIL, MAILING_ADDRESS, GOVERNING_STATE, EFFECTIVE_DATE].some(
+    isPlaceholder,
+  );
+
 /**
  * A mailto: link to the contact address, or null while it is still a placeholder (a link to
  * "[CONTACT EMAIL]" would open a blank message to nobody).

@@ -24,6 +24,31 @@ export function LegalLinksSection() {
             </Link>
           </li>
         ))}
+        {[
+          {
+            to: "/legal/acknowledgements",
+            title: "Acknowledgements",
+            summary: "The open-source software and typefaces Lamppost is built with.",
+          },
+          {
+            to: "/support",
+            title: "Help and support",
+            summary: "How to reach us, report a problem, or get help.",
+          },
+        ].map((item) => (
+          <li key={item.to}>
+            <Link
+              to={item.to}
+              className="flex min-h-14 items-center gap-3 rounded-2xl bg-card p-3 shadow-soft"
+            >
+              <span className="flex-1">
+                <span className="block text-sm font-bold">{item.title}</span>
+                <span className="block text-xs text-muted-foreground">{item.summary}</span>
+              </span>
+              <ChevronRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </li>
+        ))}
       </ul>
     </section>
   );

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { LegalFooter } from "@/components/LegalFooter";
 import { Loader2, Mail, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
@@ -242,6 +243,7 @@ function AuthScreen() {
           Keep exploring without an account
         </button>
       </div>
+      <LegalFooter />
     </PhoneFrame>
   );
 }

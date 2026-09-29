@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { LegalFooter } from "@/components/LegalFooter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
@@ -158,6 +159,7 @@ function ConsentScreen() {
           )}
         </div>
       </main>
+      <LegalFooter />
     </PhoneFrame>
   );
 }

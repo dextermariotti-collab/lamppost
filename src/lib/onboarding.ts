@@ -39,7 +39,7 @@ export const MOTIVATIONS: { id: Motivation; label: string; blurb: string; reacti
   },
   {
     id: "work",
-    label: "Sharper at work",
+    label: "Work and meetings",
     blurb: "Meetings, proposals, pushing back well",
     reaction: "Steelmanning is the most underrated work skill.",
   },

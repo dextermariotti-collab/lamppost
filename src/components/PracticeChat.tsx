@@ -147,9 +147,8 @@ export function PracticeChat({
           <div>
             <h3 className="font-sans text-base font-bold">You've used this week's practice</h3>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Every course, lesson and review stays free and complete. Lamppost Practice unlocks
-              unlimited explain-it-back sessions with {name} — {FREE_WEEKLY_PRACTICE} a week are on
-              the house.
+              Lessons and reviews stay free. Lamppost Practice unlocks unlimited explain-it-back
+              sessions with {name}; {FREE_WEEKLY_PRACTICE} a week are free.
             </p>
           </div>
         </div>

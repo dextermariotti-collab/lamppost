@@ -6,6 +6,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { useSessionUser } from "@/lib/companion-store";
+import { TOTAL_LESSONS } from "@/lib/curriculum";
 import { FREE_WEEKLY_PRACTICE } from "@/lib/practice";
 import { getPracticeAccess, type PracticeAccess } from "@/lib/practice.functions";
 
@@ -32,17 +33,16 @@ export const Route = createFileRoute("/premium")({
 });
 
 const FREE = [
-  "Every course, in full, on any topic",
-  "Every quiz, prediction and review",
+  `All ${TOTAL_LESSONS} lessons in the course`,
+  "Every drill and review",
   `${FREE_WEEKLY_PRACTICE} practice sessions each week`,
-  "Streaks, leagues and your companion",
+  "Streaks, the friends league and your companion",
 ];
 
 const PAID = [
   "Unlimited explain-it-back sessions",
-  "Feedback on your actual reasoning, not multiple choice",
-  "Follow-ups that connect new ideas to what you already learned",
-  "Sharper review timing from how well you explain",
+  "Written feedback from an AI tutor on your own explanation (AI can make mistakes)",
+  "Follow-up questions that ask you to connect ideas from earlier lessons",
 ];
 
 function PremiumScreen() {
@@ -74,7 +74,8 @@ function PremiumScreen() {
           <h1 className="mt-4 text-3xl leading-tight">Learn by explaining.</h1>
           <p className="mx-auto mt-3 max-w-72 text-sm leading-relaxed text-muted-foreground">
             After each lesson, your companion asks you to explain it back in your own words — and
-            responds to what you actually said. That moment is where learning sticks.
+            responds to what you actually said. Explaining an idea in your own words is one way to
+            find out what you have really understood.
           </p>
         </div>
 
@@ -89,7 +90,7 @@ function PremiumScreen() {
             ))}
           </ul>
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-            Content depth is never paywalled. What Practice adds is conversation.
+            Lessons and reviews are free. Practice adds the tutor conversation.
           </p>
         </section>
 
@@ -111,7 +112,7 @@ function PremiumScreen() {
             <div className="mt-4 rounded-2xl bg-background/70 p-3 text-center">
               <p className="text-sm font-semibold text-primary-text">Practice is active</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Manage or cancel your subscription any time from Settings.
+                Thank you for supporting Lamppost.
               </p>
             </div>
           ) : (
@@ -123,7 +124,8 @@ function PremiumScreen() {
                 Checkout opening soon
               </Button>
               <p className="mt-2 text-center text-xs text-muted-foreground">
-                Secure checkout with Apple Pay and cards. Cancel any time.
+                Checkout isn&apos;t open yet. Nothing has been charged, and the free features stay
+                free.
               </p>
             </div>
           )}

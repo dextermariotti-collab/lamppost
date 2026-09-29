@@ -25,11 +25,13 @@ import { Route as ReviewRouteImport } from './routes/review'
 import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as DebateIdRouteImport } from './routes/debate.$id'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsHandleRouteImport } from './routes/friends.$handle'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
+import { Route as LegalAcknowledgementsRouteImport } from './routes/legal.acknowledgements'
 import { Route as LegalAiContentRouteImport } from './routes/legal.ai-content'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
@@ -121,6 +123,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DebateIdRoute = DebateIdRouteImport.update({
   id: '/debate/$id',
   path: '/debate/$id',
@@ -144,6 +151,11 @@ const InviteCodeRoute = InviteCodeRouteImport.update({
 const LegalIndexRoute = LegalIndexRouteImport.update({
   id: '/legal/',
   path: '/legal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalAcknowledgementsRoute = LegalAcknowledgementsRouteImport.update({
+  id: '/legal/acknowledgements',
+  path: '/legal/acknowledgements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalAiContentRoute = LegalAiContentRouteImport.update({
@@ -214,9 +226,11 @@ export interface FileRoutesByFullPath {
   '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/debate/$id': typeof DebateIdRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/legal/acknowledgements': typeof LegalAcknowledgementsRoute
   '/legal/ai-content': typeof LegalAiContentRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -247,9 +261,11 @@ export interface FileRoutesByTo {
   '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/debate/$id': typeof DebateIdRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/legal/acknowledgements': typeof LegalAcknowledgementsRoute
   '/legal/ai-content': typeof LegalAiContentRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -281,9 +297,11 @@ export interface FileRoutesById {
   '/rewards': typeof RewardsRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/debate/$id': typeof DebateIdRoute
   '/friends/$handle': typeof FriendsHandleRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/legal/acknowledgements': typeof LegalAcknowledgementsRoute
   '/legal/ai-content': typeof LegalAiContentRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -316,9 +334,11 @@ export interface FileRouteTypes {
     | '/rewards'
     | '/schedule'
     | '/settings'
+    | '/support'
     | '/debate/$id'
     | '/friends/$handle'
     | '/invite/$code'
+    | '/legal/acknowledgements'
     | '/legal/ai-content'
     | '/legal/community'
     | '/legal/cookies'
@@ -349,9 +369,11 @@ export interface FileRouteTypes {
     | '/rewards'
     | '/schedule'
     | '/settings'
+    | '/support'
     | '/debate/$id'
     | '/friends/$handle'
     | '/invite/$code'
+    | '/legal/acknowledgements'
     | '/legal/ai-content'
     | '/legal/community'
     | '/legal/cookies'
@@ -382,9 +404,11 @@ export interface FileRouteTypes {
     | '/rewards'
     | '/schedule'
     | '/settings'
+    | '/support'
     | '/debate/$id'
     | '/friends/$handle'
     | '/invite/$code'
+    | '/legal/acknowledgements'
     | '/legal/ai-content'
     | '/legal/community'
     | '/legal/cookies'
@@ -416,9 +440,11 @@ export interface RootRouteChildren {
   RewardsRoute: typeof RewardsRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
+  SupportRoute: typeof SupportRoute
   DebateIdRoute: typeof DebateIdRoute
   FriendsHandleRoute: typeof FriendsHandleRoute
   InviteCodeRoute: typeof InviteCodeRoute
+  LegalAcknowledgementsRoute: typeof LegalAcknowledgementsRoute
   LegalAiContentRoute: typeof LegalAiContentRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
@@ -547,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/debate/$id': {
       id: '/debate/$id'
       path: '/debate/$id'
@@ -580,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/legal'
       fullPath: '/legal/'
       preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/acknowledgements': {
+      id: '/legal/acknowledgements'
+      path: '/legal/acknowledgements'
+      fullPath: '/legal/acknowledgements'
+      preLoaderRoute: typeof LegalAcknowledgementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/ai-content': {
@@ -672,9 +712,11 @@ const rootRouteChildren: RootRouteChildren = {
   RewardsRoute: RewardsRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
+  SupportRoute: SupportRoute,
   DebateIdRoute: DebateIdRoute,
   FriendsHandleRoute: FriendsHandleRoute,
   InviteCodeRoute: InviteCodeRoute,
+  LegalAcknowledgementsRoute: LegalAcknowledgementsRoute,
   LegalAiContentRoute: LegalAiContentRoute,
   LegalCommunityRoute: LegalCommunityRoute,
   LegalCookiesRoute: LegalCookiesRoute,

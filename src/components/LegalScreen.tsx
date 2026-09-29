@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { hasOpenPlaceholders } from "@/lib/legal-config";
+import { LegalFooter } from "@/components/LegalFooter";
 import { AlertTriangle } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -16,14 +18,17 @@ export function LegalScreen({ doc, backTo = "/legal" }: { doc: LegalDoc; backTo?
         </p>
         <p className="mt-2 text-sm leading-relaxed font-semibold text-foreground/85">{doc.intro}</p>
 
-        <div className="mt-4 flex items-start gap-2 rounded-2xl bg-flame/10 p-3">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-flame" />
-          <p className="text-xs font-semibold text-foreground/80">
-            Draft. Anything in [SQUARE BRACKETS] is a placeholder for a fact the owner still has to
-            fill in, and sections marked <span className="font-extrabold">Needs legal review</span>{" "}
-            must be approved by a lawyer before launch.
-          </p>
-        </div>
+        {hasOpenPlaceholders() && (
+          <div className="mt-4 flex items-start gap-2 rounded-2xl bg-flame/10 p-3">
+            <AlertTriangle aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-flame" />
+            <p className="text-xs font-semibold text-foreground/80">
+              Draft. Anything in [SQUARE BRACKETS] is a placeholder for a fact the owner still has
+              to fill in, and sections marked{" "}
+              <span className="font-extrabold">Needs legal review</span> must be approved by a
+              lawyer before launch.
+            </p>
+          </div>
+        )}
 
         {doc.sections.map((section) => (
           <section key={section.heading} className="mt-6">
@@ -64,6 +69,7 @@ export function LegalScreen({ doc, backTo = "/legal" }: { doc: LegalDoc; backTo?
           All legal pages
         </Link>
       </div>
+      <LegalFooter />
     </PhoneFrame>
   );
 }

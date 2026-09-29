@@ -36,7 +36,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Lamppost — train your critical thinking daily" },
       {
         property: "og:description",
-        content: "Spot the flaw in real arguments, test your reasoning, and keep the habit going.",
+        content:
+          "Spot the flaw in everyday arguments, test your reasoning, and keep the habit going.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

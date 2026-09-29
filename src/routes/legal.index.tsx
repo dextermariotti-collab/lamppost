@@ -33,8 +33,8 @@ function LegalIndex() {
         <div className="flex items-start gap-3 rounded-3xl bg-primary-soft p-4">
           <ScrollText className="mt-0.5 h-5 w-5 shrink-0 text-primary-text" />
           <p className="text-xs leading-relaxed font-semibold text-accent-foreground">
-            These pages explain what data we keep, the rules for using Lamppost, where AI is used, and
-            how to report or block someone. They are drafts pending legal review.
+            These pages explain what data we keep, the rules for using Lamppost, where AI is used,
+            and how to report or block someone. They are drafts pending legal review.
           </p>
         </div>
 
@@ -55,6 +55,34 @@ function LegalIndex() {
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              to="/legal/acknowledgements"
+              className="flex items-center gap-3 rounded-2xl bg-card p-4 shadow-soft transition-transform hover:-translate-y-0.5"
+            >
+              <span className="flex-1">
+                <span className="block text-sm font-extrabold">Acknowledgements</span>
+                <span className="block text-xs font-semibold text-muted-foreground">
+                  The open-source software and typefaces Lamppost is built with.
+                </span>
+              </span>
+              <ChevronRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/support"
+              className="flex items-center gap-3 rounded-2xl bg-card p-4 shadow-soft transition-transform hover:-translate-y-0.5"
+            >
+              <span className="flex-1">
+                <span className="block text-sm font-extrabold">Help and support</span>
+                <span className="block text-xs font-semibold text-muted-foreground">
+                  How to reach us, report a problem, or get help.
+                </span>
+              </span>
+              <ChevronRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </li>
         </ul>
 
         <p className="mt-6 text-center text-[11px] font-semibold text-muted-foreground">

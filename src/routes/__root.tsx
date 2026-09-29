@@ -81,11 +81,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lamppost — Learn anything with AI" },
+      { title: "Lamppost — Practise critical thinking" },
       {
         name: "description",
         content:
-          "Lamppost builds a personalized mini-course on any topic, with a learning path and quick quizzes.",
+          "Lamppost is a critical-thinking trainer: short interactive lessons on claims, evidence, fallacies, biases, arguments, probability and media, with a written argument and an explain-it-back chat at the end of each.",
       },
       { name: "author", content: "Lamppost" },
       { property: "og:site_name", content: "Lamppost" },
