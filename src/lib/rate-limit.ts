@@ -134,6 +134,14 @@ export const POLICIES = {
     ip: [t("hour", 600)],
     global: [],
   },
+  /** Recording that someone accepted the terms and gave an age band. Signed-in only. */
+  consent: {
+    label: "sign-up confirmations",
+    guest: [],
+    user: [t("hour", 10), t("day", 30)],
+    ip: [t("hour", 120)],
+    global: [],
+  },
   /** Spending gems. Signed-in only. */
   buyFreeze: {
     label: "streak freeze purchases",

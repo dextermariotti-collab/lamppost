@@ -83,6 +83,36 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_records: {
+        Row: {
+          accepted_at: string
+          age_band: string
+          guardian_confirmed: boolean
+          id: string
+          privacy_version: string
+          terms_version: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          age_band: string
+          guardian_confirmed?: boolean
+          id?: string
+          privacy_version: string
+          terms_version: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          age_band?: string
+          guardian_confirmed?: boolean
+          id?: string
+          privacy_version?: string
+          terms_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_reports: {
         Row: {
           course_slug: string | null
@@ -449,6 +479,7 @@ export type Database = {
           companion_palette: string
           companion_preset: string
           created_at: string
+          age_band: string | null
           current_streak: number
           daily_goal: number
           day_key_version: number
@@ -458,6 +489,7 @@ export type Database = {
           gems_granted: number
           gems_spent: number
           goal: string | null
+          guardian_confirmed: boolean
           handle: string
           hint_tokens: number
           id: string
@@ -468,7 +500,10 @@ export type Database = {
           notify_nudges_email: boolean
           notify_nudges_inapp: boolean
           onboarding_completed: boolean
+          privacy_version: string | null
           progress_synced_at: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           total_xp: number
           updated_at: string
         }
@@ -477,6 +512,7 @@ export type Database = {
           companion_expression?: string
           companion_palette?: string
           companion_preset?: string
+          age_band?: string | null
           created_at?: string
           current_streak?: number
           daily_goal?: number
@@ -487,6 +523,7 @@ export type Database = {
           gems_granted?: number
           gems_spent?: number
           goal?: string | null
+          guardian_confirmed?: boolean
           handle: string
           hint_tokens?: number
           id: string
@@ -497,7 +534,10 @@ export type Database = {
           notify_nudges_email?: boolean
           notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
+          privacy_version?: string | null
           progress_synced_at?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           total_xp?: number
           updated_at?: string
         }
@@ -506,6 +546,7 @@ export type Database = {
           companion_expression?: string
           companion_palette?: string
           companion_preset?: string
+          age_band?: string | null
           created_at?: string
           current_streak?: number
           daily_goal?: number
@@ -516,6 +557,7 @@ export type Database = {
           gems_granted?: number
           gems_spent?: number
           goal?: string | null
+          guardian_confirmed?: boolean
           handle?: string
           hint_tokens?: number
           id?: string
@@ -526,7 +568,10 @@ export type Database = {
           notify_nudges_email?: boolean
           notify_nudges_inapp?: boolean
           onboarding_completed?: boolean
+          privacy_version?: string | null
           progress_synced_at?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           total_xp?: number
           updated_at?: string
         }
@@ -837,6 +882,16 @@ export type Database = {
           spent: number
           granted: number
         }[]
+      }
+      record_consent: {
+        Args: {
+          _age_band: string
+          _guardian: boolean
+          _privacy: string
+          _terms: string
+          _user: string
+        }
+        Returns: string
       }
       record_weekly_xp: {
         Args: { _delta: number; _user: string; _week: string }

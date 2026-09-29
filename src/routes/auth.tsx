@@ -2,9 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, Mail, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { ConsentFields, UnderAgeNotice } from "@/components/ConsentFields";
+import { useConsentForm } from "@/lib/use-consent-form";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { readDraft, syncDraftAfterSignIn, useSessionUser } from "@/lib/companion-store";
 import { DEFAULT_COMPANION, companionName } from "@/lib/companions";
+import { clearPendingConsent, stashPendingConsent } from "@/lib/consent";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,6 +39,10 @@ function AuthScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const companion = readDraft() ?? DEFAULT_COMPANION;
+  const consent = useConsentForm();
+  const signingUp = mode === "signup";
+  /** Signing up needs an age and the agreement first; signing in to an existing account doesn't. */
+  const blockedFromSignup = signingUp && !consent.ready;
 
   // Once a session exists, attach the onboarding pick to the account.
   useEffect(() => {
@@ -52,12 +59,19 @@ function AuthScreen() {
     setMessage(null);
     try {
       if (mode === "signup") {
+        if (!consent.claim) return;
+        // Remembered until there is a session to record it against (email confirmation
+        // or a redirect in between); ConsentGate records it, or asks again if it's gone.
+        stashPendingConsent(consent.claim);
         const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin },
         });
-        if (err) throw err;
+        if (err) {
+          clearPendingConsent();
+          throw err;
+        }
         if (!data.session) {
           setMessage("Check your inbox to confirm your email, then come back and sign in.");
         }
@@ -74,14 +88,38 @@ function AuthScreen() {
 
   const google = async () => {
     setError(null);
+    if (signingUp) {
+      if (!consent.claim) return;
+      stashPendingConsent(consent.claim);
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
+      clearPendingConsent();
       setError("Google sign-in didn't complete. Try again.");
       return;
     }
   };
+
+  if (signingUp && consent.blocked) {
+    return (
+      <PhoneFrame showNav={false}>
+        <main className="flex min-h-full flex-col px-6 pb-8">
+          <div className="mt-10">
+            <UnderAgeNotice />
+          </div>
+          <button
+            type="button"
+            onClick={() => setMode("signin")}
+            className="mt-6 min-h-11 text-xs font-bold text-primary-text"
+          >
+            I already have an account
+          </button>
+        </main>
+      </PhoneFrame>
+    );
+  }
 
   return (
     <PhoneFrame showNav={false}>
@@ -94,11 +132,23 @@ function AuthScreen() {
           </p>
         </div>
 
+        {signingUp && (
+          <section
+            aria-label="Before you start"
+            className="mt-6 rounded-3xl bg-card/60 p-4 shadow-soft"
+          >
+            <ConsentFields form={consent} />
+          </section>
+        )}
+
         <button
+          type="button"
           onClick={google}
-          className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-card p-4 text-sm font-extrabold shadow-soft transition-transform hover:-translate-y-0.5"
+          disabled={blockedFromSignup}
+          aria-describedby={blockedFromSignup ? "signup-needs" : undefined}
+          className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-card p-4 text-sm font-extrabold shadow-soft transition-transform enabled:hover:-translate-y-0.5 disabled:opacity-60"
         >
-          <Sparkles className="h-4 w-4 text-primary-text" /> Continue with Google
+          <Sparkles aria-hidden className="h-4 w-4 text-primary-text" /> Continue with Google
         </button>
 
         <div className="my-4 flex items-center gap-3 text-[11px] font-bold text-muted-foreground">
@@ -113,7 +163,8 @@ function AuthScreen() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@email.com"
             aria-label="Email"
-            className="w-full rounded-2xl bg-card p-4 text-sm font-semibold shadow-soft outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            autoComplete="email"
+            className="min-h-12 w-full rounded-2xl bg-card p-4 text-sm font-semibold shadow-soft outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
           />
           <input
             type="password"
@@ -123,16 +174,30 @@ function AuthScreen() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             aria-label="Password"
-            className="w-full rounded-2xl bg-card p-4 text-sm font-semibold shadow-soft outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            autoComplete={signingUp ? "new-password" : "current-password"}
+            className="min-h-12 w-full rounded-2xl bg-card p-4 text-sm font-semibold shadow-soft outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
           />
           <button
             type="submit"
-            disabled={busy}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-extrabold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5 disabled:opacity-70"
+            disabled={busy || blockedFromSignup}
+            aria-describedby={blockedFromSignup ? "signup-needs" : undefined}
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-extrabold text-primary-foreground shadow-card transition-transform enabled:hover:-translate-y-0.5 disabled:opacity-60"
           >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+            {busy ? (
+              <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
+            ) : (
+              <Mail aria-hidden className="h-4 w-4" />
+            )}
             {mode === "signup" ? "Create account" : "Sign in"}
           </button>
+          {blockedFromSignup && (
+            <p
+              id="signup-needs"
+              className="text-center text-xs font-semibold text-muted-foreground"
+            >
+              Enter your date of birth and tick the box above to continue.
+            </p>
+          )}
         </form>
 
         {error && (
@@ -152,7 +217,8 @@ function AuthScreen() {
         </button>
 
         <p className="mt-4 text-[11px] leading-relaxed font-semibold text-muted-foreground">
-          By continuing you agree to our{" "}
+          {signingUp ? "" : "By signing in you agree to our "}
+          {signingUp ? "Read the " : ""}
           <Link to="/legal/terms" className="font-extrabold text-primary-text underline">
             Terms
           </Link>
@@ -164,7 +230,7 @@ function AuthScreen() {
           <Link to="/legal/ai-content" className="font-extrabold text-primary-text underline">
             AI content notice
           </Link>
-          . Lessons are AI-generated and may be wrong.
+          . AI-written replies can be wrong.
         </p>
 
         <button

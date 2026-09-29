@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CompanionRouteImport } from './routes/companion'
+import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
 import { Route as LeagueRouteImport } from './routes/league'
@@ -58,6 +59,11 @@ const ChallengeRoute = ChallengeRouteImport.update({
 const CompanionRoute = CompanionRouteImport.update({
   id: '/companion',
   path: '/companion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsentRoute = ConsentRouteImport.update({
+  id: '/consent',
+  path: '/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
   '/companion': typeof CompanionRoute
+  '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
   '/league': typeof LeagueRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
   '/companion': typeof CompanionRoute
+  '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
   '/league': typeof LeagueRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/challenge': typeof ChallengeRoute
   '/companion': typeof CompanionRoute
+  '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
   '/league': typeof LeagueRoute
@@ -295,6 +304,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/challenge'
     | '/companion'
+    | '/consent'
     | '/courses'
     | '/debates'
     | '/league'
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/challenge'
     | '/companion'
+    | '/consent'
     | '/courses'
     | '/debates'
     | '/league'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/challenge'
     | '/companion'
+    | '/consent'
     | '/courses'
     | '/debates'
     | '/league'
@@ -392,6 +404,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ChallengeRoute: typeof ChallengeRoute
   CompanionRoute: typeof CompanionRoute
+  ConsentRoute: typeof ConsentRoute
   CoursesRoute: typeof CoursesRoute
   DebatesRoute: typeof DebatesRoute
   LeagueRoute: typeof LeagueRoute
@@ -448,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/companion'
       fullPath: '/companion'
       preLoaderRoute: typeof CompanionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consent': {
+      id: '/consent'
+      path: '/consent'
+      fullPath: '/consent'
+      preLoaderRoute: typeof ConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses': {
@@ -640,6 +660,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ChallengeRoute: ChallengeRoute,
   CompanionRoute: CompanionRoute,
+  ConsentRoute: ConsentRoute,
   CoursesRoute: CoursesRoute,
   DebatesRoute: DebatesRoute,
   LeagueRoute: LeagueRoute,

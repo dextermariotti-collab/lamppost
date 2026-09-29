@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AnswerFeedbackHost } from "../components/AnswerFeedback";
+import { ConsentGate } from "../components/ConsentGate";
 import { RewardHost } from "../components/RewardHost";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../lib/theme";
@@ -136,6 +137,7 @@ function RootComponent() {
         <Outlet />
         <AnswerFeedbackHost />
         <RewardHost />
+        <ConsentGate />
       </ThemeProvider>
     </QueryClientProvider>
   );

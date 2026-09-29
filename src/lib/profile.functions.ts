@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { resolveToday } from "./client-day";
+import type { ConsentState } from "./consent";
 import { isDayKey, shiftDay, utcDay } from "./days";
 import {
   MAX_GEMS_PER_DAY,
@@ -44,6 +45,8 @@ export type AccountProfile = {
     accessory: string;
     expression: string;
   };
+  /** What the account has agreed to; `known: false` until the consent migration is applied. */
+  consent: ConsentState;
 };
 
 const SELECT =
@@ -62,6 +65,8 @@ export const getMyProfile = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return null;
+    const { readConsent } = await import("./consent.server");
+    const consent = await readConsent(context.userId);
     const email = (context.claims as { email?: string } | null)?.email ?? null;
     return {
       id: data.id,
@@ -89,6 +94,7 @@ export const getMyProfile = createServerFn({ method: "POST" })
         accessory: data.companion_accessory,
         expression: data.companion_expression,
       },
+      consent,
     };
   });
 
