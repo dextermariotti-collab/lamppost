@@ -75,6 +75,72 @@ describe("rolling back lesson parts", () => {
   }, 60_000);
 });
 
+describe("rolling back rewards and the league", () => {
+  const NAME = "20260929110000_rewards_and_league";
+  const spendRow = async (cost: number) => {
+    const r = await server(() => attempt(db, `SELECT * FROM spend_gems($1, $2)`, [ALICE, cost]));
+    return r.ok ? (r.rows[0] as Record<string, unknown>) : null;
+  };
+
+  it("keeps every balance, drops the new functions, restores the old spend, and can be re-applied", async () => {
+    await server(() => attempt(db, `UPDATE profiles SET gems_earned = 30 WHERE id=$1`, [ALICE]));
+    await server(() =>
+      attempt(db, `SELECT * FROM grant_chest($1,'2026-09-28','lesson','gems',40,3,5,5)`, [ALICE]),
+    );
+    const before = await db.query<{ gems: number }>(`SELECT gems FROM profiles WHERE id=$1`, [
+      ALICE,
+    ]);
+    expect(before.rows[0]!.gems).toBe(70);
+
+    await db.exec(down(NAME));
+    for (const fn of [
+      "grant_chest",
+      "buy_hint_token",
+      "use_hint_token",
+      "unlock_cosmetic",
+      "record_weekly_xp",
+      "league_standings",
+      "apply_league_result",
+    ]) {
+      expect(await functionExists(fn), fn).toBe(false);
+    }
+    // No learner loses gems: the grant became earnings.
+    const after = await db.query(
+      `SELECT gems, gems_earned, gems_granted FROM profiles WHERE id=$1`,
+      [ALICE],
+    );
+    expect(after.rows).toEqual([{ gems: 70, gems_earned: 70, gems_granted: 0 }]);
+    // Spending works the way it did before this migration: three columns, no `granted`.
+    expect(Object.keys((await spendRow(10))!).sort()).toEqual(["balance", "ok", "spent"]);
+    // What learners earned and unlocked is left where it was.
+    expect(await tableExists("reward_chests")).toBe(true);
+    expect(await tableExists("user_cosmetics")).toBe(true);
+    // Twice is harmless.
+    await db.exec(down(NAME));
+
+    await db.exec(up(NAME));
+    const again = await server(() =>
+      attempt(db, `SELECT * FROM grant_chest($1,'2026-09-29','lesson','gems',5,3,5,5)`, [ALICE]),
+    );
+    expect(again.ok).toBe(true);
+    expect(Object.keys((await spendRow(5))!).sort()).toEqual(["balance", "granted", "ok", "spent"]);
+  }, 60_000);
+
+  it("leaves the browser unable to touch the wallet or the league", async () => {
+    await db.exec(down(NAME));
+    for (const sql of [
+      `UPDATE profiles SET gems_earned = 99999 WHERE id='${ALICE}'`,
+      `UPDATE profiles SET hint_tokens = 99 WHERE id='${ALICE}'`,
+      `UPDATE profiles SET league_tier = 4 WHERE id='${ALICE}'`,
+      `SELECT * FROM reward_chests`,
+    ]) {
+      const r = await as(db, "authenticated", ALICE, () => attempt(db, sql));
+      expect(r.ok, sql).toBe(false);
+    }
+    await db.exec(up(NAME));
+  }, 60_000);
+});
+
 describe("rolling back the server-side wallet", () => {
   const NAME = "20260929100200_server_wallet";
 
@@ -84,7 +150,14 @@ describe("rolling back the server-side wallet", () => {
   };
 
   it("keeps the balance, drops the spend function and the derived balance, and can be re-applied", async () => {
-    await server(() => attempt(db, `UPDATE profiles SET gems_earned = 200 WHERE id=$1`, [ALICE]));
+    // Start from a known wallet: nothing granted or spent yet.
+    await server(() =>
+      attempt(
+        db,
+        `UPDATE profiles SET gems_earned = 200, gems_granted = 0, gems_spent = 0 WHERE id=$1`,
+        [ALICE],
+      ),
+    );
     expect(await spend(60)).toBe(true);
     const before = await db.query<{ gems: number }>(`SELECT gems FROM profiles WHERE id=$1`, [
       ALICE,

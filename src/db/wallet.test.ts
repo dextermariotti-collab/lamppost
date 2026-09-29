@@ -21,7 +21,7 @@ const earn = (id: string, total: number) =>
 const spend = async (id: string, cost: number) => {
   const r = await server(() => attempt(db, `SELECT * FROM spend_gems($1, $2)`, [id, cost]));
   if (!r.ok) throw new Error(r.error);
-  return r.rows[0] as { ok: boolean; balance: number; spent: number };
+  return r.rows[0] as { ok: boolean; balance: number; spent: number; granted: number };
 };
 
 const row = async (id: string) =>
@@ -62,7 +62,7 @@ describe("applying the migration to an existing database", () => {
   const FILE = "20260929100200_server_wallet.sql";
 
   it("turns each existing balance into lifetime earnings, and can be run twice", async () => {
-    const old = await migratedDb({ skip: [FILE] });
+    const old = await migratedDb({ before: FILE });
     await old.query(
       `INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES ($1,'c@example.test','{}')`,
       ["00000000-0000-0000-0000-00000000000c"],
@@ -84,14 +84,19 @@ describe("applying the migration to an existing database", () => {
 describe("spend_gems", () => {
   it("spends gems the account has earned, and reports the new balance", async () => {
     await earn(BOB, 200);
-    expect(await spend(BOB, 60)).toEqual({ ok: true, balance: 140, spent: 60 });
+    expect(await spend(BOB, 60)).toEqual({ ok: true, balance: 140, spent: 60, granted: 0 });
     expect(await row(BOB)).toEqual({ gems: 140, gems_earned: 200, gems_spent: 60 });
   });
 
   it("refuses to spend gems that haven't been earned, and changes nothing", async () => {
     const before = await row(BOB);
     const result = await spend(BOB, 500);
-    expect(result).toEqual({ ok: false, balance: before.gems, spent: before.gems_spent });
+    expect(result).toEqual({
+      ok: false,
+      balance: before.gems,
+      spent: before.gems_spent,
+      granted: 0,
+    });
     expect(await row(BOB)).toEqual(before);
   });
 
@@ -127,6 +132,7 @@ describe("spend_gems", () => {
       ok: false,
       balance: 0,
       spent: 0,
+      granted: 0,
     });
   });
 

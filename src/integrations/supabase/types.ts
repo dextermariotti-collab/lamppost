@@ -455,12 +455,15 @@ export type Database = {
           display_name: string | null
           gems: number
           gems_earned: number
+          gems_granted: number
           gems_spent: number
           goal: string | null
           handle: string
+          hint_tokens: number
           id: string
           invite_code: string
           last_active_day: string | null
+          league_tier: number
           longest_streak: number
           notify_nudges_email: boolean
           notify_nudges_inapp: boolean
@@ -481,12 +484,15 @@ export type Database = {
           display_name?: string | null
           gems?: number
           gems_earned?: number
+          gems_granted?: number
           gems_spent?: number
           goal?: string | null
           handle: string
+          hint_tokens?: number
           id: string
           invite_code: string
           last_active_day?: string | null
+          league_tier?: number
           longest_streak?: number
           notify_nudges_email?: boolean
           notify_nudges_inapp?: boolean
@@ -507,12 +513,15 @@ export type Database = {
           display_name?: string | null
           gems?: number
           gems_earned?: number
+          gems_granted?: number
           gems_spent?: number
           goal?: string | null
           handle?: string
+          hint_tokens?: number
           id?: string
           invite_code?: string
           last_active_day?: string | null
+          league_tier?: number
           longest_streak?: number
           notify_nudges_email?: boolean
           notify_nudges_inapp?: boolean
@@ -588,6 +597,84 @@ export type Database = {
           created_at?: string
           lesson_id?: string
           part?: string
+        }
+        Relationships: []
+      }
+      reward_chests: {
+        Row: {
+          amount: number
+          converted: boolean
+          created_at: string
+          id: string
+          kind: string
+          opened_on: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          converted?: boolean
+          created_at?: string
+          id?: string
+          kind: string
+          opened_on: string
+          source: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          converted?: boolean
+          created_at?: string
+          id?: string
+          kind?: string
+          opened_on?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_cosmetics: {
+        Row: { item: string; unlocked_at: string; user_id: string }
+        Insert: { item: string; unlocked_at?: string; user_id: string }
+        Update: { item?: string; unlocked_at?: string; user_id?: string }
+        Relationships: []
+      }
+      xp_weekly: {
+        Row: { user_id: string; week_start: string; xp: number }
+        Insert: { user_id: string; week_start: string; xp?: number }
+        Update: { user_id?: string; week_start?: string; xp?: number }
+        Relationships: []
+      }
+      league_results: {
+        Row: {
+          group_size: number
+          rank: number | null
+          settled_at: string
+          tier_after: number
+          tier_before: number
+          user_id: string
+          week_start: string
+          weekly_xp: number
+        }
+        Insert: {
+          group_size: number
+          rank?: number | null
+          settled_at?: string
+          tier_after: number
+          tier_before: number
+          user_id: string
+          week_start: string
+          weekly_xp: number
+        }
+        Update: {
+          group_size?: number
+          rank?: number | null
+          settled_at?: string
+          tier_after?: number
+          tier_before?: number
+          user_id?: string
+          week_start?: string
+          weekly_xp?: number
         }
         Relationships: []
       }
@@ -702,7 +789,84 @@ export type Database = {
       }
       spend_gems: {
         Args: { _cost: number; _user: string }
-        Returns: { ok: boolean; balance: number; spent: number }[]
+        Returns: { ok: boolean; balance: number; spent: number; granted: number }[]
+      }
+      grant_chest: {
+        Args: {
+          _amount: number
+          _cap: number
+          _day: string
+          _fallback_gems: number
+          _kind: string
+          _max_tokens: number
+          _source: string
+          _user: string
+        }
+        Returns: {
+          ok: boolean
+          reason: string | null
+          kind: string | null
+          amount: number
+          converted: boolean
+          opened_today: number
+          balance: number
+          hint_tokens: number
+        }[]
+      }
+      buy_hint_token: {
+        Args: { _cost: number; _max: number; _user: string }
+        Returns: {
+          ok: boolean
+          reason: string | null
+          balance: number
+          spent: number
+          granted: number
+          hint_tokens: number
+        }[]
+      }
+      use_hint_token: {
+        Args: { _user: string }
+        Returns: { ok: boolean; hint_tokens: number }[]
+      }
+      unlock_cosmetic: {
+        Args: { _cost: number; _item: string; _user: string }
+        Returns: {
+          ok: boolean
+          reason: string | null
+          balance: number
+          spent: number
+          granted: number
+        }[]
+      }
+      record_weekly_xp: {
+        Args: { _delta: number; _user: string; _week: string }
+        Returns: undefined
+      }
+      league_standings: {
+        Args: { _user: string; _week: string }
+        Returns: {
+          id: string
+          display_name: string | null
+          handle: string
+          companion_preset: string
+          companion_palette: string
+          companion_accessory: string
+          companion_expression: string
+          league_tier: number
+          weekly_xp: number
+        }[]
+      }
+      apply_league_result: {
+        Args: {
+          _after: number
+          _before: number
+          _group: number
+          _rank: number
+          _user: string
+          _week: string
+          _xp: number
+        }
+        Returns: boolean
       }
       has_friend_link: { Args: { _a: string; _b: string }; Returns: boolean }
       is_friendship_member: {
