@@ -1,41 +1,65 @@
 import { ExerciseFeedback, ExerciseShell, OptionButton } from "./ExerciseShell";
 import type { ChartExercise as ChartExerciseData } from "@/lib/exercises";
 
-/** A small bar chart drawn from the data, with the axis window as the trick. */
+/**
+ * A small bar chart drawn from the data, with the axis window as the trick. The
+ * drawing is for eyes only; the same data is there as a table for a screen reader,
+ * with the axis range (the trick itself) said out loud rather than left to sight.
+ */
 function Chart({ exercise }: { exercise: ChartExerciseData }) {
   const span = Math.max(exercise.yMax - exercise.yMin, 0.0001);
   const height = 120;
   return (
     <figure className="mt-4 rounded-2xl border-2 border-border bg-background p-4">
       <figcaption className="text-[13px] font-bold text-foreground">{exercise.title}</figcaption>
-      <div className="mt-3 flex items-end gap-2" style={{ height }}>
-        {exercise.series.map((point) => {
-          const pct = Math.min(100, Math.max(2, ((point.value - exercise.yMin) / span) * 100));
-          return (
-            <div key={point.label} className="flex flex-1 flex-col items-center justify-end gap-1">
-              <span className="text-[10px] font-bold text-muted-foreground">{point.value}</span>
+      <div aria-hidden="true">
+        <div className="mt-3 flex items-end gap-2" style={{ height }}>
+          {exercise.series.map((point) => {
+            const pct = Math.min(100, Math.max(2, ((point.value - exercise.yMin) / span) * 100));
+            return (
               <div
-                className="w-full rounded-t-md bg-primary"
-                style={{ height: `${pct}%` }}
-                aria-hidden
-              />
-            </div>
-          );
-        })}
+                key={point.label}
+                className="flex flex-1 flex-col items-center justify-end gap-1"
+              >
+                <span className="text-[11px] font-bold text-muted-foreground">{point.value}</span>
+                <div className="w-full rounded-t-md bg-primary" style={{ height: `${pct}%` }} />
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-1 flex gap-2">
+          {exercise.series.map((point) => (
+            <span
+              key={point.label}
+              className="flex-1 text-center text-[11px] font-semibold text-muted-foreground"
+            >
+              {point.label}
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="mt-1 flex gap-2">
-        {exercise.series.map((point) => (
-          <span
-            key={point.label}
-            className="flex-1 text-center text-[10px] font-semibold text-muted-foreground"
-          >
-            {point.label}
-          </span>
-        ))}
-      </div>
-      <p className="mt-2 text-[10px] font-semibold text-muted-foreground">
+      <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
         Vertical axis: {exercise.yMin} to {exercise.yMax}
       </p>
+      <table className="sr-only">
+        <caption>
+          {exercise.title}. The vertical axis runs from {exercise.yMin} to {exercise.yMax}.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Label</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {exercise.series.map((point) => (
+            <tr key={point.label}>
+              <th scope="row">{point.label}</th>
+              <td>{point.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </figure>
   );
 }
