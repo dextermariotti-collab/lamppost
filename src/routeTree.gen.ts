@@ -15,6 +15,7 @@ import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
+import { Route as LeagueRouteImport } from './routes/league'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -67,6 +68,11 @@ const CoursesRoute = CoursesRouteImport.update({
 const DebatesRoute = DebatesRouteImport.update({
   id: '/debates',
   path: '/debates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeagueRoute = LeagueRouteImport.update({
+  id: '/league',
+  path: '/league',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/companion': typeof CompanionRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/companion'
     | '/courses'
     | '/debates'
+    | '/league'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/companion'
     | '/courses'
     | '/debates'
+    | '/league'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/companion'
     | '/courses'
     | '/debates'
+    | '/league'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -382,6 +394,7 @@ export interface RootRouteChildren {
   CompanionRoute: typeof CompanionRoute
   CoursesRoute: typeof CoursesRoute
   DebatesRoute: typeof DebatesRoute
+  LeagueRoute: typeof LeagueRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
@@ -449,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/debates'
       fullPath: '/debates'
       preLoaderRoute: typeof DebatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/league': {
+      id: '/league'
+      path: '/league'
+      fullPath: '/league'
+      preLoaderRoute: typeof LeagueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -622,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompanionRoute: CompanionRoute,
   CoursesRoute: CoursesRoute,
   DebatesRoute: DebatesRoute,
+  LeagueRoute: LeagueRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,

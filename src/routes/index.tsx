@@ -8,6 +8,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ProgressRing } from "@/components/ProgressRing";
 import { StreakFlame } from "@/components/StreakCalendar";
 import { ThinkingGraph } from "@/components/ThinkingGraph";
+import { WeeklyRecapCard } from "@/components/WeeklyRecapCard";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
 import {
@@ -220,6 +221,8 @@ function Home() {
           </span>
           <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
         </button>
+
+        <WeeklyRecapCard className="mt-3" />
 
         {/* The map sits below the action, as a preview you can open full screen */}
         <section className="mt-6 border-t border-border pt-5">

@@ -1,5 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Copy, Flame, Link2, Loader2, Search, Swords, UserPlus, X, Zap } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Flame,
+  Link2,
+  Loader2,
+  Search,
+  Swords,
+  Trophy,
+  UserPlus,
+  X,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listDebates } from "@/lib/debate.functions";
@@ -197,6 +209,19 @@ function FriendsScreen() {
               {debateAlerts}
             </span>
           )}
+        </Link>
+
+        <Link
+          to="/league"
+          className="mt-3 flex min-h-14 items-center gap-3 rounded-3xl bg-card p-4 shadow-soft"
+        >
+          <Trophy aria-hidden className="h-4 w-4 text-primary-text" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold">Friends league</span>
+            <span className="block text-xs text-muted-foreground">
+              This week's XP among you and your friends
+            </span>
+          </span>
         </Link>
 
         {/* Invite link */}
