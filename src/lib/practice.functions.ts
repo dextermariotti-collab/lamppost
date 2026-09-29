@@ -61,6 +61,9 @@ export type PracticeReply =
   | { ok: false; reason: string; upgrade?: boolean; blocked?: boolean }
   | LimitedFailure;
 
+const OFF_TOPIC_REPLY =
+  "I can only help with critical thinking here. Try explaining the lesson's idea in your own words.";
+
 type ModelReply = {
   reply: string;
   done: boolean;
@@ -264,12 +267,14 @@ export const practiceTurn = createServerFn({ method: "POST" })
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const { PRACTICE_SYSTEM, openingPrompt, turnPrompt } = await import("./practice.server");
+      const { withGuardrails } = await import("./ai-guardrails.server");
+      const { screenOutput } = await import("./moderation.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const forcedClose = learnerTurns >= MAX_PRACTICE_TURNS;
       const result = streamText({
         model: gateway("google/gemini-3.7-flash"),
-        system: PRACTICE_SYSTEM(data.context),
+        system: withGuardrails(PRACTICE_SYSTEM(data.context)),
         prompt: opening
           ? openingPrompt(data.context)
           : turnPrompt(data.context, transcript, learnerTurns),
@@ -277,6 +282,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
       });
       const text = await result.text;
       if (!text.trim()) throw new Error("Empty reply from the AI gateway");
+      if (!screenOutput(text).allowed) return { ok: false, reason: OFF_TOPIC_REPLY };
       const parsed = parseModelReply(text, forcedClose);
 
       const done = parsed.done || forcedClose;

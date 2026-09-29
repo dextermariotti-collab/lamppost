@@ -107,6 +107,7 @@ export async function ensureLessonContent(
   const { streamText } = await import("ai");
   const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
   const { screenOutput } = await import("./moderation.server");
+  const { withGuardrails } = await import("./ai-guardrails.server");
   const {
     exerciseSystemPrompt,
     exerciseLessonPrompt,
@@ -124,7 +125,12 @@ export async function ensureLessonContent(
   const gateway = createLovableAiGatewayProvider(key);
   const system = exerciseSystemPrompt(meta.drills, meta.written);
   const ask = async (systemPrompt: string, prompt: string) =>
-    await streamText({ model: gateway(MODEL), system: systemPrompt, prompt, maxRetries: 2 }).text;
+    await streamText({
+      model: gateway(MODEL),
+      system: withGuardrails(systemPrompt),
+      prompt,
+      maxRetries: 2,
+    }).text;
 
   for (let round = 0; round < MAX_ATTEMPTS; round++) {
     try {
@@ -259,6 +265,7 @@ export async function generateValidatedDrill(
   const { streamText } = await import("ai");
   const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
   const { screenOutput } = await import("./moderation.server");
+  const { withGuardrails } = await import("./ai-guardrails.server");
   const { variantSystemPrompt, variantPrompt, normalizeExercise, extractJson } =
     await import("./exercise-ai.server");
   const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } =
@@ -267,7 +274,12 @@ export async function generateValidatedDrill(
   const difficulty = opts.difficulty ?? 2;
   const gateway = createLovableAiGatewayProvider(key);
   const ask = async (system: string, prompt: string) =>
-    await streamText({ model: gateway(MODEL), system, prompt, maxRetries: 2 }).text;
+    await streamText({
+      model: gateway(MODEL),
+      system: withGuardrails(system),
+      prompt,
+      maxRetries: 2,
+    }).text;
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const text = await ask(

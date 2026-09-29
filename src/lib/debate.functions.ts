@@ -197,11 +197,12 @@ export const challengeToDebate = createServerFn({ method: "POST" })
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const { screenOutput } = await import("./moderation.server");
+    const { withGuardrails } = await import("./ai-guardrails.server");
     const gateway = createLovableAiGatewayProvider(key);
 
     const text = await streamText({
       model: gateway(MODEL),
-      system: MOTION_SYSTEM,
+      system: withGuardrails(MOTION_SYSTEM),
       prompt: "Write one fresh debate motion now.",
       maxRetries: 1,
     }).text;
@@ -319,12 +320,13 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     const { streamText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const { graderSystem, graderPrompt } = await import("./argument.server");
+    const { withGuardrails } = await import("./ai-guardrails.server");
     const gateway = createLovableAiGatewayProvider(key);
 
     const side = mine ? typed.challenger_side : typed.opponent_side;
     const graded = await streamText({
       model: gateway(MODEL),
-      system: graderSystem("case"),
+      system: withGuardrails(graderSystem("case")),
       prompt: graderPrompt({
         lessonTitle: `Debate: ${typed.topic}`,
         objective: `Argue ${side} the motion with a claim, support and an answer to the strongest objection.`,

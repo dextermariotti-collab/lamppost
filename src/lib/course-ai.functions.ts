@@ -79,12 +79,13 @@ export const generateOutline = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
+      const { withGuardrails } = await import("./ai-guardrails.server");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
         model: gateway("google/gemini-3.6-flash"),
-        system: OUTLINE_SYSTEM,
+        system: withGuardrails(OUTLINE_SYSTEM),
         prompt: outlinePrompt(brief),
       });
 
@@ -132,12 +133,13 @@ export const generateLessonChunk = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
+      const { withGuardrails } = await import("./ai-guardrails.server");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
         model: gateway("google/gemini-3.6-flash"),
-        system: CONTENT_SYSTEM,
+        system: withGuardrails(CONTENT_SYSTEM),
         prompt: contentPrompt(brief, courseTitle, stubs),
       });
 

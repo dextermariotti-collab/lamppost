@@ -121,15 +121,22 @@ export const gradeArgument = createServerFn({ method: "POST" })
       const { streamText } = await import("ai");
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const { graderSystem, graderPrompt } = await import("./argument.server");
+      const { withGuardrails } = await import("./ai-guardrails.server");
+      const { screenOutput } = await import("./moderation.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
         model: gateway(MODEL),
-        system: graderSystem(data.taskType),
+        system: withGuardrails(graderSystem(data.taskType)),
         prompt: graderPrompt(data),
         maxRetries: 1,
       });
       const text = await result.text;
+      if (!screenOutput(text).allowed)
+        return {
+          ok: false,
+          reason: "That answer can't be graded here. Try writing about the passage.",
+        };
       const parsed = parseGrade(text, task.criteria);
       if (!parsed) return { ok: false, reason: "The grader's reply couldn't be read. Try again." };
       await storeAttempt(data, parsed.grade);

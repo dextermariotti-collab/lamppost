@@ -1,4 +1,5 @@
 import { Send, X } from "lucide-react";
+import { AiLabel } from "@/components/AiLabel";
 import { useEffect, useRef, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
@@ -137,11 +138,12 @@ export function SocraticPopup({
             type="button"
             aria-label="Dismiss"
             onClick={onDismiss}
-            className="shrink-0 rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+            className="-m-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3.5 w-3.5" />
+            <X aria-hidden className="h-3.5 w-3.5" />
           </button>
         </div>
+        <AiLabel className="mt-1.5" />
 
         {feedback ? (
           <p className="mt-2 text-[13px] font-semibold leading-snug text-accent-foreground">

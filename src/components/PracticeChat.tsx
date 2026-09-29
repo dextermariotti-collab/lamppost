@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { AiLabel } from "@/components/AiLabel";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, Lock, RefreshCw, Send, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -316,5 +317,6 @@ const Heading = ({ name }: { name: string }) => (
   <div>
     <p className="text-[11px] font-semibold text-primary-text">Practice with {name}</p>
     <h3 className="mt-1 font-sans text-lg font-bold leading-snug">Explain it back</h3>
+    <AiLabel note what={name} className="mt-1.5" />
   </div>
 );

@@ -1,4 +1,5 @@
 import { Loader2, PenLine } from "lucide-react";
+import { AiLabel } from "@/components/AiLabel";
 import { useEffect, useRef, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
@@ -215,6 +216,8 @@ export function WrittenArgument({
               </p>
             </div>
           </div>
+
+          <AiLabel note what="This feedback" />
 
           {task.criteria.map((criterion) => {
             const row = grade.scores[criterion] ?? {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AiLabel } from "@/components/AiLabel";
 import { HelpCircle, Sparkles } from "lucide-react";
 import { Button } from "./../ui/button";
 import { ExerciseRunner } from "./ExerciseRunner";
@@ -175,6 +176,7 @@ export function DrillVariant({
 
   return (
     <>
+      <AiLabel className="mt-4" />
       {answer === undefined && (offerHint || (hydrated && progress.hintTokens > 0)) && (
         <div className="mt-5 rounded-3xl border border-dashed border-primary/40 bg-primary-soft/50 p-4">
           {hint ? (

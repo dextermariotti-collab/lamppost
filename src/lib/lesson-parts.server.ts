@@ -239,9 +239,15 @@ export async function livePartsDeps(): Promise<PartsDeps> {
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("AI isn't configured");
     const { streamText } = await import("ai");
+    const { withGuardrails } = await import("./ai-guardrails.server");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const gateway = createLovableAiGatewayProvider(key);
-    return await streamText({ model: gateway(generate.MODEL), system, prompt, maxRetries: 2 }).text;
+    return await streamText({
+      model: gateway(generate.MODEL),
+      system: withGuardrails(system),
+      prompt,
+      maxRetries: 2,
+    }).text;
   };
 
   return {

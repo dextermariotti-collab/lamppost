@@ -1,4 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { AiLabel } from "@/components/AiLabel";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenLine, Swords, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -131,7 +132,8 @@ function DebateScreen() {
           {opponentName} argues {data.theirSide}.
         </p>
 
-        <blockquote className="mt-4 rounded-2xl border-l-4 border-primary/40 bg-muted/50 px-4 py-3 text-[13px] font-semibold leading-relaxed">
+        <AiLabel className="mt-4" />
+        <blockquote className="mt-2 rounded-2xl border-l-4 border-primary/40 bg-muted/50 px-4 py-3 text-[13px] font-semibold leading-relaxed">
           {data.passage}
         </blockquote>
         <p className="mt-3 text-sm font-semibold">{data.prompt}</p>
@@ -189,6 +191,7 @@ function DebateScreen() {
               </p>
             </div>
 
+            <AiLabel note what="The scoring" />
             <GradeCard label="Your case" grade={data.myGrade} tip={data.myGrade.tip} />
             <GradeCard
               label={`${opponentName}'s case`}

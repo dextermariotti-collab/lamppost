@@ -48,11 +48,13 @@ export const socraticLine = createServerFn({ method: "POST" })
       const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
       const { SOCRATIC_SYSTEM, socraticQuestionPrompt, socraticReplyPrompt } =
         await import("./socratic.server");
+      const { withGuardrails } = await import("./ai-guardrails.server");
+      const { screenOutput } = await import("./moderation.server");
       const gateway = createLovableAiGatewayProvider(key);
 
       const result = streamText({
         model: gateway(MODEL),
-        system: SOCRATIC_SYSTEM.replace("{companion}", data.companionName),
+        system: withGuardrails(SOCRATIC_SYSTEM.replace("{companion}", data.companionName)),
         prompt:
           data.mode === "question"
             ? socraticQuestionPrompt({
@@ -71,6 +73,8 @@ export const socraticLine = createServerFn({ method: "POST" })
         maxRetries: 1,
       });
       const text = (await result.text).trim();
+      if (!screenOutput(text).allowed)
+        return { ok: false, reason: "The companion is quiet right now." };
       const line =
         text
           .split("\n")

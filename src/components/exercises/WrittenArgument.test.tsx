@@ -8,6 +8,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/argument.functions", () => ({ gradeArgument: mocks.gradeArgument }));
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ to, children }: { to: string; children?: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
+}));
 
 import { WrittenArgument } from "./WrittenArgument";
 
@@ -134,6 +139,7 @@ describe("WrittenArgument while the grader is working", () => {
     });
     expect(screen.queryByText(/Reading your argument/)).toBeNull();
     expect(screen.getByText(/Try this: Add one sentence on the fix/)).toBeTruthy();
+    expect(screen.getByText(/written by an AI, which can make mistakes/)).toBeTruthy();
   });
 
   it("returns to an editable form with the error if grading fails", async () => {
