@@ -22,16 +22,17 @@ export function WhichIsStronger({
   const engine = useStepEngine(onResolve);
   const [picked, setPicked] = useState<Side | null>(null);
   const settled = engine.phase === "right" || engine.phase === "revealed";
+  const noun = step.noun ?? "Argument";
   const cards: { side: Side; label: string; text: string }[] = [
-    { side: "a", label: "Argument A", text: step.a },
-    { side: "b", label: "Argument B", text: step.b },
+    { side: "a", label: `${noun} A`, text: step.a },
+    { side: "b", label: `${noun} B`, text: step.b },
   ];
 
   const factorNote = `The deciding factor: ${step.factor}. ${step.why}`;
 
   return (
     <StepFrame
-      label="Which is stronger?"
+      label={step.label ?? "Which is stronger?"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}
@@ -41,7 +42,11 @@ export function WhichIsStronger({
         engine.reveal({ choice: step.stronger }, factorNote);
       }}
     >
-      <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="The two arguments">
+      <div
+        className="grid gap-3 sm:grid-cols-2"
+        role="group"
+        aria-label={`The two ${noun.toLowerCase()}s`}
+      >
         {cards.map(({ side, label, text }) => {
           const isStronger = side === step.stronger;
           const state = settled

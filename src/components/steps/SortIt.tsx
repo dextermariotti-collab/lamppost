@@ -102,7 +102,7 @@ export function SortIt({
 
   return (
     <StepFrame
-      label="Sort it"
+      label={step.label ?? "Sort it"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}

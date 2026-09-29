@@ -87,7 +87,7 @@ export function CauseExplorer({
 
   return (
     <StepFrame
-      label="Correlation or cause?"
+      label={step.label ?? "Correlation or cause?"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}

@@ -24,7 +24,7 @@ export function FillTheGap({
 
   return (
     <StepFrame
-      label="Fill the gap"
+      label={step.label ?? "Fill the gap"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}

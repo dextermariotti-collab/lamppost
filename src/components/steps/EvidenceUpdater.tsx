@@ -80,7 +80,12 @@ export function EvidenceUpdater({
   };
 
   return (
-    <StepFrame label="Update on the evidence" prompt={step.prompt} hint={step.hint} engine={engine}>
+    <StepFrame
+      label={step.label ?? "Update on the evidence"}
+      prompt={step.prompt}
+      hint={step.hint}
+      engine={engine}
+    >
       <div className="rounded-2xl bg-primary-soft p-4">
         <p className="text-[15px] font-semibold leading-relaxed text-accent-foreground">
           {step.claim}

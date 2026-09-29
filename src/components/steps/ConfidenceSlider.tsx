@@ -42,7 +42,12 @@ export function ConfidenceSlider({
   };
 
   return (
-    <StepFrame label="How sure are you?" prompt={step.prompt} hint={step.hint} engine={engine}>
+    <StepFrame
+      label={step.label ?? "How sure are you?"}
+      prompt={step.prompt}
+      hint={step.hint}
+      engine={engine}
+    >
       <p className="mb-3 rounded-2xl bg-primary-soft p-4 text-[15px] font-semibold leading-relaxed text-accent-foreground">
         {step.question}
       </p>

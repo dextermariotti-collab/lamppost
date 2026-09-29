@@ -20,6 +20,8 @@ const text = (max = 400) => z.string().trim().min(1).max(max);
 /** Fields every interactive step carries. */
 const base = {
   id,
+  /** Names the step in its corner label; each kind has a sensible default. */
+  label: text(40).optional(),
   /** What to try, in at most 40 words. */
   prompt: text(300),
   /** A nudge for a harder step. Using it costs half the XP. */
@@ -107,6 +109,8 @@ export const confidenceStep = z.object({
 export const strongerStep = z.object({
   ...base,
   kind: z.literal("stronger"),
+  /** What the two cards are called ("Argument", "Version"...). */
+  noun: text(20).optional(),
   a: text(300),
   b: text(300),
   stronger: z.enum(["a", "b"]),

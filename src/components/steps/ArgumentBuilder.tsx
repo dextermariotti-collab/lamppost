@@ -80,7 +80,7 @@ export function ArgumentBuilder({
 
   return (
     <StepFrame
-      label="Build the argument"
+      label={step.label ?? "Build the argument"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}

@@ -39,7 +39,7 @@ export function SpotTheFlaw({
 
   return (
     <StepFrame
-      label="Spot the flaw"
+      label={step.label ?? "Spot the flaw"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}

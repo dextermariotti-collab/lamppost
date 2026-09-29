@@ -19,7 +19,7 @@ export function ChoiceStep({
 
   return (
     <StepFrame
-      label="Your call"
+      label={step.label ?? "Your call"}
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}

@@ -6,6 +6,7 @@ import { computeBadges, drainNewUnlocks, type BadgeState } from "@/lib/badges";
 import { drainLevelUps, unitLevels, type UnitLevel } from "@/lib/levels";
 import { playCue } from "@/lib/feedback";
 import { useProgress } from "@/lib/progress";
+import { useRewardsHeld } from "@/lib/reward-hold";
 import { unitAccent } from "@/lib/unit-accent";
 
 /**
@@ -17,6 +18,7 @@ type Item = { sort: "badge"; badge: BadgeState } | { sort: "level"; level: UnitL
 
 export function RewardHost() {
   const { state, hydrated } = useProgress();
+  const held = useRewardsHeld();
   const [queue, setQueue] = useState<Item[]>([]);
 
   useEffect(() => {
@@ -32,24 +34,29 @@ export function RewardHost() {
         ...badges.map((badge) => ({ sort: "badge" as const, badge })),
         ...levels.map((level) => ({ sort: "level" as const, level })),
       ]);
-      playCue("levelup");
     });
   }, [hydrated, state]);
 
   const current = queue[0];
   const dismiss = () => setQueue((prev) => prev.slice(1));
+  // A lesson in progress holds pop-ups back; they show, and sound, once it is over.
+  const shown = held ? undefined : current;
+
+  useEffect(() => {
+    if (shown) playCue("levelup");
+  }, [shown]);
 
   // Badge toasts clear themselves; level-up cards wait for a tap.
   useEffect(() => {
-    if (!current || current.sort !== "badge") return;
+    if (!shown || shown.sort !== "badge") return;
     const timer = window.setTimeout(dismiss, 4200);
     return () => window.clearTimeout(timer);
-  }, [current]);
+  }, [shown]);
 
-  if (!current) return null;
+  if (!shown) return null;
 
-  if (current.sort === "badge") {
-    const { badge } = current;
+  if (shown.sort === "badge") {
+    const { badge } = shown;
     const tier = badge.tier ?? "bronze";
     return (
       <div
@@ -76,7 +83,7 @@ export function RewardHost() {
     );
   }
 
-  const { level } = current;
+  const { level } = shown;
   const accent = unitAccent(level.unitId);
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 px-6 backdrop-blur-sm">
