@@ -16,7 +16,7 @@ const sqlFiles = (dir: string) =>
     .sort()
     .map((f) => readFileSync(join(ROOT, dir, f), "utf8"));
 
-export async function migratedDb(): Promise<PGlite> {
+export async function migratedDb(opts: { skip?: string[] } = {}): Promise<PGlite> {
   const db = new PGlite();
   await db.exec(`
     CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS;
@@ -31,7 +31,7 @@ export async function migratedDb(): Promise<PGlite> {
   // Lovable applies supabase/migrations and drizzle/migrations to one database; the
   // drizzle tables are older than the newest supabase migration.
   const supabase = readdirSync(join(ROOT, "supabase/migrations"))
-    .filter((f) => f.endsWith(".sql"))
+    .filter((f) => f.endsWith(".sql") && !opts.skip?.includes(f))
     .sort();
   const before = supabase.filter((f) => f < "20260928");
   const after = supabase.filter((f) => f >= "20260928");

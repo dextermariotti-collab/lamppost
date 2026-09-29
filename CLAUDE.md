@@ -122,6 +122,16 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
   if the allowlist grows. `syncProgress` (`profile.functions.ts`) is the only way progress reaches
   the account: it recomputes the streak from stored activity and bounds XP/gems and back-dating
   (`lib/progress-limits.ts`) — it cannot prove a lesson was done.
+- **Gems are spent on the server for a signed-in learner.** The account keeps `gems_earned`
+  (reported by devices in each sync, bounded, only rises) and `gems_spent` (changed only by the
+  `spend_gems()` function, which checks and updates in one atomic statement); the balance is the
+  difference. Signed-out learners spend locally. Any new thing gems can buy goes through
+  `spendGems` in `wallet.functions.ts` with a server-held price, never a price from the request.
+- **Public AI endpoints are rate limited in the database** (`lib/rate-limit.ts` holds the numbers,
+  `rate-limit.server.ts` enforces them and **fails closed**). Cached content is served without
+  touching the limiter; only a cache miss that would call the model is counted, under a per-job
+  lease (`guardedGeneration`). Cap the length of every field a public function forwards to a model.
+  Network addresses are only ever stored as an HMAC.
 - Migrations that tighten access ship **in the same PR as the code that needs them**, with a
   tested rollback in `docs/rollback/` (never in `supabase/migrations/`, which is auto-applied).
 - `requireSupabaseAuth` verifies the bearer token and gives handlers a per-user client that

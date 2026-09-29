@@ -454,6 +454,8 @@ export type Database = {
           day_key_version: number
           display_name: string | null
           gems: number
+          gems_earned: number
+          gems_spent: number
           goal: string | null
           handle: string
           id: string
@@ -478,6 +480,8 @@ export type Database = {
           day_key_version?: number
           display_name?: string | null
           gems?: number
+          gems_earned?: number
+          gems_spent?: number
           goal?: string | null
           handle: string
           id: string
@@ -502,6 +506,8 @@ export type Database = {
           day_key_version?: number
           display_name?: string | null
           gems?: number
+          gems_earned?: number
+          gems_spent?: number
           goal?: string | null
           handle?: string
           id?: string
@@ -693,6 +699,10 @@ export type Database = {
       check_rate_limits: {
         Args: { _checks: Json }
         Returns: { allowed: boolean; retry_after: number; tier: string | null }[]
+      }
+      spend_gems: {
+        Args: { _cost: number; _user: string }
+        Returns: { ok: boolean; balance: number; spent: number }[]
       }
       has_friend_link: { Args: { _a: string; _b: string }; Returns: boolean }
       is_friendship_member: {

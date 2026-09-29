@@ -21,7 +21,10 @@ export type Celebration = {
 export type ProgressState = {
   streak: number;
   longestStreak: number;
+  /** Spendable gems: earned minus spent. */
   gems: number;
+  /** Lifetime gems spent. Lifetime earned is `gems + gemsSpent`, which is what an account is told. */
+  gemsSpent: number;
   xp: number;
   /** YYYY-MM-DD of the last day a lesson was completed */
   lastActiveDay: string | null;
@@ -53,6 +56,7 @@ export const DEFAULT_STATE: ProgressState = {
   streak: 0,
   longestStreak: 0,
   gems: 0,
+  gemsSpent: 0,
   xp: 0,
   lastActiveDay: null,
   history: {},
@@ -273,17 +277,59 @@ export function applyArgument(prev: ProgressState, total: number, max: number): 
   };
 }
 
-/** Buy one freeze with gems, capped so it can't be stockpiled. */
+/** Lifetime gems this device has earned: what a sync tells the account. */
+export const gemsEarned = (state: Pick<ProgressState, "gems" | "gemsSpent">) =>
+  state.gems + state.gemsSpent;
+
+/** Whether a freeze can be bought right now (enough gems, room to hold another). */
+export const canBuyFreeze = (state: Pick<ProgressState, "gems" | "freezes">) =>
+  state.gems >= FREEZE_COST && state.freezes < MAX_FREEZES;
+
+/**
+ * Buy one freeze with gems, capped so it can't be stockpiled. This is the
+ * signed-out path: a guest's gems only exist on the device, so the device is the
+ * only place the purchase can happen. A signed-in learner buys on the server (see
+ * wallet.functions.ts) and the result is folded in by `applyServerPurchase`.
+ */
 export function applyBuyFreeze(prev: ProgressState): ProgressState {
-  return prev.gems < FREEZE_COST || prev.freezes >= MAX_FREEZES
-    ? prev
-    : { ...prev, gems: prev.gems - FREEZE_COST, freezes: prev.freezes + 1 };
+  return canBuyFreeze(prev)
+    ? {
+        ...prev,
+        gems: prev.gems - FREEZE_COST,
+        gemsSpent: prev.gemsSpent + FREEZE_COST,
+        freezes: prev.freezes + 1,
+      }
+    : prev;
+}
+
+/** The account's wallet after the server spent or refused a spend. */
+export type ServerWallet = { spent: number };
+
+/**
+ * Takes the account's lifetime spend as the truth (gems earned here stay earned),
+ * so the balance shown is what the server would let the learner spend. Only ever
+ * moves spend up: an older reply can't refund gems.
+ */
+export function adoptWallet(prev: ProgressState, wallet: ServerWallet): ProgressState {
+  if (!Number.isFinite(wallet.spent)) return prev;
+  const spent = Math.max(prev.gemsSpent, wallet.spent);
+  if (spent === prev.gemsSpent) return prev;
+  return { ...prev, gemsSpent: spent, gems: Math.max(gemsEarned(prev) - spent, 0) };
+}
+
+/** A freeze the server sold: the gems are gone on the account, and the freeze is held here. */
+export function applyServerPurchase(prev: ProgressState, wallet: ServerWallet): ProgressState {
+  const adopted = adoptWallet(prev, wallet);
+  return prev.freezes >= MAX_FREEZES ? adopted : { ...adopted, freezes: adopted.freezes + 1 };
 }
 
 /** The account's stored numbers, as returned by getMyProfile. */
 export type AccountProgress = {
   totalXp: number;
   gems: number;
+  /** Lifetime gems the account has earned, and spent. */
+  gemsEarned: number;
+  gemsSpent: number;
   currentStreak: number;
   longestStreak: number;
   lastActiveDay: string | null;
@@ -315,10 +361,15 @@ export function mergeAccountProgress(
       remoteDay > localDay ||
       (remoteDay === localDay && account.currentStreak > prev.streak));
 
+  // Earned and spent each only ever rise; the balance is whatever is left.
+  const earned = Math.max(gemsEarned(prev), account.gemsEarned);
+  const spent = Math.max(prev.gemsSpent, account.gemsSpent);
+
   const next: ProgressState = {
     ...prev,
     xp: Math.max(prev.xp, account.totalXp),
-    gems: Math.max(prev.gems, account.gems),
+    gems: Math.max(earned - spent, 0),
+    gemsSpent: spent,
     longestStreak: Math.max(prev.longestStreak, account.longestStreak),
     streak: remoteIsFresher ? Math.max(account.currentStreak, 0) : prev.streak,
     lastActiveDay: remoteIsFresher ? remoteDay : localDay,
@@ -327,6 +378,7 @@ export function mergeAccountProgress(
   const unchanged =
     next.xp === prev.xp &&
     next.gems === prev.gems &&
+    next.gemsSpent === prev.gemsSpent &&
     next.longestStreak === prev.longestStreak &&
     next.streak === prev.streak &&
     next.lastActiveDay === prev.lastActiveDay;

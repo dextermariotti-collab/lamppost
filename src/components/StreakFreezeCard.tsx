@@ -1,6 +1,7 @@
-import { Gem, Snowflake } from "lucide-react";
+import { Gem, Loader2, Snowflake } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FREEZE_COST, MAX_FREEZES } from "@/lib/progress";
+import { FREEZE_COST, MAX_FREEZES, type BuyFreezeOutcome } from "@/lib/progress";
 
 /**
  * Streak forgiveness surface. Freezes are the escape valve that keeps loss
@@ -13,10 +14,23 @@ export function StreakFreezeCard({
 }: {
   freezes: number;
   gems: number;
-  onBuy: () => void;
+  /** Resolves when the purchase is settled: signed in, that means the server has answered. */
+  onBuy: () => Promise<BuyFreezeOutcome>;
 }) {
   const full = freezes >= MAX_FREEZES;
   const affordable = gems >= FREEZE_COST;
+  const [pending, setPending] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const buy = () => {
+    if (pending) return;
+    setPending(true);
+    setProblem(null);
+    void onBuy()
+      .then((outcome) => setProblem(outcome.ok ? null : outcome.message))
+      .catch(() => setProblem("That couldn't go through just now. Your gems were not spent."))
+      .finally(() => setPending(false));
+  };
 
   return (
     <section className="mt-6 animate-rise-in border-t border-border pt-5">
@@ -54,16 +68,30 @@ export function StreakFreezeCard({
       </p>
 
       {!full && (
-        <Button
-          onClick={onBuy}
-          disabled={!affordable}
-          className="mt-4 h-11 w-full rounded-full text-sm font-extrabold"
-        >
-          <Gem className="mr-1.5 h-4 w-4" />
-          {affordable
-            ? `Get another for ${FREEZE_COST} gems`
-            : `${FREEZE_COST - gems} more gems for another`}
-        </Button>
+        <>
+          <Button
+            onClick={buy}
+            disabled={!affordable || pending}
+            aria-busy={pending}
+            className="mt-4 h-11 w-full rounded-full text-sm font-extrabold"
+          >
+            {pending ? (
+              <Loader2 aria-hidden className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <Gem aria-hidden className="mr-1.5 h-4 w-4" />
+            )}
+            {pending
+              ? "Getting your freeze…"
+              : affordable
+                ? `Get another for ${FREEZE_COST} gems`
+                : `${FREEZE_COST - gems} more gems for another`}
+          </Button>
+          {problem && (
+            <p role="alert" className="mt-2 text-[13px] font-semibold text-destructive">
+              {problem}
+            </p>
+          )}
+        </>
       )}
     </section>
   );

@@ -10,7 +10,7 @@ Last checked: 2026-09-28.
 
 | Table | Data categories | Personal? | Written by | Deleted on account deletion |
 | --- | --- | --- | --- | --- |
-| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems, last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
+| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime spent and the balance between them), last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
 | `daily_activity` | per-day lesson counts (device-local calendar days) | yes (behavioural) | server only | deleted |
 | `user_achievements` | achievement codes + unlock timestamps | yes | server only | deleted |
 | `achievements` | achievement catalogue (name, description, icon, criteria) | no | migrations | n/a |
