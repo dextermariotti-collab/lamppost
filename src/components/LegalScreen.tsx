@@ -11,16 +11,17 @@ export function LegalScreen({ doc, backTo = "/legal" }: { doc: LegalDoc; backTo?
       <ScreenHeader title={doc.title} backTo={backTo} />
       <div className="px-5 pb-12">
         <p className="text-[11px] font-semibold text-muted-foreground">
-          Last updated · {doc.updated}
+          Effective {doc.updated}
+          {doc.version ? ` · Version ${doc.version}` : ""}
         </p>
         <p className="mt-2 text-sm leading-relaxed font-semibold text-foreground/85">{doc.intro}</p>
 
         <div className="mt-4 flex items-start gap-2 rounded-2xl bg-flame/10 p-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-flame" />
           <p className="text-xs font-semibold text-foreground/80">
-            Draft scaffolding. Sections marked{" "}
-            <span className="font-extrabold">Needs legal review</span> are placeholders and must be
-            approved by a lawyer before launch.
+            Draft. Anything in [SQUARE BRACKETS] is a placeholder for a fact the owner still has to
+            fill in, and sections marked <span className="font-extrabold">Needs legal review</span>{" "}
+            must be approved by a lawyer before launch.
           </p>
         </div>
 

@@ -33,8 +33,8 @@ function LegalIndex() {
         <div className="flex items-start gap-3 rounded-3xl bg-primary-soft p-4">
           <ScrollText className="mt-0.5 h-5 w-5 shrink-0 text-primary-text" />
           <p className="text-xs leading-relaxed font-semibold text-accent-foreground">
-            Lamppost writes every lesson with AI. These pages explain what that means, what data we
-            keep, and how to report content. They are drafts pending legal review.
+            These pages explain what data we keep, the rules for using Lamppost, where AI is used, and
+            how to report or block someone. They are drafts pending legal review.
           </p>
         </div>
 

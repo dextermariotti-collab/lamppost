@@ -5,17 +5,17 @@ import { HEALTH } from "@/lib/legal";
 export const Route = createFileRoute("/legal/health")({
   head: () => ({
     meta: [
-      { title: "Health & Fitness Disclaimer — Lamppost" },
+      { title: "Not Professional Advice — Lamppost" },
       {
         name: "description",
         content:
-          "Read before starting any AI-generated training, workout or nutrition program: consult a doctor, no coaching or medical supervision, use at your own risk.",
+          "Lamppost is for learning and practice only. It is not medical, legal, financial, mental-health or safety advice.",
       },
-      { property: "og:title", content: "Health & Fitness Disclaimer — Lamppost" },
+      { property: "og:title", content: "Not Professional Advice — Lamppost" },
       {
         property: "og:description",
         content:
-          "Consult a doctor first. Generated training programs are not coaching or medical care.",
+          "Educational use only. Ask a qualified professional about anything that matters.",
       },
       { property: "og:type", content: "website" },
     ],
