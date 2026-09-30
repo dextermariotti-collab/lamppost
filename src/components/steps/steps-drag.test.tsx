@@ -78,6 +78,18 @@ describe("Sort it", () => {
     expect(screen.getByRole("button", { name: "Check my sorting" })).toBeTruthy();
   });
 
+  it("puts the buckets away once everything is filed, so the marks sit right under the result", async () => {
+    mount();
+    putIn("Fact");
+    putIn("Fact");
+    putIn("Fact");
+    click("Check my sorting");
+    expect(screen.queryByRole("group", { name: "Buckets" })).toBeNull();
+    expect(screen.getByText("Some are in the wrong bucket.")).toBeTruthy();
+    fireEvent.click(inBucket("Fact", /ugly.*wrong bucket/)!);
+    expect(screen.getByRole("group", { name: "Buckets" })).toBeTruthy();
+  });
+
   it("can be done entirely from the keyboard: Enter selects, Enter places, Escape puts it back", async () => {
     mount();
     const first = card(/40 metres/);

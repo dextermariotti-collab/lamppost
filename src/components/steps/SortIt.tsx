@@ -194,31 +194,35 @@ export function SortIt({
         )}
       </div>
 
-      <p className="mt-4 text-xs font-semibold text-muted-foreground">
-        {inHand ? "Where does it go? Tap a bucket, or drag the card onto one." : "Buckets"}
-      </p>
-      <div role="group" aria-label="Buckets" className="mt-1.5 space-y-2">
-        {step.buckets.map((bucket) => (
-          <button
-            key={bucket.id}
-            type="button"
-            data-drop-zone={bucket.id}
-            disabled={settled || (!inHand && dnd.drag === null)}
-            aria-label={`Put it in ${bucket.label}`}
-            onClick={() => fileInHand(bucket.id)}
-            className={`flex min-h-14 w-full flex-col justify-center rounded-2xl border-2 px-4 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-              dnd.drag?.over === bucket.id
-                ? "border-primary bg-primary-soft"
-                : "border-border bg-card enabled:hover:border-primary/60"
-            } disabled:opacity-70`}
-          >
-            <span className="text-sm font-bold">{bucket.label}</span>
-            {bucket.hint && (
-              <span className="text-xs font-normal text-muted-foreground">{bucket.hint}</span>
-            )}
-          </button>
-        ))}
-      </div>
+      {(inHand || dnd.drag !== null) && (
+        <>
+          <p className="mt-4 text-xs font-semibold text-muted-foreground">
+            {inHand ? "Where does it go? Tap a bucket, or drag the card onto one." : "Buckets"}
+          </p>
+          <div role="group" aria-label="Buckets" className="mt-1.5 space-y-2">
+            {step.buckets.map((bucket) => (
+              <button
+                key={bucket.id}
+                type="button"
+                data-drop-zone={bucket.id}
+                disabled={settled || (!inHand && dnd.drag === null)}
+                aria-label={`Put it in ${bucket.label}`}
+                onClick={() => fileInHand(bucket.id)}
+                className={`flex min-h-14 w-full flex-col justify-center rounded-2xl border-2 px-4 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  dnd.drag?.over === bucket.id
+                    ? "border-primary bg-primary-soft"
+                    : "border-border bg-card enabled:hover:border-primary/60"
+                } disabled:opacity-70`}
+              >
+                <span className="text-sm font-bold">{bucket.label}</span>
+                {bucket.hint && (
+                  <span className="text-xs font-normal text-muted-foreground">{bucket.hint}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {filed > 0 && (
         <div className="mt-5">
