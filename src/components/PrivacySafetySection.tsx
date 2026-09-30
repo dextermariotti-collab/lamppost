@@ -40,8 +40,11 @@ export function PrivacySafetySection() {
   const people = blocked.data ?? [];
 
   return (
-    <section className="mt-8" aria-labelledby="privacy-safety-heading">
-      <h2 id="privacy-safety-heading" className="text-sm font-bold">
+    <section className="mt-6" aria-labelledby="privacy-safety-heading">
+      <h2
+        id="privacy-safety-heading"
+        className="px-1 font-sans text-[11px] font-bold uppercase tracking-wide text-muted-foreground"
+      >
         Privacy and safety
       </h2>
       <div className="mt-2 rounded-2xl border border-border p-4">

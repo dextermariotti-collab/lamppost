@@ -2,54 +2,28 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { LEGAL_DOCS } from "@/lib/legal";
 
-/** The legal documents, reachable from settings whether or not someone has an account. */
+const EXTRA = [
+  { to: "/legal/acknowledgements", title: "Acknowledgements" },
+  { to: "/support", title: "Help and support" },
+];
+
+/**
+ * Every legal document, plus acknowledgements and support, as one line each. Reached from
+ * Settings → About and policies whether or not someone has an account; each page opens with
+ * its own summary, so the list doesn't repeat it.
+ */
 export function LegalLinksSection() {
+  const items = [...LEGAL_DOCS.map((doc) => ({ to: doc.route, title: doc.title })), ...EXTRA];
   return (
-    <section className="mt-8" aria-labelledby="legal-links-heading">
-      <h2 id="legal-links-heading" className="text-sm font-bold">
-        Legal &amp; policies
-      </h2>
-      <ul className="mt-2 space-y-2">
-        {LEGAL_DOCS.map((doc) => (
-          <li key={doc.slug}>
-            <Link
-              to={doc.route}
-              className="flex min-h-14 items-center gap-3 rounded-2xl bg-card p-3 shadow-soft"
-            >
-              <span className="flex-1">
-                <span className="block text-sm font-bold">{doc.title}</span>
-                <span className="block text-xs text-muted-foreground">{doc.summary}</span>
-              </span>
-              <ChevronRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-            </Link>
-          </li>
-        ))}
-        {[
-          {
-            to: "/legal/acknowledgements",
-            title: "Acknowledgements",
-            summary: "The open-source software and typefaces Lamppost is built with.",
-          },
-          {
-            to: "/support",
-            title: "Help and support",
-            summary: "How to reach us, report a problem, or get help.",
-          },
-        ].map((item) => (
-          <li key={item.to}>
-            <Link
-              to={item.to}
-              className="flex min-h-14 items-center gap-3 rounded-2xl bg-card p-3 shadow-soft"
-            >
-              <span className="flex-1">
-                <span className="block text-sm font-bold">{item.title}</span>
-                <span className="block text-xs text-muted-foreground">{item.summary}</span>
-              </span>
-              <ChevronRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+      {items.map((item) => (
+        <li key={item.to}>
+          <Link to={item.to} className="flex min-h-12 items-center gap-3 px-4 py-2">
+            <span className="flex-1 text-sm font-bold">{item.title}</span>
+            <ChevronRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

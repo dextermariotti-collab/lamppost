@@ -21,7 +21,7 @@ export function DisclosureRow({
 
   return (
     <section className="border-t border-border">
-      <h2 className="text-base">
+      <h2 className="font-sans text-base">
         <button
           type="button"
           aria-expanded={open}

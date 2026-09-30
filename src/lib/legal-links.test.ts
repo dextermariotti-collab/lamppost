@@ -30,14 +30,15 @@ describe("legal and support links", () => {
     }
   });
 
-  it("are all in settings, and in the legal index", () => {
-    const settings = read("src/components/LegalLinksSection.tsx");
+  it("are all in the legal index, which Settings links to", () => {
+    const list = read("src/components/LegalLinksSection.tsx");
     const index = read("src/routes/legal.index.tsx");
-    for (const source of [settings, index]) {
-      expect(source).toContain("/legal/acknowledgements");
-      expect(source).toContain("/support");
-      expect(source).toContain("LEGAL_DOCS");
-    }
+    const settings = read("src/routes/settings.tsx");
+    expect(list).toContain("/legal/acknowledgements");
+    expect(list).toContain("/support");
+    expect(list).toContain("LEGAL_DOCS");
+    expect(index).toContain("<LegalLinksSection");
+    expect(settings).toContain('to="/legal"');
     const routes = LEGAL_DOCS.map((d) => d.route);
     expect(routes).toContain("/legal/privacy");
     expect(routes).toContain("/legal/terms");

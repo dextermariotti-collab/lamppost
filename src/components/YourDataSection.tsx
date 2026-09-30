@@ -64,8 +64,11 @@ export function YourDataSection() {
   );
 
   return (
-    <section className="mt-8" aria-labelledby="your-data-heading">
-      <h2 id="your-data-heading" className="text-sm font-bold">
+    <section className="mt-6" aria-labelledby="your-data-heading">
+      <h2
+        id="your-data-heading"
+        className="px-1 font-sans text-[11px] font-bold uppercase tracking-wide text-muted-foreground"
+      >
         Your data
       </h2>
 
@@ -167,8 +170,11 @@ export function DeviceDataSection() {
   const [cleared, setCleared] = useState(false);
 
   return (
-    <section className="mt-8" aria-labelledby="device-data-heading">
-      <h2 id="device-data-heading" className="text-sm font-bold">
+    <section className="mt-6" aria-labelledby="device-data-heading">
+      <h2
+        id="device-data-heading"
+        className="px-1 font-sans text-[11px] font-bold uppercase tracking-wide text-muted-foreground"
+      >
         Data on this device
       </h2>
       <p className="mt-1 text-xs text-muted-foreground">
@@ -203,7 +209,7 @@ export function DeviceDataSection() {
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className={`${button} mt-3 bg-destructive/10 text-destructive`}
+          className={`${button} mt-2 justify-start border border-border bg-card px-4 text-destructive`}
         >
           <Trash2 aria-hidden className="h-4 w-4" />
           Clear progress on this device
