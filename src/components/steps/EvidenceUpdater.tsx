@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { directionOf, likelihoodWord, probabilityPath, type Direction } from "@/lib/steps/checks";
 import type { StepResult } from "@/lib/steps/scoring";
 import type { UpdaterStep } from "@/lib/steps/types";
-import { StepFrame } from "./StepFrame";
+import { FeedbackPanel, StepFrame } from "./StepFrame";
 import { useStepEngine } from "./useStepEngine";
 
 const GUESSES: { value: Direction; label: string; icon: typeof ArrowUp }[] = [
@@ -85,6 +85,8 @@ export function EvidenceUpdater({
       prompt={step.prompt}
       hint={step.hint}
       engine={engine}
+      hintHidden={answered}
+      inlineFeedback
     >
       <div className="rounded-2xl bg-primary-soft p-4">
         <p className="text-[15px] font-semibold leading-relaxed text-accent-foreground">
@@ -128,38 +130,50 @@ export function EvidenceUpdater({
           <p className="mt-1 rounded-2xl border-2 border-primary/40 p-3 text-sm font-semibold">
             {current.text}
           </p>
-          {!answered ? (
-            <div
-              className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3"
-              role="group"
-              aria-label="What does this do to the claim?"
-            >
-              {GUESSES.map(({ value, label, icon: Icon }) => (
+          <div
+            className="mt-3 grid grid-cols-3 gap-2"
+            role="group"
+            aria-label="What does this do to the claim?"
+          >
+            {GUESSES.map(({ value, label, icon: Icon }) => {
+              const isRight = answered && value === directionOf(current.shift);
+              const isMiss = answered && guesses[done] === value && !isRight;
+              return (
                 <button
                   key={value}
                   type="button"
+                  disabled={answered}
                   onClick={() => guess(value)}
-                  className="flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border-2 border-border px-3 text-sm font-semibold hover:border-primary/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className={`flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 px-1 py-2 text-center text-[13px] font-semibold leading-tight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                    isRight
+                      ? "border-success bg-success/10"
+                      : isMiss
+                        ? "border-destructive border-dashed bg-destructive/5"
+                        : answered
+                          ? "border-border opacity-60"
+                          : "border-border hover:border-primary/60"
+                  }`}
                 >
-                  <Icon aria-hidden className="h-4 w-4" /> {label}
+                  <Icon aria-hidden className="h-4 w-4" />
+                  <span>{label}</span>
+                  {isRight && (
+                    <span className="flex items-center gap-0.5 text-[11px] font-bold text-success">
+                      <Check aria-hidden className="h-3.5 w-3.5" /> Correct
+                    </span>
+                  )}
+                  {isMiss && (
+                    <span className="flex items-center gap-0.5 text-[11px] font-bold text-destructive">
+                      <X aria-hidden className="h-3.5 w-3.5" /> Not this one
+                    </span>
+                  )}
                 </button>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-3 flex items-center gap-2 text-sm font-bold">
-              {guesses[done] === directionOf(current.shift) ? (
-                <span className="flex items-center gap-1 text-success">
-                  <Check aria-hidden className="h-4 w-4" /> You said {WORD[guesses[done]!]}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-destructive">
-                  <X aria-hidden className="h-4 w-4" /> You said {WORD[guesses[done]!]}
-                </span>
-              )}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       )}
+
+      <FeedbackPanel message={engine.message} />
 
       {answered && !finished && (
         <Button

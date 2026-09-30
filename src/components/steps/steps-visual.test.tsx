@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { StepResult } from "@/lib/steps/scoring";
 import { allSamples, causeSample, noteSample, updaterSample } from "@/test/steps";
@@ -34,7 +34,7 @@ describe("Evidence updater", () => {
     expect(status()).toContain("Yes");
     expect(status()).toContain("moves the claim up to 70%");
     expect(status()).toContain("Someone may have swapped it");
-    expect(screen.getByText(/You said more likely/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /More likely.*Correct/ })).toBeTruthy();
   });
 
   it("names what a wrong call should have been, in words as well as colour", () => {
@@ -45,7 +45,39 @@ describe("Evidence updater", () => {
     expect(status()).toContain("It's actually less likely");
     expect(status()).toContain("A power cut explains it");
     expect(meter()).toBe(40);
-    expect(screen.getByText(/You said more likely/).className).toMatch(/text-destructive/);
+    expect(screen.getByRole("button", { name: /More likely.*Not this one/ }).className).toMatch(
+      /border-dashed/,
+    );
+    expect(screen.getByRole("button", { name: /Less likely.*Correct/ }).className).toMatch(
+      /border-success/,
+    );
+  });
+
+  it("keeps the three answers on screen once marked, with the verdict directly under them and Next last", () => {
+    mount();
+    click("More likely");
+    const choices = screen.getByRole("group", { name: "What does this do to the claim?" });
+    const verdict = screen.getByRole("status");
+    const next = screen.getByRole("button", { name: "Next piece of evidence" });
+    const follows = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(within(choices).getAllByRole("button")).toHaveLength(3);
+    expect(follows(choices, verdict)).toBe(true);
+    expect(follows(verdict, next)).toBe(true);
+    expect(
+      within(choices)
+        .getAllByRole("button")
+        .every((b) => (b as HTMLButtonElement).disabled),
+    ).toBe(true);
+  });
+
+  it("hides the hint once a card is answered, and offers it again on the next one", () => {
+    mount();
+    expect(screen.getByRole("button", { name: /Need a hint/ })).toBeTruthy();
+    click("More likely");
+    expect(screen.queryByRole("button", { name: /Need a hint/ })).toBeNull();
+    click("Next piece of evidence");
+    expect(screen.getByRole("button", { name: /Need a hint/ })).toBeTruthy();
   });
 
   it("says a card that changes nothing changes nothing", () => {
@@ -202,7 +234,16 @@ describe("every kind of step, through the dispatcher", () => {
     (_kind, step) => {
       render(<StepView step={step} onResolve={() => undefined} />);
       for (const button of screen.getAllByRole("button")) {
-        expect(button.className, button.textContent ?? "").toMatch(/\bmin-h-1[1-9]\b|\bh-1[1-9]\b/);
+        // The words of a sentence are targets inside it (WCAG 2.5.8's inline exception): they
+        // can't be 44px tall without breaking the sentence apart, so they are padded to at
+        // least 32px and the line height keeps them from overlapping.
+        if (step.kind === "flaw" && button.closest("p")?.textContent?.includes("ice cream")) {
+          expect(button.className, button.textContent ?? "").toMatch(/\bpy-1\b/);
+          continue;
+        }
+        expect(button.className, button.textContent ?? "").toMatch(
+          /\bmin-h-(1[1-9]|[2-9]\d)\b|\bh-(1[1-9]|[2-9]\d)\b/,
+        );
       }
     },
   );

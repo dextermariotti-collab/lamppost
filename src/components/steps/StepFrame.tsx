@@ -60,7 +60,10 @@ export function StepFrame({
   onShowAnswer,
   onRetry,
   retryLabel = "Try again",
+  noRetry = false,
   showMeAnytime = false,
+  hintHidden = false,
+  inlineFeedback = false,
 }: {
   label: string;
   prompt: string;
@@ -72,8 +75,14 @@ export function StepFrame({
   /** Runs when the learner chooses to try again, before the step becomes answerable. */
   onRetry?: (() => void) | undefined;
   retryLabel?: string;
+  /** For steps that stay tappable after a miss: no Try again button, only Show me. */
+  noRetry?: boolean;
   /** For steps checked live: offer "Show me" after two misses even though nothing is "wrong". */
   showMeAnytime?: boolean;
+  /** Hide the hint while it would no longer help (the current question is already answered). */
+  hintHidden?: boolean;
+  /** The step draws the feedback itself, next to what it judges, with `FeedbackPanel`. */
+  inlineFeedback?: boolean;
 }) {
   const headingId = useId();
   const hintId = useId();
@@ -92,7 +101,7 @@ export function StepFrame({
 
       <div className="mt-4">{children}</div>
 
-      {hint && !done && (
+      {hint && !done && !hintHidden && (
         <div className="mt-3">
           <button
             type="button"
@@ -117,7 +126,7 @@ export function StepFrame({
         </div>
       )}
 
-      <FeedbackPanel message={message} />
+      {!inlineFeedback && <FeedbackPanel message={message} />}
 
       {showMeAnytime && phase === "answering" && canShow && onShowAnswer && (
         <Button
@@ -132,16 +141,18 @@ export function StepFrame({
 
       {phase === "wrong" && (
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <Button
-            type="button"
-            onClick={() => {
-              onRetry?.();
-              engine.retry();
-            }}
-            className="h-11 flex-1 rounded-full font-semibold"
-          >
-            <RotateCcw aria-hidden className="h-4 w-4" /> {retryLabel}
-          </Button>
+          {!noRetry && (
+            <Button
+              type="button"
+              onClick={() => {
+                onRetry?.();
+                engine.retry();
+              }}
+              className="h-11 flex-1 rounded-full font-semibold"
+            >
+              <RotateCcw aria-hidden className="h-4 w-4" /> {retryLabel}
+            </Button>
+          )}
           {canShow && onShowAnswer && (
             <Button
               type="button"

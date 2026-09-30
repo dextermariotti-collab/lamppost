@@ -48,8 +48,25 @@ describe("Spot the flaw", () => {
     click(/also have more sunburn cases/);
     expect(status()).toContain("Not quite");
     expect(status()).toContain("That's the observation");
-    expect(phrase(/also have more sunburn cases.*not the flaw/).className).toMatch(/border-dashed/);
-    expect(screen.getByRole("button", { name: "Try again" }).className).toMatch(/h-11/);
+    expect(phrase(/also have more sunburn cases.*not the flaw/).className).toMatch(
+      /decoration-dashed/,
+    );
+  });
+
+  it("keeps the passage live after a miss: no Try again to press, and a tried phrase can't be tapped twice", () => {
+    setup((r) => <SpotTheFlaw step={flawSample} onResolve={r} />);
+    click(/also have more sunburn cases/);
+    expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
+    expect((phrase(/also have more sunburn cases/) as HTMLButtonElement).disabled).toBe(true);
+    expect((phrase(/ice cream causes sunburn/) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("underlines the phrases where they sit, in one paragraph, rather than boxing them apart", () => {
+    setup((r) => <SpotTheFlaw step={flawSample} onResolve={r} />);
+    const button = phrase(/ice cream causes sunburn/);
+    expect(button.className).toMatch(/\bunderline\b/);
+    expect(button.className).not.toMatch(/\bborder/);
+    expect(button.closest("p")!.textContent).toContain("Towns with more ice cream stalls");
   });
 
   it("scores full marks first time and names the fallacy", () => {
@@ -63,13 +80,12 @@ describe("Spot the flaw", () => {
       wrongAttempts: 0,
       revealed: false,
     });
-    expect(phrase(/ice cream causes sunburn.*the flaw/).className).toMatch(/border-success/);
+    expect(phrase(/ice cream causes sunburn.*the flaw/).className).toMatch(/decoration-success/);
   });
 
-  it("scores half after one miss and lets you try again", () => {
+  it("scores half after one miss, with the next tap as the next try", () => {
     const onResolve = setup((r) => <SpotTheFlaw step={flawSample} onResolve={r} />);
     click(/also have more sunburn cases/);
-    click("Try again");
     click(/ice cream causes sunburn/);
     expect(onResolve.mock.calls[0]![0]).toMatchObject({ score: 0.5, wrongAttempts: 1 });
   });
@@ -86,7 +102,6 @@ describe("Spot the flaw", () => {
     const onResolve = setup((r) => <SpotTheFlaw step={flawSample} onResolve={r} />);
     click(/also have more sunburn cases/);
     expect(screen.queryByRole("button", { name: "Show me" })).toBeNull();
-    click("Try again");
     click(/should ban stalls/);
     click("Show me");
     expect(onResolve).toHaveBeenCalledTimes(1);
