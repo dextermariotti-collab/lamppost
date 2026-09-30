@@ -63,7 +63,7 @@ export function LessonPlayer({
               if (last) onComplete(steps.map((_, i) => results[i]!));
               else setIndex((i) => i + 1);
             }}
-            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 disabled:opacity-50 ${
+            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 disabled:bg-none disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${
               resolved ? "animate-pop-in" : ""
             }`}
           >
