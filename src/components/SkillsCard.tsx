@@ -19,11 +19,12 @@ const NOTE: Record<SkillNote, { text: string; className: string }> = {
  */
 export function SkillsCard({
   units,
-  completed,
+  done,
 }: {
   /** Null until the browser has read the learner's answers. */
   units: UnitMastery[] | null;
-  completed: number;
+  /** Lesson indexes finished, for the map. */
+  done: ReadonlySet<number>;
 }) {
   const [view, setView] = useState<"list" | "map">("list");
   const anyAnswered = units?.some((unit) => unit.answered > 0) ?? false;
@@ -59,7 +60,7 @@ export function SkillsCard({
 
       {view === "map" ? (
         <div className="mt-3">
-          <ThinkingGraph completed={completed} />
+          <ThinkingGraph done={done} />
         </div>
       ) : (
         <>

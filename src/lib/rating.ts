@@ -144,10 +144,10 @@ export type SkillNeed = {
  * Weakest and least-recently-practised unlocked skills first. Used by reviews,
  * the daily challenge and the home "Continue" recommendation.
  */
-export function skillsToPractise(unlockedLessons: number): SkillNeed[] {
+export function skillsToPractise(done: ReadonlySet<number>): SkillNeed[] {
   const store = readStore();
   const now = Date.now();
-  return LESSONS.slice(0, Math.max(unlockedLessons, 0))
+  return LESSONS.filter((_, index) => done.has(index))
     .map((lesson) => {
       const row = store[lesson.id] ?? blank();
       const daysSince = row.lastAt ? Math.floor((now - row.lastAt) / 86_400_000) : null;

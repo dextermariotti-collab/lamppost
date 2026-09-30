@@ -4,6 +4,8 @@ import {
   adoptWallet,
   applyBuyFreeze,
   applyLessonComplete,
+  applyUnlockLessons,
+  doneLessonIndexes,
   applyReview,
   applyServerPurchase,
   canBuyFreeze,
@@ -39,6 +41,93 @@ describe("applyLessonComplete", () => {
     }
     expect(state.history["2026-09-23"]).toBe(3);
     expect(state.streak).toBe(1);
+  });
+});
+
+describe("finishing lessons in any order", () => {
+  const slug = lesson.slug;
+
+  it("records the lesson that was done, not everything before it", () => {
+    const next = applyLessonComplete(
+      DEFAULT_STATE,
+      { ...lesson, index: 12 },
+      "2026-09-23",
+      1,
+      never,
+    );
+    expect(doneLessonIndexes(next, slug)).toEqual([12]);
+    expect(next.courses[slug]?.completed).toBe(1);
+    expect(next.xp).toBe(50);
+  });
+
+  it("keeps the count equal to the number of lessons done", () => {
+    let state: ProgressState = DEFAULT_STATE;
+    for (const index of [20, 0, 7, 20]) {
+      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1, never);
+    }
+    expect(doneLessonIndexes(state, slug)).toEqual([0, 7, 20]);
+    expect(state.courses[slug]?.completed).toBe(3);
+  });
+
+  it("pays nothing for a lesson that was already done, even out of order", () => {
+    const once = applyLessonComplete(
+      DEFAULT_STATE,
+      { ...lesson, index: 9 },
+      "2026-09-23",
+      1,
+      never,
+    );
+    expect(applyLessonComplete(once, { ...lesson, index: 9 }, "2026-09-24", 2, never)).toBe(once);
+  });
+
+  it("reads a save from before lessons were tracked as the first lessons", () => {
+    const legacy: ProgressState = {
+      ...DEFAULT_STATE,
+      courses: { [slug]: { topic: "Critical thinking", completed: 3, total: 35 } },
+    };
+    expect(doneLessonIndexes(legacy, slug)).toEqual([0, 1, 2]);
+    const next = applyLessonComplete(legacy, { ...lesson, index: 10 }, "2026-09-23", 1, never);
+    expect(doneLessonIndexes(next, slug)).toEqual([0, 1, 2, 10]);
+    expect(next.courses[slug]?.completed).toBe(4);
+  });
+
+  it("still counts the next lesson in order the way it always did", () => {
+    let state: ProgressState = DEFAULT_STATE;
+    for (let index = 0; index < 3; index++) {
+      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1, never);
+    }
+    expect(doneLessonIndexes(state, slug)).toEqual([0, 1, 2]);
+    expect(state.courses[slug]?.completed).toBe(3);
+  });
+});
+
+describe("applyUnlockLessons", () => {
+  const args = ["critical-thinking", "Critical thinking"] as const;
+
+  it("marks the first lessons as known without paying anything", () => {
+    const next = applyUnlockLessons(DEFAULT_STATE, ...args, 4, 35);
+    expect(doneLessonIndexes(next, args[0])).toEqual([0, 1, 2, 3]);
+    expect(next.courses[args[0]]?.completed).toBe(4);
+    expect(next.xp).toBe(0);
+    expect(next.streak).toBe(0);
+  });
+
+  it("adds to lessons already done elsewhere instead of replacing them", () => {
+    const done = applyLessonComplete(
+      DEFAULT_STATE,
+      { ...lesson, index: 12 },
+      "2026-09-23",
+      1,
+      never,
+    );
+    const next = applyUnlockLessons(done, ...args, 2, 35);
+    expect(doneLessonIndexes(next, args[0])).toEqual([0, 1, 12]);
+    expect(next.courses[args[0]]?.completed).toBe(3);
+  });
+
+  it("changes nothing when those lessons are already known", () => {
+    const once = applyUnlockLessons(DEFAULT_STATE, ...args, 4, 35);
+    expect(applyUnlockLessons(once, ...args, 3, 35)).toBe(once);
   });
 });
 

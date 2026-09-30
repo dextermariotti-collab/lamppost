@@ -106,9 +106,7 @@ function ReviewSchedule() {
               here.
             </p>
             <Button asChild variant="outline" className="mt-4 h-10 w-full font-bold shadow-none">
-              <Link to="/course/$slug" params={{ slug: CURRICULUM_SLUG }}>
-                Go to my path
-              </Link>
+              <Link to="/courses">Go to my path</Link>
             </Button>
           </div>
         )}

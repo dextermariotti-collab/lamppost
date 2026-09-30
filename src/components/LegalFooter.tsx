@@ -8,7 +8,14 @@ const LINKS = [
 ] as const;
 
 /** The four links every screen a signed-out person can reach should offer. */
-export function LegalFooter({ className = "" }: { className?: string }) {
+export function LegalFooter({
+  className = "",
+  compact = false,
+}: {
+  className?: string;
+  /** Smaller type and tighter spacing, so the four links sit on one quiet line. */
+  compact?: boolean;
+}) {
   return (
     <nav aria-label="Legal and support" className={`px-5 pb-8 pt-4 ${className}`}>
       <ul className="flex flex-wrap items-center justify-center gap-x-1 gap-y-0">
@@ -16,7 +23,9 @@ export function LegalFooter({ className = "" }: { className?: string }) {
           <li key={link.to}>
             <Link
               to={link.to}
-              className="flex min-h-11 items-center px-2.5 text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              className={`flex min-h-11 items-center font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground ${
+                compact ? "px-1.5 text-[11px]" : "px-2.5 text-xs"
+              }`}
             >
               {link.label}
             </Link>

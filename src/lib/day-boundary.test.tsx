@@ -219,12 +219,12 @@ describe("daily challenge", () => {
     const saved = JSON.parse(window.localStorage.getItem("lamppost-challenge-v1") ?? "{}");
     expect(saved.day).toBe("2026-09-23");
 
-    const evening = renderHook(() => useDailyChallenge(5));
+    const evening = renderHook(() => useDailyChallenge(new Set([0, 1, 2, 3, 4])));
     expect(evening.result.current.doneToday).toBe(true);
     cleanup();
 
     at(PAST_MIDNIGHT);
-    const morning = renderHook(() => useDailyChallenge(5));
+    const morning = renderHook(() => useDailyChallenge(new Set([0, 1, 2, 3, 4])));
     expect(morning.result.current.doneToday).toBe(false);
     expect(morning.result.current.challenge?.day).toBe("2026-09-24");
   });

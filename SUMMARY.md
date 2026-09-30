@@ -181,6 +181,30 @@ Asked whether to go serious or all-in on the animal, I kept the companion but ma
 - **Found, not fixed:** the badge and level-up pop-up's small label ("BRONZE UNLOCKED") is 2.9:1 on the light
   theme (`RewardHost.tsx`, tier colours in `BadgeIcon.tsx`).
 
+## Follow-up: the rest of the design review (headers, settings, onboarding, one map, small fixes)
+
+- **One header.** `ScreenHeader` is a back arrow, the page title in the serif and an optional line of
+  description, 20px gutter, 24px before the first block. The daily review, schedule, challenge, league, debates and
+  companion screens use it; the league's rules fold into one row. Lessons and reviews in progress keep just the bar.
+- **Settings** is four short groups (Practice, Comfort, Account and data, About). The nine legal cards are one row that
+  opens **About and policies** (`/legal`), one line per document. Training focus is a row that opens a sheet that says
+  it only changes review drills. Clear progress on this device is a plain red row behind the same confirm.
+- **Onboarding is three screens:** intro, one real question with the real feedback (`FIRST_QUESTION` in
+  `lib/onboarding.ts`), and a setup screen (daily goal; start from the beginning, skip what I know, or choose a unit).
+  The motivation question is gone from onboarding (it is still "Training focus" in Settings). Choosing a companion is
+  offered once on Home after the first lesson and is final on "Not now". **Changed on purpose:** onboarding no longer
+  ends on the sign-up screen; Profile and Settings still offer it.
+- **One map.** My Path's units open in place into their five lessons; Home is the next lesson, one line about reviews
+  and the seven units as a strip; the winding trail screen is gone (`/course/:slug` redirects to My Path).
+- **Every unit is open.** This needed a real change to what "done" means: progress used to be a count ("the first N
+  lessons"), so finishing lesson 20 would have marked 1 to 19 done. It is now the set of lessons finished
+  (`doneLessons`); the count is its size, and older saves read as the first N (tested). The graph has no locks.
+- **Small fixes done:** no disabled checkout on the Practice page; Profile says so when there are no badges; rows stop
+  touching; an empty review says when the next one is; the hint cost shares a line with the hint; the locked challenge
+  doesn't promise a streak; Home shows no counters or empty review card before the first lesson.
+- Not changed: anything signed-in that I can't see without a test login (friends, account data), and the daily
+  challenge still draws only from lessons you have finished.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

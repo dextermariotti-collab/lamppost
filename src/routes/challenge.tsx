@@ -41,10 +41,9 @@ export const Route = createFileRoute("/challenge")({
 
 function DailyChallengeScreen() {
   const navigate = useNavigate();
-  const { state, recordReview } = useProgress();
+  const { doneLessons, recordReview } = useProgress();
   const { companion } = useCompanion();
-  const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
-  const { challenge, doneToday, lastCorrect, hydrated, complete } = useDailyChallenge(completed);
+  const { challenge, doneToday, lastCorrect, hydrated, complete } = useDailyChallenge(doneLessons);
 
   const [result, setResult] = useState<boolean | null>(null);
   /** True when the answer was given on this screen, so feedback is shown first. */
@@ -103,9 +102,7 @@ function DailyChallengeScreen() {
               you've completed a lesson.
             </p>
             <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
-              <Link to="/course/$slug" params={{ slug: CURRICULUM_SLUG }}>
-                Go to my path
-              </Link>
+              <Link to="/courses">Go to my path</Link>
             </Button>
           </div>
         )}

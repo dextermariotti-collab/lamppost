@@ -57,7 +57,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 
 | Key | Module | Holds |
 | --- | --- | --- |
-| `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history`, per-course lesson counts |
+| `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history`, per-course lesson counts, the finished lessons (`doneLessons`) |
 | `lamppost-courses-v1` | `lib/course-store.ts`, `lib/curriculum-store.ts` | the curriculum course + downloaded lesson content |
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
 | `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d) |
@@ -69,6 +69,11 @@ Because lessons are completed in the browser, **the server can bound and record 
 prove a lesson was done** — see "Security model".
 
 ### Progress, streaks and days
+- **Every unit is open from day one.** The 35 lessons have a suggested order, not a lock: any lesson can
+  be started, and finishing one records *that* lesson (`doneLessons`, 0-based indexes; `courses[slug].completed`
+  is always its size). A save from before this has only the count and reads as the first N lessons
+  (`doneLessonIndexes`). Use `useProgress().doneLessons` (a `Set`) with `nextLessonIndex`, `unitProgress` and
+  `unitEntryIndex`; never treat `completed` as "everything before this is done".
 - **The day boundary is the device's local calendar day**, as a `YYYY-MM-DD` key. Use
   `dayKey()` / `shiftDay()` from `lib/days.ts` (never `toISOString().slice(0, 10)`, which is UTC).
   History keys, `lastActiveDay`, freeze logs, review due dates and the daily challenge all use it.
@@ -131,6 +136,11 @@ must meet WCAG AA (4.5:1 body, 3:1 large/graphics) in both sets — `styles.cont
 The tone is a calm coach: the companion sits at the edges (a small avatar beside feedback, the tutor chat,
 the sign-up screens) and never shouts; gems, chests and the league live under Profile → Rewards, and
 after a lesson the chest is one quiet row.
+
+My Path (`/courses`) is the only map: each unit opens in place into its five lessons. Home answers "what
+should I do now?" (the next lesson, one line about reviews, the seven units as a strip) and the skills graph
+lives under Progress → Skills → Map. `/course/:slug` redirects to My Path. Onboarding is three screens
+(intro, one real question, setup); choosing a companion is offered once, after the first lesson.
 
 ## Security model (read before touching Supabase)
 

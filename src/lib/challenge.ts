@@ -36,9 +36,9 @@ function seedFor(day: string) {
  * practised unlocked skills, so the daily drill goes where it's needed. The pick
  * is still seeded by the date, so it's stable for the whole day.
  */
-export function challengeFor(completedLessons: number, day = dayKey()): DailyChallenge | null {
-  const unlocked = LESSONS.slice(0, Math.max(completedLessons, 0));
-  const needy = skillsToPractise(Math.max(completedLessons, 0)).slice(0, 5);
+export function challengeFor(done: ReadonlySet<number>, day = dayKey()): DailyChallenge | null {
+  const unlocked = LESSONS.filter((_, index) => done.has(index));
+  const needy = skillsToPractise(done).slice(0, 5);
   const focus =
     needy.length > 0
       ? unlocked.filter((lesson) => needy.some((need) => need.lessonId === lesson.id))
@@ -82,7 +82,7 @@ export function recordChallenge(correct: boolean) {
 }
 
 /** Today's challenge plus whether it's already been done. */
-export function useDailyChallenge(completedLessons: number) {
+export function useDailyChallenge(done: ReadonlySet<number>) {
   const [record, setRecord] = useState<ChallengeRecord | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -102,7 +102,7 @@ export function useDailyChallenge(completedLessons: number) {
   const complete = useCallback(recordChallenge, []);
 
   return {
-    challenge: challengeFor(completedLessons, today),
+    challenge: challengeFor(done, today),
     doneToday: record?.day === today,
     lastCorrect: record?.day === today ? record.correct : null,
     hydrated,

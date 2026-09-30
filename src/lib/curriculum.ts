@@ -629,9 +629,14 @@ export const TOTAL_LESSONS = LESSONS.length;
 
 export const LESSONS_PER_UNIT = 5;
 
-/** Zero-based index of the next lesson to do, clamped to the last lesson. */
-export const nextLessonIndex = (completed: number) =>
-  Math.min(Math.max(completed, 0), TOTAL_LESSONS - 1);
+/**
+ * Zero-based index of the lesson to suggest next: the first one not finished, or the last
+ * lesson once everything is. The order is a suggestion; any lesson can be started.
+ */
+export function nextLessonIndex(done: ReadonlySet<number>): number {
+  for (let i = 0; i < TOTAL_LESSONS; i++) if (!done.has(i)) return i;
+  return TOTAL_LESSONS - 1;
+}
 
 export type UnitProgress = {
   unit: CurriculumUnit;
@@ -640,31 +645,42 @@ export type UnitProgress = {
   completed: number;
   total: number;
   pct: number;
-  state: "complete" | "current" | "locked";
+  /** "current" is where the learner is working; every other unit is open to start. */
+  state: "complete" | "current" | "open";
 };
 
-/** Per-unit completion derived from the learner's real lesson count. */
-export function unitProgress(completed: number): UnitProgress[] {
+/** Per-unit completion derived from the lessons the learner has really finished. */
+export function unitProgress(done: ReadonlySet<number>): UnitProgress[] {
+  const next = nextLessonIndex(done);
   return UNITS.map((unit, index) => {
     const lessons = LESSONS.filter((lesson) => lesson.unitId === unit.id);
     const start = index * LESSONS_PER_UNIT;
-    const done = Math.max(0, Math.min(lessons.length, completed - start));
-    const pct = lessons.length > 0 ? Math.round((done / lessons.length) * 100) : 0;
+    const finished = lessons.filter((_, i) => done.has(start + i)).length;
+    const pct = lessons.length > 0 ? Math.round((finished / lessons.length) * 100) : 0;
+    const holdsNext = next >= start && next < start + lessons.length;
     return {
       unit,
       index,
       lessons,
-      completed: done,
+      completed: finished,
       total: lessons.length,
       pct,
       state:
-        done === lessons.length
-          ? "complete"
-          : done > 0 || completed >= start
-            ? "current"
-            : "locked",
+        finished === lessons.length ? "complete" : finished > 0 || holdsNext ? "current" : "open",
     };
   });
+}
+
+/**
+ * Where to send someone who opens a unit: its first lesson they haven't finished, or its first
+ * lesson to go back over once they all are.
+ */
+export function unitEntryIndex(unitIndex: number, done: ReadonlySet<number>): number {
+  const start = unitIndex * LESSONS_PER_UNIT;
+  for (let i = start; i < start + LESSONS_PER_UNIT && i < TOTAL_LESSONS; i++) {
+    if (!done.has(i)) return i;
+  }
+  return start;
 }
 
 export type UnitLink = CurriculumLink & { fromUnit: string; toUnit: string };

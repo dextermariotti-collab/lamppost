@@ -49,8 +49,7 @@ export function LessonFinished({
 }) {
   const navigate = useNavigate();
   const { companion } = useCompanion();
-  const { state, streak } = useProgress();
-  const completedLessons = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
+  const { state, streak, doneLessons } = useProgress();
   const doneToday = state.history[dayKey()] ?? 0;
   const goal = state.dailyGoal;
   const nextMeta = lessonAt(lessonNumber);
@@ -58,7 +57,7 @@ export function LessonFinished({
   const unit = unitById(meta.unitId);
   const perfect = answered > 0 && accuracy === 100;
   const accent = unitAccent(meta.unitId);
-  const unitLessonsDone = unitProgress(completedLessons).find((u) => u.unit.id === meta.unitId);
+  const unitLessonsDone = unitProgress(doneLessons).find((u) => u.unit.id === meta.unitId);
 
   return (
     <PhoneFrame showNav={false}>
@@ -226,7 +225,7 @@ export function LessonFinished({
           </Button>
           <Button
             variant="ghost"
-            onClick={() => navigate({ to: "/course/$slug", params: { slug: CURRICULUM_SLUG } })}
+            onClick={() => navigate({ to: "/courses" })}
             className="h-11 w-full rounded-full text-sm font-bold text-muted-foreground"
           >
             See my path

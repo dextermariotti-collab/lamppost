@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { LessonStep } from "./steps/types";
 
 /**
  * What the learner told us during onboarding: why they're here and how much time
@@ -64,6 +65,32 @@ export const TIME_OPTIONS: { minutes: number; goal: number; label: string; react
     reaction: "Ambitious. I'll hold you to it.",
   },
 ];
+
+/**
+ * The one real question the first screen asks, with the same feedback every lesson gives. It is
+ * not a lesson's own step, so nobody meets it twice.
+ */
+export const FIRST_QUESTION: Extract<LessonStep, { kind: "choice" }> = {
+  id: "first-question",
+  kind: "choice",
+  label: "Try one",
+  prompt: "Which sentence is the claim the others are there to support?",
+  stimulus:
+    "Harbour Street should close to cars on Saturdays. Shoppers say the road is too loud, and two cafés say they would sell more with tables outside.",
+  options: [
+    {
+      text: "Shoppers say the road is too loud.",
+      whyNot: "That is a reason given for the claim, not the claim itself.",
+    },
+    {
+      text: "Two cafés would sell more with tables outside.",
+      whyNot: "That is another reason. It supports the claim rather than being it.",
+    },
+    { text: "Harbour Street should close to cars on Saturdays." },
+  ],
+  correct: 2,
+  why: "The claim is what everything else is there to support. Every lesson works like this: you try first, then see why.",
+};
 
 export type Intent = {
   motivation: Motivation | null;

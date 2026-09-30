@@ -162,7 +162,7 @@ export function StepLesson({
   return (
     <PhoneFrame showNav={false}>
       <ScreenHeader
-        backTo="/course/$slug"
+        backTo="/courses"
         right={
           combo >= 2 ? (
             <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">

@@ -140,9 +140,7 @@ function ReviewQueue() {
             <h2 className="text-lg">Nothing due right now</h2>
             <p className="mt-1 text-sm text-muted-foreground">{nextReviewLine(scheduled)}</p>
             <Button asChild className="mt-4 h-12 w-full rounded-full text-sm font-semibold">
-              <Link to="/course/$slug" params={{ slug: CURRICULUM_SLUG }}>
-                Continue your path
-              </Link>
+              <Link to="/courses">Continue your path</Link>
             </Button>
             <Link
               to="/schedule"

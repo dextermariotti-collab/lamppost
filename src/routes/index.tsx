@@ -1,13 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Expand, Play, Star, X, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, Check, Play, Star, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { skillsToPractise } from "@/lib/rating";
 import { Button } from "@/components/ui/button";
 import { CompanionAura } from "@/components/CompanionAura";
+import { CompanionOffer } from "@/components/CompanionOffer";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ProgressRing } from "@/components/ProgressRing";
 import { StreakFlame } from "@/components/StreakCalendar";
-import { ThinkingGraph } from "@/components/ThinkingGraph";
 import { WeeklyRecapCard } from "@/components/WeeklyRecapCard";
 import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
@@ -18,11 +18,17 @@ import {
   lessonAt,
   nextLessonIndex,
   unitById,
+  unitProgress,
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { dayKey, useProgress } from "@/lib/progress";
 import { unitAccent } from "@/lib/unit-accent";
-import { reviewUrgencyFor, useDueDrills } from "@/lib/review-drills";
+import {
+  nextReviewLine,
+  reviewUrgencyFor,
+  useDrillSchedule,
+  useDueDrills,
+} from "@/lib/review-drills";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,13 +55,13 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const { state, streak, registerCourse } = useProgress();
+  const { state, streak, doneLessons, registerCourse } = useProgress();
   const { companion } = useCompanion();
   // Makes sure the curriculum exists locally with its lesson titles.
   useCurriculumCourse();
 
-  // First run: introduce the app and let them pick a companion. Nothing renders
-  // until that check has run, so a new visitor never sees home flash first.
+  // First run: introduce the app. Nothing renders until that check has run, so a new
+  // visitor never sees home flash first.
   const [gate, setGate] = useState<"checking" | "open">("checking");
   useEffect(() => {
     if (!hasSeenOnboarding()) {
@@ -69,30 +75,36 @@ function Home() {
     registerCourse(CURRICULUM_SLUG, CURRICULUM_TITLE, TOTAL_LESSONS);
   }, [registerCourse]);
 
-  const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
+  const lessonsDone = doneLessons.size;
   const { items: dueItems, total: dueTotal } = useDueDrills();
-  const { challenge, doneToday: challengeDone } = useDailyChallenge(completed);
-  const [mapOpen, setMapOpen] = useState(false);
+  const { items: scheduled } = useDrillSchedule();
+  const { challenge, doneToday: challengeDone } = useDailyChallenge(doneLessons);
 
   const maxOverdue = dueItems[0]?.overdueDays ?? 0;
   const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
 
   const doneToday = state.history[dayKey()] ?? 0;
   const goalPct = Math.min(100, Math.round((doneToday / Math.max(state.dailyGoal, 1)) * 100));
+  // The counters wait for the first lesson: before it they would only be zeros.
+  const started = lessonsDone > 0 || state.xp > 0 || streak > 0;
 
   // One-line reason for the recommendation, from the learner's own drill history.
   const [recommendation, setRecommendation] = useState<{ reason: string } | null>(null);
   useEffect(() => {
-    const top = skillsToPractise(completed)[0];
+    const top = skillsToPractise(doneLessons)[0];
     setRecommendation(top ? { reason: top.reason } : null);
-  }, [completed]);
+  }, [doneLessons]);
 
-  const nextIndex = nextLessonIndex(completed);
+  const nextIndex = nextLessonIndex(doneLessons);
   const next = lessonAt(nextIndex);
-  const finished = completed >= TOTAL_LESSONS;
+  const finished = lessonsDone >= TOTAL_LESSONS;
   const unit = unitById(next?.unitId ?? "claims");
   const accent = unitAccent(unit.id);
   const minutes = Math.max(5, (next?.drills.length ?? 4) * 2);
+
+  const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
+  const here = units.find((u) => u.state === "current") ?? units.find((u) => u.state === "open");
+  const where = here ?? units[units.length - 1]!;
 
   if (gate === "checking") {
     return (
@@ -105,7 +117,7 @@ function Home() {
   return (
     <PhoneFrame>
       <div className="min-h-full px-5 pb-10">
-        {/* Header: who you are, how you're doing today */}
+        {/* Header: who you are, and how you're doing once there is something to show */}
         <header className="flex items-center gap-3 pt-6">
           <Link to="/profile" aria-label="Open profile" className="shrink-0">
             <CompanionAura
@@ -115,27 +127,31 @@ function Home() {
             />
           </Link>
 
-          <Link
-            to="/progress"
-            className="flex items-center gap-1.5 rounded-full px-1 py-1"
-            aria-label={`${streak} day streak`}
-          >
-            <StreakFlame streak={streak} />
-            <span className="text-base font-bold text-foreground">{streak}</span>
-          </Link>
+          {started && (
+            <>
+              <Link
+                to="/progress"
+                className="flex items-center gap-1.5 rounded-full px-1 py-1"
+                aria-label={`${streak} day streak`}
+              >
+                <StreakFlame streak={streak} />
+                <span className="text-base font-bold text-foreground">{streak}</span>
+              </Link>
 
-          <span className="flex items-center gap-1 text-sm font-bold text-foreground">
-            <Star aria-hidden className="h-4 w-4 text-xp" />
-            {state.xp.toLocaleString()}
-          </span>
-
-          <span className="ml-auto shrink-0">
-            <ProgressRing pct={goalPct} size={44} stroke={5}>
-              <span className="text-[11px] font-bold text-foreground">
-                {Math.min(doneToday, state.dailyGoal)}/{state.dailyGoal}
+              <span className="flex items-center gap-1 text-sm font-bold text-foreground">
+                <Star aria-hidden className="h-4 w-4 text-xp" />
+                {state.xp.toLocaleString()}
               </span>
-            </ProgressRing>
-          </span>
+
+              <span className="ml-auto shrink-0">
+                <ProgressRing pct={goalPct} size={44} stroke={5}>
+                  <span className="text-[11px] font-bold text-foreground">
+                    {Math.min(doneToday, state.dailyGoal)}/{state.dailyGoal}
+                  </span>
+                </ProgressRing>
+              </span>
+            </>
+          )}
         </header>
 
         {/* The main action, unmissable and in this unit's colour */}
@@ -147,7 +163,7 @@ function Home() {
             className="text-[11px] font-bold uppercase tracking-wide"
             style={{ color: accent.color }}
           >
-            {finished ? "Curriculum complete" : `${unit.emoji} ${unit.title}`}
+            {finished ? "Curriculum complete" : `Up next · ${unit.title}`}
           </p>
           <h1 className="mt-1.5 text-2xl leading-tight">{next?.title}</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{next?.objective}</p>
@@ -170,6 +186,43 @@ function Home() {
             {finished ? "Practise again" : "Start lesson"}
           </Button>
         </section>
+
+        <CompanionOffer lessonsDone={lessonsDone} />
+
+        {/* Reviews: a card when something is due, one quiet line when something is scheduled */}
+        {dueTotal > 0 ? (
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/review" })}
+            className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left"
+          >
+            <span
+              aria-hidden
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary-text"
+            >
+              {dueTotal}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-foreground">Today's review</span>
+              <span className="block text-xs leading-relaxed text-muted-foreground">
+                {urgency === "piling"
+                  ? `Oldest is ${maxOverdue} days overdue.`
+                  : "New scenarios, same skills."}
+              </span>
+            </span>
+            <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </button>
+        ) : (
+          scheduled.length > 0 && (
+            <Link
+              to="/schedule"
+              className="mt-3 flex min-h-11 items-center gap-2 px-1 text-[13px] font-semibold text-muted-foreground"
+            >
+              <Check aria-hidden className="h-4 w-4 text-success" />
+              No reviews due. {nextReviewLine(scheduled)}
+            </Link>
+          )
+        )}
 
         {/* Daily challenge */}
         {challenge && (
@@ -198,79 +251,40 @@ function Home() {
           </button>
         )}
 
-        {/* Today's review */}
-        <button
-          type="button"
-          onClick={() => navigate({ to: dueTotal === 0 ? "/schedule" : "/review" })}
-          className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left"
-        >
-          <span
-            aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary-text"
-          >
-            {dueTotal}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-foreground">Today's review</span>
-            <span className="block text-xs leading-relaxed text-muted-foreground">
-              {dueTotal === 0
-                ? "Nothing due. Every drill is sitting comfortably."
-                : urgency === "piling"
-                  ? `Oldest is ${maxOverdue} days overdue.`
-                  : "New scenarios, same skills."}
-            </span>
-          </span>
-          <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </button>
-
         <WeeklyRecapCard className="mt-3" />
 
-        {/* The map sits below the action, as a preview you can open full screen */}
-        <section className="mt-6 border-t border-border pt-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-bold text-foreground">Your thinking map</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Seven reasoning skills, and the ideas they share.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setMapOpen(true)}
-              className="shrink-0 gap-1.5 text-xs font-bold text-muted-foreground"
+        {/* The seven units as one strip; the path itself lives under My Path */}
+        <section className="mt-6 border-t border-border pt-5" aria-labelledby="path-heading">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="path-heading" className="text-lg">
+              Your path
+            </h2>
+            <Link
+              to="/courses"
+              className="flex min-h-11 items-center text-[13px] font-bold text-primary-text"
             >
-              <Expand aria-hidden className="h-3.5 w-3.5" /> Expand
-            </Button>
+              Open
+            </Link>
           </div>
-
-          <div className="mt-3">
-            <ThinkingGraph completed={completed} compact />
+          <div aria-hidden className="mt-1 flex gap-1.5">
+            {units.map((u) => (
+              <span key={u.unit.id} className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                <span
+                  className="block h-full rounded-full bg-primary"
+                  style={{
+                    width: `${u.state === "current" ? Math.max(u.pct, 35) : u.pct}%`,
+                    opacity: u.state === "current" ? 0.55 : 1,
+                  }}
+                />
+              </span>
+            ))}
           </div>
+          <p className="mt-2 text-[13px] font-semibold text-muted-foreground">
+            Unit {where.index + 1} of {units.length} · {where.unit.title} · {where.completed} of{" "}
+            {where.total} lessons
+          </p>
         </section>
       </div>
-
-      {mapOpen && (
-        <div className="fixed inset-0 z-[60] overflow-y-auto bg-background px-5 pb-10">
-          <div className="mx-auto max-w-[600px]">
-            <div className="flex items-center justify-between gap-3 pt-6">
-              <h2 className="text-lg font-bold">Your thinking map</h2>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Close map"
-                onClick={() => setMapOpen(false)}
-                className="h-11 w-11 rounded-full"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <ThinkingGraph completed={completed} />
-          </div>
-        </div>
-      )}
     </PhoneFrame>
   );
 }

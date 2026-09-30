@@ -49,7 +49,8 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, streak, hydrated, clearCelebration, buyFreeze, clearFreezeSaved } = useProgress();
+  const { state, streak, hydrated, doneLessons, clearCelebration, buyFreeze, clearFreezeSaved } =
+    useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -150,13 +151,12 @@ function ProgressScreen() {
           onOpen={() => setSheetOpen(true)}
         />
 
-        <SkillsCard units={analytics?.units ?? null} completed={lessonsDone} />
+        <SkillsCard units={analytics?.units ?? null} done={doneLessons} />
 
         {/* Near-miss pull */}
         {nearMiss && (
           <Link
-            to="/course/$slug"
-            params={{ slug: nearMiss.slug }}
+            to="/courses"
             className="mt-4 flex w-full animate-rise-in items-center gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4 text-left shadow-soft transition-transform hover:-translate-y-0.5"
             style={{ animationDelay: "120ms" }}
           >

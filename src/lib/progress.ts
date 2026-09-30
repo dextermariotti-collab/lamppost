@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
 import { buyStreakFreeze } from "./wallet.functions";
@@ -22,6 +22,7 @@ import {
   withWeeklyXp,
   type RewardsSnapshot,
 } from "./rewards-state";
+import { CURRICULUM_SLUG } from "./curriculum";
 import { dayKey, shiftDay } from "./days";
 import { migrateHistoryToLocalDays, readActivityTimes } from "./progress-migrate";
 import {
@@ -37,6 +38,7 @@ import {
   applyServerPurchase,
   applyUnlockLessons,
   canBuyFreeze,
+  doneLessonIndexes,
   effectiveStreak,
   gemsEarned,
   mergeAccountProgress,
@@ -465,6 +467,9 @@ export function useProgress() {
     [update],
   );
 
+  /** The lessons finished, by 0-based index. Any lesson can be started; this is what is done. */
+  const doneLessons = useMemo(() => new Set(doneLessonIndexes(state, CURRICULUM_SLUG)), [state]);
+
   // The one streak number every screen shows (see effectiveStreak).
   const streak = hydrated ? effectiveStreak(state, dayKey()) : 0;
 
@@ -472,6 +477,7 @@ export function useProgress() {
     state,
     streak,
     hydrated,
+    doneLessons,
     registerCourse,
     unlockLessons,
     completeLesson,

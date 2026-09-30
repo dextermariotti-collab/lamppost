@@ -1,30 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LegalFooter } from "@/components/LegalFooter";
-import { ArrowRight, Check, Compass, Sparkles, Wand2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { LegalFooter } from "@/components/LegalFooter";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
+import { StepView } from "@/components/steps/StepView";
 import { Button } from "@/components/ui/button";
-import {
-  markOnboardingSeen,
-  saveCompanionForUser,
-  useSessionUser,
-  writeDraft,
-} from "@/lib/companion-store";
-import {
-  COMPANION_ACCESSORIES,
-  COMPANION_EXPRESSIONS,
-  COMPANION_PALETTES,
-  COMPANION_PRESETS,
-  companionFromPreset,
-  paletteById,
-  presetById,
-  type Companion,
-} from "@/lib/companions";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { markOnboardingSeen } from "@/lib/companion-store";
+import { companionFromPreset, type Companion } from "@/lib/companions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS, UNITS } from "@/lib/curriculum";
 import type { ExerciseKind } from "@/lib/exercises";
-import { MOTIVATIONS, TIME_OPTIONS, saveIntent, type Motivation } from "@/lib/onboarding";
+import { FIRST_QUESTION, TIME_OPTIONS, saveIntent } from "@/lib/onboarding";
 import { useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 
@@ -34,13 +22,12 @@ export const Route = createFileRoute("/onboarding")({
       { title: "Get set up — Lamppost" },
       {
         name: "description",
-        content:
-          "Tell Lamppost what brings you here and how much time you have each day, and meet the companion who practises with you.",
+        content: "Try one real question, set a daily goal and start. No account needed.",
       },
       { property: "og:title", content: "Get set up — Lamppost" },
       {
         property: "og:description",
-        content: "Two questions, an optional placement check, and your companion.",
+        content: "One real question, a daily goal, and you are in.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -49,50 +36,29 @@ export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
 
-const INTRO = {
-  icon: Wand2,
-  title: "Think clearer, argue better",
-  body: "Seven units, from naming hidden assumptions to reading charts, headlines and AI answers more carefully. Short daily drills, reviews that come back after 1, 3, 7 and 14 days, and a companion who practises alongside you.",
-} as const;
+/** The three screens, in order. The dots and the flow both read from this. */
+const STEPS = ["intro", "question", "setup"] as const;
 
-/** Steps, in order. The stepper dots and the flow both read from this. */
-const STEPS = ["intro", "why", "time", "placement", "pick"] as const;
+type Start = "beginning" | "placement" | "choose";
 
 function Onboarding() {
   const navigate = useNavigate();
-  const { userId } = useSessionUser();
   const { unlockLessons, setDailyGoal } = useProgress();
   const [step, setStep] = useState(0);
-  const [companion, setCompanion] = useState<Companion>(companionFromPreset("scout"));
-
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const [placing, setPlacing] = useState(false);
   const current = STEPS[step];
+  const scout = useMemo(() => companionFromPreset("scout"), []);
 
-  const finish = async (chosen: Companion) => {
+  const finish = (to: "/" | "/courses" = "/") => {
     markOnboardingSeen();
-    if (userId) {
-      try {
-        await saveCompanionForUser(userId, chosen);
-      } catch {
-        writeDraft(chosen);
-      }
-      navigate({ to: "/", replace: true });
-      return;
-    }
-    writeDraft(chosen);
-    navigate({ to: "/auth" });
-  };
-
-  const skip = () => {
-    markOnboardingSeen();
-    navigate({ to: "/", replace: true });
+    navigate({ to, replace: true });
   };
 
   return (
     <PhoneFrame showNav={false}>
-      <div className="flex min-h-full flex-col px-6 pb-8">
+      <div className="flex min-h-full flex-col px-6 pb-4">
         <div className="flex items-center justify-between pt-4">
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5" aria-hidden>
             {STEPS.map((id, i) => (
               <span
                 key={id}
@@ -103,37 +69,18 @@ function Onboarding() {
               />
             ))}
           </div>
-          <button onClick={skip} className="text-xs font-bold text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => finish()}
+            className="flex min-h-11 items-center px-1 text-xs font-bold text-muted-foreground"
+          >
             Skip
           </button>
         </div>
 
-        {current === "intro" && <IntroStep onNext={next} />}
-
-        {current === "why" && (
-          <WhyStep
-            companion={companion}
-            onDone={(motivation) => {
-              saveIntent({ motivation });
-              next();
-            }}
-          />
-        )}
-
-        {current === "time" && (
-          <TimeStep
-            companion={companion}
-            onDone={(minutes, goal) => {
-              saveIntent({ minutesPerDay: minutes });
-              setDailyGoal(goal);
-              next();
-            }}
-          />
-        )}
-
-        {current === "placement" && (
+        {placing ? (
           <PlacementStep
-            companion={companion}
+            companion={scout}
             onDone={(correct, _total, skipped, unlocked) => {
               saveIntent({
                 placementScore: skipped ? null : correct,
@@ -142,171 +89,174 @@ function Onboarding() {
               if (!skipped && unlocked > 0) {
                 unlockLessons(CURRICULUM_SLUG, CURRICULUM_TITLE, unlocked, TOTAL_LESSONS);
               }
-              next();
+              finish();
             }}
           />
-        )}
-
-        {current === "pick" && (
-          <PickStep
-            selected={companion.preset}
-            onSelect={(presetId) => setCompanion(companionFromPreset(presetId))}
-            onNext={() => void finish(companion)}
-          />
+        ) : (
+          <>
+            {current === "intro" && <IntroStep companion={scout} onNext={() => setStep(1)} />}
+            {current === "question" && <QuestionStep onNext={() => setStep(2)} />}
+            {current === "setup" && (
+              <SetupStep
+                onDone={({ minutes, goal }, start) => {
+                  saveIntent({ minutesPerDay: minutes });
+                  setDailyGoal(goal);
+                  if (start === "placement") setPlacing(true);
+                  else finish(start === "choose" ? "/courses" : "/");
+                }}
+              />
+            )}
+          </>
         )}
       </div>
-      <LegalFooter />
+      <LegalFooter compact />
     </PhoneFrame>
   );
 }
 
-function IntroStep({ onNext }: { onNext: () => void }) {
-  const Icon = INTRO.icon;
+function IntroStep({ companion, onNext }: { companion: Companion; onNext: () => void }) {
   return (
     <div className="flex flex-1 animate-rise-in flex-col items-center text-center">
       <div className="mt-10">
-        <CompanionAvatar companion={companionFromPreset("scout")} size={168} animate />
+        <CompanionAvatar companion={companion} size={110} />
       </div>
-      <span className="mt-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary-text">
-        <Icon className="h-5 w-5" />
-      </span>
-      <h1 className="mt-4 text-2xl leading-tight">{INTRO.title}</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{INTRO.body}</p>
-      <button
+      <h1 className="mt-8 text-3xl leading-tight">Practise spotting weak arguments</h1>
+      <p className="mt-3 text-base text-muted-foreground">
+        Short interactive lessons. No account needed.
+      </p>
+      <Button
+        type="button"
         onClick={onNext}
-        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
+        className="mt-10 h-14 w-full rounded-full text-base font-semibold"
       >
-        Let's go <ArrowRight className="h-4 w-4" />
-      </button>
+        Try one question
+      </Button>
     </div>
   );
 }
 
-/** The companion's line only appears once something has actually been chosen. */
-function Reaction({ companion, line }: { companion: Companion; line: string | null }) {
-  if (!line) return null;
+/** A real question with the real feedback, so the app shows itself in about twenty seconds. */
+function QuestionStep({ onNext }: { onNext: () => void }) {
+  const [answered, setAnswered] = useState(false);
   return (
-    <div className="mt-4 flex animate-rise-in items-end gap-2">
-      <CompanionAvatar companion={{ ...companion, expression: "excited" }} size={48} />
-      <p className="flex-1 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-3 py-2 text-[13px] font-semibold text-accent-foreground">
-        {line}
-      </p>
-    </div>
-  );
-}
-
-function OptionRow({
-  active,
-  label,
-  blurb,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  blurb: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "w-full rounded-2xl border-2 p-3.5 text-left transition-all",
-        active ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+    <div className="flex flex-1 animate-rise-in flex-col pt-4">
+      <StepView step={FIRST_QUESTION} onResolve={() => setAnswered(true)} />
+      {answered && (
+        <Button
+          type="button"
+          onClick={onNext}
+          className="mt-4 h-14 w-full animate-rise-in rounded-full text-base font-semibold"
+        >
+          Continue <ArrowRight aria-hidden className="h-4 w-4" />
+        </Button>
       )}
-    >
-      <p className="text-sm font-bold text-foreground">{label}</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{blurb}</p>
-    </button>
-  );
-}
-
-function WhyStep({
-  companion,
-  onDone,
-}: {
-  companion: Companion;
-  onDone: (motivation: Motivation) => void;
-}) {
-  const [chosen, setChosen] = useState<Motivation | null>(null);
-  const reaction = MOTIVATIONS.find((m) => m.id === chosen)?.reaction ?? null;
-
-  return (
-    <div className="flex flex-1 animate-rise-in flex-col">
-      <h1 className="mt-6 text-2xl leading-tight">What brings you to Lamppost?</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        It shapes the examples you'll see. Pick the closest one.
-      </p>
-
-      <div className="mt-4 space-y-2.5">
-        {MOTIVATIONS.map((option) => (
-          <OptionRow
-            key={option.id}
-            active={chosen === option.id}
-            label={option.label}
-            blurb={option.blurb}
-            onClick={() => setChosen(option.id)}
-          />
-        ))}
-      </div>
-
-      <Reaction companion={companion} line={reaction} />
-
-      <Button
-        disabled={!chosen}
-        onClick={() => chosen && onDone(chosen)}
-        className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
-      >
-        Next <ArrowRight className="h-4 w-4" />
-      </Button>
     </div>
   );
 }
 
-function TimeStep({
-  companion,
+const START_OPTIONS: { id: Start; label: string; blurb: string; tag?: string }[] = [
+  {
+    id: "beginning",
+    label: "From the beginning",
+    blurb: "Unit 1 of 7. The suggested order.",
+    tag: "Recommended",
+  },
+  {
+    id: "placement",
+    label: "Skip what I already know",
+    blurb: "Five quick questions, no way to fail.",
+  },
+  { id: "choose", label: "Choose a unit", blurb: "Every unit is open from day one." },
+];
+
+/** The two choices that change anything: how much a day, and where to start. */
+function SetupStep({
   onDone,
 }: {
-  companion: Companion;
-  onDone: (minutes: number, goal: number) => void;
+  onDone: (time: { minutes: number; goal: number }, start: Start) => void;
 }) {
-  const [chosen, setChosen] = useState<number | null>(null);
-  const option = TIME_OPTIONS.find((o) => o.minutes === chosen);
+  const [minutes, setMinutes] = useState(15);
+  const [start, setStart] = useState<Start>("beginning");
+  const time = TIME_OPTIONS.find((o) => o.minutes === minutes) ?? TIME_OPTIONS[1]!;
 
   return (
     <div className="flex flex-1 animate-rise-in flex-col">
-      <h1 className="mt-6 text-2xl leading-tight">How much time per day?</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        This sets your daily goal. You can change it in settings.
-      </p>
+      <h1 className="mt-6 text-3xl leading-tight">Set up your practice</h1>
 
-      <div className="mt-4 space-y-2.5">
-        {TIME_OPTIONS.map((o) => (
-          <OptionRow
-            key={o.minutes}
-            active={chosen === o.minutes}
-            label={o.label}
-            blurb={o.goal === 1 ? "One lesson most days" : `${o.goal} lessons a day`}
-            onClick={() => setChosen(o.minutes)}
-          />
+      <p id="goal-label" className="mt-6 text-sm font-bold">
+        Daily goal
+      </p>
+      <div role="group" aria-labelledby="goal-label" className="mt-2 flex gap-2">
+        {TIME_OPTIONS.map((option) => (
+          <button
+            key={option.minutes}
+            type="button"
+            aria-pressed={minutes === option.minutes}
+            onClick={() => setMinutes(option.minutes)}
+            className={cn(
+              "min-h-11 flex-1 rounded-xl text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              minutes === option.minutes
+                ? "bg-primary text-primary-foreground"
+                : "border-2 border-border bg-card text-foreground",
+            )}
+          >
+            {option.minutes} min
+          </button>
         ))}
       </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        {time.goal === 1 ? "One lesson most days." : `${time.goal} lessons a day.`} You can change
+        it in Settings.
+      </p>
 
-      <Reaction companion={companion} line={option?.reaction ?? null} />
-
-      <Button
-        disabled={!option}
-        onClick={() => option && onDone(option.minutes, option.goal)}
-        className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
+      <p id="start-label" className="mt-6 text-sm font-bold">
+        Where do you want to start?
+      </p>
+      <RadioGroup
+        value={start}
+        onValueChange={(next) => setStart(next as Start)}
+        aria-labelledby="start-label"
+        className="mt-2"
       >
-        Next <ArrowRight className="h-4 w-4" />
-      </Button>
+        {START_OPTIONS.map((option) => (
+          <label
+            key={option.id}
+            className={cn(
+              "flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border-2 px-4 py-3",
+              start === option.id ? "border-primary bg-primary-soft" : "border-border bg-card",
+            )}
+          >
+            <RadioGroupItem value={option.id} className="mt-0.5 h-5 w-5" />
+            <span>
+              <span className="block text-sm font-bold">
+                {option.label}
+                {option.tag && (
+                  <span className="ml-2 text-[11px] font-extrabold text-primary-text">
+                    {option.tag}
+                  </span>
+                )}
+              </span>
+              <span className="block text-xs text-muted-foreground">{option.blurb}</span>
+            </span>
+          </label>
+        ))}
+      </RadioGroup>
+
+      <div className="mt-auto pt-6">
+        <Button
+          type="button"
+          onClick={() => onDone({ minutes: time.minutes, goal: time.goal }, start)}
+          className="h-14 w-full rounded-full text-base font-semibold"
+        >
+          Start learning
+        </Button>
+      </div>
     </div>
   );
 }
 
 /**
- * Optional five-drill check. Only a near-perfect run skips lessons — being
+ * Optional quick check, chosen on the setup screen. Only a near-perfect run skips lessons — being
  * pushed past a skill you don't have is worse than repeating one you do.
  */
 function PlacementStep({
@@ -339,7 +289,6 @@ function PlacementStep({
     }
     return picks.slice(0, 10);
   }, []);
-  const [started, setStarted] = useState(false);
   const [step, setStep] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [answered, setAnswered] = useState(false);
@@ -353,47 +302,13 @@ function PlacementStep({
   const pair = stopped ? undefined : pairs[step];
   const asked = Math.min(step + (answered ? 1 : 0), pairs.length);
 
-  if (!started) {
-    return (
-      <div className="flex flex-1 animate-rise-in flex-col">
-        <h1 className="mt-6 text-2xl leading-tight">Want to skip what you already know?</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Five quick drills from the first unit. Get nearly all of them right and we'll mark those
-          lessons as done. Get them wrong and nothing changes — it's not a test you can fail.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <CompanionAvatar companion={companion} size={140} animate />
-        </div>
-        <div className="mt-auto space-y-2">
-          <Button
-            onClick={() => setStarted(true)}
-            className="h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
-          >
-            Take the check <ArrowRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => onDone(0, pairs.length, true, 0)}
-            className="h-11 w-full rounded-2xl text-sm font-bold text-muted-foreground"
-          >
-            Start from lesson one
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   if (!pair) {
     // Unlock everything below the hardest lesson they actually got right.
     const unlocked = correct >= 2 ? Math.max(reached - 1, 0) : 0;
     return (
       <div className="flex flex-1 animate-pop-in flex-col items-center text-center">
         <div className="mt-8">
-          <CompanionAvatar
-            companion={{ ...companion, expression: unlocked > 0 ? "excited" : "happy" }}
-            size={140}
-            animate
-          />
+          <CompanionAvatar companion={{ ...companion, expression: "happy" }} size={88} />
         </div>
         <h1 className="mt-5 text-2xl leading-tight">
           {correct} of {Math.max(asked, 1)}
@@ -448,54 +363,6 @@ function PlacementStep({
           <ArrowRight className="h-4 w-4" />
         </Button>
       )}
-    </div>
-  );
-}
-
-function PickStep({
-  selected,
-  onSelect,
-  onNext,
-}: {
-  selected: string;
-  onSelect: (presetId: string) => void;
-  onNext: () => void;
-}) {
-  return (
-    <div className="flex flex-1 animate-rise-in flex-col">
-      <h1 className="mt-6 text-2xl leading-tight">Who's coming with you?</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {presetById(selected).name} — {presetById(selected).blurb}
-      </p>
-
-      <div className="mt-5 grid grid-cols-3 gap-3">
-        {COMPANION_PRESETS.map((preset) => {
-          const active = preset.id === selected;
-          return (
-            <button
-              key={preset.id}
-              onClick={() => onSelect(preset.id)}
-              aria-pressed={active}
-              className={cn(
-                "flex flex-col items-center gap-1 rounded-2xl p-2 pb-2.5 transition-all duration-200",
-                active
-                  ? "bg-primary/10 ring-2 ring-primary shadow-soft -translate-y-0.5"
-                  : "bg-card shadow-soft hover:-translate-y-0.5",
-              )}
-            >
-              <CompanionAvatar companion={companionFromPreset(preset.id)} size={64} />
-              <span className="text-[11px] font-extrabold">{preset.name}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <button
-        onClick={onNext}
-        className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-hero-gradient p-4 text-sm font-semibold text-primary-foreground shadow-card transition-transform hover:-translate-y-0.5"
-      >
-        That's my companion <ArrowRight className="h-4 w-4" />
-      </button>
     </div>
   );
 }

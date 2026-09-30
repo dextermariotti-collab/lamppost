@@ -56,6 +56,12 @@ export type ProgressState = {
     string,
     { topic: string; completed: number; total: number; lastActivityAt?: number }
   >;
+  /**
+   * The lessons finished, by 0-based index, in any order (every unit is open from day one).
+   * `null` is how a save from before this existed reads: the first `completed` lessons.
+   * `courses[slug].completed` is always the number of these.
+   */
+  doneLessons: number[] | null;
   /** unused streak freezes held */
   freezes: number;
   /** YYYY-MM-DD days a freeze covered, so they're only spent once */
@@ -86,6 +92,7 @@ export const DEFAULT_STATE: ProgressState = {
   dailyGoal: 3,
   celebration: null,
   courses: {},
+  doneLessons: null,
   freezes: 1,
   freezeLog: [],
   freezeSaved: null,
@@ -151,6 +158,16 @@ export function deriveInsights(state: ProgressState, now = new Date()) {
   };
 }
 
+/** Lesson indexes finished, sorted. Older saves only kept a count, read as the first lessons. */
+export function doneLessonIndexes(
+  state: Pick<ProgressState, "courses" | "doneLessons">,
+  slug: string,
+): number[] {
+  if (state.doneLessons) return [...state.doneLessons].sort((x, y) => x - y);
+  const count = state.courses[slug]?.completed ?? 0;
+  return Array.from({ length: count }, (_, i) => i);
+}
+
 /** Applies a finished lesson. Returns `prev` untouched when nothing new was earned. */
 export function applyLessonComplete(
   prev: ProgressState,
@@ -161,9 +178,10 @@ export function applyLessonComplete(
 ): ProgressState {
   const { slug, topic, index, total } = lesson;
   const existing = prev.courses[slug] ?? { topic, completed: 0, total };
-  const completed = Math.max(existing.completed, index + 1);
-  const gained = completed > existing.completed;
-  if (!gained) return prev;
+  const before = doneLessonIndexes(prev, slug);
+  if (before.includes(index)) return prev;
+  const doneLessons = [...before, index].sort((x, y) => x - y);
+  const completed = doneLessons.length;
 
   const history = { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 };
   const advanced = advanceStreak(prev, today);
@@ -221,11 +239,12 @@ export function applyLessonComplete(
       ...prev.courses,
       [slug]: { topic, completed, total, lastActivityAt: now },
     },
+    doneLessons,
   };
 }
 
 /**
- * Marks the first `count` lessons as already known — used by the optional
+ * Marks the first `count` lessons as already known (added to any already finished) — used by the optional
  * onboarding placement check. No XP, no streak: nothing was practised.
  */
 export function applyUnlockLessons(
@@ -236,11 +255,18 @@ export function applyUnlockLessons(
   total: number,
 ): ProgressState {
   const existing = prev.courses[slug] ?? { topic, completed: 0, total };
-  const completed = Math.max(existing.completed, Math.min(count, total));
-  if (completed === existing.completed) return prev;
+  const before = doneLessonIndexes(prev, slug);
+  const known = new Set(before);
+  for (let i = 0; i < Math.min(count, total); i++) known.add(i);
+  if (known.size === before.length) return prev;
+  const doneLessons = [...known].sort((x, y) => x - y);
   return {
     ...prev,
-    courses: { ...prev.courses, [slug]: { ...existing, topic, total, completed } },
+    courses: {
+      ...prev.courses,
+      [slug]: { ...existing, topic, total, completed: doneLessons.length },
+    },
+    doneLessons,
   };
 }
 

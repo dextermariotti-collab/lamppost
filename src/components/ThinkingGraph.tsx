@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Check, Lock } from "lucide-react";
+import { Check } from "lucide-react";
 import { useMemo, useState } from "react";
 import { readAttemptStore } from "@/lib/exercise-store";
 import { lessonAt, unitById } from "@/lib/curriculum";
 import { Button } from "@/components/ui/button";
-import { CURRICULUM_SLUG, LESSONS_PER_UNIT, lessonIndexOf, unitProgress } from "@/lib/curriculum";
+import { CURRICULUM_SLUG, lessonIndexOf, unitEntryIndex, unitProgress } from "@/lib/curriculum";
 import {
   GRAPH_H,
   GRAPH_W,
@@ -24,15 +24,16 @@ import {
  * never drop below 11px, which is what keeps the Home preview readable.
  */
 export function ThinkingGraph({
-  completed,
+  done,
   compact = false,
 }: {
-  completed: number;
+  /** Lesson indexes finished. */
+  done: ReadonlySet<number>;
   /** Home preview: same map, without the legend and the connection detail panel. */
   compact?: boolean;
 }) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const units = useMemo(() => unitProgress(completed), [completed]);
+  const units = useMemo(() => unitProgress(done), [done]);
   const edges = useMemo(() => routeAllEdges(), []);
   const selected = edges.find((edge) => edge.key === selectedKey) ?? null;
   const currentUnitId = units.find((u) => u.state === "current")?.unit.id ?? units[0]?.unit.id;
@@ -49,14 +50,14 @@ export function ThinkingGraph({
     }
     return best?.unitId ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completed]);
+  }, [done]);
 
-  // Edges are quieter when either end is still locked, so the lit path stands out.
+  // Edges are quieter when either end is not started, so the lit path stands out.
   const lockedUnits = useMemo(
     () =>
       new Set(
         units
-          .filter((u) => u.state === "locked" && u.unit.id !== currentUnitId)
+          .filter((u) => u.state === "open" && u.unit.id !== currentUnitId)
           .map((u) => u.unit.id),
       ),
     [units, currentUnitId],
@@ -116,14 +117,8 @@ export function ThinkingGraph({
               ? "recent"
               : unit.unit.id === currentUnitId
                 ? "active"
-                : "locked";
-          const firstLesson = unit.lessons[0];
-          const target = firstLesson
-            ? Math.max(
-                lessonIndexOf(firstLesson.id) + 1,
-                Math.min(completed + 1, unit.index * LESSONS_PER_UNIT + unit.total),
-              )
-            : 1;
+                : "idle";
+          const target = unitEntryIndex(unit.index, done) + 1;
 
           return (
             <div
@@ -140,15 +135,13 @@ export function ThinkingGraph({
                 to="/course/$slug/lesson/$index"
                 params={{
                   slug: CURRICULUM_SLUG,
-                  index: String(
-                    unit.state === "locked" ? lessonIndexOf(firstLesson?.id ?? "") + 1 : target,
-                  ),
+                  index: String(target),
                 }}
                 className={`knowledge-node knowledge-node-${state}${
                   unit.unit.id === recentUnitId ? " knowledge-node-glow" : ""
                 } relative flex h-full w-full items-center justify-center rounded-full text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                 aria-label={`${unit.unit.title}, ${unit.completed} of ${unit.total} lessons complete${
-                  state === "locked" ? ", not started" : ""
+                  state === "idle" ? ", not started" : ""
                 }`}
               >
                 <svg
@@ -182,14 +175,6 @@ export function ThinkingGraph({
                 >
                   {unit.unit.title}
                 </span>
-                {state === "locked" && (
-                  <span
-                    aria-hidden
-                    className="absolute bottom-2 flex h-4 w-4 items-center justify-center"
-                  >
-                    <Lock className="h-3.5 w-3.5" />
-                  </span>
-                )}
                 {unit.state === "complete" && (
                   <span
                     aria-hidden
@@ -211,7 +196,7 @@ export function ThinkingGraph({
               aria-hidden
               className="h-3 w-3 rounded-full border-2 border-dashed border-graph-edge"
             />{" "}
-            locked
+            not started
           </li>
           <li className="flex items-center gap-1.5">
             <span aria-hidden className="h-3 w-3 rounded-full border-2 border-primary" /> in

@@ -52,6 +52,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     state,
     streak,
     hydrated,
+    doneLessons,
     completeLesson,
     recordPractice,
     recordExercise,
@@ -282,7 +283,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
 
     const perfect = answeredCount > 0 && accuracy === 100;
     const accent = unitAccent(meta?.unitId ?? "claims");
-    const unitLessonsDone = unitProgress(completedLessons).find((u) => u.unit.id === meta?.unitId);
+    const unitLessonsDone = unitProgress(doneLessons).find((u) => u.unit.id === meta?.unitId);
 
     return (
       <PhoneFrame showNav={false}>
@@ -433,7 +434,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => navigate({ to: "/course/$slug", params: { slug } })}
+              onClick={() => navigate({ to: "/courses" })}
               className="h-10 w-full rounded-full text-sm font-bold text-muted-foreground"
             >
               See my path
@@ -447,7 +448,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
   return (
     <PhoneFrame showNav={false}>
       <ScreenHeader
-        backTo="/course/$slug"
+        backTo="/courses"
         right={
           combo >= 2 ? (
             <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">

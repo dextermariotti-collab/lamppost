@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronRight, Lock, Timer } from "lucide-react";
+import { Check, ChevronDown, Circle, Play, Timer } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import {
@@ -9,7 +9,9 @@ import {
   LESSONS_PER_UNIT,
   TOTAL_LESSONS,
   lessonIndexOf,
+  nextLessonIndex,
   unitProgress,
+  type UnitProgress,
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
@@ -37,16 +39,16 @@ export const Route = createFileRoute("/courses")({
 });
 
 function MyPath() {
-  const { state, registerCourse } = useProgress();
+  const { state, doneLessons, registerCourse } = useProgress();
   useCurriculumCourse();
 
   useEffect(() => {
     registerCourse(CURRICULUM_SLUG, CURRICULUM_TITLE, TOTAL_LESSONS);
   }, [registerCourse]);
 
-  const completed = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
-  const units = useMemo(() => unitProgress(completed), [completed]);
-
+  const completed = doneLessons.size;
+  const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
+  const nextIndex = nextLessonIndex(doneLessons);
   const { items: dueItems } = useDueDrills(100);
 
   /** Reviews due, grouped by which unit the lesson belongs to. */
@@ -59,7 +61,15 @@ function MyPath() {
     return map;
   }, [dueItems]);
 
+  // The unit holding the next lesson starts open; opening another closes it.
+  const [openUnit, setOpenUnit] = useState<number>(Math.floor(nextIndex / LESSONS_PER_UNIT));
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    if (!touched) setOpenUnit(Math.floor(nextIndex / LESSONS_PER_UNIT));
+  }, [nextIndex, touched]);
+
   const pct = Math.round((completed / TOTAL_LESSONS) * 100);
+  void state;
 
   return (
     <PhoneFrame>
@@ -71,85 +81,145 @@ function MyPath() {
             ` · ${dueItems.length} review${dueItems.length === 1 ? "" : "s"} due`}
         </p>
 
-        <div className="mt-5 space-y-3">
-          {units.map((unit, i) => {
-            const due = dueByUnit[i] ?? 0;
-            const firstLesson = unit.lessons[0];
-            const target =
-              unit.completed > 0 && unit.state !== "complete"
-                ? completed + 1
-                : lessonIndexOf(firstLesson?.id ?? "") + 1;
-            return (
-              <Link
-                key={unit.unit.id}
-                to="/course/$slug/lesson/$index"
-                params={{ slug: CURRICULUM_SLUG, index: String(Math.max(1, target)) }}
-                style={{ animationDelay: `${i * 60}ms` }}
-                className={`flex animate-rise-in items-center gap-3 rounded-3xl border-2 p-4 shadow-soft transition-transform hover:-translate-y-0.5 ${
-                  unit.state === "complete"
-                    ? "border-success/40 bg-success/5"
-                    : unit.state === "locked"
-                      ? "border-dashed border-border bg-card opacity-60"
-                      : due > 0
-                        ? "border-primary/35 bg-card"
-                        : "border-transparent bg-card"
-                }`}
-              >
-                <div className="relative shrink-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-xl">
-                    <span aria-hidden>{unit.unit.emoji}</span>
-                  </div>
-                  {unit.state === "locked" && (
-                    <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground shadow-soft">
-                      <Lock className="h-3 w-3" strokeWidth={3} />
-                    </span>
-                  )}
-                  {unit.state === "complete" && (
-                    <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-success text-success-foreground shadow-soft">
-                      <Check className="h-3 w-3" strokeWidth={3} />
-                    </span>
-                  )}
-                </div>
+        <ul className="mt-5 space-y-3">
+          {units.map((unit) => (
+            <UnitCard
+              key={unit.unit.id}
+              unit={unit}
+              due={dueByUnit[unit.index] ?? 0}
+              open={openUnit === unit.index}
+              nextIndex={nextIndex}
+              done={doneLessons}
+              onToggle={() => {
+                setTouched(true);
+                setOpenUnit((current) => (current === unit.index ? -1 : unit.index));
+              }}
+            />
+          ))}
+        </ul>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="line-clamp-2 text-sm font-bold">
-                      Unit {i + 1} · {unit.unit.title}
-                    </p>
-                    {due > 0 && (
-                      <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary-text">
-                        <Timer className="h-3 w-3" />
-                        {due} due
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
-                    {unit.state === "locked"
-                      ? "Locked · finish the units before it"
-                      : `${unit.unit.blurb} · ${unit.completed}/${unit.total} lessons`}
-                  </p>
-
-                  <div className="mt-2 flex items-center gap-2">
-                    <AnimatedBar pct={unit.pct} className="flex-1" animate={false} />
-                    <span className="text-[11px] font-bold text-muted-foreground">{unit.pct}%</span>
-                  </div>
-                </div>
-
-                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-              </Link>
-            );
-          })}
-        </div>
-
-        <Link
-          to="/course/$slug"
-          params={{ slug: CURRICULUM_SLUG }}
-          className="mt-5 flex items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-primary/40 p-5 text-sm font-bold text-primary-text"
-        >
-          See the full route map
-        </Link>
+        <p className="mt-5 text-[13px] text-muted-foreground">
+          Suggested order. Any unit can be opened whenever you like.
+        </p>
       </div>
     </PhoneFrame>
+  );
+}
+
+function UnitCard({
+  unit,
+  due,
+  open,
+  nextIndex,
+  done,
+  onToggle,
+}: {
+  unit: UnitProgress;
+  due: number;
+  open: boolean;
+  nextIndex: number;
+  done: ReadonlySet<number>;
+  onToggle: () => void;
+}) {
+  const panelId = `unit-${unit.unit.id}`;
+  const start = unit.index * LESSONS_PER_UNIT;
+  return (
+    <li
+      className={`overflow-hidden rounded-3xl border ${
+        unit.state === "complete" ? "border-success/40 bg-success/5" : "border-border bg-card"
+      }`}
+    >
+      <h2 className="font-sans text-base">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={onToggle}
+          className="flex min-h-16 w-full items-center gap-3 p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
+        >
+          <span
+            aria-hidden
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-xl"
+          >
+            {unit.state === "complete" ? (
+              <Check className="h-5 w-5 text-success" strokeWidth={3} />
+            ) : (
+              unit.unit.emoji
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
+              <span className="line-clamp-2 text-sm font-bold">
+                Unit {unit.index + 1} · {unit.unit.title}
+              </span>
+              {due > 0 && (
+                <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary-text">
+                  <Timer aria-hidden className="h-3 w-3" />
+                  {due} due
+                </span>
+              )}
+            </span>
+            <span className="mt-0.5 block text-[11px] font-semibold text-muted-foreground">
+              {unit.unit.blurb} · {unit.completed} of {unit.total} lessons
+            </span>
+            <span className="mt-2 flex items-center gap-2">
+              <AnimatedBar pct={unit.pct} className="flex-1" animate={false} />
+            </span>
+          </span>
+          <ChevronDown
+            aria-hidden
+            className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+      </h2>
+
+      <ul id={panelId} hidden={!open} className="border-t border-border px-2 pb-2 pt-1">
+        {unit.lessons.map((lesson, i) => {
+          const index = lessonIndexOf(lesson.id);
+          const isDone = done.has(index);
+          const isNext = index === nextIndex && !isDone;
+          return (
+            <li key={lesson.id}>
+              <Link
+                to="/course/$slug/lesson/$index"
+                params={{ slug: CURRICULUM_SLUG, index: String(start + i + 1) }}
+                className={`flex min-h-12 items-center gap-3 rounded-2xl px-3 py-2 ${
+                  isNext ? "bg-primary-soft" : ""
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${
+                    isDone
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : isNext
+                        ? "border-primary text-primary-text"
+                        : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {isDone ? (
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  ) : isNext ? (
+                    <Play className="h-3 w-3" fill="currentColor" />
+                  ) : (
+                    <Circle className="h-2 w-2" />
+                  )}
+                </span>
+                <span
+                  className={`min-w-0 flex-1 text-sm ${isNext ? "font-bold" : "font-semibold"} ${
+                    isDone || isNext ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {lesson.title}
+                </span>
+                <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
+                  {isDone ? "Done" : isNext ? "Up next" : `Lesson ${start + i + 1}`}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </li>
   );
 }
