@@ -162,6 +162,25 @@ Asked whether to go serious or all-in on the animal, I kept the companion but ma
 - **Fixed:** the completion overlay said "+100 XP" whatever the real amount; it now says "Progress saved".
 - Not done: testing with real learners. That is the part only you can do.
 
+## Follow-up: Progress and the three step types that stalled (from the design review)
+
+- **Progress opens with what you have learned.** A streak strip (the number, the longest run, seven dots)
+  comes first and opens a sheet with the calendar, freezes and today's goal. Then Skills, with the strongest
+  skill and any under 65% named in words once there are three answers to go on (`lib/progress-view.ts`), and a
+  List / Map switch (the map is the Home graph). Calibration, Achievements, Written responses and This week
+  are one-line rows that open. The streak "N h left" countdown is now "A lesson today keeps the streak going."
+  The per-unit level names ("Proficient" next to 56%) are gone from this list; they read as contradicting the
+  percentage. The streak calendar now has the month and weekday letters.
+- **Sort it** shows one card at a time with all buckets in reach; **Spot the flaw** is one paragraph with the
+  phrases underlined in place and no Try again button; the **evidence updater** keeps the three answers on screen,
+  marked, with the verdict under them and Next last, and hides the hint once a card is answered.
+- **Different from the mock-ups:** a wrong sorted card has no one-tap "Move it to the right bucket" button, because
+  that would hand over the answer and get round "Show me after two misses"; it says why and you move it yourself.
+  Phrases in Spot the flaw are inline text, so they are about 32px tall rather than 44px (WCAG 2.5.8 allows this
+  for targets inside a sentence); `steps-visual.test.tsx` says so.
+- **Found, not fixed:** the badge and level-up pop-up's small label ("BRONZE UNLOCKED") is 2.9:1 on the light
+  theme (`RewardHost.tsx`, tier colours in `BadgeIcon.tsx`).
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { StatTiles, StreakHeadline, TodaySession } from "./ProgressSummary";
+import { StatTiles, TodaySession } from "./ProgressSummary";
 
 const text = (container: HTMLElement) => container.textContent?.replace(/\s+/g, " ") ?? "";
 
@@ -39,15 +39,6 @@ describe("Progress summary blocks", () => {
     rerender(<StatTiles hydrated lessons={3} xp={379} gems={40} />);
     expect(text(container)).toContain("379Total XP");
     expect(text(container)).not.toMatch(/\b0\b/);
-  });
-
-  it("shows the streak the store holds", () => {
-    const { container } = render(
-      <StreakHeadline hydrated streak={2} longestStreak={2} atRisk={false} hoursLeft={5} />,
-    );
-    expect(text(container)).toContain("2");
-    expect(text(container)).toContain("day streak");
-    expect(text(container)).toContain("Longest 2 days");
   });
 
   it("never claims the goal is cleared while the ring says 0", () => {

@@ -2,6 +2,7 @@ import { Flame, Snowflake } from "lucide-react";
 import { useEffect, useState } from "react";
 import { dayKey, shiftDay } from "@/lib/days";
 import type { ProgressState } from "@/lib/progress-core";
+import { calendarRange, weekdayLetter } from "@/lib/progress-view";
 
 /** Streak milestones. The flame grows visibly at each one. */
 export const STREAK_TIERS = [3, 7, 30, 100];
@@ -49,8 +50,9 @@ export function StreakFlame({
 }
 
 /**
- * The last four weeks of real practice. Filled squares are days lessons were
- * finished, snowflakes are days a freeze covered, blanks are days missed.
+ * The last four weeks of real practice, under the month and a row of weekday letters. Filled
+ * squares are days lessons were finished, snowflakes are days a freeze covered, blanks are days
+ * missed, and today has a ring.
  */
 export function StreakCalendar({ state }: { state: ProgressState }) {
   // "Today" is the device's local day, which the server can't know.
@@ -63,6 +65,14 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
 
   return (
     <div className="max-w-[440px]">
+      <p className="mb-2 text-xs font-semibold text-muted-foreground">{calendarRange(today)}</p>
+      <div aria-hidden className="mb-1 grid grid-cols-7 gap-1.5">
+        {days.slice(0, 7).map((day) => (
+          <span key={day} className="text-center text-[10px] font-bold text-muted-foreground">
+            {weekdayLetter(day)}
+          </span>
+        ))}
+      </div>
       <div className="grid grid-cols-7 gap-1.5">
         {days.map((day) => {
           const count = state.history[day] ?? 0;
@@ -78,7 +88,7 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
                   : isFrozen
                     ? "bg-gem/20 text-gem"
                     : "bg-muted text-muted-foreground"
-              } ${isToday ? "ring-2 ring-primary/50" : ""}`}
+              } ${isToday ? "ring-2 ring-primary" : ""}`}
             >
               <span className="relative inline-flex items-center justify-center leading-none">
                 {Number(day.slice(-2))}

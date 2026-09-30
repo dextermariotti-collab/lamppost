@@ -1,58 +1,15 @@
-import { Check, Clock, Gem, Sparkles, Star, Trophy } from "lucide-react";
+import { Check, Gem, Sparkles, Star } from "lucide-react";
 import { CountUp } from "@/components/CountUp";
 import { ProgressRing } from "@/components/ProgressRing";
-import { StreakFlame } from "@/components/StreakCalendar";
 
 /**
- * The three number-heavy blocks at the top of /progress. They take plain props
+ * The number-heavy blocks on /progress. They take plain props
  * and show a neutral dash until `hydrated`: before that the store only holds
  * its server placeholder (all zeros), and printing those as if they were the
  * learner's real numbers is what made the page read "0 XP / 0 day streak".
  */
 
 const PENDING = "–";
-
-export function StreakHeadline({
-  hydrated,
-  streak,
-  longestStreak,
-  atRisk,
-  hoursLeft,
-}: {
-  hydrated: boolean;
-  streak: number;
-  longestStreak: number;
-  atRisk: boolean;
-  hoursLeft: number;
-}) {
-  const flameIntensity = Math.min(1, streak / 30);
-  return (
-    <section className="relative mt-7 animate-rise-in">
-      <span
-        aria-hidden="true"
-        className="lamplight-glow absolute -top-8 -left-6 -z-10 h-40 w-40 rounded-full"
-        style={{ opacity: atRisk ? 0.35 : 0.75 + flameIntensity * 0.25 }}
-      />
-      <div className="flex items-end gap-3">
-        <span className="mb-2">
-          <StreakFlame streak={atRisk ? 0 : streak} size={28} />
-        </span>
-        <p className="font-display text-[3.5rem] leading-none font-extrabold">
-          {hydrated ? <CountUp value={streak} duration={900} /> : PENDING}
-        </p>
-        <p className="mb-2 text-sm font-semibold text-foreground">day streak</p>
-      </div>
-      <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-        <Trophy className="h-3.5 w-3.5" /> Longest {hydrated ? longestStreak : PENDING} days
-      </p>
-      {atRisk && (
-        <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-flame">
-          <Clock className="h-3.5 w-3.5" /> {hoursLeft}h left to keep it alive
-        </p>
-      )}
-    </section>
-  );
-}
 
 export function TodaySession({
   hydrated,

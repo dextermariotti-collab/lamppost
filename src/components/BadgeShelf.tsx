@@ -11,8 +11,8 @@ export function BadgeShelf({ badges }: { badges: BadgeState[] }) {
       {badges.map((badge) => (
         <li
           key={badge.code}
-          className={`flex items-center gap-3 rounded-2xl border border-border bg-card p-3 ${
-            badge.tier ? "" : "opacity-70"
+          className={`flex items-center gap-3 rounded-2xl border border-border p-3 ${
+            badge.tier ? "bg-card" : "bg-muted/40"
           }`}
         >
           <BadgeIcon icon={badge.icon} tier={badge.tier} size={44} />
