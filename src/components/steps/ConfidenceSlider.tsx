@@ -57,6 +57,7 @@ export function ConfidenceSlider({
         picked={picked}
         correct={locked ? step.correct : null}
         locked={locked}
+        judged={locked}
         onPick={setPicked}
       />
 

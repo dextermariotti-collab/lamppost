@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Check, CircleDot, X } from "lucide-react";
 import { choiceClass } from "./choiceClass";
 import type { StepOption } from "@/lib/steps/types";
 
@@ -12,6 +12,7 @@ export function OptionList({
   picked,
   correct,
   locked,
+  judged = true,
   onPick,
   name,
 }: {
@@ -22,6 +23,8 @@ export function OptionList({
   correct: number | null;
   /** No more picking (answered, or the step is finished). */
   locked: boolean;
+  /** False while a pick is only a choice, not yet an answer (the confidence step before it is locked in). */
+  judged?: boolean;
   onPick: (index: number) => void;
   name: string;
 }) {
@@ -29,14 +32,17 @@ export function OptionList({
     <ul className="space-y-2" aria-label={name}>
       {options.map((option, i) => {
         const isRight = correct === i;
-        const isWrongPick = picked === i && correct !== i;
+        const isPending = !judged && picked === i;
+        const isWrongPick = judged && picked === i && correct !== i;
         const state = isRight
           ? "right"
-          : isWrongPick
-            ? "wrong"
-            : locked && correct !== null
-              ? "dim"
-              : "idle";
+          : isPending
+            ? "selected"
+            : isWrongPick
+              ? "wrong"
+              : locked && correct !== null
+                ? "dim"
+                : "idle";
         return (
           <li key={option.text}>
             <button
@@ -50,6 +56,11 @@ export function OptionList({
               {isRight && (
                 <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-success">
                   <Check aria-hidden className="h-4 w-4" /> Correct
+                </span>
+              )}
+              {isPending && (
+                <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-primary-text">
+                  <CircleDot aria-hidden className="h-4 w-4" /> Your pick
                 </span>
               )}
               {isWrongPick && (

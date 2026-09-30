@@ -175,6 +175,16 @@ describe("Confidence slider", () => {
     expect((lock() as HTMLButtonElement).disabled).toBe(false);
   });
 
+  it("marks a pick as 'Your pick' until it is locked in, whether or not it's right", () => {
+    setup((r) => <ConfidenceSlider step={confidenceSample} onResolve={r} />);
+    for (const pick of [/one story isn't enough/, /she saw it herself/]) {
+      click(pick);
+      expect(screen.getByText("Your pick")).toBeTruthy();
+      expect(screen.queryByText("Not this one")).toBeNull();
+      expect(screen.queryByText("Correct")).toBeNull();
+    }
+  });
+
   it("counts touching the slider at its starting value as a choice", () => {
     setup((r) => <ConfidenceSlider step={confidenceSample} onResolve={r} />);
     click(/one story isn't enough/);
