@@ -5,23 +5,17 @@ import { contrast, over, parseColor, readTokens, type Rgb } from "@/test/color";
 
 /**
  * WCAG 2.x AA on the design tokens: 4.5:1 for text, 3:1 for icons, outlines and
- * other graphics. The cascade is reproduced as the browser applies it: `.dark`
- * sits on <html>, `.graph-home` on the Home screen's own element, so the
- * Home screen's light tokens win over `.dark` unless `.dark .graph-home` says
- * otherwise.
+ * other graphics. Every screen shares one light and one dark set of tokens (`.dark`
+ * sits on <html>).
  */
 const css = readFileSync("src/styles.css", "utf8");
 const root = readTokens(css, ":root");
 const dark = readTokens(css, ".dark");
-const home = readTokens(css, ".graph-home");
-const darkHome = readTokens(css, ".dark .graph-home");
 
 type Theme = { name: string; tokens: Record<string, string> };
 const themes: Theme[] = [
   { name: "light", tokens: root },
   { name: "dark", tokens: { ...root, ...dark } },
-  { name: "light Home", tokens: { ...root, ...home } },
-  { name: "dark Home", tokens: { ...root, ...dark, ...home, ...darkHome } },
 ];
 
 const colorOf = (tokens: Record<string, string>, name: string, over_?: Rgb): Rgb => {
@@ -108,24 +102,5 @@ describe("unit accents", () => {
       expect(contrast(accent, background), `${unit} text on page`).toBeGreaterThanOrEqual(TEXT);
       expect(contrast(background, accent), `${unit} button label`).toBeGreaterThanOrEqual(TEXT);
     }
-  });
-});
-
-/** The course map re-themes itself dark with its own tokens; its text has to be readable too. */
-describe("course map theme", () => {
-  const tokens = { ...root, ...readTokens(css, ".course-expedition") };
-
-  it("keeps body and muted text readable on every surface", () => {
-    for (const bg of ["background", "card", "muted"]) {
-      expect(ratio(tokens, "foreground", bg), `foreground on ${bg}`).toBeGreaterThanOrEqual(TEXT);
-      expect(
-        ratio(tokens, "muted-foreground", bg),
-        `muted-foreground on ${bg}`,
-      ).toBeGreaterThanOrEqual(TEXT);
-    }
-  });
-
-  it("puts readable text on the filled primary button", () => {
-    expect(ratio(tokens, "primary-foreground", "primary")).toBeGreaterThanOrEqual(TEXT);
   });
 });

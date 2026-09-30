@@ -185,64 +185,6 @@
   filter: blur(10px);
 }
 
-.graph-home {
-  --background: oklch(0.985 0.003 95);
-  --foreground: oklch(0.25 0.025 288);
-  --card: oklch(0.995 0.002 95);
-  --card-foreground: oklch(0.25 0.025 288);
-  --primary: oklch(0.77634 0.1262 71.72);
-  --primary-foreground: oklch(0.25 0.025 288);
-  /* Amber is a fill here; as text it is darkened to a deep amber. */
-  --primary-text: oklch(0.5 0.11 70);
-  --primary-soft: oklch(0.77634 0.1262 71.72 / 0.12);
-  --muted: oklch(0.92 0.01 85);
-  --muted-foreground: oklch(0.5 0.02 280);
-  --accent: oklch(0.92 0.01 85);
-  --accent-foreground: oklch(0.25 0.025 288);
-  --border: oklch(0.72 0.015 78 / 0.45);
-  --input: oklch(0.65 0.015 78 / 0.45);
-  --ring: oklch(0.77634 0.1262 71.72);
-  --graph-locked: oklch(0.93 0.008 274);
-  --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
-  --graph-edge: oklch(0.33 0.02 280);
-  --graph-locked-border: oklch(0.5 0.02 274);
-  --graph-locked-text: oklch(0.27 0.02 280);
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-graph);
-}
-
-.dark .graph-home {
-  --background: oklch(0.19794 0.01411 278.64);
-  --foreground: oklch(0.94022 0.00702 88.64);
-  --card: oklch(0.19794 0.01411 278.64);
-  --card-foreground: oklch(0.94022 0.00702 88.64);
-  --primary-foreground: oklch(0.19794 0.01411 278.64);
-  --muted: oklch(0.35429 0.02121 274.22);
-  --muted-foreground: oklch(0.78 0.015 273.72);
-  --primary-text: oklch(0.77634 0.1262 71.72);
-  --accent: oklch(0.35429 0.02121 274.22);
-  --accent-foreground: oklch(0.94022 0.00702 88.64);
-  --border: oklch(0.39611 0.01126 78.19 / 0.35);
-  --input: oklch(0.39611 0.01126 78.19 / 0.45);
-  --graph-locked: oklch(0.3 0.02 274);
-  --graph-edge: oklch(0.82 0.01 90);
-  --graph-locked-border: oklch(0.72 0.02 274);
-  --graph-locked-text: oklch(0.94 0.008 88);
-  color-scheme: dark;
-}
-
-.graph-home h1,
-.graph-home h2,
-.graph-home h3,
-.graph-home h4 {
-  font-family: var(--font-graph);
-}
-
-.graph-home nav {
-  font-family: var(--font-graph);
-}
-
 /* Thinking map. Every state keeps its label at >= 4.5:1 and its outline at >= 3:1. */
 .knowledge-node {
   background-color: var(--card);
@@ -305,109 +247,80 @@
   stroke-opacity: 1;
 }
 
-.course-expedition {
-  --background: #383b47;
-  --foreground: #edebe6;
-  --card: #383b47;
-  --card-foreground: #edebe6;
-  --popover: #383b47;
-  --popover-foreground: #edebe6;
-  --primary: #edebe6;
-  --primary-foreground: #383b47;
-  --secondary: #4a4640;
-  --secondary-foreground: #edebe6;
-  --muted: #4a4640;
-  --muted-foreground: #b4b7c2;
-  --accent: #4a4640;
-  --accent-foreground: #edebe6;
-  --border: color-mix(in oklab, #888b96 34%, transparent);
-  --input: color-mix(in oklab, #888b96 42%, transparent);
-  --ring: #edebe6;
-  color-scheme: dark;
-  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+.trail-map {
+  background-color: color-mix(in oklab, var(--background) 96%, var(--primary));
 }
 
-.course-expedition h1,
-.course-expedition h2,
-.course-expedition h3,
-.course-expedition h4,
-.course-expedition nav {
-  font-family: var(--font-graph);
-}
-
-.expedition-map {
-  background-color: color-mix(in oklab, var(--background) 92%, var(--secondary));
-}
-
-.expedition-contour {
+.trail-contour {
   fill: none;
   stroke: var(--muted-foreground);
   stroke-width: 0.24;
   vector-effect: non-scaling-stroke;
 }
 
-.expedition-route-ahead,
-.expedition-route-traveled {
+.trail-route-ahead,
+.trail-route-traveled {
   fill: none;
   stroke-linecap: round;
 }
 
-.expedition-route-ahead {
-  stroke: var(--secondary);
+.trail-route-ahead {
+  stroke: var(--muted-foreground);
+  stroke-opacity: 0.55;
   stroke-width: 2;
   stroke-dasharray: 2 10;
 }
 
-.expedition-route-traveled {
-  stroke: var(--foreground);
+.trail-route-traveled {
+  stroke: var(--primary);
   stroke-width: 2;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: expedition-draw 560ms ease-out forwards;
+  animation: trail-draw 560ms ease-out forwards;
 }
 
-.expedition-node {
-  border: 1px solid var(--border);
-  background: var(--background);
+.trail-node {
+  border: 1px solid var(--input);
+  background: var(--card);
   color: var(--muted-foreground);
   box-shadow: none;
 }
 
-.expedition-node:hover {
+.trail-node:hover {
   background: var(--secondary);
 }
 
-.expedition-node-completed {
-  border-color: var(--foreground);
-  color: var(--background);
+.trail-node-completed {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
 }
 
-.expedition-node-completed .expedition-node-core {
-  background: var(--foreground);
+.trail-node-completed .trail-node-core {
+  background: var(--primary);
 }
 
-.expedition-node-current {
+.trail-node-current {
   border-style: dashed;
-  border-color: var(--foreground);
-  color: var(--foreground);
-  box-shadow: 0 0 0 7px color-mix(in oklab, var(--foreground) 8%, transparent);
+  border-color: var(--primary);
+  color: var(--primary-text);
+  box-shadow: 0 0 0 7px color-mix(in oklab, var(--primary) 10%, transparent);
 }
 
-.expedition-node-current .expedition-node-core {
-  border: 1px solid var(--border);
-  background: var(--secondary);
+.trail-node-current .trail-node-core {
+  border: 1px solid var(--primary);
+  background: var(--primary-soft);
 }
 
-.expedition-node-locked {
-  opacity: 0.58;
+.trail-node-locked {
+  opacity: 0.7;
 }
 
-.expedition-label {
+.trail-label {
   background: transparent;
   border: 0;
 }
 
-@keyframes expedition-draw {
+@keyframes trail-draw {
   from { stroke-dashoffset: 1; }
   to { stroke-dashoffset: 0; }
 }

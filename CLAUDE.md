@@ -124,9 +124,13 @@ the `lessonPart` rate limit; parts already written are read, never counted.
 
 ### UI shell
 Every screen renders inside `components/PhoneFrame.tsx` (bottom nav on phones, sidebar layout at
-≥1024px). Design tokens are CSS variables in `src/styles.css`; `.graph-home` and
-`.course-expedition` re-theme the Home and course-map screens. Light-mode text colours must meet
-WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
+≥1024px). Design tokens are CSS variables in `src/styles.css`. Every screen shares one light and one
+dark set (Settings switches between them): don't re-theme a single screen, because a screen that changes
+colour and type on its own reads as a different app (the Home and course-map screens used to). Text colours
+must meet WCAG AA (4.5:1 body, 3:1 large/graphics) in both sets — `styles.contrast.test.ts` checks it.
+The tone is a calm coach: the companion sits at the edges (a small avatar beside feedback, the tutor chat,
+the sign-up screens) and never shouts; gems, chests and the league live under Profile → Rewards, and
+after a lesson the chest is one quiet row.
 
 ## Security model (read before touching Supabase)
 

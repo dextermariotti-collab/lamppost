@@ -126,7 +126,7 @@ function AuthScreen() {
     <PhoneFrame showNav={false}>
       <div className="flex min-h-full flex-col px-6 pb-8">
         <div className="mt-6 flex animate-rise-in flex-col items-center text-center">
-          <CompanionAvatar companion={companion} size={116} animate />
+          <CompanionAvatar companion={companion} size={88} />
           <h1 className="mt-3 text-2xl">Save {companionName(companion)}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Create an account and your companion, streak and progress follow you everywhere.

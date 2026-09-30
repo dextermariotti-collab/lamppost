@@ -143,6 +143,25 @@ automatically).
   account section) were checked in jsdom, not with a real account, because there is no test login here.
 - Lesson steps in dark mode were checked through token contrast tests, not by eye.
 
+## Follow-up: one calm theme (after the pass above)
+
+Asked whether to go serious or all-in on the animal, I kept the companion but made it a supporting character:
+
+- **One theme.** The course map used to switch to its own dark "expedition" theme, and Home used a different
+  type and colour set (sans headings, amber nav). Both now use the same light and dark tokens as every other
+  screen; dark is a Settings choice, not a per-screen switch. The map's wording is plainer: "Your path", "Up
+  next", "Lesson 2" instead of "Expedition route" and "checkpoints cleared".
+- **Fixed a bug found on the way:** the map's labels were laid out side by side instead of stacked, which
+  squeezed the text (visible as "Lesson / 2" cut off at the edge).
+- **Quieter companion.** Smaller on the sign-up and consent screens, calm "happy" instead of "excited" and
+  no bounce after answers, and the end-of-lesson celebration is smaller. "Nailed it." and "Called it!" became
+  "Correct." and "You called it."
+- **Game layer off the main path.** The reward chest after a lesson, review or challenge is one quiet row
+  ("A reward chest is waiting" and an Open button) instead of a card; the odds and history stay one tap away on
+  the Rewards screen. Streak and XP are unchanged.
+- **Fixed:** the completion overlay said "+100 XP" whatever the real amount; it now says "Progress saved".
+- Not done: testing with real learners. That is the part only you can do.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

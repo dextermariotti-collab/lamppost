@@ -58,7 +58,7 @@ export function PredictionCard({ prediction, companion, choice, onPick }: Props)
             className="flex-1 rounded-2xl border-2 border-primary/30 bg-primary-soft px-4 py-2.5"
           >
             <p className="text-[13px] font-semibold leading-snug text-foreground">
-              {isCorrect ? "Called it!" : "So close — that's the usual trap."}
+              {isCorrect ? "You called it." : "So close — that's the usual trap."}
             </p>
             <p className="mt-1 text-[13px] font-semibold leading-snug text-accent-foreground">
               {prediction.explanation}

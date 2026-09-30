@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Gift, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { ChestOdds } from "@/components/ChestOdds";
 import { Button } from "@/components/ui/button";
 import { dayKey, useProgress, type ChestOutcome } from "@/lib/progress";
 import { describePrize, type ChestSource } from "@/lib/rewards";
@@ -42,63 +41,47 @@ export function ChestOffer({
   return (
     <section
       aria-label="Reward chest"
-      className={`rounded-3xl border border-border bg-card p-4 text-left shadow-soft ${className}`}
+      className={`rounded-2xl border border-border px-4 py-3 text-left ${className}`}
     >
-      <div className="flex items-start gap-3">
-        <span
-          aria-hidden
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-text"
-        >
-          <Gift className="h-5 w-5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-base">{justOpened ? "Inside the chest" : "A reward chest"}</h2>
+      <div className="flex items-center gap-3">
+        <Gift aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <p className="min-w-0 flex-1 text-sm text-muted-foreground">
           {justOpened ? (
-            <p role="status" className="mt-1 animate-pop-in text-sm font-semibold text-foreground">
+            <span role="status" className="animate-pop-in font-semibold text-foreground">
               {describePrize(justOpened)}
-            </p>
+            </span>
+          ) : left === 1 ? (
+            "A reward chest is waiting."
           ) : (
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {left === 1
-                ? "You finished something today, so there's a chest. Most hold a few gems."
-                : `You finished things today, so there are ${left} chests. Most hold a few gems.`}
-            </p>
+            `${left} reward chests are waiting.`
           )}
-          {last && !last.ok && (
-            <p role="alert" className="mt-2 text-[13px] font-semibold text-destructive">
-              {last.message}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {left > 0 && (
-        <Button
-          type="button"
-          onClick={open}
-          disabled={busy}
-          aria-busy={busy}
-          className="mt-3 h-11 w-full rounded-full font-semibold"
-        >
-          {busy ? <Loader2 aria-hidden className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-          {busy ? "Opening…" : justOpened ? "Open the next chest" : "Open the chest"}
-        </Button>
-      )}
-
-      <details className="mt-3">
-        <summary className="flex min-h-11 cursor-pointer items-center text-[13px] font-semibold text-primary-text">
-          What can be inside?
-        </summary>
-        <div className="pb-2">
-          <ChestOdds />
-          <Link
-            to="/rewards"
-            className="mt-2 inline-flex min-h-11 items-center text-[13px] font-semibold text-primary-text underline"
+        </p>
+        {left > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={open}
+            disabled={busy}
+            aria-busy={busy}
+            aria-label={justOpened ? "Open the next chest" : "Open the chest"}
+            className="h-11 shrink-0 rounded-full px-5 font-semibold"
           >
-            Your rewards and chest history
-          </Link>
-        </div>
-      </details>
+            {busy ? <Loader2 aria-hidden className="h-4 w-4 animate-spin" /> : null}
+            {busy ? "Opening" : justOpened ? "Open next" : "Open"}
+          </Button>
+        )}
+      </div>
+      {last && !last.ok && (
+        <p role="alert" className="mt-2 text-[13px] font-semibold text-destructive">
+          {last.message}
+        </p>
+      )}
+      <Link
+        to="/rewards"
+        className="mt-1 inline-flex min-h-11 items-center text-xs font-semibold text-primary-text underline"
+      >
+        What can be inside? Odds and chest history
+      </Link>
     </section>
   );
 }

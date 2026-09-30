@@ -96,14 +96,14 @@ function Home() {
 
   if (gate === "checking") {
     return (
-      <PhoneFrame className="graph-home" showNav={false}>
+      <PhoneFrame showNav={false}>
         <div className="min-h-full" aria-busy="true" />
       </PhoneFrame>
     );
   }
 
   return (
-    <PhoneFrame className="graph-home">
+    <PhoneFrame>
       <div className="min-h-full px-5 pb-10">
         {/* Header: who you are, how you're doing today */}
         <header className="flex items-center gap-3 pt-6">

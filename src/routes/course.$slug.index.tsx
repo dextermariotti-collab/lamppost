@@ -60,7 +60,7 @@ function CoursePath() {
   const finished = completed >= total;
 
   return (
-    <PhoneFrame className="course-expedition">
+    <PhoneFrame>
       <div className="px-5 pb-10 pt-4">
         <header>
           <div className="flex items-center justify-between">
@@ -91,10 +91,10 @@ function CoursePath() {
           </div>
 
           <div className="mt-7 border-l border-primary pl-4">
-            <p className="font-graph text-xs font-bold text-muted-foreground">
+            <p className="text-xs font-bold text-muted-foreground">
               {UNITS.length} units · {total} lessons
             </p>
-            <h1 className="mt-1 font-graph text-3xl font-bold leading-tight text-foreground">
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-foreground">
               {CURRICULUM_TITLE}
             </h1>
             <p className="mt-2 max-w-[19rem] text-sm leading-relaxed text-muted-foreground">
@@ -104,7 +104,7 @@ function CoursePath() {
 
           <div className="mt-6 flex items-end justify-between border-b border-border pb-4">
             <div>
-              <p className="font-graph text-3xl font-bold text-foreground">{pct}%</p>
+              <p className="text-3xl font-bold text-foreground">{pct}%</p>
               <p className="text-[11px] text-muted-foreground">
                 {completed} of {total} lessons
               </p>
@@ -118,7 +118,7 @@ function CoursePath() {
               }
             >
               <Play className="h-4 w-4" />
-              {completed === 0 ? "Begin unit 1" : finished ? "Review route" : "Continue"}
+              {completed === 0 ? "Start lesson 1" : finished ? "Review lessons" : "Continue"}
             </Button>
           </div>
         </header>

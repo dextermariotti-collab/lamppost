@@ -294,16 +294,10 @@ export function StepLesson({
           <span className="lesson-complete-halo absolute h-72 w-72 rounded-full" />
           <SuccessBurst />
           <div className="lesson-complete-content relative z-30">
-            <CompanionAvatar
-              companion={{ ...companion, expression: "excited" }}
-              size={112}
-              pose="cheer"
-            />
+            <CompanionAvatar companion={{ ...companion, expression: "happy" }} size={88} />
             <p className="mt-5 text-sm font-bold text-primary-text">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You worked through it.</h2>
-            <p className="mt-3 text-sm font-semibold text-muted-foreground">
-              +100 XP · Progress saved
-            </p>
+            <p className="mt-3 text-sm font-semibold text-muted-foreground">Progress saved</p>
           </div>
         </div>
       )}

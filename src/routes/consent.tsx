@@ -95,7 +95,7 @@ function ConsentScreen() {
     <PhoneFrame showNav={false}>
       <div className="flex min-h-full flex-col px-6 pb-8">
         <div className="mt-6 flex flex-col items-center text-center">
-          <CompanionAvatar companion={companion} size={96} animate />
+          <CompanionAvatar companion={companion} size={64} />
           <h1 className="mt-3 text-2xl">One more step</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {returning

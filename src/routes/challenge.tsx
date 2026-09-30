@@ -143,7 +143,7 @@ function DailyChallengeScreen() {
                 </div>
                 <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">
                   {result
-                    ? "Called it. A new challenge lands tomorrow."
+                    ? "Correct. A new challenge is ready tomorrow."
                     : "Missed — so that skill is back in your review queue with new material."}
                 </p>
                 <ChestOffer source="challenge" className="mt-6 w-full max-w-sm" />

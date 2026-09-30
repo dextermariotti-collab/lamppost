@@ -95,7 +95,7 @@ export function AnswerFeedbackHost() {
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold text-foreground">
-              {correct ? "Nailed it." : "Not this time."}
+              {correct ? "Correct." : "Not this time."}
             </p>
             {combo >= 3 ? (
               <p className="mt-0.5 flex items-center gap-1 text-[11px] font-bold text-primary-text">
@@ -110,9 +110,8 @@ export function AnswerFeedbackHost() {
           </div>
 
           <CompanionAvatar
-            companion={{ ...companion, expression: correct ? "excited" : "thinking" }}
-            size={48}
-            animate
+            companion={{ ...companion, expression: correct ? "happy" : "thinking" }}
+            size={44}
           />
         </div>
       </div>

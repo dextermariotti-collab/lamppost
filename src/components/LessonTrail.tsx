@@ -99,7 +99,7 @@ export function LessonTrail({
 
   return (
     <section
-      className="expedition-map relative mt-5 overflow-hidden border-y border-border"
+      className="trail-map relative mt-5 overflow-hidden border-y border-border"
       style={{ height }}
     >
       <svg
@@ -112,15 +112,15 @@ export function LessonTrail({
           <path
             key={index}
             d={`M -12 ${56 + index * 118} C 18 ${20 + index * 121}, 40 ${100 + index * 109}, 68 ${62 + index * 121} S 112 ${82 + index * 116}, 124 ${38 + index * 121}`}
-            className="expedition-contour"
+            className="trail-contour"
           />
         ))}
       </svg>
 
       <div className="absolute left-4 top-4 z-10">
-        <p className="font-graph text-xs font-bold text-foreground">Expedition route</p>
+        <p className="text-xs font-bold text-foreground">Your path</p>
         <p className="mt-1 text-[11px] text-muted-foreground">
-          {completed} of {lessons.length} checkpoints cleared
+          {completed} of {lessons.length} lessons done
         </p>
       </div>
 
@@ -130,11 +130,11 @@ export function LessonTrail({
         viewBox={`0 0 100 ${height}`}
         preserveAspectRatio="none"
       >
-        <path d={path} className="expedition-route-ahead" vectorEffect="non-scaling-stroke" />
+        <path d={path} className="trail-route-ahead" vectorEffect="non-scaling-stroke" />
         {currentIndex > 0 && (
           <path
             d={completedPath}
-            className="expedition-route-traveled"
+            className="trail-route-traveled"
             vectorEffect="non-scaling-stroke"
           />
         )}
@@ -152,11 +152,11 @@ export function LessonTrail({
             {firstInUnit && (
               <span
                 className={cn(
-                  "absolute bottom-[4.8rem] whitespace-nowrap text-[10px] font-bold text-muted-foreground",
+                  "absolute bottom-[6.6rem] whitespace-nowrap text-[10px] font-bold text-muted-foreground",
                   isLeft ? "left-0" : "right-0",
                 )}
               >
-                {unitNames?.[node.unit] ?? `Region ${node.unit + 1}`}
+                {unitNames?.[node.unit] ?? `Unit ${node.unit + 1}`}
               </span>
             )}
 
@@ -169,11 +169,11 @@ export function LessonTrail({
               }
               aria-label={`Lesson ${node.index + 1}: ${node.lesson.title}`}
               className={cn(
-                "expedition-node relative h-[4.5rem] w-[4.5rem] rounded-full",
-                `expedition-node-${node.state}`,
+                "trail-node relative h-[4.5rem] w-[4.5rem] rounded-full",
+                `trail-node-${node.state}`,
               )}
             >
-              <span className="expedition-node-core flex h-12 w-12 items-center justify-center rounded-full">
+              <span className="trail-node-core flex h-12 w-12 items-center justify-center rounded-full">
                 {node.state === "completed" ? (
                   <Check className="h-5 w-5" strokeWidth={2.5} />
                 ) : node.state === "current" ? (
@@ -191,8 +191,8 @@ export function LessonTrail({
                 node.state === "current" ? startLesson(node.index) : setOpenNode(node)
               }
               className={cn(
-                "expedition-label absolute top-1/2 h-auto w-[7.5rem] -translate-y-1/2 whitespace-normal p-0 text-left hover:bg-transparent",
-                isLeft ? "left-[4.75rem]" : "right-[4.75rem] text-right",
+                "trail-label absolute top-1/2 h-auto w-[7.5rem] -translate-y-1/2 flex-col justify-center gap-0 whitespace-normal p-0 text-left hover:bg-transparent",
+                isLeft ? "left-[4.75rem] items-start" : "right-[4.75rem] items-end text-right",
               )}
             >
               <span
@@ -202,10 +202,10 @@ export function LessonTrail({
                 )}
               >
                 {node.state === "completed"
-                  ? "Cleared"
+                  ? "Done"
                   : node.state === "current"
-                    ? "Current checkpoint"
-                    : `Checkpoint ${node.index + 1}`}
+                    ? "Up next"
+                    : `Lesson ${node.index + 1}`}
               </span>
               <span
                 className={cn(
@@ -228,7 +228,7 @@ export function LessonTrail({
       <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center text-muted-foreground">
         <span className="mb-2 h-8 border-l border-dashed border-border" />
         <Flag className="h-5 w-5" />
-        <span className="mt-2 text-[10px] font-bold">Course mastery</span>
+        <span className="mt-2 text-[10px] font-bold">Path complete</span>
       </div>
 
       <Drawer open={Boolean(openNode)} onOpenChange={(open) => !open && setOpenNode(null)}>
@@ -237,8 +237,8 @@ export function LessonTrail({
             <DrawerTitle>{openNode?.lesson.title}</DrawerTitle>
             <DrawerDescription>
               {openNode?.state === "completed"
-                ? "Checkpoint cleared. Replay it whenever you want a refresher."
-                : `Clear checkpoint ${completed + 1} to unlock this lesson.`}
+                ? "Done. Replay it whenever you want a refresher."
+                : `Finish lesson ${completed + 1} first to unlock this one.`}
             </DrawerDescription>
           </DrawerHeader>
           <DrawerFooter>
@@ -255,7 +255,7 @@ export function LessonTrail({
               ) : (
                 <Play className="h-4 w-4" />
               )}
-              {openNode?.state === "completed" ? "Replay checkpoint" : "Go to current checkpoint"}
+              {openNode?.state === "completed" ? "Replay lesson" : "Go to your next lesson"}
             </Button>
           </DrawerFooter>
         </DrawerContent>

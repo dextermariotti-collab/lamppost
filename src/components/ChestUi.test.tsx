@@ -77,9 +77,9 @@ describe("ChestOffer", () => {
     render(<ChestOffer source="review" />);
     expect(screen.getByRole("button", { name: /open the chest/i }).className).toMatch(/\bh-11\b/);
     expect(screen.getByText(/what can be inside/i)).toBeTruthy();
-    expect(
-      screen.getByRole("link", { name: /rewards and chest history/i }).getAttribute("href"),
-    ).toBe("/rewards");
+    expect(screen.getByRole("link", { name: /odds and chest history/i }).getAttribute("href")).toBe(
+      "/rewards",
+    );
     expect(document.body.textContent).not.toMatch(
       /expires|hurry|only \d+ left|last chance|ends in/i,
     );
