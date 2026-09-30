@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Trophy } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { DisclosureRow } from "@/components/DisclosureRow";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
@@ -51,17 +52,12 @@ function LeagueScreen() {
 
   return (
     <PhoneFrame>
-      <ScreenHeader backTo="/friends" />
+      <ScreenHeader
+        title="Friends league"
+        description="You and the friends you have added, compared on the XP each of you earns from Monday."
+        backTo="/friends"
+      />
       <div className="px-5 pb-10">
-        <div className="flex items-center gap-2 text-primary-text">
-          <Trophy aria-hidden className="h-4 w-4" />
-          <p className="text-xs font-bold">Friends league</p>
-        </div>
-        <h1 className="mt-2 text-3xl leading-tight">This week, together</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          You and the friends you have added, compared on the XP each of you earns from Monday.
-        </p>
-
         {!ready ? null : !userId ? (
           <GuestPrompt />
         ) : isLoading ? (
@@ -236,29 +232,28 @@ function LastWeek({ result }: { result: LeagueLastWeek }) {
 
 function HowItWorks() {
   return (
-    <section className="mt-8 border-t border-border pt-5" aria-labelledby="how-heading">
-      <h2 id="how-heading" className="text-base">
-        How it works
-      </h2>
-      <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-muted-foreground">
-        <li>Weeks run Monday to Sunday, by the day on your device.</li>
-        <li>
-          Only people you have added are in your league. Nobody else sees it, and there are no
-          strangers.
-        </li>
-        <li>
-          Once a week ends, the top third of those who earned {LEAGUE_MIN_XP} XP or more move up a
-          tier and the bottom third move down. It takes {LEAGUE_MIN_GROUP} of you for anyone to
-          move.
-        </li>
-        <li>A week off changes nothing. Nobody drops a tier for being away.</li>
-        <li>Tiers are just names. They earn nothing and unlock nothing.</li>
-        <li>
-          You are only in a friend's league if you both share your progress with friends, which you
-          can change on the Friends screen at any time. Removing or blocking someone takes you out
-          of each other's league.
-        </li>
-      </ul>
-    </section>
+    <div className="mt-8">
+      <DisclosureRow title="How it works" summary="Weeks, tiers and who can see the league.">
+        <ul className="list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-muted-foreground">
+          <li>Weeks run Monday to Sunday, by the day on your device.</li>
+          <li>
+            Only people you have added are in your league. Nobody else sees it, and there are no
+            strangers.
+          </li>
+          <li>
+            Once a week ends, the top third of those who earned {LEAGUE_MIN_XP} XP or more move up a
+            tier and the bottom third move down. It takes {LEAGUE_MIN_GROUP} of you for anyone to
+            move.
+          </li>
+          <li>A week off changes nothing. Nobody drops a tier for being away.</li>
+          <li>Tiers are just names. They earn nothing and unlock nothing.</li>
+          <li>
+            You are only in a friend's league if you both share your progress with friends, which
+            you can change on the Friends screen at any time. Removing or blocking someone takes you
+            out of each other's league.
+          </li>
+        </ul>
+      </DisclosureRow>
+    </div>
   );
 }

@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import { ChestOffer } from "@/components/ChestOffer";
@@ -10,7 +11,13 @@ import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
 import { useProgress } from "@/lib/progress";
 import { EXERCISE_LABEL } from "@/lib/exercises";
-import { useDueDrills, type ScheduledDrill } from "@/lib/review-drills";
+import { CURRICULUM_SLUG } from "@/lib/curriculum";
+import {
+  nextReviewLine,
+  useDrillSchedule,
+  useDueDrills,
+  type ScheduledDrill,
+} from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
 import { celebrateAnswer } from "@/components/AnswerFeedback";
 
@@ -36,10 +43,10 @@ export const Route = createFileRoute("/review")({
 });
 
 function ReviewQueue() {
-  const navigate = useNavigate();
   const { recordReview } = useProgress();
   const { companion } = useCompanion();
   const { items, hydrated, grade } = useDueDrills();
+  const { items: scheduled } = useDrillSchedule();
 
   // Snapshot the queue once so grading doesn't reshuffle it mid-session.
   const [session, setSession] = useState<ScheduledDrill[] | null>(null);
@@ -73,19 +80,15 @@ function ReviewQueue() {
 
   return (
     <PhoneFrame>
+      {done ? (
+        <ScreenHeader title="Daily review" backTo="/" />
+      ) : (
+        <ScreenHeader
+          backTo="/"
+          right={<span className="text-xs font-bold text-muted-foreground">Daily review</span>}
+        />
+      )}
       <div className="px-5 pb-8">
-        <div className="flex items-center justify-between py-3">
-          <Link
-            to="/"
-            aria-label="Back home"
-            className="-ml-1 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <p className="text-xs font-bold text-muted-foreground">Daily review</p>
-          <span className="w-11" />
-        </div>
-
         {!done && item && (
           <>
             <AnimatedBar pct={(step / session!.length) * 100} className="mt-1" />
@@ -132,28 +135,35 @@ function ReviewQueue() {
           </>
         )}
 
-        {done && (
-          <div className="mt-10 flex animate-pop-in flex-col items-center text-center">
-            <CompanionAvatar
-              companion={{ ...companion, expression: "excited" }}
-              size={120}
-              animate
-            />
-            <h1 className="mt-4 text-2xl">
-              {session!.length === 0 ? "Nothing due right now" : "Review complete"}
-            </h1>
-            <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">
-              {session!.length === 0
-                ? "Drills you miss — or aren't sure about — come back here as new scenarios. Nothing is waiting today."
-                : `${right} of ${session!.length} handled. The ones you missed return tomorrow with new material.`}
-            </p>
-            {session!.length > 0 && <ChestOffer source="review" className="mt-6 w-full max-w-sm" />}
-            <Button
-              onClick={() => navigate({ to: "/" })}
-              className="mt-6 h-12 rounded-full bg-hero-gradient px-6 text-sm font-semibold shadow-card"
+        {done && session!.length === 0 && (
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="text-lg">Nothing due right now</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{nextReviewLine(scheduled)}</p>
+            <Button asChild className="mt-4 h-12 w-full rounded-full text-sm font-semibold">
+              <Link to="/course/$slug" params={{ slug: CURRICULUM_SLUG }}>
+                Continue your path
+              </Link>
+            </Button>
+            <Link
+              to="/schedule"
+              className="mt-2 flex min-h-11 items-center justify-center text-[13px] font-bold text-primary-text"
             >
-              <Sparkles className="h-4 w-4" />
-              Back to home
+              See the review schedule
+            </Link>
+          </div>
+        )}
+
+        {done && session!.length > 0 && (
+          <div className="flex animate-pop-in flex-col items-center text-center">
+            <CompanionAvatar companion={{ ...companion, expression: "happy" }} size={88} />
+            <h2 className="mt-4 text-2xl">Review complete</h2>
+            <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">
+              {right} of {session!.length} handled. The ones you missed return tomorrow with new
+              material.
+            </p>
+            <ChestOffer source="review" className="mt-6 w-full max-w-sm" />
+            <Button asChild className="mt-6 h-12 rounded-full px-6 text-sm font-semibold">
+              <Link to="/">Back to home</Link>
             </Button>
           </div>
         )}

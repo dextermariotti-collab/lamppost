@@ -103,19 +103,19 @@ export function StepFrame({
 
       {hint && !done && !hintHidden && (
         <div className="mt-3">
-          <button
-            type="button"
-            onClick={engine.toggleHint}
-            aria-expanded={showHint}
-            aria-controls={hintId}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[13px] font-bold text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            <Lightbulb aria-hidden className="h-4 w-4" />
-            {showHint ? "Hide the hint" : "Need a hint?"}
-          </button>
-          {!showHint && (
-            <span className="ml-1 text-[11px] text-muted-foreground">Using one halves the XP.</span>
-          )}
+          <div className="flex flex-wrap items-center gap-x-2">
+            <button
+              type="button"
+              onClick={engine.toggleHint}
+              aria-expanded={showHint}
+              aria-controls={hintId}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[13px] font-bold text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <Lightbulb aria-hidden className="h-4 w-4" />
+              {showHint ? "Hide the hint" : "Need a hint?"}
+            </button>
+            {!showHint && <span className="text-[11px] text-muted-foreground">Halves the XP.</span>}
+          </div>
           <p
             id={hintId}
             hidden={!showHint}

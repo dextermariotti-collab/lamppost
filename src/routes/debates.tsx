@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Loader2, Swords } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -44,17 +44,12 @@ function DebatesScreen() {
 
   return (
     <PhoneFrame>
-      <ScreenHeader backTo="/friends" />
+      <ScreenHeader
+        title="Debates"
+        description="Make your case. Same motion, opposite sides, one rubric. Nobody sees the other case until both are in."
+        backTo="/friends"
+      />
       <div className="px-5 pb-10">
-        <div className="flex items-center gap-2 text-primary-text">
-          <Swords aria-hidden className="h-4 w-4" />
-          <p className="text-xs font-bold">Debates</p>
-        </div>
-        <h1 className="mt-2 text-3xl leading-tight">Make your case</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Same motion, opposite sides, one rubric. Nobody sees the other case until both are in.
-        </p>
-
         {isLoading && (
           <div className="flex justify-center py-16">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

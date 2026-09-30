@@ -4,7 +4,6 @@ import { Check, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { Button } from "@/components/ui/button";
 import { useSessionUser } from "@/lib/companion-store";
 import { TOTAL_LESSONS } from "@/lib/curriculum";
 import { FREE_WEEKLY_PRACTICE } from "@/lib/practice";
@@ -116,18 +115,10 @@ function PremiumScreen() {
               </p>
             </div>
           ) : (
-            <div className="mt-4">
-              <Button
-                className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
-                disabled
-              >
-                Checkout opening soon
-              </Button>
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                Checkout isn&apos;t open yet. Nothing has been charged, and the free features stay
-                free.
-              </p>
-            </div>
+            <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground">
+              Practice isn&apos;t on sale yet. Nothing has been charged, and the free features stay
+              free.
+            </p>
           )}
         </section>
 

@@ -226,3 +226,13 @@ export function reviewUrgencyFor(due: number, maxOverdue: number) {
   if (maxOverdue >= 3 || due >= 6) return "piling" as const;
   return "ready" as const;
 }
+
+/** One calm line about when the next review is, for when nothing is due. */
+export function nextReviewLine(items: readonly { dueInDays: number }[]): string {
+  const upcoming = items.map((item) => item.dueInDays).filter((days) => days > 0);
+  if (upcoming.length === 0) return "Drills you miss come back here as new scenarios.";
+  const soonest = Math.min(...upcoming);
+  return soonest === 1
+    ? "Your next review is tomorrow."
+    : `Your next review is in ${soonest} days.`;
+}

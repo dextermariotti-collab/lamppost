@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Flame, Zap } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { ChestOffer } from "@/components/ChestOffer";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
@@ -88,30 +89,14 @@ function DailyChallengeScreen() {
 
   return (
     <PhoneFrame>
+      <ScreenHeader
+        title="Daily challenge"
+        {...(challenge ? { description: "One drill. Counts towards your streak." } : {})}
+        backTo="/"
+      />
       <div className="px-5 pb-10">
-        <div className="flex items-center justify-between py-3">
-          <Link
-            to="/"
-            aria-label="Back home"
-            className="-ml-1 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          {challenge ? (
-            <p className="text-xs font-bold text-muted-foreground">Daily challenge</p>
-          ) : (
-            <h1 className="text-xs font-bold text-muted-foreground">Daily challenge</h1>
-          )}
-          <span className="w-11" />
-        </div>
-
-        <div className="mt-2 flex items-center gap-2 text-primary-text">
-          <Zap aria-hidden className="h-4 w-4" />
-          <p className="text-xs font-bold">One drill. Counts towards your streak.</p>
-        </div>
-
         {!challenge && hydrated && (
-          <div className="mt-8 rounded-3xl border border-border p-5 text-center">
+          <div className="rounded-3xl border border-border p-5 text-center">
             <p className="text-sm font-bold">Finish your first lesson</p>
             <p className="mt-1 text-sm text-muted-foreground">
               The daily challenge draws on skills you've already unlocked, so it opens up once
@@ -127,7 +112,7 @@ function DailyChallengeScreen() {
 
         {challenge && (
           <>
-            <h1 className="mt-3 text-2xl leading-tight">{challenge.lessonTitle}</h1>
+            <h2 className="text-xl leading-tight">{challenge.lessonTitle}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{challenge.unitTitle}</p>
 
             {showDone ? (

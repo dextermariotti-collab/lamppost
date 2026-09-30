@@ -66,14 +66,13 @@ function CompanionScreen() {
 
   return (
     <PhoneFrame showNav={false}>
-      <ScreenHeader backTo="/profile" />
-      <div className="flex min-h-full flex-col px-6 pb-8">
-        <h1 className="mt-2 text-2xl leading-tight">Your companion</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {presetById(draft.preset).name} — {presetById(draft.preset).blurb}
-        </p>
-
-        <div className="mt-4 flex flex-col items-center rounded-3xl bg-card p-4 shadow-soft">
+      <ScreenHeader
+        title="Your companion"
+        description={`${presetById(draft.preset).name} — ${presetById(draft.preset).blurb}`}
+        backTo="/profile"
+      />
+      <div className="flex min-h-full flex-col px-5 pb-8">
+        <div className="flex flex-col items-center rounded-3xl bg-card p-4 shadow-soft">
           <CompanionAvatar companion={draft} size={140} animate />
         </div>
 

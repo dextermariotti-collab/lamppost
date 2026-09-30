@@ -117,14 +117,21 @@ function ProfileScreen() {
         {/* Achievements */}
         <section className="mt-6">
           <h2 className="text-sm font-bold">Achievements</h2>
+          {badges.length === 0 && !(signedIn && achievements === undefined) && (
+            <p className="mt-2 text-[13px] text-muted-foreground">
+              Badges you earn will appear here.
+            </p>
+          )}
           <div className="-mx-5 mt-3 flex gap-4 overflow-x-auto px-5 pb-1">
             {badges.length === 0
-              ? Array.from({ length: 5 }, (_, i) => (
-                  <div key={i} className="flex w-[68px] shrink-0 flex-col items-center gap-1.5">
-                    <span className="h-11 w-11 animate-pulse rounded-full bg-muted" />
-                    <span className="h-2.5 w-12 animate-pulse rounded bg-muted" />
-                  </div>
-                ))
+              ? signedIn && achievements === undefined
+                ? Array.from({ length: 5 }, (_, i) => (
+                    <div key={i} className="flex w-[68px] shrink-0 flex-col items-center gap-1.5">
+                      <span className="h-11 w-11 animate-pulse rounded-full bg-muted" />
+                      <span className="h-2.5 w-12 animate-pulse rounded bg-muted" />
+                    </div>
+                  ))
+                : null
               : badges.map((badge) => {
                   const Icon = achievementIcon(badge.icon);
                   const unlocked = Boolean(badge.unlockedAt);
@@ -159,12 +166,15 @@ function ProfileScreen() {
         </section>
 
         {/* Friends */}
-        <Link to="/friends" className="mt-6 flex items-center gap-3 border-t border-border pt-4">
+        <Link
+          to="/friends"
+          className="mt-6 flex min-h-14 items-center gap-3 border-t border-border py-3"
+        >
           <UserPlus className="h-5 w-5 text-primary-text" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold">Add friends</span>
             <span className="block truncate text-xs text-muted-foreground">
-              Learn together and keep each other&apos;s streak alive
+              Keep each other&apos;s streak alive
             </span>
           </span>
           {friendCount > 0 ? (
@@ -197,7 +207,7 @@ function ProfileScreen() {
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold">Rewards</span>
             <span className="block truncate text-xs text-muted-foreground">
-              Chests, streak freezes, hint tokens and cosmetics
+              Chests, freezes and cosmetics
             </span>
           </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />

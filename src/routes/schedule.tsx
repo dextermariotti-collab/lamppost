@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, HelpCircle, Sparkles, XCircle } from "lucide-react";
+import { ArrowRight, HelpCircle, Sparkles, XCircle } from "lucide-react";
 import { useMemo } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { CURRICULUM_SLUG } from "@/lib/curriculum";
 import { EXERCISE_LABEL } from "@/lib/exercises";
@@ -78,26 +79,12 @@ function ReviewSchedule() {
 
   return (
     <PhoneFrame>
+      <ScreenHeader
+        title="What comes back next"
+        description={`Every drill you miss, or answer without much confidence, gets a return date: ${DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when you don't. Reviews always use a new scenario for the same skill.`}
+        backTo="/"
+      />
       <div className="min-h-full px-5 pb-10">
-        <div className="flex items-center justify-between py-3">
-          <Link
-            to="/"
-            aria-label="Back home"
-            className="-ml-1 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <p className="text-sm font-bold text-primary-text">Review schedule</p>
-          <span className="w-11" />
-        </div>
-
-        <h1 className="mt-2 text-[1.9rem] leading-tight">What comes back next</h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Every drill you miss — or answer without much confidence — gets a return date:{" "}
-          {DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting
-          when you don't. Reviews always use a new scenario for the same skill.
-        </p>
-
         {dueNow > 0 && (
           <Button
             onClick={() => navigate({ to: "/review" })}
