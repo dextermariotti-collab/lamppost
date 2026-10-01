@@ -40,6 +40,7 @@ import { Route as LegalHealthRouteImport } from './routes/legal.health'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as ApiPublicWarmCurriculumRouteImport } from './routes/api/public/warm-curriculum'
+import { Route as CheckUnitIdPhaseRouteImport } from './routes/check.$unitId.$phase'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
 
@@ -198,6 +199,11 @@ const ApiPublicWarmCurriculumRoute = ApiPublicWarmCurriculumRouteImport.update({
   path: '/api/public/warm-curriculum',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckUnitIdPhaseRoute = CheckUnitIdPhaseRouteImport.update({
+  id: '/check/$unitId/$phase',
+  path: '/check/$unitId/$phase',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CourseSlugIndexRoute = CourseSlugIndexRouteImport.update({
   id: '/course/$slug/',
   path: '/course/$slug/',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/friends/': typeof FriendsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
+  '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/friends': typeof FriendsIndexRoute
   '/legal': typeof LegalIndexRoute
   '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
+  '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/friends/': typeof FriendsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
+  '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
 }
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/friends/'
     | '/legal/'
     | '/api/public/warm-curriculum'
+    | '/check/$unitId/$phase'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesByTo: FileRoutesByTo
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/friends'
     | '/legal'
     | '/api/public/warm-curriculum'
+    | '/check/$unitId/$phase'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
   id:
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/friends/'
     | '/legal/'
     | '/api/public/warm-curriculum'
+    | '/check/$unitId/$phase'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
   fileRoutesById: FileRoutesById
@@ -455,6 +467,7 @@ export interface RootRouteChildren {
   FriendsIndexRoute: typeof FriendsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
   ApiPublicWarmCurriculumRoute: typeof ApiPublicWarmCurriculumRoute
+  CheckUnitIdPhaseRoute: typeof CheckUnitIdPhaseRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
 }
@@ -678,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWarmCurriculumRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/check/$unitId/$phase': {
+      id: '/check/$unitId/$phase'
+      path: '/check/$unitId/$phase'
+      fullPath: '/check/$unitId/$phase'
+      preLoaderRoute: typeof CheckUnitIdPhaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/course/$slug/': {
       id: '/course/$slug/'
       path: '/course/$slug'
@@ -727,6 +747,7 @@ const rootRouteChildren: RootRouteChildren = {
   FriendsIndexRoute: FriendsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
   ApiPublicWarmCurriculumRoute: ApiPublicWarmCurriculumRoute,
+  CheckUnitIdPhaseRoute: CheckUnitIdPhaseRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,
 }

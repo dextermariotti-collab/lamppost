@@ -62,6 +62,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
 | `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d) |
 | `lamppost-challenge-v1`, `-rating-v1`, `-written-v1`, `-levels-v1`, `-badges-v1`, … | `lib/challenge.ts`, `rating.ts`, `mastery.ts`, … | daily challenge, skill ratings, rubric scores, level-ups, badges |
+| `lamppost-unit-checks-v1` | `lib/unit-checks.ts` | before/after unit check results (first result kept, never overwritten; device only) |
 
 Signed-in users additionally get a Supabase account: `useProgress` pulls the account's numbers on
 sign-in and pushes changes through the `syncProgress` server function (`lib/profile.functions.ts`).
@@ -105,6 +106,15 @@ friends only (`league_standings` joins through `are_friends`). Weeks start Monda
 idempotent), and a quiet week never demotes anyone. No copy in these screens may create urgency:
 no countdowns, "only N left", or guilt notifications. The Monday recap (`lib/recap.ts`) is built
 from the device's own history and shows nothing for an empty week.
+
+### Measuring transfer: before/after unit checks
+Each unit has a three-question check before it and a different three after it
+(`content/unit-checks.ts`): real-world posts, ads, headlines, emails and chatbot answers that no
+lesson uses, no hints, first answer only (`CheckQuestion`). The before-check closes once any of the
+unit is studied and the after-check opens when all five lessons are done (`checkAvailability`);
+results are kept the first time and never overwritten. They show on My Path and in Progress →
+Before and after, always framed as a rough signal. `content/unit-checks.test.ts` keeps them fresh
+(no overlap with lesson text), fair (answer positions and lengths) and well-formed.
 
 ### Lesson content pipeline
 `lib/curriculum.ts` is the single source of truth for the 35 lessons (objective, key idea, the trap

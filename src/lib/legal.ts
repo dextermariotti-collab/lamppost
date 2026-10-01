@@ -87,7 +87,7 @@ export const PRIVACY: LegalDoc = {
             "Technical data: your network address and browser details are seen by our hosting when you connect. To limit abuse we count requests per person; for signed-out visitors that count is keyed to a scrambled (hashed) version of the network address, never the address itself.",
           ],
         },
-        "Answers to drills, your hint and review schedule, and your local settings are kept on your device (in your browser's storage). They are not on our servers unless a feature above says so.",
+        "Answers to drills, your hint and review schedule, your before-and-after unit check results, and your local settings are kept on your device (in your browser's storage). They are not on our servers unless a feature above says so.",
         "We don't ask for your location, contacts, photos, health information, payment card or government ID.",
       ],
     },
@@ -395,7 +395,7 @@ export const COOKIES: LegalDoc = {
         {
           list: [
             "Sign-in: keeps you signed in if you have an account. Needed for the app to work.",
-            "Your progress and settings: streak, XP, rewards, drill answers, the review schedule, your companion and preferences, stored in your browser so the app works offline-first and without an account.",
+            "Your progress and settings: streak, XP, drill answers, the review schedule, your before-and-after unit check results, your companion and preferences, stored in your browser so the app works offline-first and without an account.",
             "Small flags: for example that you have seen the welcome screens.",
           ],
         },

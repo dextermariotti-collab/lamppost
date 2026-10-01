@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronDown, Circle, Play, Timer } from "lucide-react";
+import { Check, ChevronDown, Circle, ClipboardCheck, Play, Timer } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import {
@@ -16,6 +16,12 @@ import {
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
 import { useDueDrills } from "@/lib/review-drills";
+import {
+  checkAvailability,
+  checkLine,
+  useUnitChecks,
+  type UnitCheckResults,
+} from "@/lib/unit-checks";
 
 export const Route = createFileRoute("/courses")({
   head: () => ({
@@ -50,6 +56,7 @@ function MyPath() {
   const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
   const nextIndex = nextLessonIndex(doneLessons);
   const { items: dueItems } = useDueDrills(100);
+  const { checks } = useUnitChecks();
 
   /** Reviews due, grouped by which unit the lesson belongs to. */
   const dueByUnit = useMemo(() => {
@@ -90,6 +97,7 @@ function MyPath() {
               open={openUnit === unit.index}
               nextIndex={nextIndex}
               done={doneLessons}
+              checks={checks[unit.unit.id]}
               onToggle={() => {
                 setTouched(true);
                 setOpenUnit((current) => (current === unit.index ? -1 : unit.index));
@@ -112,6 +120,7 @@ function UnitCard({
   open,
   nextIndex,
   done,
+  checks,
   onToggle,
 }: {
   unit: UnitProgress;
@@ -119,9 +128,12 @@ function UnitCard({
   open: boolean;
   nextIndex: number;
   done: ReadonlySet<number>;
+  checks: UnitCheckResults | undefined;
   onToggle: () => void;
 }) {
   const panelId = `unit-${unit.unit.id}`;
+  // The before-check belongs before the lessons; everything else about checks comes after them.
+  const checkFirst = checkAvailability("before", unit, checks) === "open";
   const start = unit.index * LESSONS_PER_UNIT;
   return (
     <li
@@ -174,6 +186,11 @@ function UnitCard({
       </h2>
 
       <ul id={panelId} hidden={!open} className="border-t border-border px-2 pb-2 pt-1">
+        {checkFirst && (
+          <li className="mb-1">
+            <CheckRow unit={unit} checks={checks} />
+          </li>
+        )}
         {unit.lessons.map((lesson, i) => {
           const index = lessonIndexOf(lesson.id);
           const isDone = done.has(index);
@@ -219,7 +236,54 @@ function UnitCard({
             </li>
           );
         })}
+        {!checkFirst && (
+          <li>
+            <CheckRow unit={unit} checks={checks} />
+          </li>
+        )}
       </ul>
     </li>
+  );
+}
+
+/**
+ * The unit's before/after check: offered before the unit is started and again once it is
+ * done, and once taken, the results side by side.
+ */
+function CheckRow({ unit, checks }: { unit: UnitProgress; checks: UnitCheckResults | undefined }) {
+  const before = checkAvailability("before", unit, checks);
+  const after = checkAvailability("after", unit, checks);
+  const phase = before === "open" ? "before" : after === "open" ? "after" : null;
+  const line = checkLine(checks);
+
+  if (phase) {
+    return (
+      <Link
+        to="/check/$unitId/$phase"
+        params={{ unitId: unit.unit.id, phase }}
+        className="mt-1 flex min-h-12 items-center gap-3 rounded-2xl border border-dashed border-primary/50 px-3 py-2"
+      >
+        <ClipboardCheck aria-hidden className="h-5 w-5 shrink-0 text-primary-text" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold">
+            {phase === "before" ? "Before you start: a quick check" : "Check what changed"}
+          </span>
+          <span className="block text-[11px] text-muted-foreground">
+            {phase === "before"
+              ? "Three real-world questions, so you can see what the unit changes."
+              : line
+                ? `${line}. Three new questions.`
+                : "Three new real-world questions."}
+          </span>
+        </span>
+      </Link>
+    );
+  }
+  if (!line) return null;
+  return (
+    <p className="mt-1 flex min-h-11 items-center gap-3 px-3 text-[13px] text-muted-foreground">
+      <ClipboardCheck aria-hidden className="h-5 w-5 shrink-0" />
+      Unit check: {line}
+    </p>
   );
 }

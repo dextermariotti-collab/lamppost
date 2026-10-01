@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/drawer";
 import { useBadges } from "@/lib/badges";
 import { useCompanion } from "@/lib/companion-store";
-import { CURRICULUM_SLUG } from "@/lib/curriculum";
+import { CURRICULUM_SLUG, UNITS } from "@/lib/curriculum";
 import { useMasteryAnalytics } from "@/lib/mastery";
 import { dayKey, deriveInsights, useProgress, type Celebration } from "@/lib/progress";
 import { calibrationLine, calibrationSummary, weekStrip } from "@/lib/progress-view";
 import { useDueDrills } from "@/lib/review-drills";
+import { checkLine, overallChange, useUnitChecks } from "@/lib/unit-checks";
 
 export const Route = createFileRoute("/progress")({
   head: () => ({
@@ -109,6 +110,9 @@ function ProgressScreen() {
   const calibration = analytics ? calibrationSummary(analytics.calibration.bands) : null;
   const earned = badges?.filter((badge) => badge.tier).length ?? 0;
   const written = analytics?.written.points ?? [];
+  const { checks } = useUnitChecks();
+  const change = overallChange(checks);
+  const checkedUnits = UNITS.filter((u) => checkLine(checks[u.id]) !== null);
   const latestWritten = written[written.length - 1];
 
   return (
@@ -174,6 +178,35 @@ function ProgressScreen() {
         )}
 
         <div className="mt-5">
+          {/* Before and after: does the skill carry over to things the lessons never showed? */}
+          <DisclosureRow
+            title="Before and after"
+            summary={
+              change.units > 0
+                ? `Across ${change.units} unit${change.units === 1 ? "" : "s"}: ${change.before} of ${change.total} right before, ${change.after} of ${change.total} after.`
+                : checkedUnits.length > 0
+                  ? "Your after-checks open as you finish each unit."
+                  : "A three-question check before and after each unit shows whether the skills carry over."
+            }
+          >
+            <p className="text-xs text-muted-foreground">
+              Real-world questions none of the lessons use, different before and after, first answer
+              only. Read a change as a rough signal, not a grade. Start one from a unit on My Path.
+            </p>
+            {checkedUnits.length > 0 && (
+              <ul className="mt-3 space-y-2">
+                {checkedUnits.map((u) => (
+                  <li key={u.id} className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="font-bold">{u.title}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {checkLine(checks[u.id])}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </DisclosureRow>
+
           {/* Calibration: stated confidence vs what actually happened */}
           <DisclosureRow
             title="Calibration"

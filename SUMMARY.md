@@ -205,6 +205,26 @@ Asked whether to go serious or all-in on the animal, I kept the companion but ma
 - Not changed: anything signed-in that I can't see without a test login (friends, account data), and the daily
   challenge still draws only from lessons you have finished.
 
+## Follow-up: acting on the review of the app as a whole
+
+- **The reward economy is retired.** No gems, reward chests, hint tokens or paid cosmetics anywhere in the app;
+  `/rewards` redirects to Progress. Streak freezes are still earned free every 7 days, hints still halve the XP,
+  and every companion colour and accessory is free. Nothing in the database was deleted: the tables and SQL
+  functions stay, so it could return, and nothing earns gems any more. **Needs you:** if you ever charge for
+  anything again, it must go through the server's `spend_gems()` with a server-held price. Streaks, XP,
+  badges and the friends league are unchanged.
+- **The authored lessons are guarded.** The whole-curriculum test used to skip itself if a unit file went
+  missing; it now always runs and requires a file for every unit, so learners shouldn't end up on the generated
+  fallback lesson screen.
+- **The app now measures whether skills transfer.** Each unit has a three-question check before it and three
+  different questions after it, all real-world scenarios that no lesson uses (42 questions in
+  `content/unit-checks.ts`), no hints, first answer only. Results are kept on the device and shown on My Path and
+  in Progress → Before and after. With three questions a unit this is a rough signal for one learner. **Needs
+  you:** what would really answer "does it work" is the same comparison across many learners, which means
+  collecting results (with consent and a privacy-policy update). I didn't add that.
+- **Not done, and only you can do it:** put the app in front of a few real people for a week and watch where they
+  get stuck.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.
