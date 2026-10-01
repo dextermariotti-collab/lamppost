@@ -3,7 +3,6 @@ import {
   Bell,
   ChevronRight,
   Flame,
-  Gift,
   Lock,
   LogIn,
   LogOut,
@@ -197,20 +196,6 @@ function ProfileScreen() {
           ) : (
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           )}
-        </Link>
-
-        <Link
-          to="/rewards"
-          className="flex min-h-14 items-center gap-3 border-t border-border py-3"
-        >
-          <Gift className="h-5 w-5 text-primary-text" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold">Rewards</span>
-            <span className="block truncate text-xs text-muted-foreground">
-              Chests, freezes and cosmetics
-            </span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
 
         {/* Settings list */}

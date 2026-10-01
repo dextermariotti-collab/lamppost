@@ -1,4 +1,4 @@
-import { Check, Gem, Sparkles, Star } from "lucide-react";
+import { Check, Flame, Sparkles, Star } from "lucide-react";
 import { CountUp } from "@/components/CountUp";
 import { ProgressRing } from "@/components/ProgressRing";
 
@@ -69,18 +69,23 @@ export function StatTiles({
   hydrated,
   lessons,
   xp,
-  gems,
+  longestStreak,
 }: {
   hydrated: boolean;
   lessons: number;
   xp: number;
-  gems: number;
+  longestStreak: number;
 }) {
   return (
     <div className="mt-6 grid grid-cols-3 divide-x divide-border border-y border-border py-4">
       <StatTile label="Lessons" value={hydrated ? lessons : null} icon={Check} delay={0} />
       <StatTile label="Total XP" value={hydrated ? xp : null} icon={Star} delay={70} />
-      <StatTile label="Gems" value={hydrated ? gems : null} icon={Gem} delay={140} />
+      <StatTile
+        label="Longest streak"
+        value={hydrated ? longestStreak : null}
+        icon={Flame}
+        delay={140}
+      />
     </div>
   );
 }

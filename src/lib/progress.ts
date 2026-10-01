@@ -1,43 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
-import { buyStreakFreeze } from "./wallet.functions";
-import {
-  buyHintToken,
-  getRewards,
-  openChest as openChestOnAccount,
-  spendHintToken,
-  unlockCosmetic as unlockCosmeticOnAccount,
-} from "./rewards.functions";
-import { rollChest, type ChestRecord, type ChestSource } from "./rewards";
-import {
-  adoptRewards,
-  applyBuyHint,
-  applyOpenChest,
-  applyUnlockCosmetic,
-  applyUseHint,
-  canBuyHint,
-  canUnlockCosmetic,
-  chestsLeft,
-  withWeeklyXp,
-  type RewardsSnapshot,
-} from "./rewards-state";
 import { CURRICULUM_SLUG } from "./curriculum";
 import { dayKey, shiftDay } from "./days";
 import { migrateHistoryToLocalDays, readActivityTimes } from "./progress-migrate";
+import { withWeeklyXp } from "./weekly-xp";
 import {
   DAY_KEY_VERSION,
   DEFAULT_STATE,
   applyArgument,
   adoptWallet,
-  applyBuyFreeze,
   applyExercise,
   applyLessonComplete,
   applyPractice,
   applyReview,
-  applyServerPurchase,
   applyUnlockLessons,
-  canBuyFreeze,
   doneLessonIndexes,
   effectiveStreak,
   gemsEarned,
@@ -48,7 +25,6 @@ import {
 export {
   DEFAULT_STATE,
   gemsEarned,
-  FREEZE_COST,
   effectiveStreak,
   LEAGUES,
   MAX_FREEZES,
@@ -157,12 +133,6 @@ function syncPayload(state: ProgressState) {
 const signatureOf = (payload: ReturnType<typeof syncPayload>) =>
   JSON.stringify({ ...payload, carryOver: undefined });
 
-/** How a purchase ended, in words the card can show. */
-export type PurchaseOutcome = { ok: true } | { ok: false; message: string };
-export type BuyFreezeOutcome = PurchaseOutcome;
-/** How opening a chest ended: what came out, or why nothing did. */
-export type ChestOutcome = { ok: true; record: ChestRecord } | { ok: false; message: string };
-
 function writeState(next: ProgressState) {
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
@@ -211,10 +181,7 @@ export function useProgress() {
         if (profile) {
           update((prev) => mergeAccountProgress(prev, profile, dayKey()), { earned: false });
         }
-        // Hint tokens, cosmetics and today's chests live on the account too.
-        return getRewards({ data: { today: dayKey() } });
       })
-      .then((rewards) => update((prev) => adoptRewards(prev, rewards), { earned: false }))
       .catch(() => pulledAccounts.delete(userId));
   }, [hydrated, userId, update]);
 
@@ -286,172 +253,6 @@ export function useProgress() {
     [update],
   );
 
-  const busy = useRef(false);
-
-  /**
-   * Signed in, the account owns the gems, so anything that spends or grants them is
-   * done by the server in one atomic step. First the account is brought up to date
-   * with what was just earned and done (a chest is for something done today, and
-   * a purchase can only use gems the account knows about); then `act` runs; and
-   * nothing changes on the device until the server has answered.
-   */
-  const withAccount = useCallback(
-    async <T>(act: () => Promise<T>): Promise<T> => {
-      const payload = syncPayload(getSnapshot());
-      const account = await syncProgress({ data: payload });
-      lastSynced.current = signatureOf(payload);
-      update(
-        (prev) => adoptWallet(prev, { spent: account.gemsSpent, granted: account.gemsGranted }),
-        {
-          earned: false,
-        },
-      );
-      return await act();
-    },
-    [update],
-  );
-
-  /** Runs one purchase or opening at a time, so a second tap can't repeat the first. */
-  const exclusive = useCallback(
-    async <T extends { ok: boolean }>(
-      act: () => Promise<T>,
-      failure: (message: string) => T,
-    ): Promise<T> => {
-      if (busy.current) return failure("One moment — that's still going through.");
-      busy.current = true;
-      try {
-        return await act();
-      } catch {
-        return failure("That couldn't go through just now. Your gems were not spent.");
-      } finally {
-        busy.current = false;
-      }
-    },
-    [],
-  );
-
-  const adoptSnapshot = useCallback(
-    (snapshot: RewardsSnapshot | null) => {
-      if (snapshot) update((prev) => adoptRewards(prev, snapshot), { earned: false });
-    },
-    [update],
-  );
-
-  const fail = (message: string) => ({ ok: false as const, message });
-
-  /** Buys a streak freeze: on this device signed out, on the account signed in. */
-  const buyFreeze = useCallback(
-    (): Promise<PurchaseOutcome> =>
-      exclusive<PurchaseOutcome>(async () => {
-        if (!canBuyFreeze(getSnapshot())) return fail("You can't get a freeze right now.");
-        if (!userId) {
-          update((prev) => applyBuyFreeze(prev));
-          return { ok: true };
-        }
-        return await withAccount<PurchaseOutcome>(async () => {
-          if (!canBuyFreeze(getSnapshot())) return fail("You don't have enough gems for that yet.");
-          const result = await buyStreakFreeze();
-          if (result.ok) {
-            update((prev) =>
-              applyServerPurchase(prev, { spent: result.spent, granted: result.granted }),
-            );
-            return { ok: true };
-          }
-          if ("spent" in result) {
-            update((prev) => adoptWallet(prev, { spent: result.spent, granted: result.granted }));
-          }
-          return fail("message" in result ? result.message : result.reason);
-        });
-      }, fail),
-    [exclusive, update, userId, withAccount],
-  );
-
-  /** Opens a reward chest: one for each lesson, review or challenge done today, three at most. */
-  const openChest = useCallback(
-    (source: ChestSource): Promise<ChestOutcome> =>
-      exclusive<ChestOutcome>(async () => {
-        const day = dayKey();
-        if (chestsLeft(getSnapshot(), day) <= 0) return fail("There's no chest to open right now.");
-        if (!userId) {
-          let record: ChestRecord | null = null;
-          update((prev) => {
-            const opened = applyOpenChest(prev, { day, source, prize: rollChest() });
-            record = opened?.record ?? null;
-            return opened?.state ?? prev;
-          });
-          return record ? { ok: true, record } : fail("There's no chest to open right now.");
-        }
-        return await withAccount<ChestOutcome>(async () => {
-          const result = await openChestOnAccount({ data: { today: day, source } });
-          if (result.ok) {
-            adoptSnapshot(result.snapshot);
-            return { ok: true, record: result.record };
-          }
-          return fail("message" in result ? result.message : result.reason);
-        });
-      }, fail),
-    [adoptSnapshot, exclusive, update, userId, withAccount],
-  );
-
-  /** Buys a hint token with gems. */
-  const buyHint = useCallback(
-    (): Promise<PurchaseOutcome> =>
-      exclusive<PurchaseOutcome>(async () => {
-        if (!canBuyHint(getSnapshot())) return fail("You can't get a hint token right now.");
-        if (!userId) {
-          update((prev) => applyBuyHint(prev));
-          return { ok: true };
-        }
-        return await withAccount<PurchaseOutcome>(async () => {
-          const result = await buyHintToken({ data: { today: dayKey() } });
-          if ("snapshot" in result) adoptSnapshot(result.snapshot);
-          return result.ok
-            ? { ok: true }
-            : fail("message" in result ? result.message : result.reason);
-        });
-      }, fail),
-    [adoptSnapshot, exclusive, update, userId, withAccount],
-  );
-
-  /** Unlocks a companion cosmetic with gems. */
-  const unlockCosmetic = useCallback(
-    (id: string): Promise<PurchaseOutcome> =>
-      exclusive<PurchaseOutcome>(async () => {
-        if (!canUnlockCosmetic(getSnapshot(), id)) return fail("You can't unlock that right now.");
-        if (!userId) {
-          update((prev) => applyUnlockCosmetic(prev, id));
-          return { ok: true };
-        }
-        return await withAccount<PurchaseOutcome>(async () => {
-          const result = await unlockCosmeticOnAccount({ data: { today: dayKey(), id } });
-          if ("snapshot" in result) adoptSnapshot(result.snapshot);
-          return result.ok
-            ? { ok: true }
-            : fail("message" in result ? result.message : result.reason);
-        });
-      }, fail),
-    [adoptSnapshot, exclusive, update, userId, withAccount],
-  );
-
-  /**
-   * Spends a hint token. Signed in, the account says whether there was one; the
-   * hint is shown only if it did. Returns whether a token was used.
-   */
-  const spendHint = useCallback(async (): Promise<boolean> => {
-    if (getSnapshot().hintTokens <= 0) return false;
-    if (!userId) {
-      update((prev) => applyUseHint(prev));
-      return true;
-    }
-    try {
-      const result = await spendHintToken();
-      update((prev) => ({ ...prev, hintTokens: result.hintTokens }), { earned: false });
-      return result.ok;
-    } catch {
-      return false;
-    }
-  }, [update, userId]);
-
   const clearFreezeSaved = useCallback(
     () => update((prev) => (prev.freezeSaved ? { ...prev, freezeSaved: null } : prev)),
     [update],
@@ -486,11 +287,6 @@ export function useProgress() {
     recordExercise,
     recordArgument,
 
-    buyFreeze,
-    openChest,
-    buyHint,
-    unlockCosmetic,
-    spendHint,
     clearFreezeSaved,
     clearCelebration,
     setDailyGoal,

@@ -1,6 +1,6 @@
 import { argumentXpFor } from "./exercises";
 import { dayKey, shiftDay } from "./days";
-import { FREEZE_COST, MAX_FREEZES, advanceStreak, effectiveStreak } from "./streak";
+import { MAX_FREEZES, advanceStreak, effectiveStreak } from "./streak";
 import type { ChestRecord } from "./rewards";
 
 /**
@@ -22,7 +22,10 @@ export type Celebration = {
 export type ProgressState = {
   streak: number;
   longestStreak: number;
-  /** Spendable gems: earned plus granted, minus spent. */
+  /**
+   * Gems, from the retired reward economy: earned plus granted, minus spent. Nothing earns or
+   * spends them any more; the number is kept (and synced) only so an account stays consistent.
+   */
   gems: number;
   /** Lifetime gems spent. */
   gemsSpent: number;
@@ -99,7 +102,7 @@ export const DEFAULT_STATE: ProgressState = {
   dayKeyVersion: DAY_KEY_VERSION,
 };
 
-export { FREEZE_COST, MAX_FREEZES, effectiveStreak };
+export { MAX_FREEZES, effectiveStreak };
 
 const STREAK_MILESTONES = [3, 7, 30, 100, 365];
 
@@ -226,7 +229,6 @@ export function applyLessonComplete(
   return {
     ...prev,
     xp: prev.xp + 50 + (bonusXp ?? 0),
-    gems: prev.gems + 10,
     streak,
     longestStreak,
     freezes: advanced.freezes,
@@ -277,7 +279,6 @@ export function applyReview(prev: ProgressState, correct: boolean, today: string
   return {
     ...prev,
     xp: prev.xp + (correct ? 20 : 5),
-    gems: prev.gems + (correct ? 2 : 0),
     streak,
     longestStreak: Math.max(prev.longestStreak, streak),
     freezes: advanced.freezes,
@@ -303,7 +304,6 @@ export function applyPractice(
   return {
     ...prev,
     xp: prev.xp + base + bonus,
-    gems: prev.gems + (connectionMade ? 5 : 0),
   };
 }
 
@@ -313,7 +313,6 @@ export function applyExercise(prev: ProgressState, score: number, bonus = 0): Pr
   return {
     ...prev,
     xp: prev.xp + Math.max(5, Math.round(25 * clamped)) + Math.max(0, bonus),
-    gems: prev.gems + (clamped === 1 ? 2 : 0),
   };
 }
 
@@ -322,34 +321,12 @@ export function applyArgument(prev: ProgressState, total: number, max: number): 
   return {
     ...prev,
     xp: prev.xp + argumentXpFor(total, max),
-    gems: prev.gems + (total / Math.max(max, 1) >= 0.75 ? 5 : 1),
   };
 }
 
 /** Lifetime gems this device has earned: what a sync tells the account. */
 export const gemsEarned = (state: Pick<ProgressState, "gems" | "gemsSpent" | "gemsGranted">) =>
   state.gems + state.gemsSpent - state.gemsGranted;
-
-/** Whether a freeze can be bought right now (enough gems, room to hold another). */
-export const canBuyFreeze = (state: Pick<ProgressState, "gems" | "freezes">) =>
-  state.gems >= FREEZE_COST && state.freezes < MAX_FREEZES;
-
-/**
- * Buy one freeze with gems, capped so it can't be stockpiled. This is the
- * signed-out path: a guest's gems only exist on the device, so the device is the
- * only place the purchase can happen. A signed-in learner buys on the server (see
- * wallet.functions.ts) and the result is folded in by `applyServerPurchase`.
- */
-export function applyBuyFreeze(prev: ProgressState): ProgressState {
-  return canBuyFreeze(prev)
-    ? {
-        ...prev,
-        gems: prev.gems - FREEZE_COST,
-        gemsSpent: prev.gemsSpent + FREEZE_COST,
-        freezes: prev.freezes + 1,
-      }
-    : prev;
-}
 
 /**
  * The account's lifetime spend and lifetime server grants, as the server reports
@@ -377,12 +354,6 @@ export function adoptWallet(prev: ProgressState, wallet: ServerWallet): Progress
     gemsGranted: granted,
     gems: Math.max(earned + granted - spent, 0),
   };
-}
-
-/** A freeze the server sold: the gems are gone on the account, and the freeze is held here. */
-export function applyServerPurchase(prev: ProgressState, wallet: ServerWallet): ProgressState {
-  const adopted = adoptWallet(prev, wallet);
-  return prev.freezes >= MAX_FREEZES ? adopted : { ...adopted, freezes: adopted.freezes + 1 };
 }
 
 /** The account's stored numbers, as returned by getMyProfile. */

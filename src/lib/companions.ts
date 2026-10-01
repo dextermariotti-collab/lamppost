@@ -97,7 +97,6 @@ export const COMPANION_PALETTES: CompanionPalette[] = [
   { id: "sky", name: "Sky", base: "#5aa9f0", soft: "#e7f2ff", accent: "#f5b53d" },
   { id: "plum", name: "Plum", base: "#a05ac2", soft: "#f6e9fb", accent: "#63d2b4" },
   { id: "sun", name: "Sunbeam", base: "#f0b93d", soft: "#fff6e0", accent: "#7a5cf0" },
-  // Unlocked with gems (see rewards.ts). The six above are free.
   { id: "ocean", name: "Ocean", base: "#3b7fd9", soft: "#e3eefc", accent: "#f5b53d" },
   { id: "rose", name: "Rose", base: "#d9557f", soft: "#fde7ee", accent: "#4fc4a1" },
 ];
@@ -107,7 +106,6 @@ export const COMPANION_ACCESSORIES: CompanionAccessory[] = [
   { id: "hat", name: "Little hat" },
   { id: "glasses", name: "Round glasses" },
   { id: "scarf", name: "Cosy scarf" },
-  // Unlocked with gems (see rewards.ts). The four above are free.
   { id: "headphones", name: "Headphones" },
   { id: "bow", name: "Bow" },
   { id: "crown", name: "Little crown" },

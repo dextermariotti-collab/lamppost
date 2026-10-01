@@ -80,7 +80,7 @@ export const PRIVACY: LegalDoc = {
             "Your age band and permission: when you sign up we ask your date of birth to check that you are old enough. We do not keep the date. We keep only whether you are 13 to 17 or 18 and over, and, for 13 to 17, that you confirmed a parent or guardian allows it.",
             "Your agreement: the time you accepted our Terms and Privacy Policy, and which version. This is our record that you agreed.",
             "Profile: your display name, a handle, an invite code, your companion's look, your daily goal, your notification choices, and who can see your progress.",
-            "Progress: XP, gems, streak, streak freezes, hint tokens, unlocked cosmetics, reward chests you have opened, badges, lessons finished, and how much you did each day and each week. This runs the streak, the rewards and the weekly recap.",
+            "Progress: XP, streak, streak freezes, badges, lessons finished, and how much you did each day and each week. This runs the streak, the friends league and the weekly recap. Earlier versions of the app also had gems, hint tokens, companion cosmetics and reward chests; those are no longer used, and anything recorded then stays with your account (and in your data download) until you delete it.",
             "Your writing: if you are signed in, the short arguments you write for grading and your explain-it-back conversations are saved to your account, with their scores, so you can look back at them. Guests' writing is graded but not saved to any account.",
             "Friends: friend requests, friendships, invite links you use, shared streaks, nudges, debates and friends-league results.",
             "Safety records: reports you make about content or about other people, people you block, and a log of requests we had to refuse.",
@@ -251,9 +251,9 @@ export const TERMS: LegalDoc = {
       ],
     },
     {
-      heading: "Gems, chests and other rewards",
+      heading: "Streaks, XP and badges",
       body: [
-        "Gems, streak freezes, hint tokens and cosmetics are in-app rewards for learning. They have no cash value, can't be sold or transferred, and can't be bought with money. We may adjust how rewards work, and we will try to be fair when we do.",
+        "Streaks, streak freezes, XP and badges are a record of your practice. They have no cash value, can't be sold or transferred, and can't be bought with money. Earlier versions of the app had gems, reward chests, hint tokens and companion cosmetics; those have been retired, and every companion colour and accessory is now free.",
       ],
     },
     {

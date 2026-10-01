@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Share2, Trophy } from "lucide-react";
-import { ChestOffer } from "@/components/ChestOffer";
 import { CompanionAura } from "@/components/CompanionAura";
 import { Confetti } from "@/components/Confetti";
 import { CountUp } from "@/components/CountUp";
@@ -198,8 +197,6 @@ export function LessonFinished({
             )}
           </ul>
         </div>
-
-        <ChestOffer source="lesson" className="relative z-30 mt-4" />
 
         <div className="mt-6 flex flex-col gap-2">
           {lessonNumber < totalLessons && (

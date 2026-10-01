@@ -4,17 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getDrillVariant: vi.fn(),
-  spendHint: vi.fn(),
-  tokens: 2,
+  struggling: false,
   finish: null as null | ((given: unknown, score: number) => void),
 }));
 vi.mock("@/lib/drills.functions", () => ({ getDrillVariant: mocks.getDrillVariant }));
-vi.mock("@/lib/progress", () => ({
-  useProgress: () => ({
-    state: { hintTokens: mocks.tokens },
-    hydrated: true,
-    spendHint: mocks.spendHint,
-  }),
+vi.mock("@/lib/rating", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/rating")>()),
+  needsHelp: () => mocks.struggling,
 }));
 vi.mock("./ExerciseRunner", () => ({
   ExerciseRunner: ({ onAnswer }: { onAnswer: (given: unknown, score: number) => void }) => {
@@ -52,9 +48,8 @@ const answer = (score: number) => act(async () => mocks.finish?.("choice", score
 beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
-  mocks.tokens = 2;
+  mocks.struggling = false;
   mocks.getDrillVariant.mockResolvedValue(drill);
-  mocks.spendHint.mockResolvedValue(true);
 });
 afterEach(() => {
   cleanup();
@@ -62,44 +57,31 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("DrillVariant hint tokens", () => {
-  it("offers a token only to a learner who holds one, at a 44px target", async () => {
+describe("DrillVariant hints", () => {
+  it("offers no hint while the skill is going fine, and never a hint token", async () => {
     mount();
     await settle();
-    const button = screen.getByRole("button", { name: /use a hint token.*2 left/i });
+    expect(screen.queryByRole("button", { name: /nudge/i })).toBeNull();
+    expect(screen.queryByText(/hint token/i)).toBeNull();
+  });
+
+  it("offers a nudge when the skill keeps catching the learner out, at a 44px target", async () => {
+    mocks.struggling = true;
+    mount();
+    await settle();
+    const button = screen.getByRole("button", { name: /give me a nudge \(half xp\)/i });
     expect(button.className).toMatch(/\bh-11\b/);
-    cleanup();
-
-    mocks.tokens = 0;
-    mount();
-    await settle();
-    expect(screen.queryByRole("button", { name: /hint token/i })).toBeNull();
   });
 
-  it("spends one token, shows the hint, and keeps full XP", async () => {
+  it("shows the guiding question and halves what the drill pays", async () => {
+    mocks.struggling = true;
     const onAnswer = mount();
     await settle();
-    await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: /use a hint token/i })),
-    );
-    expect(mocks.spendHint).toHaveBeenCalledTimes(1);
-    expect(screen.getByText(/keeps full xp/i)).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /nudge/i })));
     expect(screen.getByText(/guiding question/i)).toBeTruthy();
+    expect(screen.getByText(/half xp/i)).toBeTruthy();
 
     await answer(1);
-    expect(onAnswer).toHaveBeenCalledWith(1, 4, "choice", drill.exercise, 2);
-  });
-
-  it("shows no hint and charges no XP when the token could not be spent", async () => {
-    mocks.spendHint.mockResolvedValue(false);
-    const onAnswer = mount();
-    await settle();
-    await act(async () =>
-      fireEvent.click(screen.getByRole("button", { name: /use a hint token/i })),
-    );
-    expect(screen.queryByText(/guiding question/i)).toBeNull();
-
-    await answer(1);
-    expect(onAnswer).toHaveBeenCalledWith(1, 4, "choice", drill.exercise, 2);
+    expect(onAnswer).toHaveBeenCalledWith(0.5, 4, "choice", drill.exercise, 2);
   });
 });

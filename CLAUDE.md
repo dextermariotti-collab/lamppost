@@ -87,18 +87,17 @@ prove a lesson was done** — see "Security model".
   the SSR snapshot (all zeros) and an animation that never runs leaves the zeros on screen (this
   regressed once already; see `components/CountUp.tsx` and its test).
 
-### Rewards and the friends league
-Gems buy streak freezes, hint tokens and companion cosmetics; reward chests (one per lesson, review
-or challenge finished, **at most 3 a day, never for sale**) pay out gems or a hint token from a
-published table. Rules and numbers live in `lib/rewards.ts` (the same table the server rolls from
-and `ChestOdds` prints, so the odds shown are the odds used); `lib/rewards-state.ts` holds the
-signed-out state transitions. Signed in, the account owns every balance: `openChest`, `buyHintToken`
-and `unlockCosmetic` (`rewards.functions.ts`) call SQL functions that check and change the wallet in
-one statement, and the device only adopts their answer (`adoptRewards`). The wallet is
-`gems_earned` (device-reported, bounded) + `gems_granted` (server) − `gems_spent` (server); a new
-grant goes in `gems_granted`, never `gems_earned`. The **first** sync after sign-in carries over a
-guest's spend, hint tokens and cosmetics (`firstSyncCarryOver`) so signing in never refunds or
-loses them.
+### Streak freezes, the retired reward economy, and the friends league
+Streak freezes are earned, never bought: one free every 7 days of streak, up to `MAX_FREEZES`.
+**Gems, reward chests, hint tokens and companion cosmetics were retired from the app (October 2026).**
+Their tables and SQL functions (`reward_chests`, `user_cosmetics`, `spend_gems()`, the `profiles`
+wallet columns) are still in the database and nothing stored was deleted, so they can come back;
+the screens, the client and server functions that bought or opened things, and their rate limits
+are gone, and `/rewards` redirects to Progress. Nothing earns gems any more: the `gems` fields stay
+in the saved state and in each sync only so accounts stay consistent (`syncProgress` still bounds
+them and `firstSyncCarryOver` still checks what an old device carries, using `lib/rewards.ts`).
+Every companion colour and accessory is free. Don't reintroduce a purchase on the client: if gems
+return, they go through `spend_gems()` on the server with a server-held price.
 
 The league (`lib/league.ts`, `league.functions.ts`, `/league`) compares weekly XP among accepted
 friends only (`league_standings` joins through `are_friends`). Weeks start Monday in local day keys
@@ -134,8 +133,8 @@ dark set (Settings switches between them): don't re-theme a single screen, becau
 colour and type on its own reads as a different app (the Home and course-map screens used to). Text colours
 must meet WCAG AA (4.5:1 body, 3:1 large/graphics) in both sets — `styles.contrast.test.ts` checks it.
 The tone is a calm coach: the companion sits at the edges (a small avatar beside feedback, the tutor chat,
-the sign-up screens) and never shouts; gems, chests and the league live under Profile → Rewards, and
-after a lesson the chest is one quiet row.
+the sign-up screens) and never shouts; the league lives under Friends, and there is nothing to buy
+or open.
 
 My Path (`/courses`) is the only map: each unit opens in place into its five lessons. Home answers "what
 should I do now?" (the next lesson, one line about reviews, the seven units as a strip) and the skills graph
@@ -156,17 +155,15 @@ lives under Progress → Skills → Map. `/course/:slug` redirects to My Path. O
   if the allowlist grows. `syncProgress` (`profile.functions.ts`) is the only way progress reaches
   the account: it recomputes the streak from stored activity and bounds XP/gems and back-dating
   (`lib/progress-limits.ts`) — it cannot prove a lesson was done.
-- **Gems are spent on the server for a signed-in learner.** The account keeps `gems_earned`
-  (reported by devices in each sync, bounded, only rises) and `gems_spent` (changed only by the
-  `spend_gems()` function, which checks and updates in one atomic statement); the balance is the
-  difference. Signed-out learners spend locally. Any new thing gems can buy goes through
-  `spendGems` in `wallet.functions.ts` with a server-held price, never a price from the request.
-- **Chests, hint tokens, cosmetics and league results are server-only writes** (`reward_chests`,
-  `user_cosmetics`, `xp_weekly`, `league_results`, and `profiles.gems_granted` / `hint_tokens` /
-  `league_tier`), through service-role SQL functions that browser roles cannot run. The rollback
-  is `docs/rollback/20260929110000_rewards_and_league.down.sql`. What a companion wears is still an
-  ordinary profile column the browser can write, so the cosmetic lock on `/companion` is UX, not
-  enforcement; it protects no balance.
+- **Gems (retired) were spent only on the server.** The account keeps `gems_earned` (reported by
+  devices in each sync, bounded, only rises) and `gems_spent` (changed only by `spend_gems()`, one
+  atomic statement). Nothing calls it now; if anything is ever sold again, it goes through that
+  function with a server-held price, never a price from the request.
+- **League results are server-only writes** (`xp_weekly`, `league_results`, `profiles.league_tier`),
+  as were the retired `reward_chests`, `user_cosmetics`, `profiles.gems_granted` / `hint_tokens`,
+  through service-role SQL functions that browser roles cannot run. The rollback is
+  `docs/rollback/20260929110000_rewards_and_league.down.sql`. What a companion wears is an ordinary
+  profile column the browser can write, and every option is free.
 - **Consent and age.** `record_consent` (service role only) stamps the acceptance time on the server and
   is the only writer of `profiles.terms_version/privacy_version/terms_accepted_at/age_band/guardian_confirmed`
   and `consent_records`. Only an age band is stored, never a date of birth. A signed-in account that has not

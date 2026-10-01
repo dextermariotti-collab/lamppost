@@ -20,23 +20,25 @@ describe("Progress summary blocks", () => {
   });
 
   it("prints the learner's real numbers on the first paint", () => {
-    const { container } = render(<StatTiles hydrated lessons={3} xp={379} gems={40} />);
+    const { container } = render(<StatTiles hydrated lessons={3} xp={379} longestStreak={40} />);
     expect(text(container)).toContain("3Lessons");
     expect(text(container)).toContain("379Total XP");
-    expect(text(container)).toContain("40Gems");
+    expect(text(container)).toContain("40Longest streak");
   });
 
   it("does not print placeholder zeros before the real numbers have loaded", () => {
-    const { container } = render(<StatTiles hydrated={false} lessons={0} xp={0} gems={0} />);
+    const { container } = render(
+      <StatTiles hydrated={false} lessons={0} xp={0} longestStreak={0} />,
+    );
     expect(text(container)).not.toMatch(/\b0\b/);
     expect(text(container)).toContain("–Total XP");
   });
 
   it("goes from loading to the real numbers without ever showing zero", () => {
     const { container, rerender } = render(
-      <StatTiles hydrated={false} lessons={0} xp={0} gems={0} />,
+      <StatTiles hydrated={false} lessons={0} xp={0} longestStreak={0} />,
     );
-    rerender(<StatTiles hydrated lessons={3} xp={379} gems={40} />);
+    rerender(<StatTiles hydrated lessons={3} xp={379} longestStreak={40} />);
     expect(text(container)).toContain("379Total XP");
     expect(text(container)).not.toMatch(/\b0\b/);
   });

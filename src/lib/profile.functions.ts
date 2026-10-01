@@ -197,8 +197,8 @@ const STREAK_WINDOW_DAYS = 400;
  *   streak forever);
  * - XP and lifetime gems earned only ever rise, by at most a generous per-day
  *   allowance for the time since the last sync. Gems SPENT and gems GRANTED are not
- *   accepted here: they change only when the server sells or hands out something
- *   (wallet.functions.ts, rewards.functions.ts). The one exception is the account's
+ *   accepted here: they only ever changed when the server sold or handed out something
+ *   (the reward economy, since removed from the app). The one exception is the account's
  *   first sync, which carries across what the device spent and unlocked before it
  *   had an account, bounded (firstSyncCarryOver).
  * - the XP an account gains is also credited to the week it was synced in, for the

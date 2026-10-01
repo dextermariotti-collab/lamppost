@@ -2,13 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_STATE,
   adoptWallet,
-  applyBuyFreeze,
   applyLessonComplete,
   applyUnlockLessons,
   doneLessonIndexes,
   applyReview,
-  applyServerPurchase,
-  canBuyFreeze,
   deriveInsights,
   gemsEarned,
   mergeAccountProgress,
@@ -19,10 +16,10 @@ const lesson = { slug: "critical-thinking", topic: "Critical thinking", index: 0
 const never = () => 0.99; // no bonus-XP roll
 
 describe("applyLessonComplete", () => {
-  it("pays XP and gems, records the day and starts the streak", () => {
+  it("pays XP (and no gems, which are retired), records the day and starts the streak", () => {
     const next = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1, never);
     expect(next.xp).toBe(50);
-    expect(next.gems).toBe(10);
+    expect(next.gems).toBe(0);
     expect(next.streak).toBe(1);
     expect(next.lastActiveDay).toBe("2026-09-23");
     expect(next.history).toEqual({ "2026-09-23": 1 });
@@ -141,44 +138,8 @@ describe("applyReview", () => {
   });
 });
 
-describe("applyBuyFreeze", () => {
-  it("needs enough gems and stops at the cap", () => {
-    const poor = { ...DEFAULT_STATE, gems: 59 };
-    expect(applyBuyFreeze(poor)).toBe(poor);
-    const rich = { ...DEFAULT_STATE, gems: 100 };
-    expect(applyBuyFreeze(rich)).toMatchObject({ gems: 40, gemsSpent: 60, freezes: 2 });
-    const full = { ...DEFAULT_STATE, gems: 100, freezes: 2 };
-    expect(applyBuyFreeze(full)).toBe(full);
-  });
-
-  it("moves gems from the balance to lifetime spent without changing lifetime earned", () => {
-    const rich = { ...DEFAULT_STATE, gems: 100, gemsSpent: 20 };
-    const bought = applyBuyFreeze(rich);
-    expect(gemsEarned(rich)).toBe(120);
-    expect(gemsEarned(bought)).toBe(120);
-    expect(canBuyFreeze(bought)).toBe(false);
-  });
-});
-
-describe("a purchase the server made", () => {
+describe("taking the account's wallet", () => {
   const rich = { ...DEFAULT_STATE, gems: 100, gemsSpent: 20 };
-
-  it("takes the account's lifetime spend and holds the freeze", () => {
-    const next = applyServerPurchase(rich, { spent: 80 });
-    expect(next).toMatchObject({ gems: 40, gemsSpent: 80, freezes: 2 });
-    expect(gemsEarned(next)).toBe(gemsEarned(rich));
-  });
-
-  it("also reflects gems another device spent, so the balance is what can really be spent", () => {
-    // 20 spent here, the account says 200: two other purchases happened elsewhere.
-    const next = applyServerPurchase({ ...rich, gems: 300 }, { spent: 200 });
-    expect(next.gems).toBe(300 + 20 - 200);
-  });
-
-  it("never holds more freezes than the cap", () => {
-    const full = { ...rich, freezes: 2 };
-    expect(applyServerPurchase(full, { spent: 80 }).freezes).toBe(2);
-  });
 
   it("can't refund gems from an older reply, or go below zero", () => {
     expect(adoptWallet(rich, { spent: 0 })).toBe(rich);
@@ -286,5 +247,20 @@ describe("mergeAccountProgress", () => {
     const local = { ...DEFAULT_STATE, ...{ xp: 500, gems: 30, streak: 5, longestStreak: 9 } };
     const same = { ...local, lastActiveDay: "2026-09-23" };
     expect(mergeAccountProgress(same, account, "2026-09-23")).toBe(same);
+  });
+});
+
+describe("wallet adoption with grants", () => {
+  it("adds grants to the balance and leaves lifetime earned alone", () => {
+    const local = { ...DEFAULT_STATE, gems: 50, gemsSpent: 10 };
+    const next = adoptWallet(local, { spent: 10, granted: 30 });
+    expect(next.gems).toBe(80);
+    expect(gemsEarned(next)).toBe(gemsEarned(local));
+  });
+
+  it("works with a reply that has no grants in it", () => {
+    const local = { ...DEFAULT_STATE, gems: 50, gemsGranted: 20 };
+    expect(adoptWallet(local, { spent: 0 })).toBe(local);
+    expect(adoptWallet(local, { spent: 5 }).gems).toBe(45);
   });
 });

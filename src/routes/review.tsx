@@ -5,7 +5,6 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { AnimatedBar } from "@/components/AnimatedBar";
-import { ChestOffer } from "@/components/ChestOffer";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { Button } from "@/components/ui/button";
 import { useCompanion } from "@/lib/companion-store";
@@ -159,7 +158,6 @@ function ReviewQueue() {
               {right} of {session!.length} handled. The ones you missed return tomorrow with new
               material.
             </p>
-            <ChestOffer source="review" className="mt-6 w-full max-w-sm" />
             <Button asChild className="mt-6 h-12 rounded-full px-6 text-sm font-semibold">
               <Link to="/">Back to home</Link>
             </Button>

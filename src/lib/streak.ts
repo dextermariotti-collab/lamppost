@@ -2,7 +2,6 @@ import { daysBetween, shiftDay } from "./days";
 
 /** Most freezes that can be held at once, and the gem price of one. */
 export const MAX_FREEZES = 2;
-export const FREEZE_COST = 60;
 
 export type StreakState = {
   streak: number;

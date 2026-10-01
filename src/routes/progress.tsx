@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Target, TrendingUp } from "lucide-react";
+import { Target, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeShelf } from "@/components/BadgeShelf";
 import { Confetti } from "@/components/Confetti";
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/progress")({
 const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
-  const { state, streak, hydrated, doneLessons, clearCelebration, buyFreeze, clearFreezeSaved } =
+  const { state, streak, hydrated, doneLessons, clearCelebration, clearFreezeSaved } =
     useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
   const [burst, setBurst] = useState(false);
@@ -318,7 +318,12 @@ function ProgressScreen() {
         </div>
 
         {/* Stats — unboxed, hairline-separated, quiet */}
-        <StatTiles hydrated={hydrated} lessons={lessonsDone} xp={state.xp} gems={state.gems} />
+        <StatTiles
+          hydrated={hydrated}
+          lessons={lessonsDone}
+          xp={state.xp}
+          longestStreak={state.longestStreak}
+        />
       </div>
 
       <Drawer open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -331,21 +336,13 @@ function ProgressScreen() {
           </DrawerHeader>
           <div data-vaul-no-drag className="overflow-y-auto px-5 pb-8">
             <StreakCalendar state={state} />
-            <StreakFreezeCard freezes={state.freezes} gems={state.gems} onBuy={buyFreeze} />
+            <StreakFreezeCard freezes={state.freezes} />
             <TodaySession
               hydrated={hydrated}
               doneToday={insights.doneToday}
               dailyGoal={state.dailyGoal}
               dueTotal={dueTotal}
             />
-            <Link
-              to="/rewards"
-              onClick={() => setSheetOpen(false)}
-              className="mt-5 flex min-h-11 items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground"
-            >
-              <span>Rewards: chests, hint tokens and cosmetics</span>
-              <ArrowRight aria-hidden className="h-4 w-4 text-muted-foreground" />
-            </Link>
           </div>
         </DrawerContent>
       </Drawer>

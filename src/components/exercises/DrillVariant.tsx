@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
-import { HelpCircle, Sparkles } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { Button } from "./../ui/button";
 import { ExerciseRunner } from "./ExerciseRunner";
 import { getDrillVariant } from "@/lib/drills.functions";
 import { readIntent } from "@/lib/onboarding";
 import { isLimited } from "@/lib/rate-limit";
-import { useProgress } from "@/lib/progress";
 import { markPoolVariantSeen, needsHelp, seenVariants, targetDifficulty } from "@/lib/rating";
 import type { Exercise, ExerciseKind } from "@/lib/exercises";
 
@@ -60,11 +59,7 @@ export function DrillVariant({
     difficulty: number;
   } | null>(null);
   const [answer, setAnswer] = useState<unknown>(undefined);
-  const { state: progress, hydrated, spendHint } = useProgress();
   const [hint, setHint] = useState(false);
-  /** A hint bought with a token: same help, no half-XP cost. */
-  const [freeHint, setFreeHint] = useState(false);
-  const [tokenBusy, setTokenBusy] = useState(false);
   const [offerHint, setOfferHint] = useState(false);
   const [pause, setPause] = useState<string | null>(null);
   const [round, setRound] = useState(0);
@@ -76,7 +71,6 @@ export function DrillVariant({
     setDrill(null);
     setAnswer(undefined);
     setHint(false);
-    setFreeHint(false);
     setPause(null);
     retries.current = 0;
     setOfferHint(needsHelp(lessonId));
@@ -139,7 +133,7 @@ export function DrillVariant({
       if (drill) {
         // A hinted drill pays half, so the hint stays a help and not a shortcut.
         onAnswer(
-          hint && !freeHint ? score * 0.5 : score,
+          hint ? score * 0.5 : score,
           drill.variant,
           given,
           drill.exercise,
@@ -147,7 +141,7 @@ export function DrillVariant({
         );
       }
     },
-    [drill, hint, freeHint, onAnswer],
+    [drill, hint, onAnswer],
   );
 
   if (!drill && pause) {
@@ -177,51 +171,22 @@ export function DrillVariant({
   return (
     <>
       <AiLabel className="mt-4" />
-      {answer === undefined && (offerHint || (hydrated && progress.hintTokens > 0)) && (
+      {answer === undefined && offerHint && (
         <div className="mt-5 rounded-3xl border border-dashed border-primary/40 bg-primary-soft/50 p-4">
           {hint ? (
             <p className="text-[13px] font-semibold leading-snug text-accent-foreground">
               Guiding question: what would have to be true for this to hold up — and is it actually
-              stated anywhere?{" "}
-              {freeHint
-                ? "You used a hint token, so this keeps full XP."
-                : "This one counts for half XP."}
+              stated anywhere? This one counts for half XP.
             </p>
           ) : (
-            <div className="flex flex-col items-start gap-1">
-              {hydrated && progress.hintTokens > 0 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={tokenBusy}
-                  onClick={() => {
-                    setTokenBusy(true);
-                    void spendHint()
-                      .then((used) => {
-                        if (used) {
-                          setFreeHint(true);
-                          setHint(true);
-                        }
-                      })
-                      .finally(() => setTokenBusy(false));
-                  }}
-                  className="h-11 rounded-full px-3 text-[13px] font-bold text-primary-text"
-                >
-                  <Sparkles className="h-4 w-4" /> Use a hint token (keeps full XP) ·{" "}
-                  {progress.hintTokens} left
-                </Button>
-              )}
-              {offerHint && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setHint(true)}
-                  className="h-11 rounded-full px-3 text-[13px] font-bold text-primary-text"
-                >
-                  <HelpCircle className="h-4 w-4" /> Give me a nudge (half XP)
-                </Button>
-              )}
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setHint(true)}
+              className="h-11 rounded-full px-3 text-[13px] font-bold text-primary-text"
+            >
+              <HelpCircle className="h-4 w-4" /> Give me a nudge (half XP)
+            </Button>
           )}
         </div>
       )}

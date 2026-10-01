@@ -110,22 +110,6 @@ export const POLICIES = {
     ip: [t("hour", 60)],
     global: [t("day", 2000)],
   },
-  /** Opening a reward chest. Signed-in only; the day's chests are also capped in the database. */
-  openChest: {
-    label: "reward chests",
-    guest: [],
-    user: [t("minute", 6), t("hour", 30), t("day", 60)],
-    ip: [t("hour", 120)],
-    global: [],
-  },
-  /** Buying hint tokens and unlocking cosmetics. Signed-in only. */
-  shop: {
-    label: "purchases",
-    guest: [],
-    user: [t("minute", 10), t("hour", 60)],
-    ip: [t("hour", 240)],
-    global: [],
-  },
   /** Opening the friends league (which settles the last week the first time). Signed-in only. */
   leagueView: {
     label: "league views",
@@ -148,14 +132,6 @@ export const POLICIES = {
     guest: [],
     user: [t("minute", 10), t("hour", 60)],
     ip: [t("hour", 240)],
-    global: [],
-  },
-  /** Spending gems. Signed-in only. */
-  buyFreeze: {
-    label: "streak freeze purchases",
-    guest: [],
-    user: [t("hour", 30)],
-    ip: [t("hour", 120)],
     global: [],
   },
 } as const satisfies Record<string, LimitPolicy>;
