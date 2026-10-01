@@ -297,8 +297,14 @@ describe("answers aren't predictable", () => {
   });
 });
 
-const complete = authoredUnits().length === UNITS.length;
-describe.runIf(complete)("the whole curriculum", () => {
+// Every lesson is authored now. The generated lesson screen is only a safety net for a script
+// that fails to load in the field, so a missing or broken one fails here instead of quietly
+// sending learners to it.
+describe("the whole curriculum", () => {
+  it("has an authored file for every unit", () => {
+    expect([...authoredUnits()].sort()).toEqual(UNITS.map((u) => u.id).sort());
+  });
+
   it("has an authored lesson for every one of the 35 lessons", () => {
     expect(LESSONS.length).toBe(35);
     expect(LESSONS.filter((l) => !loaded.has(l.id)).map((l) => l.id)).toEqual([]);
