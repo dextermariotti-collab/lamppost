@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronDown, Circle, ClipboardCheck, Play, Timer } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Circle,
+  ClipboardCheck,
+  NotebookText,
+  Play,
+  Timer,
+} from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import {
@@ -196,11 +204,11 @@ function UnitCard({
           const isDone = done.has(index);
           const isNext = index === nextIndex && !isDone;
           return (
-            <li key={lesson.id}>
+            <li key={lesson.id} className="flex items-center">
               <Link
                 to="/course/$slug/lesson/$index"
                 params={{ slug: CURRICULUM_SLUG, index: String(start + i + 1) }}
-                className={`flex min-h-12 items-center gap-3 rounded-2xl px-3 py-2 ${
+                className={`flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-2xl px-3 py-2 ${
                   isNext ? "bg-primary-soft" : ""
                 }`}
               >
@@ -229,10 +237,24 @@ function UnitCard({
                 >
                   {lesson.title}
                 </span>
-                <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
-                  {isDone ? "Done" : isNext ? "Up next" : `Lesson ${start + i + 1}`}
-                </span>
+                {isDone ? (
+                  <span className="sr-only">, done</span>
+                ) : (
+                  <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
+                    {isNext ? "Up next" : `Lesson ${start + i + 1}`}
+                  </span>
+                )}
               </Link>
+              {isDone && (
+                <Link
+                  to="/notes/$lessonId"
+                  params={{ lessonId: lesson.id }}
+                  aria-label={`Notes: ${lesson.title}`}
+                  className="flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-[12px] font-bold text-primary-text"
+                >
+                  <NotebookText aria-hidden className="h-3.5 w-3.5" /> Notes
+                </Link>
+              )}
             </li>
           );
         })}

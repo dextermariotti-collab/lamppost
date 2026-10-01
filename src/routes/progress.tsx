@@ -3,7 +3,7 @@ import { Target, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeShelf } from "@/components/BadgeShelf";
 import { Confetti } from "@/components/Confetti";
-import { DisclosureRow } from "@/components/DisclosureRow";
+import { DisclosureRow, LinkRow } from "@/components/DisclosureRow";
 import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { StatTiles, TodaySession } from "@/components/ProgressSummary";
@@ -206,6 +206,16 @@ function ProgressScreen() {
               </ul>
             )}
           </DisclosureRow>
+
+          <LinkRow
+            to="/notes"
+            title="Your notes"
+            summary={
+              lessonsDone > 0
+                ? `The idea in full from ${lessonsDone} finished lesson${lessonsDone === 1 ? "" : "s"}.`
+                : "The idea in full from each lesson, once you've finished it."
+            }
+          />
 
           {/* Calibration: stated confidence vs what actually happened */}
           <DisclosureRow

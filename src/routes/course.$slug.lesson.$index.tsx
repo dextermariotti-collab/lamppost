@@ -5,6 +5,7 @@ import { StepLesson } from "@/components/lesson/StepLesson";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { CURRICULUM_SLUG, TOTAL_LESSONS, lessonAt, unitById } from "@/lib/curriculum";
 import { useLessonScript } from "@/lib/steps/use-lesson-script";
+import { useLessonNotes } from "@/lib/use-lesson-notes";
 
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
   head: ({ params }) => {
@@ -42,6 +43,7 @@ function LessonRoute() {
   const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
   const meta = lessonAt(lessonNumber - 1);
   const script = useLessonScript(meta?.unitId, meta?.id);
+  const notes = useLessonNotes(meta?.unitId, meta?.id);
 
   // Old topic courses no longer exist: send any other slug to the curriculum.
   useEffect(() => {
@@ -56,7 +58,7 @@ function LessonRoute() {
 
   if (!meta || script.status === "unavailable") return <LegacyLesson lessonNumber={lessonNumber} />;
 
-  if (script.status === "loading") {
+  if (script.status === "loading" || notes.status === "loading") {
     return (
       <PhoneFrame showNav={false}>
         <div className="px-5 py-8" aria-busy="true">
@@ -76,6 +78,12 @@ function LessonRoute() {
   }
 
   return (
-    <StepLesson key={meta.id} script={script.script} meta={meta} lessonNumber={lessonNumber} />
+    <StepLesson
+      key={meta.id}
+      script={script.script}
+      notes={notes.status === "ready" ? notes.notes : null}
+      meta={meta}
+      lessonNumber={lessonNumber}
+    />
   );
 }

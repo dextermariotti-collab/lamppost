@@ -192,10 +192,63 @@ const argumentsUnit: Record<string, LessonScript> = {
         why: "An argument isn't a claim plus other sentences. Each reason has to bear on the conclusion.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "builder",
         prompt:
-          "Find the conclusion first: it's what the writer wants you to accept. Then check which sentences support it, and which are only background.",
+          "A real email, laid out. Put each piece where it does its job. One piece is only background.",
+        slots: [
+          {
+            id: "c",
+            role: "conclusion",
+            label: "The conclusion",
+          },
+          {
+            id: "p1",
+            role: "premise",
+            label: "A reason",
+          },
+          {
+            id: "p2",
+            role: "premise",
+            label: "Another reason",
+          },
+          {
+            id: "e",
+            role: "evidence",
+            label: "Something you can check",
+          },
+        ],
+        pieces: [
+          {
+            id: "pc",
+            text: "The office should switch to cleaning four days a week instead of five.",
+            role: "conclusion",
+          },
+          {
+            id: "pp1",
+            text: "The Friday clean adds little, because the office is half empty on Fridays.",
+            role: "premise",
+          },
+          {
+            id: "pp2",
+            text: "Dropping a day would save money without lowering standards.",
+            role: "premise",
+          },
+          {
+            id: "pe",
+            text: "Door-pass records show 40% of staff in on Fridays, against 85% midweek.",
+            role: "evidence",
+          },
+          {
+            id: "px",
+            text: "The cleaning company has served the building since 2012.",
+            role: null,
+            note: "True, but how long they've worked here doesn't bear on how many days they should come.",
+          },
+        ],
+        hint: "Find what the email wants first. Then ask which pieces give reasons, which gives a checkable figure, and which supports nothing.",
+        why: "The conclusion is the switch to four days. The reasons say Friday adds little and a day can be saved, and the door-pass figure backs the first. The company's history supports nothing.",
       },
     ],
   },
@@ -392,10 +445,35 @@ const argumentsUnit: Record<string, LessonScript> = {
         why: "Strength moves with each relevant fact, up or down. Facts that don't bear on the claim leave it where it is.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Two tests decide how strong support is: does it bear on the claim, and is there enough of it? Your feelings about the conclusion are not part of either test.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Every reason here is relevant. Where is this argument weakest?",
+        stimulus:
+          "“Our school should make chess compulsory in Year 7. Chess teaches planning. Pupils in the chess club got better maths grades than other pupils last year. And chess is cheap: boards cost £4 each.”",
+        options: [
+          {
+            text: "The grades: club members chose chess, so they may differ in other ways.",
+          },
+          {
+            text: "The cost: £4 a board is too expensive for most schools to afford.",
+            whyNot:
+              "The cost point is relevant and probably fine. It's not where the argument is weakest.",
+          },
+          {
+            text: "The planning claim: chess obviously involves no planning at all.",
+            whyNot:
+              "Chess clearly involves planning. The question is whether that helps elsewhere, and the evidence offered is the grades.",
+          },
+          {
+            text: "Nothing: every reason given is relevant, so it's a strong case.",
+            whyNot:
+              "Relevant isn't the same as enough. The grade evidence can't show chess caused the difference.",
+          },
+        ],
+        correct: 0,
+        hint: "Each reason is relevant. Now ask whether the strongest-looking one is enough for what it's used to show.",
+        why: "The grade link carries the argument, but club members chose chess, so keen or able pupils may join anyway. It's relevant but not enough to show compulsory chess would raise grades.",
       },
     ],
   },
@@ -591,10 +669,34 @@ const argumentsUnit: Record<string, LessonScript> = {
         why: "The test of a steelman is whether the people who hold the view would accept it. Only then have you earned the right to respond.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "A steelman keeps the position and adds its best reasons, so supporters would nod. Only then is your reply worth hearing.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "You disagree with this view. Which restatement is its strongest, fairest version?",
+        stimulus:
+          "The view: the Linwood bypass should be built. Its supporters say lorries pass along the village high street every two minutes, the primary school is on that street, and accidents there have doubled in five years.",
+        options: [
+          {
+            text: "Some people want a big new road because they like driving fast.",
+            whyNot:
+              "That swaps the supporters' reasons for an unflattering motive. They'd never sign it.",
+          },
+          {
+            text: "Bypass supporters care deeply about the village and mean well.",
+            whyNot: "Kind, but empty. It leaves out every reason they actually give.",
+          },
+          {
+            text: "A bypass is the only possible way to reduce any traffic at all.",
+            whyNot:
+              "That's more extreme than what they say, which makes it easier to attack. A steelman doesn't exaggerate.",
+          },
+          {
+            text: "Constant lorries past a school, and rising accidents, justify a bypass.",
+          },
+        ],
+        correct: 3,
+        hint: "Which version would a bypass supporter read and say: yes, that's exactly why?",
+        why: "A steelman keeps the position and its best reasons: heavy lorry traffic, a school on the route and rising accidents. The others swap in a motive, empty kindness or an exaggeration.",
       },
     ],
   },
@@ -800,10 +902,34 @@ const argumentsUnit: Record<string, LessonScript> = {
         why: "Objections and replies both move the balance. The strongest reply leaves the objection with less weight, not none.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Look for the strongest objection, not the easiest, and answer it directly. If your reply doesn't mention the worry, the worry is still there.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A proposal meets a hard objection. Which reply answers it on its own terms?",
+        stimulus:
+          "Proposal: Brackley library should open until 9 pm on weekdays. The council's budget officer objects: “Extra staff hours would cost £45,000 a year, and evening visits at other libraries average eight people an hour.”",
+        options: [
+          {
+            text: "“Libraries are the heart of a community, and that's worth defending.”",
+            whyNot: "Heartfelt, but it changes the subject. The objection was about cost and use.",
+          },
+          {
+            text: "“The budget officer has never supported any library spending.”",
+            whyNot:
+              "That's about the officer, not the figures. The cost and visit numbers still stand.",
+          },
+          {
+            text: "“A volunteer-run trial costing £8,000 would show if eight an hour holds here.”",
+          },
+          {
+            text: "“Nobody can be sure about the future, so we should just try it.”",
+            whyNot:
+              "That dodges the numbers. A rebuttal has to deal with the cost and the low use.",
+          },
+        ],
+        correct: 2,
+        hint: "The objection is about two things: cost and how many people would come. Which reply deals with both?",
+        why: "It answers on the objection's terms: a cheaper version cuts the cost, and a trial tests whether the figure from elsewhere applies here. The others change the subject or attack the person.",
       },
     ],
   },
@@ -994,10 +1120,29 @@ const argumentsUnit: Record<string, LessonScript> = {
         why: "Confidence should move with the size and breadth of the evidence. Small early results give way to larger, wider ones.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Say who, how many and how much. A qualified claim fits its evidence and can still be wrong. A hedged one can never be.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Which version fits the evidence, without hedging it into nothing?",
+        stimulus:
+          "A study at one primary school in Corley found that pupils who did ten minutes of exercise before lessons scored higher on that week's spelling test than pupils who didn't. The school newsletter's headline: “Morning exercise makes children better at spelling.”",
+        options: [
+          {
+            text: "“Exercise might possibly help some children with some school things, perhaps.”",
+            whyNot: "Hedged until it can't fail. It names no group, no measure and no size.",
+          },
+          {
+            text: "“At one school, pupils who exercised first scored higher in spelling that week.”",
+          },
+          {
+            text: "“Morning exercise has been proven to improve every child's spelling results.”",
+            whyNot:
+              "“Proven” and “every child” go far beyond one school and one week, and the study didn't rule out other causes.",
+          },
+        ],
+        correct: 1,
+        hint: "Who was studied, for how long, and how sure can you be? The best version says exactly that, and no more.",
+        why: "The study covered one school and one week, and found a link. The qualified version says exactly that. It could still turn out wrong, which is what keeps it worth saying.",
       },
     ],
   },

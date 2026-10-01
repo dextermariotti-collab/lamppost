@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-Lamppost is a critical-thinking trainer: a fixed 7-unit / 35-lesson curriculum, each lesson a
-concept card → mixed reasoning drills → a graded written argument → an "explain it back" tutor
-chat. It is a mobile-first web app (a 420px "phone frame" that also runs on desktop), built with
+Lamppost is a critical-thinking trainer: a fixed 7-unit / 35-lesson curriculum, each lesson
+interactive steps (ending on a harder real-world case) → the idea in full (the lesson's notes) → a
+graded written argument → an "explain it back" tutor chat. It is a mobile-first web app (a 420px "phone frame" that also runs on desktop), built with
 Lovable and two-way synced with this repo.
 
 ## Read this first
@@ -116,6 +116,18 @@ results are kept the first time and never overwritten. They show on My Path and 
 Before and after, always framed as a rough signal. `content/unit-checks.test.ts` keeps them fresh
 (no overlap with lesson text), fair (answer positions and lengths) and well-formed.
 
+### Authored lessons and notes
+Every lesson is written as data: `content/lessons/<unit>.ts` holds its steps (schema and cross-field
+rules in `lib/steps/types.ts`, one component per step kind in `components/steps`), the takeaway and the
+writing task, and `content/notes/<unit>.ts` holds its notes (`lib/lesson-notes.ts`: the hook shown above
+the first step, the idea, key terms, a worked example, two subtleties, a question to carry and something
+to try this week). `StepLesson` plays them; problem first, explanation after, so the notes come after
+the steps and only open in the `/notes` library once the lesson is done. Each lesson's last step is a
+harder "Putting it together" case. `lessons.test.ts` and `notes.test.ts` hold both to their word limits,
+answer-position balance and the content rules in `content/content-rules.ts` (made-up names, no party
+line). The generated pipeline below is the fallback (`LegacyLesson`) and still feeds reviews, the daily
+challenge and the placement check.
+
 ### Lesson content pipeline
 `lib/curriculum.ts` is the single source of truth for the 35 lessons (objective, key idea, the trap
 each drill must test, the ordered **drill plan**, and the written task type). Content is generated
@@ -146,7 +158,8 @@ The tone is a calm coach: the companion sits at the edges (a small avatar beside
 the sign-up screens) and never shouts; the league lives under Friends, and there is nothing to buy
 or open.
 
-My Path (`/courses`) is the only map: each unit opens in place into its five lessons. Home answers "what
+My Path (`/courses`) is the only map: each unit opens in place into its five lessons, and a finished
+lesson's row links to its notes (`/notes`, also under Progress). Home answers "what
 should I do now?" (the next lesson, one line about reviews, the seven units as a strip) and the skills graph
 lives under Progress → Skills → Map. `/course/:slug` redirects to My Path. Onboarding is three screens
 (intro, one real question, setup); choosing a companion is offered once, after the first lesson.

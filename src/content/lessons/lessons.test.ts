@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LESSONS, UNITS, unitById } from "@/lib/curriculum";
 import { isInteractive, wordCount, type LessonScript, type LessonStep } from "@/lib/steps/types";
 import { describeCorrelations } from "@/lib/steps/checks";
+import { PARTISAN, REAL_NAMES } from "../content-rules";
 import { authoredUnits, loadLessonScript, validateScript } from "./index";
 
 /**
@@ -78,81 +79,6 @@ const allText = (script: LessonScript) => [
   script.written.prompt,
   script.written.passage,
   script.written.guidance ?? "",
-];
-
-/** Real people and brands a lesson must not use; examples are made up. */
-const REAL_NAMES = [
-  "Trump",
-  "Biden",
-  "Obama",
-  "Clinton",
-  "Musk",
-  "Bezos",
-  "Zuckerberg",
-  "Gates",
-  "Jobs",
-  "Putin",
-  "Modi",
-  "Macron",
-  "Merkel",
-  "Johnson",
-  "Google",
-  "Facebook",
-  "Instagram",
-  "TikTok",
-  "Twitter",
-  "Amazon",
-  "Apple",
-  "Microsoft",
-  "Tesla",
-  "Netflix",
-  "Nike",
-  "Coca-Cola",
-  "Pepsi",
-  "McDonald",
-  "Starbucks",
-  "Walmart",
-  "Pfizer",
-  "Moderna",
-  "OpenAI",
-  "ChatGPT",
-  "Wikipedia",
-  "Fox News",
-  "CNN",
-  "BBC",
-  "Reuters",
-  "Democrat",
-  "Republican",
-  "Tory",
-  "Labour Party",
-  "Brexit",
-  "Trumpism",
-];
-/** Topics on which a lesson would end up taking a partisan side. */
-const PARTISAN = [
-  "abortion",
-  "gun control",
-  "immigration",
-  "border wall",
-  "election fraud",
-  "pro-life",
-  "pro-choice",
-  "gay marriage",
-  "transgender",
-  "gun rights",
-  "Second Amendment",
-  "climate hoax",
-  "vaccine mandate",
-  "rent control",
-  "minimum wage",
-  "death penalty",
-  "welfare",
-  "left-wing",
-  "right-wing",
-  "liberals",
-  "conservatives",
-  "the president",
-  "prime minister",
 ];
 
 const interactiveShare = (script: LessonScript) =>

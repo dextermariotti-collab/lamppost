@@ -225,6 +225,30 @@ Asked whether to go serious or all-in on the animal, I kept the companion but ma
 - **Not done, and only you can do it:** put the app in front of a few real people for a week and watch where they
   get stuck.
 
+## Follow-up: more substance in the lessons
+
+- **Every lesson now has notes: the idea in full.** After the steps, a short page (about two minutes of
+  reading) joins up what the steps taught: the idea in two or three paragraphs, the key terms, a worked
+  example walked through move by move, two places where the idea gets subtle (the overcorrection, the
+  exception), one question to carry, and something to try this week outside the app. 35 sets of notes, in
+  `content/notes/`. They feed the explain-it-back tutor too, and the try-it task is repeated on the finish
+  screen.
+- **The notes stay.** A finished lesson's row on My Path has a Notes link, and Progress → Your notes lists
+  every finished lesson with its question, so the questions read as one field guide. A lesson's notes open
+  once it's done, because trying first is what makes them stick.
+- **A line on why it matters** now sits under each lesson's title on the first step. It never gives away
+  the answer.
+- **Each lesson ends on a harder case.** The closing "worth remembering" card (which repeated the takeaway)
+  is replaced by a "Putting it together" step: a longer, messier real-world text such as a scam text, a
+  council plan, a salary negotiation, an AI answer that cites a society's records, with wrong answers that
+  each explain the mistake. Lessons are now fully interactive.
+- **Fixed on the way:** moving to the next step, or from the steps to the notes, now starts at the top of
+  the page. It used to keep the last step's scroll position, because the phone frame scrolls an inner pane
+  and the old code only scrolled the window.
+- **Needs you:** the notes make some factual claims about well-known research (anchoring in estate agents'
+  valuations, exaggeration starting in press releases, fact-checkers reading laterally). They match the
+  published studies as I know them, but read them once, and edit any you'd rather not state.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

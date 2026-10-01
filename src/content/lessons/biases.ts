@@ -194,10 +194,35 @@ const biases: Record<string, LessonScript> = {
         why: "She chose the reviews that agree with what she hoped. The conclusion only follows if those are typical, and choosing them makes that unlikely.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "The correcting question is “what would show me I'm wrong?” The test worth running is the one that could fail.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Freya has a theory about her bakery. What should she do to test it fairly?",
+        stimulus:
+          "Freya believes her new sourdough sells best on rainy days. She has noticed a few rainy days with big sourdough sales, and she's started writing down sales whenever it rains.",
+        options: [
+          {
+            text: "Keep writing down sales on rainy days for another month.",
+            whyNot:
+              "Still only rainy days. Without dry days to compare, the record can't show that rain makes a difference.",
+          },
+          {
+            text: "Ask her regular customers whether they buy more bread when it rains.",
+            whyNot:
+              "People's guesses about their own habits are weak evidence, and the question invites them to agree.",
+          },
+          {
+            text: "Record sourdough sales every day, and compare rainy days with dry ones.",
+          },
+          {
+            text: "Stop testing, since she has already seen it happen several times.",
+            whyNot:
+              "Seeing it a few times is exactly how confirmation bias feels. Those were the memorable days.",
+          },
+        ],
+        correct: 2,
+        hint: "Her record only includes the days that could agree with her. What's missing?",
+        why: "A fair test needs the days that could prove her wrong: dry days with good sales, rainy days with poor ones. Only a full record, compared both ways, can show whether rain matters.",
       },
     ],
   },
@@ -365,10 +390,30 @@ const biases: Record<string, LessonScript> = {
         why: "You can't ignore a number you've heard, but you can weigh it against real evidence about what similar things are worth.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "The first number mentioned drags every later estimate towards it, even when it is arbitrary and you know it is.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A number arrives before Jess has said hers. What should she do with it?",
+        stimulus:
+          "Jess is negotiating her salary for a new job. Before she names a figure, the employer says: “Candidates for this role usually ask for around £24,000.” Jess has researched similar roles nearby, which pay £27,000 to £30,000.",
+        options: [
+          {
+            text: "Ask for a little more than £24,000, to show she's being reasonable.",
+            whyNot:
+              "That lets the anchor set the range. Her research says the going rate is well above it.",
+          },
+          {
+            text: "Start from her research and ask within £27,000 to £30,000.",
+          },
+          {
+            text: "Ignore all numbers and ask for whatever feels fair on the day.",
+            whyNot:
+              "“Feels fair” is exactly where the anchor pulls hardest. Her research is the defence.",
+          },
+        ],
+        correct: 1,
+        hint: "Which number came from evidence, and which simply arrived first?",
+        why: "£24,000 arrived first and will drag her estimate down if she lets it. Her research on similar roles is evidence about real value, so it should set the range she negotiates in.",
       },
     ],
   },
@@ -546,10 +591,36 @@ const biases: Record<string, LessonScript> = {
         why: "Comparing per-trip rates fixes the effect of coverage. Headlines can show which events are dramatic, not which are common.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Ease of recall isn't frequency. Vivid, recent and heavily covered events feel far more common than they are.",
+          "A shocking video and five years of records. What would a fair reading of the risk say?",
+        stimulus:
+          "After a widely shared video of a dog attack, a parents' group wants all dogs banned from Hartley Park. Over the past five years, the park recorded 2 dog bites in roughly 400,000 visits, and 31 injuries from its old playground equipment.",
+        options: [
+          {
+            text: "Dog bites are rare there; the playground causes far more injuries.",
+          },
+          {
+            text: "Dogs must be the main danger, since the video shows how bad it can be.",
+            whyNot:
+              "The video shows how bad one case was, not how often it happens. That's availability at work.",
+          },
+          {
+            text: "There isn't enough information to compare the two risks at all.",
+            whyNot:
+              "The records give counts for both over the same five years. That's enough for a rough comparison.",
+          },
+          {
+            text: "Both risks are tiny, so neither deserves any attention.",
+            whyNot:
+              "Thirty-one injuries is worth acting on. Comparing risks is about where effort helps most.",
+          },
+        ],
+        correct: 0,
+        hint: "Put the vivid video aside. What do five years of records say?",
+        why: "The video makes dog attacks easy to picture, so they feel common. The records show 2 bites against 31 playground injuries. Fixing the playground would likely prevent more harm.",
       },
     ],
   },
@@ -723,10 +794,30 @@ const biases: Record<string, LessonScript> = {
         why: "Only the figures ahead matter: £8,000 to finish against £3,000 to gain. The £20,000 is the same either way.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Money and time already spent are gone either way. Only the costs and benefits that remain can change which choice is right.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A theatre group has spent a lot already. Which reasoning is sound?",
+        stimulus:
+          "A theatre group has spent £6,000 and four months rehearsing a play. Two weeks before opening, ticket sales suggest they'll take £1,500, and the venue hire still to pay is £3,000. A cheaper venue has offered them a slot next spring.",
+        options: [
+          {
+            text: "Go ahead: £6,000 and four months are too much to waste now.",
+            whyNot:
+              "The £6,000 and four months are spent whatever they decide. They can't make going ahead a better choice.",
+          },
+          {
+            text: "Cancel: the £6,000 already spent proves the play was a mistake.",
+            whyNot:
+              "Past spending doesn't prove anything either way. The decision rests on what's still ahead.",
+          },
+          {
+            text: "Compare what's ahead: £3,000 to take £1,500, or the spring slot.",
+          },
+        ],
+        correct: 2,
+        hint: "Cross out everything already spent. What's left to compare?",
+        why: "The £6,000 and the rehearsals are gone on every path. What can still change is ahead: paying £3,000 to take about £1,500 now, against the cheaper spring slot.",
       },
     ],
   },
@@ -888,10 +979,35 @@ const biases: Record<string, LessonScript> = {
         why: "Recording predictions and results is the only way to learn how much to trust your own confidence.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Being 90% sure should mean being right about nine times in ten: no more, no less. Track your record to learn what your confidence is worth.",
+        id: "together",
+        label: "Putting it together",
+        kind: "confidence",
+        prompt: "Choose, then say how sure you are. Being honest about it is the skill.",
+        question:
+          "Kai says he's “95% sure” his team's projects finish on time. Of his last 20 projects, 12 finished on time and 8 ran late. What's the best reading?",
+        options: [
+          {
+            text: "His confidence is about right, since most projects finished on time.",
+            whyNot:
+              "Most isn't 95%. Twelve of 20 is 60%, so his stated confidence is far above his record.",
+          },
+          {
+            text: "He's overconfident: 12 of 20 is about 60%, not 95%.",
+          },
+          {
+            text: "He's underconfident, because 20 projects is plenty of evidence.",
+            whyNot:
+              "Twenty projects is a fair amount of evidence, and it points the other way: his record is well below 95%.",
+          },
+          {
+            text: "Nothing can be said, since every project is different.",
+            whyNot:
+              "Projects differ, but a record of 20 still shows how often his 95% has come true.",
+          },
+        ],
+        correct: 1,
+        hint: "Turn his record into a percentage and compare it with what he says.",
+        why: "Twelve on time out of 20 is 60%. If he were right to be 95% sure, about 19 in 20 would finish on time. His confidence runs well ahead of his record.",
       },
     ],
   },

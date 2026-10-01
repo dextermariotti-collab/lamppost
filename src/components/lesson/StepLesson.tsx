@@ -20,11 +20,14 @@ import { recordDrillOutcome } from "@/lib/rating";
 import { trackDrillResult } from "@/lib/review-drills";
 import { holdRewards } from "@/lib/reward-hold";
 import { playCue } from "@/lib/feedback";
+import { scrollToTop } from "@/lib/scroll";
 import { isGraded, reviewKindFor, statedConfidence, stepAttemptIndex } from "@/lib/steps/attempts";
 import type { StepResult } from "@/lib/steps/scoring";
 import type { LessonScript, LessonStep, StepKind } from "@/lib/steps/types";
+import { notesText, type LessonNotes } from "@/lib/lesson-notes";
 import { LessonFinished } from "./LessonFinished";
 import { LessonPlayer } from "./LessonPlayer";
+import { NotesView } from "./NotesView";
 
 /** What each kind of step is listed as on the finished screen. */
 const PRACTISED: Record<StepKind, string> = {
@@ -40,20 +43,24 @@ const PRACTISED: Record<StepKind, string> = {
   note: "",
 };
 
-type Phase = "steps" | "write" | "explain" | "finished";
+type Phase = "steps" | "notes" | "write" | "explain" | "finished";
 
 /**
- * One lesson, from the first step to the celebration: the interactive steps, then the short
- * written argument (skippable), then explaining the idea back to the companion, then the
- * finish. Every answer feeds the same places a generated drill always did: XP and combos,
- * the attempt record (mastery, calibration), the review queue and the skill rating.
+ * One lesson, from the first step to the celebration: the interactive steps, then the idea in
+ * full (the notes), then the short written argument (skippable), then explaining the idea back
+ * to the companion, then the finish. Every answer feeds the same places a generated drill always
+ * did: XP and combos, the attempt record (mastery, calibration), the review queue and the skill
+ * rating.
  */
 export function StepLesson({
   script,
+  notes,
   meta,
   lessonNumber,
 }: {
   script: LessonScript;
+  /** The idea in full. A lesson without notes goes straight from the steps to the writing. */
+  notes: LessonNotes | null;
   meta: CurriculumLesson;
   lessonNumber: number;
 }) {
@@ -86,6 +93,14 @@ export function StepLesson({
     if (over) return;
     return holdRewards();
   }, [over]);
+
+  // Each new part of the lesson starts at its heading, not wherever the last one was scrolled to.
+  const partHeading = useRef<HTMLHeadingElement | null>(null);
+  useEffect(() => {
+    if (phase === "steps" || phase === "finished") return;
+    scrollToTop(partHeading.current);
+    partHeading.current?.focus({ preventScroll: true });
+  }, [phase]);
 
   const handleStepResolved = (index: number, step: LessonStep, result: StepResult) => {
     setResults((prev) => ({ ...prev, [index]: result }));
@@ -150,12 +165,15 @@ export function StepLesson({
         xpEarned={Math.max(state.xp - (xpAtStart.current ?? state.xp), 0)}
         wrote={argumentGrade !== null}
         takeaway={script.takeaway}
+        tryIt={notes?.tryIt}
       />
     );
   }
 
+  // The notes come first: the tutor sees at most 6,000 characters and they are the fullest account.
   const lessonText = [
     script.takeaway,
+    ...(notes ? [notesText(notes)] : []),
     ...script.steps.flatMap((step) => (step.kind === "note" ? [step.prompt] : [step.why])),
   ].join("\n\n");
 
@@ -188,13 +206,43 @@ export function StepLesson({
           <LessonPlayer
             steps={script.steps}
             onStepResolved={handleStepResolved}
-            onComplete={() => setPhase("write")}
-            finalLabel="On to the writing"
+            onComplete={() => setPhase(notes ? "notes" : "write")}
+            finalLabel={notes ? "Read the idea in full" : "On to the writing"}
+            intro={
+              notes && (
+                <p className="-mt-1 px-5 pb-3 text-sm leading-relaxed text-muted-foreground">
+                  {notes.hook}
+                </p>
+              )
+            }
           />
         </>
       ) : (
         <div className="px-5 pt-2 pb-8">
-          <h1 className="text-2xl leading-tight">{meta.title}</h1>
+          {phase === "notes" && (
+            <p className="text-[11px] font-semibold text-primary-text">The idea in full</p>
+          )}
+          <h1 ref={partHeading} tabIndex={-1} className="text-2xl leading-tight outline-none">
+            {meta.title}
+          </h1>
+          {phase === "notes" && notes && (
+            <>
+              <div className="mt-5">
+                <NotesView notes={notes} />
+              </div>
+              <p className="mt-6 text-[13px] text-muted-foreground">
+                These notes stay on My Path, next to the lesson, for whenever you want them again.
+              </p>
+              <div className="sticky bottom-3 z-20 mt-4">
+                <Button
+                  onClick={() => setPhase("write")}
+                  className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                >
+                  On to the writing <ArrowRight aria-hidden className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
+          )}
           {phase === "write" && (
             <>
               <WrittenArgument

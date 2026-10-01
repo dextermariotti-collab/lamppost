@@ -227,10 +227,30 @@ const media: Record<string, LessonScript> = {
         why: "A link in a survey doesn't show cause. The conclusion follows only if nothing else about cheese eaters explains the difference.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Read past the headline: how many people, compared with whom, how big is the change and who says it's proven? Then decide how far to trust it.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Read past the headline. Which version is faithful to the study?",
+        stimulus:
+          "Headline: “Chocolate cuts stroke risk by 20%!” The study: 1,200 adults over 65 in one region were asked about their diets. Over five years, 5 in 100 of those eating chocolate weekly had a stroke, against 6.25 in 100 of those who didn't.",
+        options: [
+          {
+            text: "“Eating chocolate every week prevents strokes, scientists now prove.”",
+            whyNot:
+              "A diet survey can't prove prevention. Chocolate eaters may differ in other ways, such as health or income.",
+          },
+          {
+            text: "“Chocolate has no link whatsoever to strokes, new study finds.”",
+            whyNot:
+              "There was a link, just a small one. Denying it is as unfaithful as overstating it.",
+          },
+          {
+            text: "“Older chocolate eaters had slightly fewer strokes in one survey.”",
+          },
+        ],
+        correct: 2,
+        hint: "Who was studied, how big was the absolute change, and what kind of study was it?",
+        why: "It's a survey of over-65s in one region, and the absolute change is 1.25 strokes per 100. A link, not proof of prevention. A faithful headline keeps the group, the size and the caution.",
       },
     ],
   },
@@ -447,10 +467,35 @@ const media: Record<string, LessonScript> = {
         why: "Honest captions give the values and a fair comparison. Strong verbs and missing context are how small changes look large.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Check the axis, the window and the denominator. If a chart is dramatic, ask what happens when it starts at zero and covers a longer time.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "The numbers are right. What's misleading about the chart?",
+        stimulus:
+          "A council leaflet's line chart, titled “Crime falls!”, shows reported burglaries from March to August: 120 down to 85. Full-year figures show burglaries dip every summer, and last year's total was 1,100, the same as the year before.",
+        options: [
+          {
+            text: "Nothing: burglaries really did fall from 120 to 85.",
+            whyNot:
+              "The numbers may be accurate. The problem is the window, which turns a seasonal dip into a trend.",
+          },
+          {
+            text: "The window: a usual summer dip is shown as a fall.",
+          },
+          {
+            text: "The axis: it should show burglaries per person, not counts.",
+            whyNot:
+              "Rates can help, but the population barely changes in six months. The window is the real problem here.",
+          },
+          {
+            text: "The source: councils can never be trusted on crime.",
+            whyNot:
+              "That dismisses the source instead of reading the chart. The figures may be right; the framing isn't.",
+          },
+        ],
+        correct: 1,
+        hint: "What happens to burglaries every summer? Now look at which months the chart chose.",
+        why: "March to August catches the usual summer dip, and the yearly totals haven't moved. A window chosen like this turns a pattern that repeats every year into an apparent improvement.",
       },
     ],
   },
@@ -642,10 +687,30 @@ const media: Record<string, LessonScript> = {
         why: "Time to check is the best defence. Verify the claim, then decide.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Strong feeling isn't the tell. The tell is pressure to act now with nothing new to check. When you feel rushed, that's the moment to slow down.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Before deciding, what should you check first?",
+        stimulus:
+          "An email: “Hi, it's Alex from Mapleway Gym! We've noticed you haven't visited in a while. Your rate of £25 a month is locked in, but only if you renew by midnight tonight. After that it rises to £39. 47 members renewed today!”",
+        options: [
+          {
+            text: "Whether the £39 price and midnight deadline are in the terms.",
+          },
+          {
+            text: "Whether 47 members really renewed today, by asking the gym.",
+            whyNot:
+              "Even if it's true, other people renewing tells you nothing about whether you should. It's social proof.",
+          },
+          {
+            text: "Whether Alex is friendly, since the email sounds personal.",
+            whyNot:
+              "A friendly tone is easy to write. It doesn't change whether the deadline or the price is real.",
+          },
+        ],
+        correct: 0,
+        hint: "Which claim, if it were false, would remove the pressure entirely?",
+        why: "The deadline and the price rise create the pressure. If they're real and in the terms, you can decide calmly; if not, the email is just hurrying you. The other details are decoration.",
       },
     ],
   },
@@ -854,10 +919,35 @@ const media: Record<string, LessonScript> = {
         why: "Holding a claim back is a decision you can defend: name the problem and show what you found.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Treat an AI answer as a lead, not a source. Check the exact numbers, the named references and any claim that sounds sure of itself.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "You want to use this in a school project. What's the best next step?",
+        stimulus:
+          "You ask an AI tool when Fenwick Bridge opened. It replies: “Fenwick Bridge opened in 1887. It was designed by the engineer Margaret Holt and was the longest bridge in the county until 1952, according to the Fenwick Historical Society.”",
+        options: [
+          {
+            text: "Use it as written, since it names a source.",
+            whyNot:
+              "Naming a source isn't the same as being backed by one. Tools can attach real-sounding sources to wrong facts.",
+          },
+          {
+            text: "Ask the same tool again and see if it agrees.",
+            whyNot:
+              "The same tool agreeing with itself isn't independent. It can repeat an invented detail just as confidently.",
+          },
+          {
+            text: "Check the date and designer in the society's own records.",
+          },
+          {
+            text: "Throw it all away, since AI answers are always wrong.",
+            whyNot:
+              "Too far the other way. Much of it may be right; the point is to check the specific claims first.",
+          },
+        ],
+        correct: 2,
+        hint: "Which parts are specific and checkable? Where would you find the original?",
+        why: "Specific dates, names and records are what tools can get wrong while sounding sure. The named source, the society's own records, will confirm or correct them, and then you cite that, not the tool.",
       },
     ],
   },
@@ -1056,10 +1146,30 @@ const media: Record<string, LessonScript> = {
         why: "A judgement about a source is strongest when it rests on independent evidence you can point to.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Don't read the page harder. Leave it, and ask who is behind it and what independent sources say. Then come back.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A friend shares this article. What's the best first move to judge the source?",
+        stimulus:
+          "The article is from “Parents for Safe Screens”, a site saying a popular new game harms children's sleep. The site looks professional, cites “recent research” without links, and its About page says it is “a grassroots group of concerned parents”.",
+        options: [
+          {
+            text: "Read the whole article carefully to see if it sounds convincing.",
+            whyNot:
+              "That's reading vertically. A careful read only tells you the site's own story.",
+          },
+          {
+            text: "Open a new tab and search who runs and funds the group.",
+          },
+          {
+            text: "Trust its About page, since it says it's a grassroots group.",
+            whyNot:
+              "The site wrote its own description. It would say “grassroots” whether or not it was.",
+          },
+        ],
+        correct: 1,
+        hint: "Would the site's own pages ever tell you it had a hidden backer?",
+        why: "The site controls everything on its own pages, including its About page. Searching who runs and funds it, in a new tab, tells you who's talking. Then look for the research it mentions.",
       },
     ],
   },

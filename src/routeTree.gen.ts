@@ -39,6 +39,8 @@ import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
 import { Route as LegalHealthRouteImport } from './routes/legal.health'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as NotesIndexRouteImport } from './routes/notes.index'
+import { Route as NotesLessonIdRouteImport } from './routes/notes.$lessonId'
 import { Route as ApiPublicWarmCurriculumRouteImport } from './routes/api/public/warm-curriculum'
 import { Route as CheckUnitIdPhaseRouteImport } from './routes/check.$unitId.$phase'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
@@ -194,6 +196,16 @@ const LegalTermsRoute = LegalTermsRouteImport.update({
   path: '/legal/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotesIndexRoute = NotesIndexRouteImport.update({
+  id: '/notes/',
+  path: '/notes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotesLessonIdRoute = NotesLessonIdRouteImport.update({
+  id: '/notes/$lessonId',
+  path: '/notes/$lessonId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWarmCurriculumRoute = ApiPublicWarmCurriculumRouteImport.update({
   id: '/api/public/warm-curriculum',
   path: '/api/public/warm-curriculum',
@@ -244,8 +256,10 @@ export interface FileRoutesByFullPath {
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/notes/$lessonId': typeof NotesLessonIdRoute
   '/friends/': typeof FriendsIndexRoute
   '/legal/': typeof LegalIndexRoute
+  '/notes/': typeof NotesIndexRoute
   '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
   '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
@@ -280,8 +294,10 @@ export interface FileRoutesByTo {
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/notes/$lessonId': typeof NotesLessonIdRoute
   '/friends': typeof FriendsIndexRoute
   '/legal': typeof LegalIndexRoute
+  '/notes': typeof NotesIndexRoute
   '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
   '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug': typeof CourseSlugIndexRoute
@@ -317,8 +333,10 @@ export interface FileRoutesById {
   '/legal/health': typeof LegalHealthRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/notes/$lessonId': typeof NotesLessonIdRoute
   '/friends/': typeof FriendsIndexRoute
   '/legal/': typeof LegalIndexRoute
+  '/notes/': typeof NotesIndexRoute
   '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
   '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
@@ -355,8 +373,10 @@ export interface FileRouteTypes {
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/notes/$lessonId'
     | '/friends/'
     | '/legal/'
+    | '/notes/'
     | '/api/public/warm-curriculum'
     | '/check/$unitId/$phase'
     | '/course/$slug/'
@@ -391,8 +411,10 @@ export interface FileRouteTypes {
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/notes/$lessonId'
     | '/friends'
     | '/legal'
+    | '/notes'
     | '/api/public/warm-curriculum'
     | '/check/$unitId/$phase'
     | '/course/$slug'
@@ -427,8 +449,10 @@ export interface FileRouteTypes {
     | '/legal/health'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/notes/$lessonId'
     | '/friends/'
     | '/legal/'
+    | '/notes/'
     | '/api/public/warm-curriculum'
     | '/check/$unitId/$phase'
     | '/course/$slug/'
@@ -464,8 +488,10 @@ export interface RootRouteChildren {
   LegalHealthRoute: typeof LegalHealthRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
+  NotesLessonIdRoute: typeof NotesLessonIdRoute
   FriendsIndexRoute: typeof FriendsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
+  NotesIndexRoute: typeof NotesIndexRoute
   ApiPublicWarmCurriculumRoute: typeof ApiPublicWarmCurriculumRoute
   CheckUnitIdPhaseRoute: typeof CheckUnitIdPhaseRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
@@ -684,6 +710,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notes/': {
+      id: '/notes/'
+      path: '/notes'
+      fullPath: '/notes/'
+      preLoaderRoute: typeof NotesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notes/$lessonId': {
+      id: '/notes/$lessonId'
+      path: '/notes/$lessonId'
+      fullPath: '/notes/$lessonId'
+      preLoaderRoute: typeof NotesLessonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/warm-curriculum': {
       id: '/api/public/warm-curriculum'
       path: '/api/public/warm-curriculum'
@@ -744,8 +784,10 @@ const rootRouteChildren: RootRouteChildren = {
   LegalHealthRoute: LegalHealthRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
+  NotesLessonIdRoute: NotesLessonIdRoute,
   FriendsIndexRoute: FriendsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
+  NotesIndexRoute: NotesIndexRoute,
   ApiPublicWarmCurriculumRoute: ApiPublicWarmCurriculumRoute,
   CheckUnitIdPhaseRoute: CheckUnitIdPhaseRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,

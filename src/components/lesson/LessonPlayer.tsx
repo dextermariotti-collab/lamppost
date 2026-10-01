@@ -1,7 +1,8 @@
 import { ArrowRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { StepView } from "@/components/steps/StepView";
+import { scrollToTop } from "@/lib/scroll";
 import type { StepResult } from "@/lib/steps/scoring";
 import type { LessonStep } from "@/lib/steps/types";
 import { StepProgress } from "./StepProgress";
@@ -17,8 +18,11 @@ export function LessonPlayer({
   onStepResolved,
   onComplete,
   finalLabel = "Continue",
+  intro,
 }: {
   steps: readonly LessonStep[];
+  /** Shown above the first step only. */
+  intro?: ReactNode;
   /** Called once per step, when the learner has finished it. */
   onStepResolved: (index: number, step: LessonStep, result: StepResult) => void;
   /** Called when Continue is pressed on the last step. */
@@ -34,13 +38,14 @@ export function LessonPlayer({
 
   useEffect(() => {
     stepRef.current?.focus({ preventScroll: true });
-    window.scrollTo?.({ top: 0 });
+    scrollToTop(stepRef.current);
   }, [index]);
 
   const doneCount = Object.keys(results).length;
 
   return (
     <>
+      {index === 0 && intro}
       <StepProgress total={steps.length} current={index} done={doneCount} />
       <div className="px-5 pt-4 pb-8">
         <div ref={stepRef} tabIndex={-1} className="outline-none">

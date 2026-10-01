@@ -177,10 +177,30 @@ const evidence: Record<string, LessonScript> = {
         why: "Measured results from randomly chosen groups let the school separate the programme from everything else going on.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Evidence gets stronger the better it rules out other explanations: experiments beat surveys, surveys beat opinions, and opinions beat single stories.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A hospital has three kinds of evidence. Which should it weigh most, and why?",
+        stimulus:
+          "A hospital wants to know whether a new hand-washing reminder cuts infections. It has nurses' opinions of the reminder; infection rates before and after on one ward that chose to use it; and a study in which 20 wards were randomly picked to use it or not.",
+        options: [
+          {
+            text: "The study of 20 wards, because chance decided which wards used the reminder.",
+          },
+          {
+            text: "The ward that chose it, because it measured real infections over time.",
+            whyNot:
+              "Real measurements help, but that ward chose the reminder. Keen staff or a quieter season could explain the change.",
+          },
+          {
+            text: "The nurses' opinions, because they see infections every single day.",
+            whyNot:
+              "Experience matters, but impressions can't separate the reminder from everything else that changes on a ward.",
+          },
+        ],
+        correct: 0,
+        hint: "Which source can separate the reminder from everything else going on in the wards?",
+        why: "Random assignment makes the wards alike apart from the reminder, so a difference in infections points at it. Before-and-after on one ward that volunteered can't rule out the rivals.",
       },
     ],
   },
@@ -348,10 +368,35 @@ const evidence: Record<string, LessonScript> = {
         why: "Loan figures cover every member. The letter is moving, but it's one case and can't carry the argument on its own.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "A vivid story proves something can happen. It says nothing about how often it happens, and it grabs our attention more than any average does.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A vivid story and a set of records. What can they tell you together?",
+        stimulus:
+          "A local paper's front page tells the story of Maeve, 34, who fell ill after eating at the new street food market. The same week, council records show the market's stalls passed all 22 inspections this year, and reports of food poisoning in town are no higher than usual.",
+        options: [
+          {
+            text: "The market is dangerous, because Maeve's story is detailed and recent.",
+            whyNot:
+              "Detail and recency make a story memorable, not typical. One case can't show the market is riskier than anywhere else.",
+          },
+          {
+            text: "Maeve's story must be false, because the inspections were all passed.",
+            whyNot:
+              "Passing inspections doesn't mean nobody can ever fall ill. The records don't contradict her story.",
+          },
+          {
+            text: "Nothing at all, because one story and a set of records cancel out.",
+            whyNot:
+              "They don't cancel out. They answer different questions: whether something happened, and how common it is.",
+          },
+          {
+            text: "Illness can happen there, but nothing shows it's more common than elsewhere.",
+          },
+        ],
+        correct: 3,
+        hint: "What can one case prove? What do the records say about how often it happens?",
+        why: "The story shows illness can follow a meal at the market. The records cover every inspection and every report in town, and show nothing unusual. Together: a real case, no sign of a pattern.",
       },
     ],
   },
@@ -534,10 +579,30 @@ const evidence: Record<string, LessonScript> = {
         why: "A good source is placed to know, accountable for what it says, and open to being checked.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Four questions decide a source: does it know this subject, who pays it, has it been right before, and does anyone independent agree?",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Three sources on one question. Who should residents rely on most, and why?",
+        stimulus:
+          "Is the Coldwater dam safe? The firm that built it says it's “among the safest in the country”. An engineering professor who inspected it last year for the regional water authority found minor cracks that need monitoring. A popular local social media page says it's “about to burst”.",
+        options: [
+          {
+            text: "The builder, because it knows the dam better than anyone else does.",
+            whyNot:
+              "It knows the dam, but it has a stake in the dam being seen as safe. Its claim needs independent checking.",
+          },
+          {
+            text: "The professor, who has relevant expertise and inspected it independently.",
+          },
+          {
+            text: "The local page, because it is warning people rather than reassuring them.",
+            whyNot:
+              "A warning isn't more reliable for being alarming. The page shows no expertise and no evidence.",
+          },
+        ],
+        correct: 1,
+        hint: "Run the four questions: who knows, who gains, who has been right, and who agrees?",
+        why: "The professor has relevant expertise, looked directly and has no stake in the result. The builder has a stake; the page shows no expertise. A careful, measured finding beats both reassurance and alarm.",
       },
     ],
   },
@@ -747,10 +812,31 @@ const evidence: Record<string, LessonScript> = {
         why: "Random invitations make the groups alike in everything except the club, which is what lets a grade gap point at the club.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Before accepting that A caused B, check three rivals: something else causing both, B causing A, or plain coincidence.",
+          "A study, an advert and a detail in the small print. Which rival explanation fits best?",
+        stimulus:
+          "A study of 2,000 office workers finds that those with standing desks take fewer sick days. A furniture company's advert says: “Standing desks keep you healthy.” In the study, standing desks went mostly to staff in newer offices, who were also younger on average.",
+        options: [
+          {
+            text: "Reverse causation: being off sick makes people choose sitting desks.",
+            whyNot:
+              "Possible in principle, but the study says who got the desks: staff in newer offices. That points at a different rival.",
+          },
+          {
+            text: "Coincidence: with 2,000 people, links like this turn up by chance.",
+            whyNot:
+              "With 2,000 people a chance link is less likely, and the study names a better candidate: age and office.",
+          },
+          {
+            text: "A common cause: younger staff in newer offices may get ill less anyway.",
+          },
+        ],
+        correct: 2,
+        hint: "Look at who got the standing desks. Is there something about them that could cut sick days on its own?",
+        why: "Age and newer offices could reduce sick days whether or not anyone stands. That common cause has to be ruled out, by comparing similar staff, before the desks get the credit.",
       },
     ],
   },
@@ -913,10 +999,34 @@ const evidence: Record<string, LessonScript> = {
         why: "A smaller random sample beats a bigger self-selected one, because the way people get in matters more than how many there are.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Who got counted decides what a number means: small samples swing, self-picked ones tilt, and survivors are the only ones left to ask.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Read the small print. What's the biggest problem with “9 out of 10 customers”?",
+        stimulus:
+          "A coffee chain's advert: “9 out of 10 customers prefer our new blend!” The small print: 50 customers at the flagship café were offered a free taste of each blend; 30 agreed, and 27 of those chose the new one.",
+        options: [
+          {
+            text: "It counts only 30 volunteers at one café, not customers in general.",
+          },
+          {
+            text: "27 out of 30 is exactly 90%, so the figure is actually fine.",
+            whyNot:
+              "The arithmetic is right. The problem is who those 30 were: volunteers at one café.",
+          },
+          {
+            text: "Taste tests can never tell you anything useful about coffee.",
+            whyNot: "Too sweeping. A fair taste test with a proper sample could tell you a lot.",
+          },
+          {
+            text: "The new blend was probably more expensive to make.",
+            whyNot:
+              "Perhaps, but cost has nothing to do with whether the figure describes customers.",
+          },
+        ],
+        correct: 0,
+        hint: "Who was counted? How did they get into the sample, and where?",
+        why: "The figure comes from 30 people who chose to take part at one café. They may differ from customers elsewhere, so “9 out of 10 customers” claims far more than the sample shows.",
       },
     ],
   },

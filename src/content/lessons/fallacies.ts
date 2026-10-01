@@ -188,10 +188,33 @@ const fallacies: Record<string, LessonScript> = {
         why: "It asks for the details of the proposal, which is exactly what a serious reply to “trim slightly” needs.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "A rebuttal engages the argument as stated. Ad hominem swaps in the person; strawman swaps in an easier version of the claim.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Four replies to the same post. Which one is a fair rebuttal?",
+        stimulus:
+          "The post: “Our town should trial closing Market Street to cars on Saturdays, for three months, and count shoppers before and after.”",
+        options: [
+          {
+            text: "“Typical of someone who doesn't run a shop to want this.”",
+            whyNot: "That's about the poster, not the proposal: an ad hominem.",
+          },
+          {
+            text: "“A summer trial will flatter the count. Compare with the same weeks last year.”",
+          },
+          {
+            text: "“So you want to ban cars from town for good? Shops will close.”",
+            whyNot:
+              "A strawman: the post proposed a three-month Saturday trial, not a permanent ban.",
+          },
+          {
+            text: "“I respect your view, but banning all traffic everywhere goes too far.”",
+            whyNot: "Polite, but still a strawman. Nobody proposed banning all traffic everywhere.",
+          },
+        ],
+        correct: 1,
+        hint: "Hold each reply up against the post. Which one deals with the trial as it was actually proposed?",
+        why: "It's blunt, but it engages the actual proposal: a three-month trial with a count. The others swap in the poster's job or a bigger, easier claim. Politeness doesn't make a strawman fair.",
       },
     ],
   },
@@ -370,10 +393,30 @@ const fallacies: Record<string, LessonScript> = {
         why: "A fair version says what a car park would do and admits there are other routes to the same goal.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "A false dilemma hides the third option. A slippery slope asserts a chain of steps without supporting any link in it.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "This message uses a chain and an either/or. What would a fair reply say?",
+        stimulus:
+          "From the Riverside Tenants' Association: “If we accept the landlord's plan to fit smart meters, next they'll monitor our water use, then they'll fine us for long showers, and before long we'll have no privacy at all. Either we refuse the meters or we give up our privacy for good.”",
+        options: [
+          {
+            text: "The message is right: one change always leads to the next, so refuse.",
+            whyNot:
+              "“Always” is exactly the unsupported link. Some changes lead on and many don't, and the message gives no reason this one will.",
+          },
+          {
+            text: "The message is wrong, because landlords never misuse tenants' data.",
+            whyNot:
+              "That's an unsupported claim the other way. The fair move is to ask for support for each link.",
+          },
+          {
+            text: "Each step needs a reason, and meters with limits on data use are an option.",
+          },
+        ],
+        correct: 2,
+        hint: "There are two problems here: a chain and an either/or. What would fix each one?",
+        why: "The chain jumps from meters to fines with no support for any link, and the either/or hides middle options, such as meters with written limits on data use. A fair reply asks for both.",
       },
     ],
   },
@@ -558,10 +601,31 @@ const fallacies: Record<string, LessonScript> = {
         why: "An award for running a business doesn't show expertise in water treatment. The claim needs test results, not a title.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Citing relevant expert consensus is good reasoning. Citing fame, confidence or headcount is not.",
+          "Three reasons to buy a lawn feed. Which gives you the best grounds to believe it works?",
+        stimulus:
+          "Verdance lawn feed is the country's bestselling lawn feed. TV gardener Ross Ellery says he uses it on his own lawn. And a trial by the independent Grassland Trials Centre found lawns treated with it grew thicker than untreated ones.",
+        options: [
+          {
+            text: "It's the bestselling lawn feed in the country by a long way.",
+            whyNot:
+              "Sales show popularity. People buy for price, habit and adverts, not only for results.",
+          },
+          {
+            text: "An independent trial found thicker growth than untreated lawns.",
+          },
+          {
+            text: "A famous TV gardener says he uses it on his own lawn at home.",
+            whyNot:
+              "He may know gardening, but one lawn isn't a test, and he may be paid. It's an appeal to status.",
+          },
+        ],
+        correct: 1,
+        hint: "Which reason is evidence about lawns, rather than about sales or fame?",
+        why: "The trial compared treated and untreated lawns, run by a body with no stake in sales. Popularity and a famous name are reasons the product is known, not reasons it works.",
       },
     ],
   },
@@ -743,10 +807,35 @@ const fallacies: Record<string, LessonScript> = {
         why: "Wins and what players say are separate facts. They could support or undermine the conclusion, which is what a reason does.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Circular arguments restate the conclusion in different words and call it support, so no new reason ever arrives.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A site vouches for itself. What would actually support its claim to be unbiased?",
+        stimulus:
+          "From a review site's About page: “Our reviews are completely unbiased. You can trust that, because we're an independent site that gives honest, impartial verdicts on every product we cover.”",
+        options: [
+          {
+            text: "The site saying again, more firmly, that its verdicts are impartial.",
+            whyNot:
+              "Repeating “impartial” is the same claim in other words. Saying it louder adds no reason.",
+          },
+          {
+            text: "Lots of readers saying in the comments that they trust the site.",
+            whyNot:
+              "That shows readers' trust, not whether the site is biased. It's popularity, not a separate check.",
+          },
+          {
+            text: "The site's long list of five-star reviews for big brands.",
+            whyNot:
+              "That could fit a biased site as easily as a fair one. It doesn't test the claim.",
+          },
+          {
+            text: "Who funds the site, and whether its ratings match independent tests.",
+          },
+        ],
+        correct: 3,
+        hint: "Look for a reason that could be checked separately, and could have turned out badly for the site.",
+        why: "“Independent” and “impartial” are just “unbiased” again. A real reason is something separate you could check, like funding and agreement with independent tests, which could have shown bias.",
       },
     ],
   },
@@ -939,10 +1028,31 @@ const fallacies: Record<string, LessonScript> = {
         why: "A careful claim matches its evidence. Thirty rides can suggest something; they can't back “all” and “unbeatable”.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "A general rule needs enough cases, chosen in a way that could have shown it false. A few cases, or hand-picked ones, can't carry it.",
+          "Two misses against a month of figures. What's the fairest conclusion about the app?",
+        stimulus:
+          "After a fortnight with the new Wayfarer bus app, Dmitri posts: “This app is useless. Twice it showed my bus as two minutes away and it never came.” Wayfarer's own figures say its arrival times were within two minutes on 88% of trips across the city last month.",
+        options: [
+          {
+            text: "It's usually accurate, though Dmitri's misses suggest checking his route.",
+          },
+          {
+            text: "It's useless, because Dmitri's two bad experiences are first-hand.",
+            whyNot:
+              "First-hand doesn't make two cases enough. They can't outweigh a month of trips across the city.",
+          },
+          {
+            text: "It's perfect, because the company's own figure settles the matter.",
+            whyNot:
+              "88% isn't perfect, and the figure comes from the company itself. It's worth checking independently.",
+          },
+        ],
+        correct: 0,
+        hint: "How many cases is each side going on? And could the misses support a narrower claim?",
+        why: "Two misses can't show the app is useless across the city. But they're still data: if they cluster on one route, that's a narrower claim worth checking. The company's figure deserves a check too.",
       },
     ],
   },

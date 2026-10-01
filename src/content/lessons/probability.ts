@@ -202,10 +202,36 @@ const probability: Record<string, LessonScript> = {
         why: "The same result means very different things in different groups. When the condition is common, a positive is far more likely to be real.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Picture 1,000 people. Count who has the condition and who is wrongly flagged. Then see what share of the flags are real.",
+          "Your bag is flagged. Roughly how likely is it that it really holds a banned item? Count it out of 10,000 bags.",
+        stimulus:
+          "A new airport scanner wrongly flags 1 in 50 innocent bags, and catches 95% of bags carrying banned items. About 1 bag in 10,000 actually carries a banned item.",
+        options: [
+          {
+            text: "Well under 1%: about 1 real case among some 200 flags.",
+          },
+          {
+            text: "About 95%, because that's how often the scanner catches banned items.",
+            whyNot:
+              "95% is how often a banned item gets flagged, not how often a flag means a banned item. Most flags come from innocent bags.",
+          },
+          {
+            text: "About 50%, since a flagged bag either has one or it doesn't.",
+            whyNot:
+              "Two possibilities aren't equally likely. With innocent bags so common, most flags are false alarms.",
+          },
+          {
+            text: "About 2%, the rate at which innocent bags are flagged.",
+            whyNot:
+              "That's the false-alarm rate among innocent bags. The question is what share of flags are real.",
+          },
+        ],
+        correct: 0,
+        hint: "Picture 10,000 bags. How many carry a banned item? How many innocent bags get flagged by mistake?",
+        why: "Out of 10,000 bags, about 1 holds a banned item and gets flagged. About 200 innocent bags are flagged too. So a flag means a real item about 1 time in 200.",
       },
     ],
   },
@@ -388,10 +414,36 @@ const probability: Record<string, LessonScript> = {
         why: "£400 ÷ 500 tickets is 80p per ticket. Paying £2 for it loses £1.20 on average, whatever the prize sounds like.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Multiply each payoff by its chance and add up. The duller option often wins, and the biggest prize usually doesn't.",
+          "Zara is offered phone insurance. What does the expected value say, and what else matters?",
+        stimulus:
+          "A shop offers Zara a £60 plan for her £400 phone, covering one replacement over two years. She reckons there's a 10% chance she'll break or lose it in that time. She has £500 in savings.",
+        options: [
+          {
+            text: "Buy it: losing or breaking a £400 phone would be a disaster for her.",
+            whyNot:
+              "That looks only at the worst case. Its chance matters too: 10% of £400 is £40.",
+          },
+          {
+            text: "Skip it: insurance plans like this are always a waste of money.",
+            whyNot:
+              "“Always” is too strong. When a loss would be ruinous, paying above the average can be sensible.",
+          },
+          {
+            text: "Buy it: £60 is far less than the £400 the phone cost her.",
+            whyNot:
+              "Comparing the price with the whole phone ignores the 10% chance. On average the cover is worth £40.",
+          },
+          {
+            text: "On average it's worth £40, less than £60, and she can afford a loss.",
+          },
+        ],
+        correct: 3,
+        hint: "Multiply the payout by its chance. Then ask whether a loss would actually hurt her badly.",
+        why: "10% × £400 = £40 on average, below the £60 price. With £500 saved, a loss wouldn't be ruinous, so the average is a fair guide here. Someone with no savings might reasonably choose otherwise.",
       },
     ],
   },
@@ -592,10 +644,30 @@ const probability: Record<string, LessonScript> = {
         why: "A short run of wins is weak evidence. A long record across different conditions is much harder for luck to explain.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Judge the decision by what was known when it was made. Then ask how much of the result was skill and how much was luck.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A fundraiser lost money. How should the trustees judge the decision?",
+        stimulus:
+          "A small charity spent £5,000 on a fundraising dinner after checking that similar dinners had raised £8,000 to £12,000. A storm on the night kept half the guests away, and it raised only £3,000. The trustees say: “That was a bad decision. No more dinners.”",
+        options: [
+          {
+            text: "Sound but unlucky: the evidence was good and the storm unforeseeable.",
+          },
+          {
+            text: "Bad, because the charity lost £2,000, and that's what counts.",
+            whyNot:
+              "The loss is real, but judging only by the result ignores what was known when they decided.",
+          },
+          {
+            text: "Good, because any fundraising event is worth trying at least once.",
+            whyNot:
+              "That's too generous. A decision is good because of its reasoning, not because trying is always fine.",
+          },
+        ],
+        correct: 0,
+        hint: "Separate what they knew when they decided from what happened on the night.",
+        why: "They checked how similar dinners did, and the storm was luck they couldn't plan for. The decision was sound. A fair review might add cover for bad weather, not drop dinners altogether.",
       },
     ],
   },
@@ -796,10 +868,30 @@ const probability: Record<string, LessonScript> = {
         why: "The best evidence is what would look different if the claim were false. A fair, large trial can show that. Testimonials and slogans can't.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Ask how likely this evidence would be if the claim were true, and if it were false. The bigger the difference, the more you should move.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A blind test disagrees with you. How should your confidence change?",
+        stimulus:
+          "You're 80% sure the Harbour Café makes the best coffee in town. Then the local paper runs a blind taste test, with 200 tasters and the cafés unnamed, and Harbour comes seventh of ten.",
+        options: [
+          {
+            text: "Not at all: you know what you like, whatever any test says about it.",
+            whyNot:
+              "A blind test with 200 tasters is strong evidence. Ignoring it isn't confidence; it's refusing to update.",
+          },
+          {
+            text: "All the way down: Harbour clearly serves some of the worst coffee around.",
+            whyNot:
+              "Seventh of ten in one test doesn't make it bad, and your own taste still counts for something.",
+          },
+          {
+            text: "Down a lot: a large blind test is hard to explain if Harbour is best.",
+          },
+        ],
+        correct: 2,
+        hint: "How likely is a seventh place in a large blind test if Harbour really is the best?",
+        why: "If Harbour were the best, it would rarely come seventh in a large blind test, so the result is strong evidence. Move a long way, but not all the way: taste varies and one test isn't final.",
       },
     ],
   },
@@ -992,10 +1084,30 @@ const probability: Record<string, LessonScript> = {
         why: "A change has to be judged on its knock-on effects as well as its first one. Here the response outweighs the intended benefit.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Ask “and then what?” at least twice. People respond to changes, and their response is often bigger than the change itself.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "Think a step further. What's the most likely knock-on effect?",
+        stimulus:
+          "To cut litter, Kelby council doubles the fine for dropping litter and, to save on emptying costs, removes half the bins in the town centre.",
+        options: [
+          {
+            text: "Litter falls sharply, because the fine is now twice as high.",
+            whyNot:
+              "That's the first-order effect the council hopes for. It ignores how people respond to fewer bins.",
+          },
+          {
+            text: "People carrying rubbish find no bin and drop it, so litter may rise.",
+          },
+          {
+            text: "Nothing much changes, since most people never drop litter anyway.",
+            whyNot:
+              "Possible, but it ignores the bins. Fewer bins changes what's convenient for everyone.",
+          },
+        ],
+        correct: 1,
+        hint: "Two changes happen at once. What will someone holding a wrapper do when the nearest bin has gone?",
+        why: "A higher fine pushes litter down, but fewer bins make dropping it more likely, and nobody can enforce fines everywhere. The response to the bins could outweigh the fine.",
       },
     ],
   },

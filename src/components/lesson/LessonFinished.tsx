@@ -18,6 +18,7 @@ import {
 import { dayKey, useProgress } from "@/lib/progress";
 import { shareUnitCard } from "@/lib/share-image";
 import { unitAccent } from "@/lib/unit-accent";
+import { TryItCard } from "./NotesView";
 
 /**
  * The end of a lesson: the mascot cheering, the XP just earned counting up, the streak, today's
@@ -34,6 +35,7 @@ export function LessonFinished({
   xpEarned,
   wrote,
   takeaway,
+  tryIt,
 }: {
   meta: CurriculumLesson;
   lessonNumber: number;
@@ -45,6 +47,8 @@ export function LessonFinished({
   xpEarned: number;
   wrote: boolean;
   takeaway?: string | undefined;
+  /** Something to try outside the app, from the lesson's notes. */
+  tryIt?: string | undefined;
 }) {
   const navigate = useNavigate();
   const { companion } = useCompanion();
@@ -197,6 +201,8 @@ export function LessonFinished({
             )}
           </ul>
         </div>
+
+        {tryIt && <TryItCard text={tryIt} className="mt-4" />}
 
         <div className="mt-6 flex flex-col gap-2">
           {lessonNumber < totalLessons && (

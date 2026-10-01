@@ -189,10 +189,35 @@ const claims: Record<string, LessonScript> = {
         why: "Only the claim is being argued, only reasons push towards it, and background is true but idle.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "The claim isn't the loudest or the last sentence. It's the one everything else is offered to support.",
+          "A longer one, with a claim inside a claim. Which sentence states the writer's main claim?",
+        stimulus:
+          "“The Westfield footbridge has been closed for repairs twice this year, and the engineers' report calls its supports ‘worn beyond economic repair’. Patching it again would cost nearly as much as a new bridge. So the bridge is no longer worth fixing. The council should put the money towards a replacement instead.”",
+        options: [
+          {
+            text: "The footbridge has been closed for repairs twice this year.",
+            whyNot:
+              "That's evidence offered for the claim. It describes the problem but doesn't say what the writer wants.",
+          },
+          {
+            text: "The bridge is no longer worth fixing.",
+            whyNot:
+              "That's a claim, but a step on the way: it's offered as the reason for what the council should do.",
+          },
+          {
+            text: "The engineers' report calls the supports worn beyond repair.",
+            whyNot: "That's the strongest piece of evidence, not the claim it supports.",
+          },
+          {
+            text: "The council should replace the bridge rather than patch it.",
+          },
+        ],
+        correct: 3,
+        hint: "One sentence is a conclusion that then becomes a reason for another. Which one is the writer finally aiming at?",
+        why: "“Not worth fixing” is a claim, but it's offered to support the last one: the council should fund a replacement. The main claim is where the argument ends up.",
       },
     ],
   },
@@ -353,10 +378,31 @@ const claims: Record<string, LessonScript> = {
         why: "The argument works only if online means less supervision. If every online exam were watched by camera, the conclusion wouldn't follow.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "An assumption is the unstated bridge between the reason and the conclusion. If the bridge is shaky, so is the argument.",
+        id: "together",
+        label: "Putting it together",
+        kind: "gap",
+        prompt: "A real-world one. What must be true for this argument to work?",
+        reason:
+          "Since Harlow Street went one-way in May, its shops have taken 15% less money than in the same months last year.",
+        conclusion: "So the one-way system is hurting the shops, and it should be reversed.",
+        options: [
+          {
+            text: "Nothing besides the one-way system explains the fall in the shops' takings.",
+          },
+          {
+            text: "Some shoppers find one-way streets confusing to drive along.",
+            whyNot:
+              "Plausible, but the argument doesn't need it. What it needs is that nothing else explains the drop.",
+          },
+          {
+            text: "The council brought in the one-way system without asking the shops.",
+            whyNot:
+              "That may be a fair complaint, but it isn't what links the drop in takings to the one-way system.",
+          },
+        ],
+        correct: 0,
+        hint: "Imagine the 15% drop had another cause. Which statement rules that out?",
+        why: "The argument treats the one-way system as the cause of the drop. That only works if nothing else, such as roadworks or a slow year for every shop in town, explains it.",
       },
     ],
   },
@@ -554,10 +600,31 @@ const claims: Record<string, LessonScript> = {
         why: "A checkable version names something countable. That turns a mood into a claim you can test.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Facts can be checked. Opinions report a taste. Values say what ought to matter, and “should” claims can't be settled by data alone.",
+          "Two neighbours disagree about new floodlights. Where does their disagreement really lie?",
+        stimulus:
+          "Jonah: “The new floodlights at Brook Park are a waste. They cost £40,000 and they're only used twice a week.” Ama: “Twice a week is 100 extra hours of football a year for kids who had nowhere to play in winter. That's money well spent.”",
+        options: [
+          {
+            text: "In what the floodlights cost and how often they're used.",
+            whyNot:
+              "They agree on those facts: £40,000, used about twice a week. Neither disputes the numbers.",
+          },
+          {
+            text: "In whether the use they agree on is worth the cost.",
+          },
+          {
+            text: "In whether children like playing football in winter.",
+            whyNot:
+              "That's a preference nobody here disputes. Their argument is about whether the spending is justified.",
+          },
+        ],
+        correct: 1,
+        hint: "Check which facts both of them accept. What's left once those are agreed?",
+        why: "They agree on the facts: the cost and the use. What divides them is a value question, whether that use is worth £40,000, and more data alone won't settle it.",
       },
     ],
   },
@@ -736,10 +803,35 @@ const claims: Record<string, LessonScript> = {
         why: "The burden grows with how unusual the claim is. A bowl of cereal is believable; a flying saucer needs far more than someone's word.",
       },
       {
-        id: "remember",
-        kind: "note",
-        prompt:
-          "Whoever makes the claim owes the support. “You can't disprove it” is not evidence, and the more unusual the claim, the more it owes.",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
+        prompt: "A real exchange. What's the fairest response to Colm?",
+        stimulus:
+          "At a residents' meeting, Colm says the new phone mast is making people on Ash Close ill. Asked for evidence, he says: “Lots of us have had headaches since it went up. Until the phone company proves the mast is safe, it should be switched off.”",
+        options: [
+          {
+            text: "Colm must prove the mast causes harm before anyone takes his worry seriously.",
+            whyNot:
+              "Too dismissive. His claim does owe support, but a worry can be taken seriously while evidence is gathered.",
+          },
+          {
+            text: "The phone company must prove the mast is completely safe, as Colm says.",
+            whyNot:
+              "That accepts the shifted burden. Colm made the claim of harm, and “prove it's completely safe” asks for what nobody can show.",
+          },
+          {
+            text: "Colm's claim owes evidence: compare headaches with similar streets without a mast.",
+          },
+          {
+            text: "Headaches are common, so Colm's claim is obviously false.",
+            whyNot:
+              "That goes too far the other way. Common headaches make his evidence weak, not his claim false.",
+          },
+        ],
+        correct: 2,
+        hint: "Who made the claim here? And what evidence would actually test it, rather than repeat the worry?",
+        why: "Colm made the claim of harm, so it owes support. Headaches since the mast went up is weak evidence, because headaches are common. A comparison with similar streets could test it either way.",
       },
     ],
   },
@@ -922,10 +1014,31 @@ const claims: Record<string, LessonScript> = {
         why: "If “may have helped” fits every outcome, no outcome can ever count against it.",
       },
       {
-        id: "remember",
-        kind: "note",
+        id: "together",
+        label: "Putting it together",
+        kind: "choice",
         prompt:
-          "Words like may, linked to, supports and up to give a claim room to escape. A testable claim says what would count as failing.",
+          "A real-sounding promise. Which rewrite would let residents check, in a few years, whether it was kept?",
+        stimulus:
+          "From Mayfield council's plan: “We will work towards cleaner air in the town centre, aiming for significant improvements in the coming years through a range of measures.”",
+        options: [
+          {
+            text: "We are fully committed to making air in the town centre dramatically cleaner, as a top priority.",
+            whyNot:
+              "Stronger words, but still no measure and no date. “Dramatically” could mean anything.",
+          },
+          {
+            text: "We will cut average nitrogen dioxide on the High Street by a quarter by 2030, measured monthly.",
+          },
+          {
+            text: "We will take many important steps to help tackle air pollution across the whole town centre.",
+            whyNot:
+              "“Help tackle” and “many steps” can't fail: any action at all would count as keeping it.",
+          },
+        ],
+        correct: 1,
+        hint: "For each version, ask: in 2030, what result would show the promise was broken?",
+        why: "A promise you can check names a measure, a size and a date. Only the second could clearly fail, which is exactly what makes it worth something.",
       },
     ],
   },
