@@ -139,7 +139,7 @@ export function ThinkingGraph({
                 }}
                 className={`knowledge-node knowledge-node-${state}${
                   unit.unit.id === recentUnitId ? " knowledge-node-glow" : ""
-                } relative flex h-full w-full items-center justify-center rounded-full text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                } relative flex h-full w-full items-center justify-center rounded-sm text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                 aria-label={`${unit.unit.title}, ${unit.completed} of ${unit.total} lessons complete${
                   state === "idle" ? ", not started" : ""
                 }`}
@@ -178,7 +178,7 @@ export function ThinkingGraph({
                 {unit.state === "complete" && (
                   <span
                     aria-hidden
-                    className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                    className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-primary-foreground"
                   >
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </span>
@@ -194,16 +194,15 @@ export function ThinkingGraph({
           <li className="flex items-center gap-1.5">
             <span
               aria-hidden
-              className="h-3 w-3 rounded-full border-2 border-dashed border-graph-edge"
+              className="h-3 w-3 rounded-sm border-2 border-dashed border-graph-edge"
             />{" "}
             not started
           </li>
           <li className="flex items-center gap-1.5">
-            <span aria-hidden className="h-3 w-3 rounded-full border-2 border-primary" /> in
-            progress
+            <span aria-hidden className="h-3 w-3 rounded-sm border-2 border-primary" /> in progress
           </li>
           <li className="flex items-center gap-1.5">
-            <span aria-hidden className="h-3 w-3 rounded-full bg-primary" /> mastered
+            <span aria-hidden className="h-3 w-3 rounded-sm bg-primary" /> mastered
           </li>
           <li className="flex items-center gap-1.5">
             <span aria-hidden className="h-0.5 w-4 rounded bg-graph-edge" /> a shared idea — tap it

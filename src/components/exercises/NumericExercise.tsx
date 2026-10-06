@@ -81,7 +81,7 @@ export function NumericExerciseCard({
             type="button"
             disabled={value.trim() === ""}
             onClick={submit}
-            className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
+            className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
           >
             Check my number
           </Button>

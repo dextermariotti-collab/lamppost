@@ -1,16 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Check,
-  ChevronDown,
-  Circle,
-  ClipboardCheck,
-  NotebookText,
-  Play,
-  Timer,
-} from "lucide-react";
+import { ArrowRight, ChevronDown, NotebookText } from "lucide-react";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { AnimatedBar } from "@/components/AnimatedBar";
+import { LineBullet } from "@/components/LineBullet";
 import {
   CURRICULUM_SLUG,
   CURRICULUM_TITLE,
@@ -30,6 +22,7 @@ import {
   useUnitChecks,
   type UnitCheckResults,
 } from "@/lib/unit-checks";
+import { unitAccent } from "@/lib/unit-accent";
 
 export const Route = createFileRoute("/courses")({
   head: () => ({
@@ -89,14 +82,14 @@ function MyPath() {
   return (
     <PhoneFrame>
       <div className="relative px-5 pb-8">
-        <h1 className="pt-4 text-3xl">Your path</h1>
+        <h1 className="pt-4 text-[32px] leading-tight">My Path</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {CURRICULUM_TITLE} · {completed} of {TOTAL_LESSONS} lessons ({pct}%)
           {dueItems.length > 0 &&
             ` · ${dueItems.length} review${dueItems.length === 1 ? "" : "s"} due`}
         </p>
 
-        <ul className="mt-5 space-y-3">
+        <ul className="mt-5 border-b-2 border-edge">
           {units.map((unit) => (
             <UnitCard
               key={unit.unit.id}
@@ -115,7 +108,7 @@ function MyPath() {
         </ul>
 
         <p className="mt-5 text-[13px] text-muted-foreground">
-          Suggested order. Any unit can be opened whenever you like.
+          Suggested order. Any line, any stop, whenever you like.
         </p>
       </div>
     </PhoneFrame>
@@ -140,109 +133,88 @@ function UnitCard({
   onToggle: () => void;
 }) {
   const panelId = `unit-${unit.unit.id}`;
+  const accent = unitAccent(unit.unit.id);
   // The before-check belongs before the lessons; everything else about checks comes after them.
   const checkFirst = checkAvailability("before", unit, checks) === "open";
   const start = unit.index * LESSONS_PER_UNIT;
   return (
-    <li
-      className={`overflow-hidden rounded-3xl border ${
-        unit.state === "complete" ? "border-success/40 bg-success/5" : "border-border bg-card"
-      }`}
-    >
+    <li className="border-t-2 border-edge">
       <h2 className="font-sans text-base">
         <button
           type="button"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={onToggle}
-          className="flex min-h-16 w-full items-center gap-3 p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
+          className="flex min-h-14 w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          <span
-            aria-hidden
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-xl"
-          >
-            {unit.state === "complete" ? (
-              <Check className="h-5 w-5 text-success" strokeWidth={3} />
-            ) : (
-              unit.unit.emoji
-            )}
-          </span>
+          <LineBullet unitId={unit.unit.id} size="lg" />
           <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-2">
-              <span className="line-clamp-2 text-sm font-bold">
-                Unit {unit.index + 1} · {unit.unit.title}
-              </span>
-              {due > 0 && (
-                <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary-text">
-                  <Timer aria-hidden className="h-3 w-3" />
-                  {due} due
-                </span>
-              )}
+            <span className="block text-[15px] font-extrabold leading-tight text-foreground">
+              {unit.unit.title}
             </span>
-            <span className="mt-0.5 block text-[11px] font-semibold text-muted-foreground">
-              {unit.unit.blurb} · {unit.completed} of {unit.total} lessons
+            <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+              {unit.unit.blurb}
+              {due > 0 && ` · ${due} review${due === 1 ? "" : "s"} due`}
             </span>
-            <span className="mt-2 flex items-center gap-2">
-              <AnimatedBar pct={unit.pct} className="flex-1" animate={false} />
-            </span>
+          </span>
+          <span className="shrink-0 font-mono text-xs font-bold text-muted-foreground">
+            {unit.completed} / {unit.total}
           </span>
           <ChevronDown
             aria-hidden
-            className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+            className={`h-5 w-5 shrink-0 text-foreground transition-transform ${open ? "rotate-180" : ""}`}
           />
         </button>
       </h2>
 
-      <ul id={panelId} hidden={!open} className="border-t border-border px-2 pb-2 pt-1">
-        {checkFirst && (
-          <li className="mb-1">
-            <CheckRow unit={unit} checks={checks} />
-          </li>
-        )}
+      {/* The line: one bar in the unit's colour, lessons as stops, checks as interchanges */}
+      <ol
+        id={panelId}
+        hidden={!open}
+        className="relative mb-3 ml-0.5 pl-0"
+        style={{ "--line": accent.color } as CSSProperties}
+      >
+        <span aria-hidden className="absolute top-5 bottom-5 left-[9px] w-1.5 bg-[var(--line)]" />
+        {checkFirst && <CheckStop unit={unit} checks={checks} />}
         {unit.lessons.map((lesson, i) => {
           const index = lessonIndexOf(lesson.id);
           const isDone = done.has(index);
           const isNext = index === nextIndex && !isDone;
           return (
-            <li key={lesson.id} className="flex items-center">
+            <li key={lesson.id} className="relative flex items-center">
               <Link
                 to="/course/$slug/lesson/$index"
                 params={{ slug: CURRICULUM_SLUG, index: String(start + i + 1) }}
-                className={`flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-2xl px-3 py-2 ${
-                  isNext ? "bg-primary-soft" : ""
-                }`}
+                className="flex min-h-12 min-w-0 flex-1 items-center gap-3 py-1.5 pl-9"
               >
                 <span
                   aria-hidden
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${
-                    isDone
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : isNext
-                        ? "border-primary text-primary-text"
-                        : "border-border text-muted-foreground"
+                  className={`absolute top-1/2 -translate-y-1/2 rounded-full ${
+                    isNext
+                      ? "left-0 h-6 w-6 border-[5px] border-foreground bg-card"
+                      : isDone
+                        ? "left-[3px] h-[18px] w-[18px] border-[3px] border-[var(--line)] bg-[var(--line)]"
+                        : "left-[3px] h-[18px] w-[18px] border-[3px] border-[var(--line)] bg-card"
                   }`}
-                >
-                  {isDone ? (
-                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                  ) : isNext ? (
-                    <Play className="h-3 w-3" fill="currentColor" />
-                  ) : (
-                    <Circle className="h-2 w-2" />
-                  )}
-                </span>
+                />
                 <span
-                  className={`min-w-0 flex-1 text-sm ${isNext ? "font-bold" : "font-semibold"} ${
+                  className={`min-w-0 flex-1 text-sm ${isNext ? "font-extrabold" : "font-semibold"} ${
                     isDone || isNext ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {lesson.title}
+                  {isDone && <span className="sr-only">, done</span>}
                 </span>
-                {isDone ? (
-                  <span className="sr-only">, done</span>
-                ) : (
-                  <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
-                    {isNext ? "Up next" : `Lesson ${start + i + 1}`}
+                {isNext ? (
+                  <span className="legend shrink-0 bg-primary px-1.5 py-1 text-[10px] leading-none text-primary-foreground">
+                    You are here
                   </span>
+                ) : (
+                  !isDone && (
+                    <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                      {start + i + 1}
+                    </span>
+                  )
                 )}
               </Link>
               {isDone && (
@@ -250,7 +222,7 @@ function UnitCard({
                   to="/notes/$lessonId"
                   params={{ lessonId: lesson.id }}
                   aria-label={`Notes: ${lesson.title}`}
-                  className="flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-[12px] font-bold text-primary-text"
+                  className="legend flex min-h-11 shrink-0 items-center gap-1 px-2 text-foreground"
                 >
                   <NotebookText aria-hidden className="h-3.5 w-3.5" /> Notes
                 </Link>
@@ -258,54 +230,60 @@ function UnitCard({
             </li>
           );
         })}
-        {!checkFirst && (
-          <li>
-            <CheckRow unit={unit} checks={checks} />
-          </li>
-        )}
-      </ul>
+        {!checkFirst && <CheckStop unit={unit} checks={checks} />}
+      </ol>
     </li>
   );
 }
 
 /**
- * The unit's before/after check: offered before the unit is started and again once it is
- * done, and once taken, the results side by side.
+ * The unit's before/after check, drawn as an interchange at the start or end of the line:
+ * offered before the unit is started and again once it is done, and once taken, the results
+ * side by side.
  */
-function CheckRow({ unit, checks }: { unit: UnitProgress; checks: UnitCheckResults | undefined }) {
+function CheckStop({ unit, checks }: { unit: UnitProgress; checks: UnitCheckResults | undefined }) {
   const before = checkAvailability("before", unit, checks);
   const after = checkAvailability("after", unit, checks);
   const phase = before === "open" ? "before" : after === "open" ? "after" : null;
   const line = checkLine(checks);
+  const marker = (
+    <span
+      aria-hidden
+      className="absolute top-1/2 left-0 h-3.5 w-6 -translate-y-1/2 rounded-full border-[2.5px] border-foreground bg-card"
+    />
+  );
 
   if (phase) {
     return (
-      <Link
-        to="/check/$unitId/$phase"
-        params={{ unitId: unit.unit.id, phase }}
-        className="mt-1 flex min-h-12 items-center gap-3 rounded-2xl border border-dashed border-primary/50 px-3 py-2"
-      >
-        <ClipboardCheck aria-hidden className="h-5 w-5 shrink-0 text-primary-text" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold">
-            {phase === "before" ? "Before you start: a quick check" : "Check what changed"}
+      <li className="relative">
+        <Link
+          to="/check/$unitId/$phase"
+          params={{ unitId: unit.unit.id, phase }}
+          className="flex min-h-12 items-center gap-3 py-1.5 pl-9"
+        >
+          {marker}
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-foreground">
+              {phase === "before" ? "Before you start: a quick check" : "Check what changed"}
+            </span>
+            <span className="block text-[11px] text-muted-foreground">
+              {phase === "before"
+                ? "Three real-world questions, so you can see what the line changes."
+                : line
+                  ? `${line}. Three new questions.`
+                  : "Three new real-world questions."}
+            </span>
           </span>
-          <span className="block text-[11px] text-muted-foreground">
-            {phase === "before"
-              ? "Three real-world questions, so you can see what the unit changes."
-              : line
-                ? `${line}. Three new questions.`
-                : "Three new real-world questions."}
-          </span>
-        </span>
-      </Link>
+          <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-foreground" />
+        </Link>
+      </li>
     );
   }
   if (!line) return null;
   return (
-    <p className="mt-1 flex min-h-11 items-center gap-3 px-3 text-[13px] text-muted-foreground">
-      <ClipboardCheck aria-hidden className="h-5 w-5 shrink-0" />
+    <li className="relative flex min-h-11 items-center pl-9 text-[13px] text-muted-foreground">
+      {marker}
       Unit check: {line}
-    </p>
+    </li>
   );
 }

@@ -88,7 +88,7 @@ function ProfileScreen() {
           <Link
             to="/settings"
             aria-label="Account settings"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-11 w-11 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Settings className="h-5 w-5" />
           </Link>
@@ -126,7 +126,7 @@ function ProfileScreen() {
               ? signedIn && achievements === undefined
                 ? Array.from({ length: 5 }, (_, i) => (
                     <div key={i} className="flex w-[68px] shrink-0 flex-col items-center gap-1.5">
-                      <span className="h-11 w-11 animate-pulse rounded-full bg-muted" />
+                      <span className="h-11 w-11 animate-pulse rounded-sm bg-muted" />
                       <span className="h-2.5 w-12 animate-pulse rounded bg-muted" />
                     </div>
                   ))
@@ -142,7 +142,7 @@ function ProfileScreen() {
                     >
                       <span
                         className={cn(
-                          "flex h-11 w-11 items-center justify-center rounded-full transition-transform hover:scale-105",
+                          "flex h-11 w-11 items-center justify-center rounded-sm transition-transform hover:scale-105",
                           unlocked
                             ? "bg-hero-gradient text-primary-foreground shadow-card"
                             : "bg-muted text-muted-foreground",
@@ -182,7 +182,7 @@ function ProfileScreen() {
                 {friends!.friends.slice(0, 3).map((friend, i) => (
                   <span
                     key={friend.id}
-                    className="-ml-2 flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-muted first:ml-0"
+                    className="-ml-2 flex h-7 w-7 items-center justify-center overflow-hidden rounded-sm border-2 border-background bg-muted first:ml-0"
                     style={{ zIndex: 3 - i }}
                   >
                     <CompanionAvatar companion={friend.companion} size={26} />
@@ -293,7 +293,7 @@ function BadgeDetail({ badge }: { badge: Badge }) {
           </p>
           <button
             onClick={share}
-            className="mt-1 rounded-full bg-hero-gradient px-5 py-2 text-sm font-bold text-primary-foreground shadow-card"
+            className="mt-1 rounded-sm bg-hero-gradient px-5 py-2 text-sm font-bold text-primary-foreground shadow-card"
           >
             Share
           </button>

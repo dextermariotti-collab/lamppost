@@ -69,7 +69,7 @@ export function OrderExerciseCard({
           onClick={() =>
             onAnswer(order, order.filter((t, i) => t === solution[i]).length / solution.length)
           }
-          className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
+          className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
         >
           Check my order
         </Button>

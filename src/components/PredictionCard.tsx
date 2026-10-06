@@ -1,5 +1,5 @@
 import { Check, X } from "lucide-react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { GuideMark } from "@/components/LineBullet";
 import type { Companion } from "@/lib/companions";
 import type { Prediction } from "@/lib/courses";
 
@@ -36,7 +36,7 @@ export function PredictionCard({ prediction, companion, choice, onPick }: Props)
               type="button"
               onClick={() => !answered && onPick(i)}
               aria-pressed={isPicked}
-              className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left text-sm font-semibold transition-all ${state}`}
+              className={`flex w-full items-center gap-3 rounded-sm px-4 py-3 text-left text-sm font-semibold transition-all ${state}`}
             >
               <span className="flex-1">{option}</span>
               {answered && isAnswer && (
@@ -52,7 +52,7 @@ export function PredictionCard({ prediction, companion, choice, onPick }: Props)
 
       {answered && (
         <div className="mt-4 flex items-end gap-2 animate-pop-in">
-          <CompanionAvatar companion={companion} size={56} className="shrink-0" />
+          <GuideMark size={56} className="shrink-0" />
           <div
             aria-live="polite"
             className="flex-1 rounded-2xl border-2 border-primary/30 bg-primary-soft px-4 py-2.5"

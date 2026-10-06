@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { LegalFooter } from "@/components/LegalFooter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ConsentFields, UnderAgeNotice } from "@/components/ConsentFields";
 import { useConsentForm } from "@/lib/use-consent-form";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/lib/account";
 import { deleteMyAccount } from "@/lib/account-data.functions";
-import { useCompanion } from "@/lib/companion-store";
 import { clearPendingConsent, needsConsent } from "@/lib/consent";
 import { recordConsent } from "@/lib/consent.functions";
 
@@ -36,7 +35,6 @@ function ConsentScreen() {
   const client = useQueryClient();
   const record = useServerFn(recordConsent);
   const remove = useServerFn(deleteMyAccount);
-  const { companion } = useCompanion();
   const form = useConsentForm();
   const [busy, setBusy] = useState<"save" | "delete" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +93,7 @@ function ConsentScreen() {
     <PhoneFrame showNav={false}>
       <div className="flex min-h-full flex-col px-6 pb-8">
         <div className="mt-6 flex flex-col items-center text-center">
-          <CompanionAvatar companion={companion} size={64} />
+          <GuideMark size={64} />
           <h1 className="mt-3 text-2xl">One more step</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {returning
@@ -112,7 +110,7 @@ function ConsentScreen() {
                   onClick={deleteAccount}
                   disabled={busy !== null}
                   variant="destructive"
-                  className="h-11 w-full rounded-full font-semibold"
+                  className="h-11 w-full rounded-sm font-semibold"
                 >
                   {busy === "delete" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   Delete this account
@@ -121,7 +119,7 @@ function ConsentScreen() {
                   onClick={signOut}
                   disabled={busy !== null}
                   variant="secondary"
-                  className="h-11 w-full rounded-full font-semibold"
+                  className="h-11 w-full rounded-sm font-semibold"
                 >
                   Sign out
                 </Button>
@@ -142,7 +140,7 @@ function ConsentScreen() {
                 onClick={save}
                 disabled={!form.ready || busy !== null}
                 aria-busy={busy === "save"}
-                className="mt-4 h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                className="mt-4 h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
               >
                 {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Agree and continue
@@ -151,7 +149,7 @@ function ConsentScreen() {
                 onClick={signOut}
                 disabled={busy !== null}
                 variant="ghost"
-                className="mt-2 h-11 w-full rounded-full text-sm font-bold text-muted-foreground"
+                className="mt-2 h-11 w-full rounded-sm text-sm font-bold text-muted-foreground"
               >
                 Sign out instead
               </Button>

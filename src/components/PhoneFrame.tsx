@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Map, TrendingUp, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { LampMark } from "./LineBullet";
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
@@ -38,7 +39,7 @@ export function PhoneFrame({
     <div className="flex min-h-screen w-full justify-center bg-canvas p-0 sm:p-6 lg:p-0">
       <div
         className={cn(
-          "relative mx-auto flex h-[100dvh] w-full max-w-[420px] flex-col overflow-hidden border-border bg-background sm:h-[860px] sm:rounded-[1.5rem] sm:border",
+          "relative mx-auto flex h-[100dvh] w-full max-w-[420px] flex-col overflow-hidden border-edge bg-background sm:h-[860px] sm:rounded-sm sm:border-2",
           "lg:h-[100dvh] lg:flex-row lg:rounded-none lg:border-y-0",
           showNav ? "lg:max-w-[960px]" : "lg:max-w-[720px]",
           className,
@@ -46,7 +47,7 @@ export function PhoneFrame({
       >
         <a
           href="#main-content"
-          className="sr-only rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
+          className="sr-only rounded-sm bg-primary px-4 py-2 text-sm font-bold text-primary-foreground focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
         >
           Skip to content
         </a>
@@ -67,7 +68,7 @@ export function PhoneFrame({
           {showNav && (
             <nav
               aria-label="Primary"
-              className="relative border-t border-border bg-background px-3 pt-3 pb-3 lg:hidden"
+              className="relative border-t-2 border-edge bg-card px-2 pt-1.5 pb-2 lg:hidden"
             >
               <div className="grid grid-cols-4 items-end">
                 {NAV.map((item) => (
@@ -89,7 +90,9 @@ function SideNav({ pathname }: { pathname: string }) {
       aria-label="Primary"
       className="hidden w-60 shrink-0 flex-col gap-1 border-r border-border bg-background px-4 py-8 lg:flex"
     >
-      <p className="mb-6 px-3 font-display text-2xl font-semibold text-foreground">Lamppost</p>
+      <p className="legend mb-6 flex items-center gap-2 px-3 text-sm text-foreground">
+        <LampMark className="h-6 w-6" /> Lamppost
+      </p>
       {NAV.map(({ to, label, icon: Icon }) => {
         const active = pathname === to;
         return (
@@ -98,9 +101,9 @@ function SideNav({ pathname }: { pathname: string }) {
             to={to}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200",
+              "flex min-h-11 items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-bold uppercase tracking-[0.06em] transition-colors duration-200",
               active
-                ? "bg-primary-soft text-primary-text"
+                ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
@@ -129,12 +132,14 @@ function BottomNavItem({
       to={to}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex flex-col items-center gap-1 pb-1 text-[10px] font-semibold transition-colors duration-200",
-        active ? "text-primary-text" : "text-muted-foreground",
+        "flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-extrabold uppercase tracking-[0.06em] transition-colors duration-200",
+        active ? "text-foreground" : "text-muted-foreground",
       )}
     >
-      <Icon className="h-5 w-5" />
-      {label}
+      <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+      <span className={cn("px-0.5 pb-0.5", active && "shadow-[inset_0_-3px_0_var(--primary)]")}>
+        {label}
+      </span>
     </Link>
   );
 }

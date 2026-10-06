@@ -154,15 +154,31 @@ Every screen renders inside `components/PhoneFrame.tsx` (bottom nav on phones, s
 dark set (Settings switches between them): don't re-theme a single screen, because a screen that changes
 colour and type on its own reads as a different app (the Home and course-map screens used to). Text colours
 must meet WCAG AA (4.5:1 body, 3:1 large/graphics) in both sets — `styles.contrast.test.ts` checks it.
-The tone is a calm coach: the companion sits at the edges (a small avatar beside feedback, the tutor chat,
-the sign-up screens) and never shouts; the league lives under Friends, and there is nothing to buy
+
+The look is **Wayfinding** (October 2026): transit signage by day, a lit street at night.
+- Type is Overpass (Overpass Mono for numbers and counts). Overpass draws `·` with no width, so the
+  font stacks start with a "Middle Dot" face that borrows it from system fonts; keep that first.
+- Signs, not cards: square corners (the radius scale tops out at 4px), a 2px `--edge` rule instead of
+  shadows (`sign` utility), and `legend` for small tracked capitals. No gradients, glows or confetti.
+  Day is black on pavement grey; night is deep blue with sodium amber as `--primary`, and the active
+  step sits in a `lamp-pool` (`--lamp-pool` is `none` by day).
+- Each unit is a numbered line with its own colour (`--line-1`…`--line-7`, lettering `--on-line-n`,
+  read through `unitAccent()`), drawn with `LineBullet` and `Stops` (`components/LineBullet.tsx`).
+  Lessons are stops: "stop n of 5". The contrast test holds every line to 3:1 and its lettering to 4.5:1.
+- The guide is a lamp (`GuideMark`), not a mascot: it stands beside feedback, in the tutor chat and on the
+  sign-up screens. A person's chosen companion only identifies them (profile, friends, league, invites).
+
+The tone is a calm coach that never shouts; the league lives under Friends, and there is nothing to buy
 or open.
 
-My Path (`/courses`) is the only map: each unit opens in place into its five lessons, and a finished
-lesson's row links to its notes (`/notes`, also under Progress). Home answers "what
-should I do now?" (the next lesson, one line about reviews, the seven units as a strip) and the skills graph
-lives under Progress → Skills → Map. `/course/:slug` redirects to My Path. Onboarding is three screens
-(intro, one real question, setup); choosing a companion is offered once, after the first lesson.
+My Path (`/courses`) is the only map, drawn as a line map: each unit opens in place into its five
+lessons as stops on its line, "You are here" marks the next one, the unit checks sit at either end as
+interchanges, and a finished stop links to its notes (`/notes`, also under Progress). Home answers "what
+should I do now?" (one sign for the next lesson, a row each for reviews and the daily challenge, the seven
+lines with their stops) and the skills graph lives under Progress → Skills → Map. A finished lesson ends on
+an arrival board (`LessonFinished`: three numbers, today's goal, the next stop). `/course/:slug` redirects
+to My Path. Onboarding is three screens (intro, one real question, setup); a companion can be chosen from
+Profile.
 
 ## Security model (read before touching Supabase)
 

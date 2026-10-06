@@ -17,7 +17,6 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listDebates } from "@/lib/debate.functions";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
-import { Confetti } from "@/components/Confetti";
 import { BlockPersonButton } from "@/components/PersonSafety";
 import { ShareProgressToggle } from "@/components/ShareProgressToggle";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -73,7 +72,6 @@ function FriendsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showQr, setShowQr] = useState(false);
-  const [celebrate, setCelebrate] = useState(false);
 
   useEffect(() => {
     if (sessionReady && !signedIn) navigate({ to: "/auth", replace: true });
@@ -95,16 +93,12 @@ function FriendsScreen() {
     return () => window.clearTimeout(timer);
   }, [query]);
 
-  const run = async (key: string, action: () => Promise<unknown>, celebrateAfter = false) => {
+  const run = async (key: string, action: () => Promise<unknown>) => {
     setBusy(key);
     setError(null);
     try {
       await action();
       refresh();
-      if (celebrateAfter) {
-        setCelebrate(true);
-        window.setTimeout(() => setCelebrate(false), 2200);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "That didn't work. Try again.");
     } finally {
@@ -129,7 +123,6 @@ function FriendsScreen() {
 
   return (
     <PhoneFrame>
-      {celebrate ? <Confetti big /> : null}
       <ScreenHeader title="Friends" backTo="/profile" />
       <div className="px-5 pb-10">
         {(nudges?.length ?? 0) > 0 ? (
@@ -182,7 +175,7 @@ function FriendsScreen() {
                     void run(person.id, () => sendFriendRequest({ data: { userId: person.id } }))
                   }
                   disabled={busy === person.id}
-                  className="rounded-full bg-hero-gradient px-4 py-2 text-xs font-bold text-primary-foreground shadow-card disabled:opacity-60"
+                  className="rounded-sm bg-hero-gradient px-4 py-2 text-xs font-bold text-primary-foreground shadow-card disabled:opacity-60"
                 >
                   Add
                 </button>
@@ -210,7 +203,7 @@ function FriendsScreen() {
             </span>
           </span>
           {debateAlerts > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
               {debateAlerts}
             </span>
           )}
@@ -248,7 +241,7 @@ function FriendsScreen() {
                 setCopied(true);
                 window.setTimeout(() => setCopied(false), 1600);
               }}
-              className="flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-xs font-bold"
+              className="flex items-center gap-1 rounded-sm bg-muted px-3 py-1.5 text-xs font-bold"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "Copied" : "Share"}
@@ -310,16 +303,13 @@ function FriendsScreen() {
                   <button
                     aria-label="Accept request"
                     onClick={() =>
-                      void run(
-                        person.friendshipId,
-                        () =>
-                          respondToRequest({
-                            data: { friendshipId: person.friendshipId, accept: true },
-                          }),
-                        true,
+                      void run(person.friendshipId, () =>
+                        respondToRequest({
+                          data: { friendshipId: person.friendshipId, accept: true },
+                        }),
                       )
                     }
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-hero-gradient text-primary-foreground shadow-card"
+                    className="flex h-11 w-11 items-center justify-center rounded-sm bg-hero-gradient text-primary-foreground shadow-card"
                   >
                     <Check aria-hidden className="h-4 w-4" />
                   </button>
@@ -332,14 +322,14 @@ function FriendsScreen() {
                         }),
                       )
                     }
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                    className="flex h-11 w-11 items-center justify-center rounded-sm bg-muted text-muted-foreground"
                   >
                     <X aria-hidden className="h-4 w-4" />
                   </button>
                   <BlockPersonButton
                     person={{ id: person.id, name: person.displayName ?? person.handle }}
                     onBlocked={refresh}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                    className="flex h-11 w-11 items-center justify-center rounded-sm bg-muted text-muted-foreground"
                   >
                     <Ban aria-hidden className="h-4 w-4" />
                     <span className="sr-only">Block {person.displayName ?? person.handle}</span>
@@ -432,7 +422,7 @@ function FriendsScreen() {
                         </span>
                       </Link>
                       {shared?.status === "active" ? (
-                        <span className="flex items-center gap-1 rounded-full bg-flame/10 px-2.5 py-1 text-xs font-bold text-flame">
+                        <span className="flex items-center gap-1 rounded-sm bg-flame/10 px-2.5 py-1 text-xs font-bold text-flame">
                           <Flame className="h-3.5 w-3.5" />
                           {shared.count}
                         </span>
@@ -448,7 +438,7 @@ function FriendsScreen() {
                             )
                           }
                           disabled={busy === key || atCap}
-                          className="rounded-full bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
+                          className="rounded-sm bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
                         >
                           {atCap
                             ? `Max ${MAX_SHARED_STREAKS} shared streaks`
@@ -463,16 +453,13 @@ function FriendsScreen() {
                           <>
                             <button
                               onClick={() =>
-                                void run(
-                                  key,
-                                  () =>
-                                    respondToSharedStreak({
-                                      data: { sharedStreakId: shared.id, accept: true },
-                                    }),
-                                  true,
+                                void run(key, () =>
+                                  respondToSharedStreak({
+                                    data: { sharedStreakId: shared.id, accept: true },
+                                  }),
                                 )
                               }
-                              className="rounded-full bg-hero-gradient px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-card"
+                              className="rounded-sm bg-hero-gradient px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-card"
                             >
                               Accept shared streak
                             </button>
@@ -511,7 +498,7 @@ function FriendsScreen() {
                                 )
                               }
                               disabled={friend.nudgedToday || busy === key}
-                              className="rounded-full bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
+                              className="rounded-sm bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
                             >
                               {friend.nudgedToday ? "Nudged today" : "Nudge"}
                             </button>

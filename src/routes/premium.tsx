@@ -67,7 +67,7 @@ function PremiumScreen() {
             aria-hidden="true"
             className="lamplight-glow absolute -inset-10 -z-10 rounded-full"
           />
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
+          <p className="inline-flex items-center gap-1.5 rounded-sm bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
             <Sparkles className="h-3.5 w-3.5" /> Lamppost Practice
           </p>
           <h1 className="mt-4 text-3xl leading-tight">Learn by explaining.</h1>

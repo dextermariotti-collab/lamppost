@@ -80,27 +80,29 @@ describe.each(themes)("$name theme", ({ name, tokens }) => {
   });
 });
 
-describe("unit accents", () => {
-  const accentL = { light: root["unit-accent-l"], dark: dark["unit-accent-l"] };
+describe("unit lines", () => {
+  const units = ["claims", "evidence", "fallacies", "biases", "arguments", "probability", "media"];
 
-  it.each(["light", "dark"] as const)("read as text and as filled buttons in %s mode", (mode) => {
-    const tokens = mode === "light" ? root : { ...root, ...dark };
-    const lightness = accentL[mode];
-    expect(lightness, "--unit-accent-l").toBeDefined();
-    for (const unit of [
-      "claims",
-      "evidence",
-      "fallacies",
-      "biases",
-      "arguments",
-      "probability",
-      "media",
-    ]) {
-      const source = unitAccent(unit).color.replace("var(--unit-accent-l)", lightness!);
-      const accent = parseColor(source);
-      const background = colorOf(tokens, "background");
-      expect(contrast(accent, background), `${unit} text on page`).toBeGreaterThanOrEqual(TEXT);
-      expect(contrast(background, accent), `${unit} button label`).toBeGreaterThanOrEqual(TEXT);
+  it.each(themes)("show as lines and carry their lettering in the $name theme", ({ tokens }) => {
+    for (const [i, unit] of units.entries()) {
+      const accent = unitAccent(unit);
+      expect(accent.line).toBe(i + 1);
+      expect(accent.color).toBe(`var(--line-${i + 1})`);
+      const line = `line-${i + 1}`;
+      // A line is a graphic: 3:1 against the page and against a card.
+      expect(ratio(tokens, line, "background"), `${unit} line on page`).toBeGreaterThanOrEqual(
+        GRAPHIC,
+      );
+      expect(ratio(tokens, line, "card"), `${unit} line on card`).toBeGreaterThanOrEqual(GRAPHIC);
+      // The number on a bullet and any label on a filled line is text.
+      expect(ratio(tokens, `on-${line}`, line), `${unit} lettering`).toBeGreaterThanOrEqual(TEXT);
     }
+  });
+
+  it("keeps the sign edge and the lamp visible at night", () => {
+    const night = themes[1]!.tokens;
+    expect(ratio(night, "primary", "background")).toBeGreaterThanOrEqual(TEXT);
+    expect(ratio(night, "primary-foreground", "primary")).toBeGreaterThanOrEqual(TEXT);
+    expect(ratio(themes[0]!.tokens, "edge", "background")).toBeGreaterThanOrEqual(GRAPHIC);
   });
 });

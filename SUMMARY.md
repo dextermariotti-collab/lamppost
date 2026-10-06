@@ -249,6 +249,32 @@ Asked whether to go serious or all-in on the animal, I kept the companion but ma
   valuations, exaggeration starting in press releases, fact-checkers reading laterally). They match the
   published studies as I know them, but read them once, and edit any you'd rather not state.
 
+## Follow-up: the Wayfinding redesign
+
+The look you chose from the seven directions: transit signage by day and a lit street at night.
+
+- **Type and colour.** Overpass replaces the old type everywhere, with Overpass Mono for numbers. Day is
+  black on pavement grey with white signs. Night is deep blue, with sodium amber for the main action and a
+  soft pool of lamplight behind the step you're on. Settings still switches between the two.
+- **Signs, not cards.** Square corners and a heavy rule instead of soft shadows, small tracked capitals for
+  labels, and no gradients, glows, confetti or bounce anywhere.
+- **Units are lines.** Each of the seven units has a number and a colour, used on Home, My Path, the
+  lesson header, Progress → Skills, the notes library and the share image. Lessons are "stop n of 5".
+- **My Path is a line map.** Each unit opens into its stops on a coloured line, with "You are here" on the
+  next lesson and the before and after checks as interchanges at either end.
+- **The lesson.** Progress along the top is the unit's line with a stop per step. Options are signs with a
+  heavy edge. Right and wrong answers are solid green or red panels with a short legend, and Continue is one
+  black (amber at night) bar. The finish screen is an arrival board: three numbers (accuracy, XP, streak),
+  today's goal, what you practised and the next stop. Finishing a unit adds a line badge to share.
+- **The mascot steps back.** Wherever the fox used to cheer (beside feedback, in the tutor chat, on the
+  sign-in and consent screens, during onboarding), there's now a small lamp mark. Your chosen companion
+  still shows where it stands for you: profile, friends, league and invites. Home no longer offers a
+  companion after the first lesson; Profile → Change companion is still there.
+- **Checked:** every text and line colour passes WCAG AA in both themes (the contrast test now covers
+  the seven lines), axe finds nothing on 11 main screens by day or night, tests, typecheck and build pass.
+- **Needs you:** look at it on your own phone at night. The lamplight is deliberately faint; if you'd like
+  more or less glow, it's one value (`--lamp-pool` in `src/styles.css`).
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

@@ -66,7 +66,7 @@ function LessonRoute() {
           <h1 className="mt-1 text-2xl leading-tight">{meta.title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{meta.objective}</p>
           <div className="mt-6 space-y-3" aria-hidden>
-            <div className="h-2 w-full animate-pulse rounded-full bg-muted" />
+            <div className="h-2 w-full animate-pulse rounded-sm bg-muted" />
             <div className="h-40 w-full animate-pulse rounded-3xl bg-muted" />
           </div>
           <p role="status" className="mt-4 text-sm font-semibold text-muted-foreground">

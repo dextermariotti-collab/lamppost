@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Target, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeShelf } from "@/components/BadgeShelf";
-import { Confetti } from "@/components/Confetti";
 import { DisclosureRow, LinkRow } from "@/components/DisclosureRow";
 import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -53,7 +52,6 @@ function ProgressScreen() {
   const { state, streak, hydrated, doneLessons, clearCelebration, clearFreezeSaved } =
     useProgress();
   const [celebration, setCelebration] = useState<Celebration | null>(null);
-  const [burst, setBurst] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const analytics = useMasteryAnalytics();
   const badges = useBadges(state);
@@ -68,9 +66,6 @@ function ProgressScreen() {
       setCelebration(next);
       return;
     }
-    setBurst(true);
-    const t = setTimeout(() => setBurst(false), 1400);
-    return () => clearTimeout(t);
   }, [state.celebration, clearCelebration]);
 
   const insights = useMemo(() => deriveInsights(state), [state]);
@@ -118,7 +113,6 @@ function ProgressScreen() {
   return (
     <PhoneFrame>
       <div className="relative px-5 pb-8">
-        {burst && <Confetti />}
         {celebration && (
           <MilestoneCard
             celebration={celebration}
@@ -398,9 +392,9 @@ function Bar({ pct, tone, label }: { pct: number; tone: "primary" | "muted"; lab
   return (
     <div className="flex items-center gap-2">
       <span className="w-11 text-[10px] font-bold text-muted-foreground">{label}</span>
-      <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+      <span className="h-2 flex-1 overflow-hidden rounded-sm bg-muted">
         <span
-          className={`block h-full rounded-full ${tone === "primary" ? "bg-primary" : "bg-foreground/25"}`}
+          className={`block h-full ${tone === "primary" ? "bg-primary" : "bg-foreground/25"}`}
           style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
         />
       </span>

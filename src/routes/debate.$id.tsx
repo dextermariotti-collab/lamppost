@@ -51,9 +51,7 @@ function GradeCard({ label, grade, tip }: { label: string; grade: ArgumentGrade;
                 {[1, 2, 3, 4].map((step) => (
                   <span
                     key={step}
-                    className={`h-2 w-4 rounded-full ${
-                      step <= (row?.score ?? 0) ? "bg-primary" : "bg-muted"
-                    }`}
+                    className={`h-2 w-4 ${step <= (row?.score ?? 0) ? "bg-primary" : "bg-muted"}`}
                   />
                 ))}
               </div>
@@ -158,7 +156,7 @@ function DebateScreen() {
             <Button
               onClick={submit}
               disabled={busy || text.trim().length < 40}
-              className="mt-3 h-12 w-full rounded-full text-base font-semibold"
+              className="mt-3 h-12 w-full rounded-sm text-base font-semibold"
             >
               <PenLine className="h-4 w-4" />
               {busy ? "Grading your case…" : "Submit my case"}

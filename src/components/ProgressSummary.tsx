@@ -56,7 +56,7 @@ export function TodaySession({
               : `${dueTotal} drill${dueTotal === 1 ? "" : "s"} due for review.`}
         </p>
         {complete && (
-          <span className="mt-2 inline-flex animate-pop-in items-center gap-1.5 rounded-full bg-success/12 px-2.5 py-1 text-[11px] font-extrabold text-success">
+          <span className="mt-2 inline-flex animate-pop-in items-center gap-1.5 rounded-sm bg-success/12 px-2.5 py-1 text-[11px] font-extrabold text-success">
             <Sparkles className="h-3.5 w-3.5" /> Daily goal cleared
           </span>
         )}

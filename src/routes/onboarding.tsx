@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { LegalFooter } from "@/components/LegalFooter";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
@@ -63,7 +63,7 @@ function Onboarding() {
               <span
                 key={id}
                 className={cn(
-                  "h-1.5 rounded-full transition-all duration-300",
+                  "h-1.5 transition-all duration-300",
                   i === step ? "w-6 bg-primary" : "w-1.5 bg-border",
                 )}
               />
@@ -118,7 +118,7 @@ function IntroStep({ companion, onNext }: { companion: Companion; onNext: () => 
   return (
     <div className="flex flex-1 animate-rise-in flex-col items-center text-center">
       <div className="mt-10">
-        <CompanionAvatar companion={companion} size={110} />
+        <GuideMark size={72} />
       </div>
       <h1 className="mt-8 text-3xl leading-tight">Practise spotting weak arguments</h1>
       <p className="mt-3 text-base text-muted-foreground">
@@ -127,7 +127,7 @@ function IntroStep({ companion, onNext }: { companion: Companion; onNext: () => 
       <Button
         type="button"
         onClick={onNext}
-        className="mt-10 h-14 w-full rounded-full text-base font-semibold"
+        className="mt-10 h-14 w-full rounded-sm text-base font-semibold"
       >
         Try one question
       </Button>
@@ -145,7 +145,7 @@ function QuestionStep({ onNext }: { onNext: () => void }) {
         <Button
           type="button"
           onClick={onNext}
-          className="mt-4 h-14 w-full animate-rise-in rounded-full text-base font-semibold"
+          className="mt-4 h-14 w-full animate-rise-in rounded-sm text-base font-semibold"
         >
           Continue <ArrowRight aria-hidden className="h-4 w-4" />
         </Button>
@@ -246,7 +246,7 @@ function SetupStep({
         <Button
           type="button"
           onClick={() => onDone({ minutes: time.minutes, goal: time.goal }, start)}
-          className="h-14 w-full rounded-full text-base font-semibold"
+          className="h-14 w-full rounded-sm text-base font-semibold"
         >
           Start learning
         </Button>
@@ -308,7 +308,7 @@ function PlacementStep({
     return (
       <div className="flex flex-1 animate-pop-in flex-col items-center text-center">
         <div className="mt-8">
-          <CompanionAvatar companion={{ ...companion, expression: "happy" }} size={88} />
+          <GuideMark size={72} />
         </div>
         <h1 className="mt-5 text-2xl leading-tight">
           {correct} of {Math.max(asked, 1)}

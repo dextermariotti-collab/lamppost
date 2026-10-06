@@ -93,7 +93,7 @@ function GuestPrompt() {
         Sign in and add a couple of friends, and you can compare weeks. Everything else in Lamppost
         works without an account.
       </p>
-      <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
+      <Button asChild className="mt-4 h-11 w-full rounded-sm font-semibold">
         <Link to="/auth">Sign in</Link>
       </Button>
     </section>
@@ -111,7 +111,7 @@ function Problem({ message, onRetry }: { message: string; onRetry: (() => void) 
           type="button"
           variant="outline"
           onClick={onRetry}
-          className="mt-4 h-11 w-full rounded-full font-semibold"
+          className="mt-4 h-11 w-full rounded-sm font-semibold"
         >
           Try again
         </Button>
@@ -144,7 +144,7 @@ function League({ view }: { view: LeagueView }) {
             share their progress with friends, you included. It takes {LEAGUE_MIN_GROUP} of you
             earning at least {LEAGUE_MIN_XP} XP in a week for anyone to move.
           </p>
-          <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
+          <Button asChild className="mt-4 h-11 w-full rounded-sm font-semibold">
             <Link to="/friends">Friends and sharing</Link>
           </Button>
         </section>

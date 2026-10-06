@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, X } from "lucide-react";
 import { BadgeIcon, TIER_STYLE } from "./BadgeIcon";
-import { Confetti } from "./Confetti";
+import { LineBullet } from "./LineBullet";
 import { computeBadges, drainNewUnlocks, type BadgeState } from "@/lib/badges";
 import { drainLevelUps, unitLevels, type UnitLevel } from "@/lib/levels";
 import { playCue } from "@/lib/feedback";
 import { useProgress } from "@/lib/progress";
 import { useRewardsHeld } from "@/lib/reward-hold";
-import { unitAccent } from "@/lib/unit-accent";
 
 /**
  * Watches real progress and surfaces the two earned rewards that aren't tied to
@@ -63,8 +62,7 @@ export function RewardHost() {
         role="status"
         className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex justify-center px-4 pt-4"
       >
-        <div className="relative w-full max-w-[22rem] overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-float animate-rise-in">
-          <Confetti count={20} />
+        <div className="sign relative w-full max-w-[22rem] overflow-hidden p-4 animate-rise-in">
           <div className="relative z-30 flex items-center gap-3">
             <BadgeIcon icon={badge.icon} tier={tier} size={46} />
             <div className="min-w-0">
@@ -84,37 +82,24 @@ export function RewardHost() {
   }
 
   const { level } = shown;
-  const accent = unitAccent(level.unitId);
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 px-6 backdrop-blur-sm">
-      <div className="relative w-full max-w-[20rem] animate-pop-in overflow-hidden rounded-3xl border border-border bg-card p-6 text-center shadow-float">
-        <Confetti count={26} />
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 px-6">
+      <div className="sign relative w-full max-w-[20rem] animate-pop-in p-6 text-left">
         <button
           type="button"
           onClick={dismiss}
           aria-label="Close"
-          className="absolute right-2 top-2 z-40 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+          className="absolute right-2 top-2 z-40 flex h-11 w-11 items-center justify-center text-muted-foreground hover:bg-muted"
         >
           <X className="h-4 w-4" />
         </button>
         <div className="relative z-30">
-          <span
-            aria-hidden
-            className="mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl"
-            style={{ background: accent.wash, border: `2px solid ${accent.border}` }}
-          >
-            {level.emoji}
-          </span>
-          <p
-            className="mt-4 text-[11px] font-bold uppercase tracking-wide"
-            style={{ color: accent.color }}
-          >
-            Skill level up
-          </p>
+          <LineBullet unitId={level.unitId} size="lg" />
+          <p className="legend mt-4 text-muted-foreground">Skill level up</p>
           <h2 className="mt-1 text-2xl leading-tight">{level.title}</h2>
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm font-bold">
+          <p className="mt-3 inline-flex items-center gap-1.5 bg-muted px-3 py-1.5 text-sm font-bold">
             {level.level.name}
-            <ArrowUpRight className="h-3.5 w-3.5" style={{ color: accent.color }} />
+            <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             {level.accuracy}% of this unit's drills right across {level.answered} answers.
@@ -122,7 +107,7 @@ export function RewardHost() {
           <button
             type="button"
             onClick={dismiss}
-            className="mt-5 h-11 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+            className="mt-5 h-11 w-full rounded-sm bg-primary text-sm font-semibold text-primary-foreground"
           >
             Keep going
           </button>

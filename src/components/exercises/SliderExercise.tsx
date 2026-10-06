@@ -70,7 +70,7 @@ export function SliderExerciseCard({
               setAfter(before);
               setLocked(true);
             }}
-            className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
+            className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
           >
             Lock that in
           </Button>
@@ -105,7 +105,7 @@ export function SliderExerciseCard({
             <Button
               type="button"
               onClick={() => onAnswer({ before, after }, scoreFor({ before, after }))}
-              className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
+              className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
             >
               Commit to that
             </Button>

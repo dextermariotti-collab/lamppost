@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { useMemo } from "react";
+import { LineBullet } from "@/components/LineBullet";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { LESSONS, UNITS, lessonIndexOf } from "@/lib/curriculum";
@@ -69,8 +70,8 @@ function NotesLibrary() {
           <div className="space-y-7">
             {units.map(({ unit, lessons }) => (
               <section key={unit.id}>
-                <h2 className="font-sans text-sm font-bold">
-                  <span aria-hidden>{unit.emoji}</span> {unit.title}
+                <h2 className="legend flex items-center gap-2 text-foreground">
+                  <LineBullet unitId={unit.id} /> {unit.title}
                 </h2>
                 <ul className="mt-2 divide-y divide-border border-y border-border">
                   {lessons.map((lesson) => (

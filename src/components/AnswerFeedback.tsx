@@ -1,7 +1,6 @@
 import { Check, Flame, X, Zap } from "lucide-react";
+import { GuideMark } from "@/components/LineBullet";
 import { useEffect, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
-import { useCompanion } from "@/lib/companion-store";
 import { playCue } from "@/lib/feedback";
 
 /**
@@ -39,7 +38,6 @@ export const comboBonus = (combo: number) =>
   combo >= 3 ? Math.min((combo - 2) * 5, COMBO_BONUS_CAP) : 0;
 
 export function AnswerFeedbackHost() {
-  const { companion } = useCompanion();
   const [shown, setShown] = useState<(AnswerCelebration & { at: number }) | null>(null);
 
   useEffect(() => {
@@ -73,7 +71,7 @@ export function AnswerFeedbackHost() {
       >
         <span
           key={`${shown.at}-xp`}
-          className="xp-fly absolute -top-2 right-5 flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-card"
+          className="xp-fly absolute -top-2 right-5 flex items-center gap-1 rounded-sm bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-card"
         >
           <Zap className="h-3.5 w-3.5" />+{xp + bonus} XP
         </span>
@@ -109,10 +107,7 @@ export function AnswerFeedbackHost() {
             ) : null}
           </div>
 
-          <CompanionAvatar
-            companion={{ ...companion, expression: correct ? "happy" : "thinking" }}
-            size={44}
-          />
+          <GuideMark size={44} />
         </div>
       </div>
     </div>

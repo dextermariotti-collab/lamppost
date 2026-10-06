@@ -67,7 +67,7 @@ export function SortExerciseCard({
                         !answered && setPicks((prev) => ({ ...prev, [String(i)]: bucket.id }))
                       }
                       aria-pressed={isPicked}
-                      className={`min-h-11 flex-1 rounded-full border-2 px-2 py-1.5 text-[13px] font-bold transition-all ${
+                      className={`min-h-11 flex-1 rounded-sm border-2 px-2 py-1.5 text-[13px] font-bold transition-all ${
                         isSolution
                           ? "border-success bg-success/15 text-foreground"
                           : isPicked
@@ -105,7 +105,7 @@ export function SortExerciseCard({
                 exercise.statements.length,
             )
           }
-          className="sticky-action mt-4 h-11 w-full rounded-full font-semibold"
+          className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
         >
           Check my sort
         </Button>

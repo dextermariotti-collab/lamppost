@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { ArrowRight, Flame } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { SocraticPopup } from "@/components/SocraticPopup";
 import type { Exercise } from "@/lib/exercises";
@@ -100,7 +100,7 @@ function DailyChallengeScreen() {
               The daily challenge draws on skills you've already unlocked, so it opens up once
               you've completed a lesson.
             </p>
-            <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
+            <Button asChild className="mt-4 h-11 w-full rounded-sm font-semibold">
               <Link to="/courses">Go to my path</Link>
             </Button>
           </div>
@@ -113,11 +113,7 @@ function DailyChallengeScreen() {
 
             {showDone ? (
               <div className="mt-8 flex animate-pop-in flex-col items-center text-center">
-                <CompanionAvatar
-                  companion={{ ...companion, expression: result ? "excited" : "calm" }}
-                  size={112}
-                  animate
-                />
+                <GuideMark size={72} />
                 <div className="mt-4 flex items-center gap-2 text-primary-text">
                   <Flame aria-hidden className="h-5 w-5" />
                   <p className="text-sm font-bold">Today's challenge is done</p>
@@ -129,7 +125,7 @@ function DailyChallengeScreen() {
                 </p>
                 <Button
                   onClick={() => navigate({ to: "/" })}
-                  className="mt-6 h-12 rounded-full bg-hero-gradient px-6 text-sm font-semibold shadow-card"
+                  className="mt-6 h-12 rounded-sm bg-hero-gradient px-6 text-sm font-semibold shadow-card"
                 >
                   Back to home
                   <ArrowRight className="h-4 w-4" />
@@ -149,7 +145,7 @@ function DailyChallengeScreen() {
                 {finished && (
                   <Button
                     onClick={() => setWrapped(true)}
-                    className="mt-5 h-12 w-full animate-pop-in rounded-full bg-hero-gradient text-sm font-semibold shadow-card"
+                    className="mt-5 h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-sm font-semibold shadow-card"
                   >
                     Finish challenge
                     <ArrowRight className="h-4 w-4" />

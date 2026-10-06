@@ -172,7 +172,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "min-h-11 rounded-full px-4 py-2 text-xs font-semibold transition-all",
+        "min-h-11 rounded-sm px-4 py-2 text-xs font-semibold transition-all",
         active ? "bg-primary text-primary-foreground shadow-soft" : "bg-card shadow-soft",
       )}
     >

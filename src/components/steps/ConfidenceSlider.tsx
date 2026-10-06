@@ -96,7 +96,7 @@ export function ConfidenceSlider({
           type="button"
           onClick={lockIn}
           disabled={picked === null || !touched}
-          className="mt-4 h-11 w-full rounded-full font-semibold"
+          className="mt-4 h-11 w-full rounded-sm font-semibold"
         >
           {picked === null ? "Choose an answer" : !touched ? "Set how sure you are" : "Lock it in"}
         </Button>

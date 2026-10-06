@@ -106,10 +106,10 @@ export function EvidenceUpdater({
             aria-valuemax={100}
             aria-valuenow={probability}
             aria-valuetext={`${probability} percent, ${likelihoodWord(probability)}`}
-            className="relative mt-2 h-4 overflow-hidden rounded-full bg-muted"
+            className="relative mt-2 h-4 overflow-hidden bg-muted"
           >
             <div
-              className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
+              className="h-full bg-primary transition-[width] duration-700 ease-out"
               style={{ width: `${probability}%` }}
             />
             <div className="absolute inset-y-0 left-1/2 w-px bg-foreground/30" aria-hidden />
@@ -176,11 +176,7 @@ export function EvidenceUpdater({
       <FeedbackPanel message={engine.message} />
 
       {answered && !finished && (
-        <Button
-          type="button"
-          onClick={next}
-          className="mt-3 h-11 w-full rounded-full font-semibold"
-        >
+        <Button type="button" onClick={next} className="mt-3 h-11 w-full rounded-sm font-semibold">
           {done + 1 < step.cards.length ? "Next piece of evidence" : "See where it landed"}
         </Button>
       )}

@@ -94,12 +94,12 @@ export function BlockPersonButton({
           </p>
         )}
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="mt-0 h-11 rounded-full">Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="mt-0 h-11 rounded-sm">Cancel</AlertDialogCancel>
           <button
             type="button"
             onClick={() => void confirm()}
             disabled={busy}
-            className="flex h-11 items-center justify-center gap-2 rounded-full bg-destructive px-5 text-sm font-bold text-destructive-foreground disabled:opacity-60"
+            className="flex h-11 items-center justify-center gap-2 rounded-sm bg-destructive px-5 text-sm font-bold text-destructive-foreground disabled:opacity-60"
           >
             {busy && <Loader2 aria-hidden className="h-4 w-4 animate-spin" />}
             Block {person.name}
@@ -240,7 +240,7 @@ export function ReportPersonButton({
               <button
                 type="button"
                 onClick={() => close(false)}
-                className="flex h-12 w-full items-center justify-center rounded-full bg-muted text-base font-bold"
+                className="flex h-12 w-full items-center justify-center rounded-sm bg-muted text-base font-bold"
               >
                 Close
               </button>
@@ -250,7 +250,7 @@ export function ReportPersonButton({
                   type="button"
                   onClick={() => void submit()}
                   disabled={!reason || sending}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card disabled:opacity-50"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-sm bg-hero-gradient text-base font-extrabold text-primary-foreground shadow-card disabled:opacity-50"
                 >
                   {sending && <Loader2 aria-hidden className="h-4 w-4 animate-spin" />}
                   Send report

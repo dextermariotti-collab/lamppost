@@ -1,7 +1,7 @@
 import { Send, X } from "lucide-react";
+import { GuideMark } from "@/components/LineBullet";
 import { AiLabel } from "@/components/AiLabel";
 import { useEffect, useRef, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
 import { companionName, type Companion } from "@/lib/companions";
 import { describeAnswer, describeExercise, type Exercise } from "@/lib/exercises";
@@ -121,11 +121,7 @@ export function SocraticPopup({
 
   return (
     <div className="mt-4 flex animate-rise-in items-end gap-2">
-      <CompanionAvatar
-        companion={{ ...companion, expression: correct ? "happy" : "calm" }}
-        size={60}
-        className="shrink-0 animate-float"
-      />
+      <GuideMark size={60} className="shrink-0 animate-float" />
       <div className="flex-1 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-4 py-3">
         <div className="flex items-start gap-2">
           <p
@@ -166,7 +162,7 @@ export function SocraticPopup({
               disabled={!reply.trim() || sending}
               onClick={send}
               aria-label="Send reply"
-              className="h-9 shrink-0 rounded-full"
+              className="h-9 shrink-0 rounded-sm"
             >
               <Send className="h-4 w-4" />
             </Button>

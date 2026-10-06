@@ -27,9 +27,9 @@ export function AnimatedBar({
   }, [clamped, animate]);
 
   return (
-    <div className={`h-2 overflow-hidden rounded-full bg-muted ${className}`}>
+    <div className={`h-2 overflow-hidden bg-muted ${className}`}>
       <div
-        className="h-full rounded-full bg-hero-gradient"
+        className="h-full bg-primary"
         style={{
           width: `${width}%`,
           transition: animate

@@ -4,14 +4,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Overpass draws the middle dot (·) with no advance width, so it lands on the next word.
+   This face supplies only that glyph, from whichever system sans the device has. */
+@font-face {
+  font-family: "Middle Dot";
+  src: local("Helvetica Neue"), local("Helvetica"), local("Arial"), local("Roboto"),
+    local("Liberation Sans"), local("DejaVu Sans"), local("Noto Sans");
+  unicode-range: U+00B7;
+}
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  /* Wayfinding: signs have near-square corners. Circles (stops, dots, avatars) stay round. */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -37,116 +47,137 @@
   --color-gem: var(--gem);
   --color-xp: var(--xp);
   --color-border: var(--border);
+  --color-edge: var(--edge);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-canvas: var(--canvas);
-  --color-subject-amber: var(--subject-amber);
-  --color-subject-forest: var(--subject-forest);
-  --color-subject-terracotta: var(--subject-terracotta);
-  --color-subject-blue: var(--subject-blue);
   --color-graph-locked: var(--graph-locked);
   --color-graph-line: var(--graph-line);
   --color-graph-edge: var(--graph-edge);
-  --font-display: "Lora", ui-serif, Georgia, serif;
-  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-graph: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-note: "Caveat", "Segoe Print", cursive;
-  --shadow-soft: 0 1px 2px oklch(0.27 0.025 290 / 0.06);
-  --shadow-card: 0 4px 16px -10px oklch(0.27 0.025 290 / 0.16);
-  --shadow-float: 0 12px 30px -20px oklch(0.27 0.025 290 / 0.24);
+  /* Overpass descends from Highway Gothic, the lettering on US road signs. */
+  --font-display: "Middle Dot", "Overpass", "Arial Narrow", Arial, sans-serif;
+  --font-sans: "Middle Dot", "Overpass", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Overpass Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Rules, not shadows: a sign has an edge, not a glow. */
+  --shadow-soft: 0 0 0 1px var(--border);
+  --shadow-card: 0 0 0 2px var(--edge);
+  --shadow-float: 0 0 0 2px var(--edge);
   --animate-float: quiet-in 200ms ease-out both;
 }
 
+/* Day: signage on pavement. Black signs, white panels, one colour per unit line. */
 :root {
-  --radius: 0.625rem;
-  --canvas: oklch(0.94 0.012 291);
-  --background: oklch(0.985 0.003 95);
-  --foreground: oklch(0.25 0.025 288);
-  --card: oklch(0.995 0.002 95);
-  --card-foreground: oklch(0.25 0.025 288);
-  --popover: oklch(0.995 0.002 95);
-  --popover-foreground: oklch(0.25 0.025 288);
-  --primary: oklch(0.52 0.16 292);
-  --primary-foreground: oklch(0.99 0.004 290);
-  /* Accent as text/icons on the page: the same hue, kept at >= 4.5:1. */
-  --primary-text: oklch(0.52 0.16 292);
-  --primary-soft: oklch(0.94 0.025 291);
-  --primary-glow: oklch(0.52 0.16 292);
-  --secondary: oklch(0.95 0.016 291);
-  --secondary-foreground: oklch(0.3 0.04 290);
-  --muted: oklch(0.95 0.008 290);
-  --muted-foreground: oklch(0.5 0.025 288);
-  --accent: oklch(0.94 0.025 291);
-  --accent-foreground: oklch(0.32 0.055 291);
-  --destructive: oklch(0.55 0.23 20);
-  --destructive-foreground: oklch(0.99 0.005 292);
-  --success: oklch(0.52 0.15 155);
-  --success-foreground: oklch(0.99 0.005 292);
-  --flame: oklch(0.55 0.2 38);
-  --gem: oklch(0.5 0.13 200);
-  --xp: oklch(0.62 0.15 80);
-  /* Lightness of the per-unit accents: dark enough to be text on light pages. */
-  --unit-accent-l: 0.5;
-  --border: oklch(0.89 0.018 291);
-  --input: oklch(0.86 0.024 291);
-  --ring: oklch(0.52 0.16 292);
-  --paper-rule: oklch(0.68 0.04 145 / 0.18);
-  --paper-margin: oklch(0.66 0.08 30 / 0.2);
-  --paper-grain: oklch(0.31 0.035 150 / 0.025);
-  --subject-amber: oklch(0.58 0.13 72);
-  --subject-forest: oklch(0.42 0.08 148);
-  --subject-terracotta: oklch(0.56 0.11 38);
-  --subject-blue: oklch(0.51 0.08 235);
-  --graph-locked: oklch(0.93 0.008 274);
-  --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
-  --graph-edge: oklch(0.33 0.02 280);
-  --graph-locked-border: oklch(0.5 0.02 274);
-  --graph-locked-text: oklch(0.27 0.02 280);
+  --radius: 3px;
+  --canvas: #e3e3df;
+  --background: #f1f1ee;
+  --foreground: #111418;
+  --card: #ffffff;
+  --card-foreground: #111418;
+  --popover: #ffffff;
+  --popover-foreground: #111418;
+  --primary: #111418;
+  --primary-foreground: #ffffff;
+  /* Accent as text on the page: by day the sign system's accent is plain black. */
+  --primary-text: #111418;
+  /* What is current or lit: a pale sodium tint by day. */
+  --primary-soft: #fbebc0;
+  --primary-glow: #111418;
+  --secondary: #e6e6e2;
+  --secondary-foreground: #111418;
+  --muted: #e6e6e2;
+  --muted-foreground: #525861;
+  --accent: #fbebc0;
+  --accent-foreground: #111418;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --success: #1e7344;
+  --success-foreground: #ffffff;
+  --flame: #a8410c;
+  --gem: #00737c;
+  --xp: #946500;
+  --border: #c9cbc6;
+  /* The heavy rule round a sign. */
+  --edge: #111418;
+  --input: #7d838b;
+  --ring: #111418;
+  --lamp: #f2a900;
+  --lamp-pool: none;
+  /* Unit lines: a fill colour and the lettering that sits on it (>= 4.5:1), and >= 3:1
+     against the page as a line. Never used for running text. */
+  --line-1: #c8302b;
+  --on-line-1: #ffffff;
+  --line-2: #1f6fb2;
+  --on-line-2: #ffffff;
+  --line-3: #a87400;
+  --on-line-3: #111418;
+  --line-4: #8a5a2b;
+  --on-line-4: #ffffff;
+  --line-5: #2e7d4f;
+  --on-line-5: #ffffff;
+  --line-6: #bf437b;
+  --on-line-6: #ffffff;
+  --line-7: #007c85;
+  --on-line-7: #ffffff;
+  --graph-locked: #e6e6e2;
+  --graph-line: rgb(17 20 24 / 0.3);
+  --graph-edge: #3a4048;
+  --graph-locked-border: #6b7179;
+  --graph-locked-text: #111418;
   --gradient-hero: linear-gradient(var(--primary), var(--primary));
 }
 
+/* Night: the streetlight. Only the work in front of you is lit. */
 .dark {
-  --canvas: oklch(0.19 0.02 292);
-  --background: oklch(0.22 0.022 292);
-  --foreground: oklch(0.95 0.008 292);
-  --card: oklch(0.26 0.026 292);
-  --card-foreground: oklch(0.95 0.008 292);
-  --popover: oklch(0.26 0.026 292);
-  --popover-foreground: oklch(0.95 0.008 292);
-  --primary: oklch(0.72 0.14 292);
-  --primary-text: oklch(0.72 0.14 292);
-  --primary-foreground: oklch(0.2 0.02 292);
-  --primary-soft: oklch(0.32 0.05 292);
-  --primary-glow: oklch(0.72 0.14 292);
-  --secondary: oklch(0.29 0.03 292);
-  --secondary-foreground: oklch(0.95 0.008 292);
-  --muted: oklch(0.29 0.03 292);
-  --muted-foreground: oklch(0.74 0.02 292);
-  --accent: oklch(0.32 0.05 292);
-  --accent-foreground: oklch(0.95 0.008 292);
-  --destructive: oklch(0.7 0.19 20);
-  --destructive-foreground: oklch(0.2 0.02 20);
-  --success: oklch(0.68 0.15 155);
-  --success-foreground: oklch(0.2 0.02 155);
-  --flame: oklch(0.72 0.19 38);
-  --gem: oklch(0.76 0.13 200);
-  --xp: oklch(0.8 0.15 80);
-  --unit-accent-l: 0.75;
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.72 0.14 292);
-  --paper-rule: oklch(0.8 0.02 292 / 0.12);
-  --paper-margin: oklch(0.75 0.1 292 / 0.18);
-  --paper-grain: oklch(1 0 0 / 0.02);
-  --subject-amber: oklch(0.74 0.12 72);
-  --subject-forest: oklch(0.71 0.08 148);
-  --subject-terracotta: oklch(0.72 0.1 38);
-  --subject-blue: oklch(0.7 0.08 235);
-  --graph-locked: oklch(0.3 0.02 274);
-  --graph-line: oklch(0.39611 0.01126 78.19 / 0.35);
-  --graph-edge: oklch(0.82 0.01 90);
-  --graph-locked-border: oklch(0.72 0.02 274);
-  --graph-locked-text: oklch(0.94 0.008 88);
+  --canvas: #0a1018;
+  --background: #0e1621;
+  --foreground: #edeff2;
+  --card: #17212e;
+  --card-foreground: #edeff2;
+  --popover: #17212e;
+  --popover-foreground: #edeff2;
+  --primary: #ffb547;
+  --primary-text: #ffb547;
+  --primary-foreground: #1a1206;
+  --primary-soft: #2b2416;
+  --primary-glow: #ffb547;
+  --secondary: #1f2a38;
+  --secondary-foreground: #edeff2;
+  --muted: #1f2a38;
+  --muted-foreground: #a6afbb;
+  --accent: #2b2416;
+  --accent-foreground: #ffd08a;
+  --destructive: #ff8a80;
+  --destructive-foreground: #0e1621;
+  --success: #6fcf97;
+  --success-foreground: #0e1621;
+  --flame: #ff9b5e;
+  --gem: #5fd3dc;
+  --xp: #ffb547;
+  --border: #2a3644;
+  --edge: #3a4757;
+  --input: #7a8797;
+  --ring: #ffb547;
+  --lamp: #ffb547;
+  --lamp-pool: radial-gradient(120% 70% at 50% 8%, rgb(255 181 71 / 0.17), rgb(255 181 71 / 0.06) 48%, transparent 76%);
+  --line-1: #f0665e;
+  --on-line-1: #0e1621;
+  --line-2: #5ea8f0;
+  --on-line-2: #0e1621;
+  --line-3: #f2d04a;
+  --on-line-3: #0e1621;
+  --line-4: #d29a68;
+  --on-line-4: #0e1621;
+  --line-5: #5dbb82;
+  --on-line-5: #0e1621;
+  --line-6: #f07ab0;
+  --on-line-6: #0e1621;
+  --line-7: #3cc4cc;
+  --on-line-7: #0e1621;
+  --graph-locked: #1f2a38;
+  --graph-line: rgb(237 239 242 / 0.3);
+  --graph-edge: #c9d1db;
+  --graph-locked-border: #7a8797;
+  --graph-locked-text: #edeff2;
 }
 
 @layer base {
@@ -166,8 +197,8 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: 0;
+    font-weight: 800;
+    letter-spacing: -0.015em;
   }
 }
 
@@ -175,14 +206,28 @@
   background-image: var(--gradient-hero);
 }
 
-@utility journal-page {
-  position: relative;
-  background-color: var(--background);
+/* At night the active step sits in a pool of sodium light; by day there is no pool. */
+@utility lamp-pool {
+  background-image: var(--lamp-pool);
 }
 
 @utility lamplight-glow {
-  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 32%, white) 0%, color-mix(in oklab, var(--primary-soft) 72%, transparent) 38%, transparent 72%);
-  filter: blur(10px);
+  background: var(--lamp-pool);
+}
+
+/* A sign: white panel, heavy rule, square corners. */
+@utility sign {
+  background-color: var(--card);
+  box-shadow: 0 0 0 2px var(--edge);
+  border-radius: 2px;
+}
+
+/* Sign legends: small capitals, tracked out. */
+@utility legend {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Thinking map. Every state keeps its label at >= 4.5:1 and its outline at >= 3:1. */
@@ -486,7 +531,7 @@
 }
 
 @utility lesson-complete-halo {
-  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 28%, white) 0%, var(--primary-soft) 42%, transparent 72%);
+  background: var(--lamp-pool);
   animation: lesson-halo-in 700ms ease-out both;
 }
 
@@ -711,7 +756,7 @@
   position: sticky;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   z-index: 20;
-  box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--foreground) 35%, transparent);
+  box-shadow: none;
 }
 
 /*

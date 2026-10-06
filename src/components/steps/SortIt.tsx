@@ -185,7 +185,7 @@ export function SortIt({
               <Button
                 type="button"
                 onClick={check}
-                className="mt-3 h-11 w-full rounded-full font-semibold"
+                className="mt-3 h-11 w-full rounded-sm font-semibold"
               >
                 Check my sorting
               </Button>

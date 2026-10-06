@@ -193,7 +193,7 @@ function SettingsScreen() {
                       type="button"
                       onClick={() => void save({ displayName: name, handle })}
                       disabled={saving}
-                      className="mt-3 h-11 w-full rounded-full text-sm font-bold"
+                      className="mt-3 h-11 w-full rounded-sm text-sm font-bold"
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                       Save profile

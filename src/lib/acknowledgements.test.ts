@@ -40,7 +40,7 @@ describe("the acknowledgements", () => {
     const families = [...root.matchAll(/family=([A-Za-z+]+)/g)].map((m) =>
       m[1]!.replace(/\+/g, " "),
     );
-    expect(families.length).toBeGreaterThanOrEqual(5);
+    expect(families).toEqual(["Overpass", "Overpass Mono"]);
     const listed = new Set<string>(FONTS.map((f) => f.name));
     expect(families.filter((f) => !listed.has(f))).toEqual([]);
   });

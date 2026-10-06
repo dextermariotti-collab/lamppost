@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { LineBullet } from "@/components/LineBullet";
 import { ThinkingGraph } from "@/components/ThinkingGraph";
 import { UNITS } from "@/lib/curriculum";
 import type { UnitMastery } from "@/lib/mastery";
 import { skillNotes, type SkillNote } from "@/lib/progress-view";
+import { unitAccent } from "@/lib/unit-accent";
 
 const NOTE: Record<SkillNote, { text: string; className: string }> = {
   strongest: { text: "Strongest", className: "bg-primary-soft text-primary-text" },
@@ -33,23 +35,20 @@ export function SkillsCard({
     units ?? UNITS.map((u) => ({ unitId: u.id, title: u.title, accuracy: 0, answered: 0 }));
 
   return (
-    <section
-      aria-labelledby="skills-heading"
-      className="mt-4 rounded-2xl border border-border bg-card p-4"
-    >
+    <section aria-labelledby="skills-heading" className="sign mt-4 p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 id="skills-heading" className="text-lg">
           Skills
         </h2>
-        <div role="group" aria-label="Show skills as" className="flex rounded-full bg-muted p-0.5">
+        <div role="group" aria-label="Show skills as" className="flex border-2 border-edge">
           {(["list", "map"] as const).map((option) => (
             <button
               key={option}
               type="button"
               aria-pressed={view === option}
               onClick={() => setView(option)}
-              className={`min-h-11 rounded-full px-4 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                view === option ? "bg-card text-foreground shadow-soft" : "text-muted-foreground"
+              className={`legend min-h-10 px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                view === option ? "bg-primary text-primary-foreground" : "text-muted-foreground"
               }`}
             >
               {option === "list" ? "List" : "Map"}
@@ -76,25 +75,27 @@ export function SkillsCard({
               const note = notes[unit.unitId];
               return (
                 <li key={unit.unitId}>
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="min-w-0 text-sm font-bold">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold">
+                      <LineBullet unitId={unit.unitId} />
                       {unit.title}
                       {note && (
                         <span
-                          className={`ml-2 inline-block rounded-full px-2 py-0.5 align-middle text-[11px] font-bold ${NOTE[note].className}`}
+                          className={`inline-block rounded-sm px-2 py-0.5 text-[11px] font-bold ${NOTE[note].className}`}
                         >
                           {NOTE[note].text}
                         </span>
                       )}
                     </p>
-                    <p className="shrink-0 text-xs font-bold text-muted-foreground">
+                    <p className="shrink-0 font-mono text-xs font-bold text-muted-foreground">
                       {units === null ? "" : started ? `${pct}%` : "Not started"}
                     </p>
                   </div>
-                  <div aria-hidden className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
+                  <div aria-hidden className="mt-1.5 h-1.5 overflow-hidden bg-muted">
                     <div
-                      className="h-full rounded-full bg-primary"
+                      className="h-full"
                       style={{
+                        background: unitAccent(unit.unitId).color,
                         width: `${started ? pct : 0}%`,
                         transition: "width 1.1s cubic-bezier(0.22, 1, 0.36, 1)",
                       }}

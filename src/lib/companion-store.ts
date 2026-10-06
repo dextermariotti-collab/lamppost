@@ -4,7 +4,6 @@ import { DEFAULT_COMPANION, normalizeCompanion, type Companion } from "./compani
 
 const DRAFT_KEY = "lamppost-companion-draft";
 const SEEN_KEY = "lamppost-onboarding-seen";
-const OFFERED_KEY = "lamppost-companion-offered-v1";
 const EVENT = "lamppost-companion-change";
 
 /** Pre-account choice, kept locally until the user creates an account. */
@@ -44,26 +43,6 @@ export function hasSeenOnboarding() {
     return window.localStorage.getItem(SEEN_KEY) === "1";
   } catch {
     return true;
-  }
-}
-
-/** Whether the "pick who practises with you" offer, made after the first lesson, was answered. */
-export function hasBeenOfferedCompanion() {
-  if (typeof window === "undefined") return true;
-  try {
-    return window.localStorage.getItem(OFFERED_KEY) === "1";
-  } catch {
-    return true;
-  }
-}
-
-export function markCompanionOffered() {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(OFFERED_KEY, "1");
-    window.dispatchEvent(new Event(EVENT));
-  } catch {
-    /* ignore */
   }
 }
 

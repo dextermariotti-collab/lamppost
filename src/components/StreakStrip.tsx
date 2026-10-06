@@ -66,7 +66,7 @@ export function StreakStrip({
 const PLACEHOLDER_DAYS: (StripDay | null)[] = Array.from({ length: 7 }, () => null);
 
 function Dot({ day }: { day: StripDay | null }) {
-  const base = "flex h-7 w-7 items-center justify-center rounded-full";
+  const base = "flex h-7 w-7 items-center justify-center rounded-sm";
   if (!day) return <span className={`${base} bg-muted`} />;
   const ring = day.isToday ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : "";
   if (day.status === "done")

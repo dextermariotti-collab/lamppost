@@ -19,10 +19,13 @@ export function LessonPlayer({
   onComplete,
   finalLabel = "Continue",
   intro,
+  unitId,
 }: {
   steps: readonly LessonStep[];
   /** Shown above the first step only. */
   intro?: ReactNode;
+  /** The unit, so progress is drawn in its line colour. */
+  unitId?: string;
   /** Called once per step, when the learner has finished it. */
   onStepResolved: (index: number, step: LessonStep, result: StepResult) => void;
   /** Called when Continue is pressed on the last step. */
@@ -46,7 +49,12 @@ export function LessonPlayer({
   return (
     <>
       {index === 0 && intro}
-      <StepProgress total={steps.length} current={index} done={doneCount} />
+      <StepProgress
+        total={steps.length}
+        current={index}
+        done={doneCount}
+        {...(unitId ? { unitId } : {})}
+      />
       <div className="px-5 pt-4 pb-8">
         <div ref={stepRef} tabIndex={-1} className="outline-none">
           <StepView
@@ -68,12 +76,12 @@ export function LessonPlayer({
               if (last) onComplete(steps.map((_, i) => results[i]!));
               else setIndex((i) => i + 1);
             }}
-            className={`h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95 disabled:bg-none disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${
-              resolved ? "animate-pop-in" : ""
+            className={`h-12 w-full justify-between rounded-sm bg-primary px-4 text-base font-bold text-primary-foreground shadow-card hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 ${
+              resolved ? "animate-pop-in" : "justify-center"
             }`}
           >
             {resolved ? (last ? finalLabel : "Continue") : "Answer to continue"}
-            {resolved && <ArrowRight aria-hidden className="h-4 w-4" />}
+            {resolved && <ArrowRight aria-hidden className="h-5 w-5" />}
           </Button>
         </div>
       </div>

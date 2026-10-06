@@ -5,29 +5,14 @@ export { PACKAGES, type PackageLicence };
 /** Typefaces the app loads from Google Fonts, all of which Google Fonts lists under the SIL OFL 1.1. */
 export const FONTS = [
   {
-    name: "Caveat",
+    name: "Overpass",
     license: "SIL Open Font License 1.1",
-    url: "https://fonts.google.com/specimen/Caveat",
+    url: "https://fonts.google.com/specimen/Overpass",
   },
   {
-    name: "DM Sans",
+    name: "Overpass Mono",
     license: "SIL Open Font License 1.1",
-    url: "https://fonts.google.com/specimen/DM+Sans",
-  },
-  {
-    name: "Lora",
-    license: "SIL Open Font License 1.1",
-    url: "https://fonts.google.com/specimen/Lora",
-  },
-  {
-    name: "Nunito Sans",
-    license: "SIL Open Font License 1.1",
-    url: "https://fonts.google.com/specimen/Nunito+Sans",
-  },
-  {
-    name: "Space Grotesk",
-    license: "SIL Open Font License 1.1",
-    url: "https://fonts.google.com/specimen/Space+Grotesk",
+    url: "https://fonts.google.com/specimen/Overpass+Mono",
   },
 ] as const;
 

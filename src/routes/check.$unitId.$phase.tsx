@@ -92,7 +92,7 @@ function UnitCheckScreen() {
             </p>
           </section>
           {phase === "before" ? (
-            <Button asChild className="mt-5 h-12 w-full rounded-full text-base font-semibold">
+            <Button asChild className="mt-5 h-12 w-full rounded-sm text-base font-semibold">
               <Link
                 to="/course/$slug/lesson/$index"
                 params={{ slug: CURRICULUM_SLUG, index: String(firstLesson) }}
@@ -101,7 +101,7 @@ function UnitCheckScreen() {
               </Link>
             </Button>
           ) : (
-            <Button asChild className="mt-5 h-12 w-full rounded-full text-base font-semibold">
+            <Button asChild className="mt-5 h-12 w-full rounded-sm text-base font-semibold">
               <Link to="/courses">Back to your path</Link>
             </Button>
           )}
@@ -120,7 +120,7 @@ function UnitCheckScreen() {
               ? `This check opens once the unit's ${unit.total} lessons are done. You've done ${unit.completed}.`
               : "The before-check only counts before any of the unit is studied, so it has closed. The after-check opens when the unit is done."}
           </p>
-          <Button asChild variant="outline" className="mt-4 h-11 w-full rounded-full">
+          <Button asChild variant="outline" className="mt-4 h-11 w-full rounded-sm">
             <Link to="/courses">Back to your path</Link>
           </Button>
         </div>
@@ -160,7 +160,7 @@ function UnitCheckScreen() {
                 setAnswered(false);
               }
             }}
-            className="mt-4 h-12 w-full animate-rise-in rounded-full text-base font-semibold"
+            className="mt-4 h-12 w-full animate-rise-in rounded-sm text-base font-semibold"
           >
             {last ? "See how you did" : "Next question"}
           </Button>

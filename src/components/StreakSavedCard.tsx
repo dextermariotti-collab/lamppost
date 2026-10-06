@@ -1,5 +1,5 @@
 import { Snowflake } from "lucide-react";
-import { CompanionAvatar } from "./CompanionAvatar";
+import { GuideMark } from "@/components/LineBullet";
 import type { Companion } from "@/lib/companions";
 
 /**
@@ -35,12 +35,12 @@ export function StreakSavedCard({
           {freezesLeft} {freezesLeft === 1 ? "freeze" : "freezes"} left.
         </p>
         <div className="mt-4 flex justify-center">
-          <CompanionAvatar companion={companion} size={72} pose="happy" animate />
+          <GuideMark size={72} />
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="mt-5 h-11 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+          className="mt-5 h-11 w-full rounded-sm bg-primary text-sm font-semibold text-primary-foreground"
         >
           Back to it
         </button>

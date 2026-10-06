@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { Button } from "@/components/ui/button";
-import { useCompanion } from "@/lib/companion-store";
 import { useProgress } from "@/lib/progress";
 import { EXERCISE_LABEL } from "@/lib/exercises";
 import { CURRICULUM_SLUG } from "@/lib/curriculum";
@@ -43,7 +42,6 @@ export const Route = createFileRoute("/review")({
 
 function ReviewQueue() {
   const { recordReview } = useProgress();
-  const { companion } = useCompanion();
   const { items, hydrated, grade } = useDueDrills();
   const { items: scheduled } = useDrillSchedule();
 
@@ -125,7 +123,7 @@ function ReviewQueue() {
                   setAnswered(false);
                   setStep((s) => s + 1);
                 }}
-                className="sticky-action mt-5 h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                className="sticky-action mt-5 h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
               >
                 {step + 1 >= session!.length ? "Finish review" : "Next drill"}
                 <ArrowRight className="h-4 w-4" />
@@ -138,7 +136,7 @@ function ReviewQueue() {
           <div className="rounded-2xl border border-border bg-card p-5">
             <h2 className="text-lg">Nothing due right now</h2>
             <p className="mt-1 text-sm text-muted-foreground">{nextReviewLine(scheduled)}</p>
-            <Button asChild className="mt-4 h-12 w-full rounded-full text-sm font-semibold">
+            <Button asChild className="mt-4 h-12 w-full rounded-sm text-sm font-semibold">
               <Link to="/courses">Continue your path</Link>
             </Button>
             <Link
@@ -152,13 +150,13 @@ function ReviewQueue() {
 
         {done && session!.length > 0 && (
           <div className="flex animate-pop-in flex-col items-center text-center">
-            <CompanionAvatar companion={{ ...companion, expression: "happy" }} size={88} />
+            <GuideMark size={72} />
             <h2 className="mt-4 text-2xl">Review complete</h2>
             <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">
               {right} of {session!.length} handled. The ones you missed return tomorrow with new
               material.
             </p>
-            <Button asChild className="mt-6 h-12 rounded-full px-6 text-sm font-semibold">
+            <Button asChild className="mt-6 h-12 rounded-sm px-6 text-sm font-semibold">
               <Link to="/">Back to home</Link>
             </Button>
           </div>

@@ -163,7 +163,7 @@ export function FocusSheet({
         <Button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="mt-4 h-12 w-full rounded-full text-sm font-semibold"
+          className="mt-4 h-12 w-full rounded-sm text-sm font-semibold"
         >
           Done
         </Button>

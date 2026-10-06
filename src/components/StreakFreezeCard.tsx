@@ -10,10 +10,6 @@ export function StreakFreezeCard({ freezes }: { freezes: number }) {
     <section className="mt-6 animate-rise-in border-t border-border pt-5">
       <div className="flex items-center gap-4">
         <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 rounded-full bg-primary/15 blur-md"
-          />
           <Snowflake
             aria-hidden
             className={`relative h-8 w-8 ${freezes > 0 ? "text-primary-text" : "text-muted-foreground"}`}
@@ -31,7 +27,7 @@ export function StreakFreezeCard({ freezes }: { freezes: number }) {
             {Array.from({ length: MAX_FREEZES }, (_, i) => (
               <span
                 key={i}
-                className={`h-2.5 w-8 rounded-full ${i < freezes ? "bg-primary" : "bg-border"}`}
+                className={`h-2.5 w-8 ${i < freezes ? "bg-foreground" : "bg-border"}`}
               />
             ))}
           </div>

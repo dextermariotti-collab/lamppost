@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { AiLabel } from "@/components/AiLabel";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, Lock, RefreshCw, Send, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
 import { companionName, type Companion } from "@/lib/companions";
 import {
@@ -207,9 +207,7 @@ export function PracticeChat({
             key={`${i}-${turn.text.slice(0, 12)}`}
             className={`animate-rise-in ${turn.role === "learner" ? "flex justify-end" : "flex items-start gap-2"}`}
           >
-            {turn.role === "tutor" && (
-              <CompanionAvatar companion={companion} size={34} className="mt-0.5 shrink-0" />
-            )}
+            {turn.role === "tutor" && <GuideMark size={34} className="mt-0.5 shrink-0" />}
             <p
               className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm font-semibold leading-relaxed ${
                 turn.role === "learner"
@@ -223,7 +221,7 @@ export function PracticeChat({
         ))}
         {phase === "loading" && (
           <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-            <CompanionAvatar companion={companion} size={30} />
+            <GuideMark size={30} />
             <span className="animate-pulse">{name} is reading your answer…</span>
           </div>
         )}

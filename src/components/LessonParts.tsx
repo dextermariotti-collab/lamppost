@@ -27,7 +27,7 @@ export function PendingPart({
         <p className="text-sm font-semibold text-foreground">
           {notice ?? "This is taking longer than usual."} Your progress so far is kept.
         </p>
-        <Button type="button" onClick={onRetry} className="mt-4 h-11 w-full rounded-full">
+        <Button type="button" onClick={onRetry} className="mt-4 h-11 w-full rounded-sm">
           Try again
         </Button>
       </div>
@@ -72,7 +72,7 @@ export function PartsStatus({
           type="button"
           variant="outline"
           onClick={onRetry}
-          className="mt-3 h-11 w-full rounded-full"
+          className="mt-3 h-11 w-full rounded-sm"
         >
           Try again
         </Button>

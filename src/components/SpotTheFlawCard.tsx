@@ -1,5 +1,5 @@
 import { Check, Quote, X } from "lucide-react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { GuideMark } from "@/components/LineBullet";
 import type { Companion } from "@/lib/companions";
 import type { FlawDrill } from "@/lib/courses";
 
@@ -49,10 +49,10 @@ export function SpotTheFlawCard({ drill, companion, choice, onPick }: Props) {
             >
               <span className="flex-1">{option}</span>
               {answered && isAnswer && (
-                <Check className="h-5 w-5 shrink-0 animate-pop-in rounded-full bg-success p-1 text-success-foreground" />
+                <Check className="h-5 w-5 shrink-0 animate-pop-in rounded-sm bg-success p-1 text-success-foreground" />
               )}
               {answered && isPicked && !isAnswer && (
-                <X className="h-5 w-5 shrink-0 animate-pop-in rounded-full bg-destructive p-1 text-destructive-foreground" />
+                <X className="h-5 w-5 shrink-0 animate-pop-in rounded-sm bg-destructive p-1 text-destructive-foreground" />
               )}
             </button>
           );
@@ -61,7 +61,7 @@ export function SpotTheFlawCard({ drill, companion, choice, onPick }: Props) {
 
       {answered && (
         <div className="mt-4 flex items-end gap-2 animate-pop-in">
-          <CompanionAvatar companion={companion} size={56} className="shrink-0" />
+          <GuideMark size={56} className="shrink-0" />
           <div
             aria-live="polite"
             className="flex-1 rounded-2xl border-2 border-primary/30 bg-primary-soft px-4 py-2.5"

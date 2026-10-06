@@ -27,7 +27,7 @@ export function BadgeShelf({ badges }: { badges: BadgeState[] }) {
               {badge.description}
             </p>
             <div
-              className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
+              className="mt-2 h-1.5 overflow-hidden bg-muted"
               role="progressbar"
               aria-valuenow={badge.pct}
               aria-valuemin={0}
@@ -35,7 +35,7 @@ export function BadgeShelf({ badges }: { badges: BadgeState[] }) {
               aria-label={`${badge.name} progress`}
             >
               <span
-                className="block h-full rounded-full bg-primary transition-[width] duration-700"
+                className="block h-full bg-primary transition-[width] duration-700"
                 style={{ width: `${badge.pct}%` }}
               />
             </div>

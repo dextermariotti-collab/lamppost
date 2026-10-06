@@ -1,7 +1,7 @@
 import { Loader2, PenLine } from "lucide-react";
+import { GuideMark } from "@/components/LineBullet";
 import { AiLabel } from "@/components/AiLabel";
 import { useEffect, useRef, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { Button } from "@/components/ui/button";
 import type { Companion } from "@/lib/companions";
 import {
@@ -42,7 +42,7 @@ function GradingProgress({ companion, elapsed }: { companion: Companion; elapsed
       aria-busy="true"
       className="mt-4 flex items-end gap-2"
     >
-      <CompanionAvatar companion={companion} size={56} animate pose="peek" className="shrink-0" />
+      <GuideMark size={56} className="shrink-0" />
       <div className="flex-1 space-y-2 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-4 py-3">
         <p className="flex items-center gap-2 text-[14px] font-bold text-foreground">
           <Loader2 aria-hidden className="h-4 w-4 shrink-0 animate-spin" />
@@ -193,7 +193,7 @@ export function WrittenArgument({
               text.trim().length <
                 (written.type === "restate" || written.type === "testable" ? 12 : 20)
             }
-            className="sticky-action mt-3 h-12 w-full rounded-full text-base font-semibold"
+            className="sticky-action mt-3 h-12 w-full rounded-sm text-base font-semibold"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />}
             {busy ? "Grading…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
@@ -204,7 +204,7 @@ export function WrittenArgument({
       {grade && !revising && (
         <div className="mt-4 space-y-3 animate-pop-in">
           <div className="flex items-end gap-2">
-            <CompanionAvatar companion={companion} size={56} className="shrink-0" />
+            <GuideMark size={56} className="shrink-0" />
             <div className="flex-1 rounded-2xl rounded-bl-sm border-2 border-primary/30 bg-primary-soft px-4 py-2.5">
               <p className="text-[13px] font-bold text-foreground">
                 {onTopic
@@ -234,9 +234,7 @@ export function WrittenArgument({
                     {[1, 2, 3, 4].map((step) => (
                       <span
                         key={step}
-                        className={`h-2 w-5 rounded-full ${
-                          step <= row.score ? "bg-primary" : "bg-muted"
-                        }`}
+                        className={`h-2 w-5 ${step <= row.score ? "bg-primary" : "bg-muted"}`}
                       />
                     ))}
                   </div>
@@ -265,7 +263,7 @@ export function WrittenArgument({
                 setAttempt(2);
                 setRevising(true);
               }}
-              className="h-11 w-full rounded-full font-semibold"
+              className="h-11 w-full rounded-sm font-semibold"
             >
               Revise and resubmit once
             </Button>

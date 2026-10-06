@@ -151,7 +151,7 @@ export function DrillVariant({
         <Button
           type="button"
           onClick={() => setRound((n) => n + 1)}
-          className="mt-4 h-11 w-full rounded-full"
+          className="mt-4 h-11 w-full rounded-sm"
         >
           Try again
         </Button>
@@ -183,7 +183,7 @@ export function DrillVariant({
               type="button"
               variant="ghost"
               onClick={() => setHint(true)}
-              className="h-11 rounded-full px-3 text-[13px] font-bold text-primary-text"
+              className="h-11 rounded-sm px-3 text-[13px] font-bold text-primary-text"
             >
               <HelpCircle className="h-4 w-4" /> Give me a nudge (half XP)
             </Button>

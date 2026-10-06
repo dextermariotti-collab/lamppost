@@ -80,7 +80,7 @@ export function PrivacySafetySection() {
                   type="button"
                   onClick={() => void lift(person.id)}
                   disabled={busy === person.id}
-                  className="min-h-11 rounded-full bg-muted px-4 text-xs font-bold disabled:opacity-60"
+                  className="min-h-11 rounded-sm bg-muted px-4 text-xs font-bold disabled:opacity-60"
                 >
                   Unblock
                   <span className="sr-only"> {person.displayName ?? person.handle}</span>

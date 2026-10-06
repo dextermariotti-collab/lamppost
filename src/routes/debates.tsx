@@ -62,7 +62,7 @@ function DebatesScreen() {
             <p className="mt-1 text-sm text-muted-foreground">
               Open a friend's profile and challenge them to a debate.
             </p>
-            <Button asChild className="mt-4 h-11 w-full rounded-full font-semibold">
+            <Button asChild className="mt-4 h-11 w-full rounded-sm font-semibold">
               <Link to="/friends">Find a friend</Link>
             </Button>
           </div>

@@ -68,7 +68,7 @@ function LessonNotesScreen() {
             </div>
             <Link
               {...lessonLink}
-              className="mt-6 flex min-h-12 items-center justify-center rounded-full border border-border text-sm font-bold"
+              className="mt-6 flex min-h-12 items-center justify-center rounded-sm border-2 border-edge text-sm font-bold"
             >
               Practise the lesson again
             </Link>

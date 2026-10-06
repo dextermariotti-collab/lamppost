@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { LegalFooter } from "@/components/LegalFooter";
 import { Loader2, Mail, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ConsentFields, UnderAgeNotice } from "@/components/ConsentFields";
 import { useConsentForm } from "@/lib/use-consent-form";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -126,7 +126,7 @@ function AuthScreen() {
     <PhoneFrame showNav={false}>
       <div className="flex min-h-full flex-col px-6 pb-8">
         <div className="mt-6 flex animate-rise-in flex-col items-center text-center">
-          <CompanionAvatar companion={companion} size={88} />
+          <GuideMark size={72} />
           <h1 className="mt-3 text-2xl">Save {companionName(companion)}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Create an account and your companion, streak and progress follow you everywhere.

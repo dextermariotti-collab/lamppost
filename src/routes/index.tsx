@@ -1,15 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, Play, Star, Zap } from "lucide-react";
+import { ArrowRight, Check, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { skillsToPractise } from "@/lib/rating";
 import { Button } from "@/components/ui/button";
-import { CompanionAura } from "@/components/CompanionAura";
-import { CompanionOffer } from "@/components/CompanionOffer";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { ProgressRing } from "@/components/ProgressRing";
+import { LampMark, LineBullet, Stops } from "@/components/LineBullet";
 import { StreakFlame } from "@/components/StreakCalendar";
 import { WeeklyRecapCard } from "@/components/WeeklyRecapCard";
-import { hasSeenOnboarding, useCompanion } from "@/lib/companion-store";
+import { hasSeenOnboarding } from "@/lib/companion-store";
 import { useDailyChallenge } from "@/lib/challenge";
 import {
   CURRICULUM_SLUG,
@@ -22,7 +20,6 @@ import {
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { dayKey, useProgress } from "@/lib/progress";
-import { unitAccent } from "@/lib/unit-accent";
 import {
   nextReviewLine,
   reviewUrgencyFor,
@@ -56,7 +53,6 @@ export const Route = createFileRoute("/")({
 function Home() {
   const navigate = useNavigate();
   const { state, streak, doneLessons, registerCourse } = useProgress();
-  const { companion } = useCompanion();
   // Makes sure the curriculum exists locally with its lesson titles.
   useCurriculumCourse();
 
@@ -84,7 +80,6 @@ function Home() {
   const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
 
   const doneToday = state.history[dayKey()] ?? 0;
-  const goalPct = Math.min(100, Math.round((doneToday / Math.max(state.dailyGoal, 1)) * 100));
   // The counters wait for the first lesson: before it they would only be zeros.
   const started = lessonsDone > 0 || state.xp > 0 || streak > 0;
 
@@ -99,7 +94,6 @@ function Home() {
   const next = lessonAt(nextIndex);
   const finished = lessonsDone >= TOTAL_LESSONS;
   const unit = unitById(next?.unitId ?? "claims");
-  const accent = unitAccent(unit.id);
   const minutes = Math.max(5, (next?.drills.length ?? 4) * 2);
 
   const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
@@ -117,60 +111,45 @@ function Home() {
   return (
     <PhoneFrame>
       <div className="min-h-full px-5 pb-10">
-        {/* Header: who you are, and how you're doing once there is something to show */}
-        <header className="flex items-center gap-3 pt-6">
-          <Link to="/profile" aria-label="Open profile" className="shrink-0">
-            <CompanionAura
-              companion={{ ...companion, expression: urgency === "piling" ? "calm" : "happy" }}
-              streak={streak}
-              size={46}
-            />
-          </Link>
-
+        {/* Header: the mark, and how you're doing once there is something to show */}
+        <header className="flex min-h-12 items-center gap-3 pt-5">
+          <span className="legend flex items-center gap-1.5 text-foreground">
+            <LampMark className="h-5 w-5" /> Lamppost
+          </span>
           {started && (
-            <>
+            <span className="ml-auto flex items-center gap-4 text-sm font-bold text-foreground">
               <Link
                 to="/progress"
-                className="flex items-center gap-1.5 rounded-full px-1 py-1"
+                className="flex min-h-11 items-center gap-1.5"
                 aria-label={`${streak} day streak`}
               >
                 <StreakFlame streak={streak} />
-                <span className="text-base font-bold text-foreground">{streak}</span>
+                {streak}
               </Link>
-
-              <span className="flex items-center gap-1 text-sm font-bold text-foreground">
-                <Star aria-hidden className="h-4 w-4 text-xp" />
-                {state.xp.toLocaleString()}
+              <span className="font-mono text-xs text-muted-foreground">
+                {Math.min(doneToday, state.dailyGoal)} / {state.dailyGoal} today
               </span>
-
-              <span className="ml-auto shrink-0">
-                <ProgressRing pct={goalPct} size={44} stroke={5}>
-                  <span className="text-[11px] font-bold text-foreground">
-                    {Math.min(doneToday, state.dailyGoal)}/{state.dailyGoal}
-                  </span>
-                </ProgressRing>
-              </span>
-            </>
+            </span>
           )}
         </header>
 
-        {/* The main action, unmissable and in this unit's colour */}
-        <section
-          className="mt-5 rounded-3xl border p-5"
-          style={{ background: accent.wash, borderColor: accent.border }}
-        >
-          <p
-            className="text-[11px] font-bold uppercase tracking-wide"
-            style={{ color: accent.color }}
-          >
-            {finished ? "Curriculum complete" : `Up next · ${unit.title}`}
+        {/* The main action: one sign for what's next */}
+        <p className="legend mt-4 text-muted-foreground">
+          {finished ? "Curriculum complete" : "Up next"}
+        </p>
+        <section className="sign mt-2 p-4">
+          <p className="legend flex items-center gap-2 text-muted-foreground">
+            <LineBullet unitId={unit.id} />
+            {unit.title} / stop {(nextIndex % 5) + 1} of 5
           </p>
-          <h1 className="mt-1.5 text-2xl leading-tight">{next?.title}</h1>
+          <h1 className="mt-2.5 text-[28px] leading-[1.05]">{next?.title}</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{next?.objective}</p>
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
             about {minutes} min · lesson {nextIndex + 1} of {TOTAL_LESSONS}
-            {recommendation ? ` · ${recommendation.reason}` : ""}
           </p>
+          {recommendation && (
+            <p className="mt-1 text-xs text-muted-foreground">{recommendation.reason}</p>
+          )}
           <Button
             type="button"
             onClick={() =>
@@ -179,109 +158,98 @@ function Home() {
                 params: { slug: CURRICULUM_SLUG, index: String(nextIndex + 1) },
               })
             }
-            className="mt-4 h-12 w-full rounded-full text-base font-semibold"
-            style={{ background: accent.color, color: "var(--background)" }}
+            className="mt-4 h-12 w-full justify-between rounded-sm bg-primary px-4 text-base font-bold text-primary-foreground hover:bg-primary/90"
           >
-            <Play aria-hidden className="h-4 w-4" />
-            {finished ? "Practise again" : "Start lesson"}
+            {finished ? "Practise again" : "Start the lesson"}
+            <ArrowRight aria-hidden className="h-5 w-5" />
           </Button>
         </section>
 
-        <CompanionOffer lessonsDone={lessonsDone} />
-
-        {/* Reviews: a card when something is due, one quiet line when something is scheduled */}
-        {dueTotal > 0 ? (
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/review" })}
-            className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left"
-          >
-            <span
-              aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-bold text-primary-text"
+        {/* Reviews and the daily challenge: one row each, between rules */}
+        <div className="mt-5 border-t-2 border-edge">
+          {dueTotal > 0 ? (
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/review" })}
+              className="flex min-h-14 w-full items-center gap-3 border-b-2 border-edge py-3 text-left"
             >
-              {dueTotal}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-bold text-foreground">Today's review</span>
-              <span className="block text-xs leading-relaxed text-muted-foreground">
-                {urgency === "piling"
-                  ? `Oldest is ${maxOverdue} days overdue.`
-                  : "New scenarios, same skills."}
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-bold text-foreground">
+                  Today's review · {dueTotal} due
+                </span>
+                <span className="block text-xs leading-relaxed text-muted-foreground">
+                  {urgency === "piling"
+                    ? `Oldest is ${maxOverdue} days overdue.`
+                    : "New scenarios, same skills."}
+                </span>
               </span>
-            </span>
-            <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-          </button>
-        ) : (
-          scheduled.length > 0 && (
-            <Link
-              to="/schedule"
-              className="mt-3 flex min-h-11 items-center gap-2 px-1 text-[13px] font-semibold text-muted-foreground"
-            >
-              <Check aria-hidden className="h-4 w-4 text-success" />
-              No reviews due. {nextReviewLine(scheduled)}
-            </Link>
-          )
-        )}
+              <ArrowRight aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
+            </button>
+          ) : (
+            scheduled.length > 0 && (
+              <Link
+                to="/schedule"
+                className="flex min-h-12 items-center gap-2 border-b-2 border-edge py-2 text-[13px] font-semibold text-muted-foreground"
+              >
+                <Check aria-hidden className="h-4 w-4 text-success" />
+                No reviews due. {nextReviewLine(scheduled)}
+              </Link>
+            )
+          )}
 
-        {/* Daily challenge */}
-        {challenge && (
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/challenge" })}
-            className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left"
-          >
-            <span
-              aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-xp/15"
+          {challenge && (
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/challenge" })}
+              className="flex min-h-14 w-full items-center gap-3 border-b-2 border-edge py-3 text-left"
             >
-              <Zap className="h-5 w-5 text-xp" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-bold text-foreground">Daily challenge</span>
-              <span className="block text-xs leading-relaxed text-muted-foreground">
-                {challengeDone
-                  ? "Done for today. A new one lands tomorrow."
-                  : `One drill from ${challenge.unitTitle}. Counts toward your streak.`}
+              <Zap aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-bold text-foreground">Daily challenge</span>
+                <span className="block text-xs leading-relaxed text-muted-foreground">
+                  {challengeDone
+                    ? "Done for today. A new one lands tomorrow."
+                    : `One drill from ${challenge.unitTitle}. Counts toward your streak.`}
+                </span>
               </span>
-            </span>
-            {!challengeDone && (
-              <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-            )}
-          </button>
-        )}
+              {!challengeDone && (
+                <ArrowRight aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
+              )}
+            </button>
+          )}
+        </div>
 
-        <WeeklyRecapCard className="mt-3" />
+        <WeeklyRecapCard className="mt-4" />
 
-        {/* The seven units as one strip; the path itself lives under My Path */}
-        <section className="mt-6 border-t border-border pt-5" aria-labelledby="path-heading">
+        {/* The seven units as lines; the full map lives under My Path */}
+        <section className="mt-6" aria-labelledby="lines-heading">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 id="path-heading" className="text-lg">
-              Your path
+            <h2 id="lines-heading" className="legend text-muted-foreground">
+              Lines
             </h2>
-            <Link
-              to="/courses"
-              className="flex min-h-11 items-center text-[13px] font-bold text-primary-text"
-            >
-              Open
+            <Link to="/courses" className="legend flex min-h-11 items-center gap-1 text-foreground">
+              My Path <ArrowRight aria-hidden className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div aria-hidden className="mt-1 flex gap-1.5">
+          <ul className="space-y-1">
             {units.map((u) => (
-              <span key={u.unit.id} className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                <span
-                  className="block h-full rounded-full bg-primary"
-                  style={{
-                    width: `${u.state === "current" ? Math.max(u.pct, 35) : u.pct}%`,
-                    opacity: u.state === "current" ? 0.55 : 1,
-                  }}
-                />
-              </span>
+              <li key={u.unit.id}>
+                <Link
+                  to="/courses"
+                  className="flex min-h-10 items-center gap-3"
+                  aria-label={`Unit ${u.index + 1}, ${u.unit.title}: ${u.completed} of ${u.total} lessons`}
+                >
+                  <LineBullet unitId={u.unit.id} />
+                  <span className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+                    {u.unit.title}
+                  </span>
+                  <Stops done={u.completed} total={u.total} />
+                </Link>
+              </li>
             ))}
-          </div>
-          <p className="mt-2 text-[13px] font-semibold text-muted-foreground">
-            Unit {where.index + 1} of {units.length} · {where.unit.title} · {where.completed} of{" "}
-            {where.total} lessons
+          </ul>
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
+            {lessonsDone} of {TOTAL_LESSONS} lessons · now on line {where.index + 1}
           </p>
         </section>
       </div>

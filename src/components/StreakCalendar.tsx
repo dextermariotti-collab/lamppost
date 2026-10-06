@@ -23,24 +23,12 @@ export function StreakFlame({
 }) {
   const tier = streakTier(streak);
   const px = size ?? [18, 22, 26, 30, 34][tier]!;
-  const glow = [0, 0.18, 0.3, 0.44, 0.6][tier]!;
 
   return (
     <span className={`relative inline-flex items-center justify-center ${className ?? ""}`}>
-      {glow > 0 && (
-        <span
-          aria-hidden
-          className="absolute rounded-full blur-md"
-          style={{
-            width: px * 2,
-            height: px * 2,
-            background: `color-mix(in oklab, var(--flame) ${Math.round(glow * 100)}%, transparent)`,
-          }}
-        />
-      )}
       <Flame
         aria-hidden
-        className={tier >= 2 ? "relative animate-flame text-flame" : "relative text-flame"}
+        className="relative text-flame"
         style={{ width: px, height: px }}
         strokeWidth={2.2}
         fill={tier >= 1 ? "currentColor" : "none"}

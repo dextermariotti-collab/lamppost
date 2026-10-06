@@ -1,12 +1,11 @@
 import { ArrowRight, Flame } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { celebrateAnswer, comboBonus } from "@/components/AnswerFeedback";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { LineBullet } from "@/components/LineBullet";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { PracticeChat } from "@/components/PracticeChat";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { SuccessBurst } from "@/components/SuccessBurst";
 import { Button } from "@/components/ui/button";
 import { WrittenArgument } from "@/components/exercises/WrittenArgument";
 import { useCompanion, useSessionUser } from "@/lib/companion-store";
@@ -183,7 +182,7 @@ export function StepLesson({
         backTo="/courses"
         right={
           combo >= 2 ? (
-            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">
+            <span className="flex animate-pop-in items-center gap-1 rounded-sm bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">
               <Flame aria-hidden className="h-3.5 w-3.5" />
               {combo} in a row
             </span>
@@ -198,12 +197,14 @@ export function StepLesson({
       {phase === "steps" ? (
         <>
           <div className="px-5 pb-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
-              <span aria-hidden>{meta.emoji}</span> {unit.title}
-            </span>
-            <h1 className="mt-2 text-2xl leading-tight">{meta.title}</h1>
+            <p className="legend flex items-center gap-2 text-muted-foreground">
+              <LineBullet unitId={meta.unitId} />
+              {unit.title} / stop {((lessonNumber - 1) % 5) + 1} of 5
+            </p>
+            <h1 className="mt-2 text-[26px] leading-[1.08]">{meta.title}</h1>
           </div>
           <LessonPlayer
+            unitId={meta.unitId}
             steps={script.steps}
             onStepResolved={handleStepResolved}
             onComplete={() => setPhase(notes ? "notes" : "write")}
@@ -236,7 +237,7 @@ export function StepLesson({
               <div className="sticky bottom-3 z-20 mt-4">
                 <Button
                   onClick={() => setPhase("write")}
-                  className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                  className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
                 >
                   On to the writing <ArrowRight aria-hidden className="h-4 w-4" />
                 </Button>
@@ -266,7 +267,7 @@ export function StepLesson({
                 {(argumentGrade !== null || skippedWriting) && (
                   <Button
                     onClick={() => setPhase("explain")}
-                    className="h-12 w-full animate-pop-in rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                    className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
                   >
                     Explain it back <ArrowRight aria-hidden className="h-4 w-4" />
                   </Button>
@@ -278,7 +279,7 @@ export function StepLesson({
                       setSkippedWriting(true);
                       setPhase("explain");
                     }}
-                    className="min-h-11 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+                    className="min-h-11 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Skip the writing this time
                   </button>
@@ -310,7 +311,7 @@ export function StepLesson({
               <Button
                 onClick={finishLesson}
                 disabled={completing}
-                className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
               >
                 {lessonNumber < (course.lessons.length || TOTAL_LESSONS)
                   ? "Finish the lesson"
@@ -337,15 +338,14 @@ export function StepLesson({
         <div
           role="status"
           aria-live="polite"
-          className="lesson-complete-overlay absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-background/95 px-8 text-center backdrop-blur-sm"
+          className="lesson-complete-overlay lamp-pool absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-background px-8"
         >
-          <span className="lesson-complete-halo absolute h-72 w-72 rounded-full" />
-          <SuccessBurst />
-          <div className="lesson-complete-content relative z-30">
-            <CompanionAvatar companion={{ ...companion, expression: "happy" }} size={88} />
-            <p className="mt-5 text-sm font-bold text-primary-text">Lesson complete</p>
-            <h2 className="mt-2 text-3xl leading-tight">You worked through it.</h2>
-            <p className="mt-3 text-sm font-semibold text-muted-foreground">Progress saved</p>
+          <div className="sign w-full max-w-72 p-5">
+            <p className="legend flex items-center gap-2 text-muted-foreground">
+              <LineBullet unitId={meta.unitId} /> Lesson complete
+            </p>
+            <h2 className="mt-2 text-2xl leading-tight">{meta.title}</h2>
+            <p className="mt-3 font-mono text-xs font-bold text-muted-foreground">Progress saved</p>
           </div>
         </div>
       )}

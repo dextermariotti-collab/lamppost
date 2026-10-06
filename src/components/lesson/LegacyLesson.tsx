@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
+import { GuideMark } from "@/components/LineBullet";
 import { ArrowRight, Check, Flame, Lightbulb, Share2, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -18,10 +18,9 @@ import { Button } from "@/components/ui/button";
 import { CURRICULUM_SLUG, TOTAL_LESSONS, lessonAt, unitById, unitProgress } from "@/lib/curriculum";
 import { unitAccent } from "@/lib/unit-accent";
 import { shareUnitCard } from "@/lib/share-image";
-import { Confetti } from "@/components/Confetti";
+import { LineBullet } from "@/components/LineBullet";
 import { CountUp } from "@/components/CountUp";
 import { ProgressRing } from "@/components/ProgressRing";
-import { CompanionAura } from "@/components/CompanionAura";
 import { StreakFlame } from "@/components/StreakCalendar";
 import { useCurriculumCourse, useCurriculumLesson } from "@/lib/curriculum-store";
 import { EXERCISE_LABEL, describeExercise } from "@/lib/exercises";
@@ -125,7 +124,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           {error ? (
             <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft" role="alert">
               <p className="text-sm font-semibold text-foreground">{error}</p>
-              <Button onClick={retry} className="mt-4 h-11 w-full rounded-full">
+              <Button onClick={retry} className="mt-4 h-11 w-full rounded-sm">
                 Try again
               </Button>
             </div>
@@ -139,8 +138,8 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                     {meta.keyIdea}
                   </p>
                   <div className="mt-4 space-y-2" aria-hidden>
-                    <div className="h-3 w-4/5 animate-pulse rounded-full bg-muted" />
-                    <div className="h-3 w-3/5 animate-pulse rounded-full bg-muted" />
+                    <div className="h-3 w-4/5 animate-pulse rounded-sm bg-muted" />
+                    <div className="h-3 w-3/5 animate-pulse rounded-sm bg-muted" />
                   </div>
                 </article>
               )}
@@ -287,18 +286,10 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     return (
       <PhoneFrame showNav={false}>
         <div className="relative overflow-hidden px-5 py-8">
-          {perfect && <Confetti count={34} big={unitDone} />}
-
-          <div className="relative z-30 flex animate-pop-in flex-col items-center text-center">
-            <CompanionAura
-              companion={{ ...companion, expression: "excited" }}
-              streak={streak}
-              size={unitDone ? 128 : 104}
-              pose="cheer"
-              animate
-            />
-            <p className="mt-4 text-sm font-bold" style={{ color: accent.color }}>
-              {unitDone ? "Unit complete" : "Lesson complete"}
+          <div className="relative z-30 flex flex-col items-start">
+            <p className="legend flex items-center gap-2 text-muted-foreground">
+              <LineBullet unitId={meta?.unitId ?? "claims"} />
+              {unitDone ? "Line complete" : "Lesson complete"}
             </p>
             <h1 className="mt-2 text-3xl leading-tight">
               {unitDone ? `${unitTitle} — done.` : "You trained your reasoning."}
@@ -312,22 +303,10 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
 
           {unitDone ? (
             /* Unit trophy card, with a share image built from these real stats. */
-            <div
-              className="relative z-30 mt-6 overflow-hidden rounded-3xl border p-6 text-center"
-              style={{ background: accent.wash, borderColor: accent.border }}
-            >
-              <span
-                aria-hidden
-                className="mx-auto flex h-24 w-24 items-center justify-center rounded-full text-5xl"
-                style={{ background: "var(--card)", border: `2px solid ${accent.border}` }}
-              >
-                {unitById(meta?.unitId ?? "claims").emoji}
-              </span>
-              <p
-                className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wide"
-                style={{ color: accent.color }}
-              >
-                <Trophy className="h-3.5 w-3.5" /> Unit badge earned
+            <div className="sign relative z-30 mt-6 overflow-hidden p-6 text-center">
+              <LineBullet unitId={meta?.unitId ?? "claims"} size="xl" className="mx-auto" />
+              <p className="legend mt-4 flex items-center justify-center gap-1.5 text-muted-foreground">
+                <Trophy aria-hidden className="h-3.5 w-3.5" /> Line badge earned
               </p>
               <h2 className="mt-1 text-2xl leading-tight">{unitTitle}</h2>
               <div className="mt-4 grid grid-cols-3 divide-x divide-border/60">
@@ -347,14 +326,15 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                 onClick={() =>
                   void shareUnitCard({
                     unitTitle,
-                    emoji: unitById(meta?.unitId ?? "claims").emoji,
+                    line: accent.line,
+                    lineColor: accent.fixed,
+                    lineOn: accent.fixedOn,
                     accuracy,
                     streak,
                     lessons: unitLessonsDone?.completed ?? 0,
-                    accent: accent.fixed,
                   })
                 }
-                className="mt-5 h-11 w-full rounded-full text-sm font-semibold"
+                className="mt-5 h-11 w-full rounded-sm text-sm font-semibold"
               >
                 <Share2 className="h-4 w-4" /> Share this badge
               </Button>
@@ -384,9 +364,9 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <p className="mt-1 text-sm font-bold text-foreground">
               {Math.min(doneToday, goal)} of {goal} lessons
             </p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+            <div className="mt-2 h-2 overflow-hidden bg-muted">
               <div
-                className="h-full rounded-full bg-hero-gradient transition-all duration-700"
+                className="h-full bg-primary transition-all duration-700"
                 style={{ width: `${Math.min(100, Math.round((doneToday / goal) * 100))}%` }}
               />
             </div>
@@ -394,13 +374,13 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <ul className="mt-2 space-y-1.5">
               {practised.map((label) => (
                 <li key={label} className="flex items-center gap-2 text-[13px] font-semibold">
-                  <Check className="h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
+                  <Check className="h-4 w-4 shrink-0 rounded-sm bg-success/15 p-0.5 text-success" />
                   {label}
                 </li>
               ))}
               {argumentGrade !== null && (
                 <li className="flex items-center gap-2 text-[13px] font-semibold">
-                  <Check className="h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
+                  <Check className="h-4 w-4 shrink-0 rounded-sm bg-success/15 p-0.5 text-success" />
                   Writing an argument
                 </li>
               )}
@@ -416,7 +396,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                     params: { slug, index: String(lessonNumber + 1) },
                   })
                 }
-                className="h-12 w-full rounded-full bg-hero-gradient text-base font-semibold shadow-card"
+                className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
               >
                 Continue to the next lesson
                 <ArrowRight className="h-4 w-4" />
@@ -425,14 +405,14 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <Button
               variant="secondary"
               onClick={() => navigate({ to: "/" })}
-              className="h-12 w-full rounded-full text-base font-semibold"
+              className="h-12 w-full rounded-sm text-base font-semibold"
             >
               Back to home
             </Button>
             <Button
               variant="ghost"
               onClick={() => navigate({ to: "/courses" })}
-              className="h-10 w-full rounded-full text-sm font-bold text-muted-foreground"
+              className="h-10 w-full rounded-sm text-sm font-bold text-muted-foreground"
             >
               See my path
             </Button>
@@ -448,7 +428,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
         backTo="/courses"
         right={
           combo >= 2 ? (
-            <span className="flex animate-pop-in items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">
+            <span className="flex animate-pop-in items-center gap-1 rounded-sm bg-primary-soft px-2.5 py-1 text-xs font-bold text-primary-text">
               <Flame className="h-3.5 w-3.5" />
               {combo} in a row
             </span>
@@ -461,9 +441,9 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
       />
 
       <div className="px-5">
-        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className="h-1.5 overflow-hidden rounded-sm bg-muted">
           <div
-            className="h-full rounded-full bg-hero-gradient transition-all duration-700 ease-out"
+            className="h-full rounded-sm bg-hero-gradient transition-all duration-700 ease-out"
             style={{ width: `${stepPct}%` }}
           />
         </div>
@@ -471,18 +451,17 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           {Array.from({ length: totalPages }).map((_, i) => (
             <span
               key={i}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                i <= page ? "bg-primary" : "bg-muted"
-              }`}
+              className={`h-1 flex-1 transition-colors ${i <= page ? "bg-primary" : "bg-muted"}`}
             />
           ))}
         </div>
       </div>
 
       <div className="px-5 pt-4 pb-8">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-semibold text-accent-foreground">
-          <span aria-hidden>{lesson.emoji}</span> {unitById(meta?.unitId ?? "claims").title}
-        </span>
+        <p className="legend flex items-center gap-2 text-muted-foreground">
+          <LineBullet unitId={meta?.unitId ?? "claims"} />{" "}
+          {unitById(meta?.unitId ?? "claims").title}
+        </p>
         <h1 className="mt-3 text-3xl leading-tight">{lesson.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{lesson.subtitle}</p>
 
@@ -583,7 +562,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <button
               type="button"
               onClick={() => setSkippedWriting(true)}
-              className="mt-3 h-11 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+              className="mt-3 h-11 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
             >
               Skip the writing this time
             </button>
@@ -608,7 +587,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
               <button
                 type="button"
                 onClick={() => setSkippedWriting(true)}
-                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+                className="mt-3 h-10 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
               >
                 Skip the writing this time
               </button>
@@ -624,7 +603,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                 className="flex animate-rise-in items-start gap-3 rounded-2xl bg-card p-3 text-sm font-semibold shadow-soft"
                 style={{ animationDelay: `${i * 70}ms` }}
               >
-                <Check className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-success/15 p-0.5 text-success" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 rounded-sm bg-success/15 p-0.5 text-success" />
                 {point}
               </div>
             ))}
@@ -648,7 +627,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <Button
               onClick={() => (onSummary ? finishLesson() : setPage((p) => p + 1))}
               disabled={completing}
-              className="h-12 w-full animate-pop-in rounded-full bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
+              className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
             >
               {nextLabel}
               <ArrowRight className="h-4 w-4" />
@@ -663,7 +642,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
               <button
                 type="button"
                 onClick={() => setPage(writtenPage)}
-                className="mt-3 h-10 w-full rounded-full text-sm font-bold text-primary-text"
+                className="mt-3 h-10 w-full rounded-sm text-sm font-bold text-primary-text"
               >
                 You've got this — skip ahead to the written task
               </button>
@@ -687,7 +666,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           {page > 0 && !completing && (
             <button
               onClick={() => setPage((p) => p - 1)}
-              className="mt-2 h-10 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+              className="mt-2 h-10 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
             >
               Back a step
             </button>
@@ -704,11 +683,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           <span className="lesson-complete-halo absolute h-72 w-72 rounded-full" />
           <SuccessBurst />
           <div className="lesson-complete-content relative z-30">
-            <CompanionAvatar
-              companion={{ ...companion, expression: "excited" }}
-              size={112}
-              pose="cheer"
-            />
+            <GuideMark size={72} />
             <p className="mt-5 text-sm font-bold text-primary-text">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You trained your reasoning.</h2>
             <p className="mt-3 text-sm font-semibold text-muted-foreground">
