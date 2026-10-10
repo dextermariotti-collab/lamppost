@@ -220,9 +220,7 @@ export function StepLesson({
         </>
       ) : (
         <div className="px-5 pt-2 pb-8">
-          {phase === "notes" && (
-            <p className="text-[11px] font-semibold text-primary-text">The idea in full</p>
-          )}
+          {phase === "notes" && <p className="legend text-muted-foreground">The idea in full</p>}
           <h1 ref={partHeading} tabIndex={-1} className="text-2xl leading-tight outline-none">
             {meta.title}
           </h1>
@@ -290,8 +288,8 @@ export function StepLesson({
 
           {phase === "explain" && (
             <div className="mt-4 space-y-4">
-              <div className="rounded-2xl bg-card p-4 shadow-soft">
-                <p className="text-[11px] font-semibold text-primary-text">To carry away</p>
+              <div className="sign p-4">
+                <p className="legend text-muted-foreground">To carry away</p>
                 <p className="mt-1 text-sm font-bold leading-snug">{script.takeaway}</p>
               </div>
               <PracticeChat

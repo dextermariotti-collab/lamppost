@@ -34,7 +34,7 @@ export function NotesView({ notes }: { notes: LessonNotes }) {
 
       <section>
         <h2 className="text-xl leading-snug">A worked example</h2>
-        <p className="mt-3 border-l-4 border-primary/40 pl-4 text-[15px] leading-relaxed">
+        <p className="mt-3 border-l-4 border-primary pl-4 text-[15px] leading-relaxed">
           {notes.example.case}
         </p>
         <ol className="mt-4 space-y-3">
@@ -42,7 +42,7 @@ export function NotesView({ notes }: { notes: LessonNotes }) {
             <li key={move.slice(0, 40)} className="flex gap-3 text-sm leading-relaxed">
               <span
                 aria-hidden
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-primary-text"
+                className="flex h-6 w-6 shrink-0 items-center justify-center bg-primary font-mono text-xs font-bold text-primary-foreground"
               >
                 {i + 1}
               </span>
@@ -64,8 +64,8 @@ export function NotesView({ notes }: { notes: LessonNotes }) {
         </div>
       </section>
 
-      <section className="rounded-3xl bg-primary-soft p-5">
-        <h2 className="flex items-center gap-1.5 font-sans text-[11px] font-semibold text-accent-foreground">
+      <section className="rounded-sm bg-primary-soft p-5">
+        <h2 className="legend flex items-center gap-1.5 font-sans text-accent-foreground">
           <MessageCircleQuestion aria-hidden className="h-3.5 w-3.5" /> A question to carry
         </h2>
         <p className="mt-2 font-display text-xl leading-snug text-accent-foreground">{notes.ask}</p>
@@ -79,8 +79,8 @@ export function NotesView({ notes }: { notes: LessonNotes }) {
 /** Something to try outside the app. Also shown on the finished screen. */
 export function TryItCard({ text, className = "" }: { text: string; className?: string }) {
   return (
-    <section className={`rounded-3xl bg-card p-5 shadow-soft ${className}`}>
-      <h2 className="flex items-center gap-1.5 font-sans text-[11px] font-semibold text-primary-text">
+    <section className={`sign p-5 ${className}`}>
+      <h2 className="legend flex items-center gap-1.5 font-sans text-muted-foreground">
         <Compass aria-hidden className="h-3.5 w-3.5" /> Try it this week
       </h2>
       <p className="mt-2 text-sm leading-relaxed">{text}</p>
