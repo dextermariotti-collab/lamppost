@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Share2 } from "lucide-react";
 import { LineBullet } from "@/components/LineBullet";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   CURRICULUM_SLUG,
   TOTAL_LESSONS,
+  UNITS,
   lessonAt,
   nextLessonIndex,
   unitById,
@@ -16,12 +17,14 @@ import {
 import { dayKey, useProgress } from "@/lib/progress";
 import { shareUnitCard } from "@/lib/share-image";
 import { unitAccent } from "@/lib/unit-accent";
+import { useUnitChecks } from "@/lib/unit-checks";
 import { TryItCard } from "./NotesView";
 
 /**
  * The end of a lesson, as an arrival board: where you are on the line, what this lesson earned,
  * today's goal, what was practised, and the next stop. Finishing a whole unit adds its line
- * badge to share. Nothing bounces or falls from the sky; the numbers are the reward.
+ * badge to share, and finishing the last of the 35 points to the final check. Nothing bounces or
+ * falls from the sky; the numbers are the reward.
  */
 export function LessonFinished({
   meta,
@@ -34,6 +37,7 @@ export function LessonFinished({
   wrote,
   takeaway,
   tryIt,
+  mapComplete = false,
 }: {
   meta: CurriculumLesson;
   lessonNumber: number;
@@ -47,6 +51,8 @@ export function LessonFinished({
   takeaway?: string | undefined;
   /** Something to try outside the app, from the lesson's notes. */
   tryIt?: string | undefined;
+  /** This lesson was the last of the 35 still to do. */
+  mapComplete?: boolean;
 }) {
   const navigate = useNavigate();
   const { state, streak, doneLessons } = useProgress();
@@ -60,6 +66,8 @@ export function LessonFinished({
   const nextIndex = nextLessonIndex(doneLessons);
   const nextMeta = doneLessons.size < TOTAL_LESSONS ? lessonAt(nextIndex) : undefined;
   const stop = ((lessonNumber - 1) % 5) + 1;
+  const { checks } = useUnitChecks();
+  const checksLeft = UNITS.filter((u) => !checks[u.id]?.after).length;
 
   return (
     <PhoneFrame showNav={false}>
@@ -69,7 +77,7 @@ export function LessonFinished({
           {unit.title} / stop {stop} of 5
         </p>
         <p className="legend mt-5 text-muted-foreground">
-          {unitDone ? "Line complete" : "Lesson complete"}
+          {mapComplete ? "Map complete" : unitDone ? "Line complete" : "Lesson complete"}
         </p>
         <h1 className="mt-1 text-[30px] leading-[1.05]">{meta.title}</h1>
         {perfect && (
@@ -93,6 +101,41 @@ export function LessonFinished({
             </div>
           ))}
         </dl>
+
+        {mapComplete && (
+          <section className="sign mt-5 p-5" aria-labelledby="map-complete">
+            <div aria-hidden className="flex gap-1">
+              {UNITS.map((u) => (
+                <LineBullet key={u.id} unitId={u.id} size="lg" />
+              ))}
+            </div>
+            <h2 id="map-complete" className="mt-3 text-xl leading-tight">
+              Every line, every stop
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              All seven lines and all {TOTAL_LESSONS} lessons. From here it's upkeep: a case a day,
+              and each line comes back after 30, 60 and 120 days so it stays sharp.
+            </p>
+            <Button
+              asChild
+              className="mt-4 h-auto min-h-12 w-full justify-between rounded-sm px-4 py-2.5 text-left"
+            >
+              <Link to="/final-check">
+                <span className="min-w-0">
+                  <span className="legend block opacity-80">
+                    {checksLeft > 0
+                      ? `${checksLeft} after-check${checksLeft === 1 ? "" : "s"} to go`
+                      : "All after-checks taken"}
+                  </span>
+                  <span className="block text-base font-bold">
+                    {checksLeft > 0 ? "Take the final check" : "See your before and after"}
+                  </span>
+                </span>
+                <ArrowRight aria-hidden className="h-5 w-5 shrink-0" />
+              </Link>
+            </Button>
+          </section>
+        )}
 
         {unitDone && (
           <section className="sign mt-5 p-5" aria-labelledby="line-badge">

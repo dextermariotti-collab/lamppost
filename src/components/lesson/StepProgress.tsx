@@ -4,13 +4,15 @@ import { unitAccent } from "@/lib/unit-accent";
 /**
  * A lesson's progress as a stretch of its unit's line: one stop per step, filled as steps are
  * finished, with the current one ringed. A visible "Step 3 of 8" says the same in words, and
- * the whole thing is a labelled progress bar for assistive technology.
+ * the whole thing is a labelled progress bar for assistive technology. A daily case mixes units,
+ * so each of its stops can take its own unit's colour instead (`stopUnits`).
  */
 export function StepProgress({
   total,
   current,
   done,
   unitId = "claims",
+  stopUnits,
 }: {
   total: number;
   /** Zero-based index of the step on screen. */
@@ -19,6 +21,8 @@ export function StepProgress({
   done: number;
   /** Whose line colour to draw it in. */
   unitId?: string;
+  /** One unit per stop, to colour each stop by its own unit. */
+  stopUnits?: readonly string[] | undefined;
 }) {
   return (
     <div className="px-5">
@@ -34,12 +38,17 @@ export function StepProgress({
       >
         <span
           aria-hidden
-          className="absolute inset-x-1 top-1/2 h-1 -translate-y-1/2 bg-[var(--line)]"
+          className={`absolute inset-x-1 top-1/2 h-1 -translate-y-1/2 ${stopUnits ? "bg-edge" : "bg-[var(--line)]"}`}
         />
         {Array.from({ length: total }).map((_, i) => (
           <span
             key={i}
             aria-hidden
+            style={
+              stopUnits?.[i]
+                ? ({ "--line": unitAccent(stopUnits[i]).color } as CSSProperties)
+                : undefined
+            }
             className={`relative rounded-full transition-colors duration-500 ${
               i === current && i >= done
                 ? "h-[18px] w-[18px] border-4 border-foreground bg-card"

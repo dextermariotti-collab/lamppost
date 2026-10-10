@@ -60,9 +60,10 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 | `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history`, per-course lesson counts, the finished lessons (`doneLessons`) |
 | `lamppost-courses-v1` | `lib/course-store.ts`, `lib/curriculum-store.ts` | the curriculum course + downloaded lesson content |
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
-| `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d) |
-| `lamppost-challenge-v1`, `-rating-v1`, `-written-v1`, `-levels-v1`, `-badges-v1`, … | `lib/challenge.ts`, `rating.ts`, `mastery.ts`, … | daily challenge, skill ratings, rubric scores, level-ups, badges |
-| `lamppost-unit-checks-v1` | `lib/unit-checks.ts` | before/after unit check results (first result kept, never overwritten; device only) |
+| `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d → 30d → 60d → 120d), including the upkeep of finished units |
+| `lamppost-case-v1` | `lib/daily-case.ts` | daily cases read: case id → local day, and each day's result (device only) |
+| `lamppost-rating-v1`, `-written-v1`, `-levels-v1`, `-badges-v1`, … | `rating.ts`, `mastery.ts`, … | skill ratings, rubric scores, level-ups, badges |
+| `lamppost-unit-checks-v1` | `lib/unit-checks.ts` | before/after/three-months-later unit check results (first result kept, never overwritten; device only) |
 
 Signed-in users additionally get a Supabase account: `useProgress` pulls the account's numbers on
 sign-in and pushes changes through the `syncProgress` server function (`lib/profile.functions.ts`).
@@ -77,8 +78,8 @@ prove a lesson was done** — see "Security model".
   `unitEntryIndex`; never treat `completed` as "everything before this is done".
 - **The day boundary is the device's local calendar day**, as a `YYYY-MM-DD` key. Use
   `dayKey()` / `shiftDay()` from `lib/days.ts` (never `toISOString().slice(0, 10)`, which is UTC).
-  History keys, `lastActiveDay`, freeze logs, review due dates and the daily challenge all use it.
-- Streak rules live in `lib/streak.ts` (pure, unit-tested): completing a lesson/review/challenge
+  History keys, `lastActiveDay`, freeze logs, review due dates and the daily case all use it.
+- Streak rules live in `lib/streak.ts` (pure, unit-tested): completing a lesson/review/case
   advances the streak once per day; missed days are covered by held freezes; every screen displays
   the streak through the same selector so they cannot disagree.
 - Server functions that need "today" take the caller's local day as an argument and sanity-check it
@@ -112,9 +113,29 @@ Each unit has a three-question check before it and a different three after it
 (`content/unit-checks.ts`): real-world posts, ads, headlines, emails and chatbot answers that no
 lesson uses, no hints, first answer only (`CheckQuestion`). The before-check closes once any of the
 unit is studied and the after-check opens when all five lessons are done (`checkAvailability`);
-results are kept the first time and never overwritten. They show on My Path and in Progress →
-Before and after, always framed as a rough signal. `content/unit-checks.test.ts` keeps them fresh
-(no overlap with lesson text), fair (answer positions and lengths) and well-formed.
+results are kept the first time and never overwritten. Ninety days after an after-check, its own three
+questions come back once (`later` phase, `LATER_CHECK_DAYS`) to see what stuck. They show on My Path,
+on Home when one is open, and in Progress → Before and after (`BeforeAfterTable`), always framed as a
+rough signal. `content/unit-checks.test.ts` keeps them fresh (no overlap with lesson text), fair
+(answer positions and lengths) and well-formed.
+
+### After the map: keeping it sharp
+Finishing all 35 lessons is a graduation, not a dead end. The lesson that completes the map says so
+on its arrival board and points to `/final-check`, which runs the after-checks not yet taken back to
+back and then shows every line's before and after. Home then switches from "Up next" to "Keep it
+sharp": today's case is the main sign, with rows for the final check, any three-months-later check
+and reviews.
+- **The daily case** (`/case`, replacing the one-drill daily challenge; `/challenge` redirects there)
+  is one real-world text and three questions from three different units, about three minutes.
+  Cases are authored data in `content/cases.ts` (format and picker in `lib/daily-case.ts`, held to
+  the lesson content rules by `content/cases.test.ts`). The picker is pure (`caseForDay`): a case
+  finished today stays today's; otherwise the next unread case in library order, preferring the one
+  with fewest units the learner hasn't started; once all are read, the one read longest ago comes
+  back. A finished case counts once for the day and the streak (`applyCase`, XP from `caseXp`), and
+  a missed question puts its lesson in the review queue. Add new cases at the end with the next id.
+- **Upkeep reviews.** When a unit is finished (`UpkeepWatcher`, idempotent, also covers saves from
+  before this existed), each of its lessons joins the review queue on the 30-day rung, then climbs
+  to 60 and 120 days (`upkeepEntries`, reason `keep`), one per day so it never arrives in a lump.
 
 ### Authored lessons and notes
 Every lesson is written as data: `content/lessons/<unit>.ts` holds its steps (schema and cross-field
@@ -125,15 +146,15 @@ to try this week). `StepLesson` plays them; problem first, explanation after, so
 the steps and only open in the `/notes` library once the lesson is done. Each lesson's last step is a
 harder "Putting it together" case. `lessons.test.ts` and `notes.test.ts` hold both to their word limits,
 answer-position balance and the content rules in `content/content-rules.ts` (made-up names, no party
-line). The generated pipeline below is the fallback (`LegacyLesson`) and still feeds reviews, the daily
-challenge and the placement check.
+line). The generated pipeline below is the fallback (`LegacyLesson`) and still feeds reviews and the
+placement check.
 
 ### Lesson content pipeline
 `lib/curriculum.ts` is the single source of truth for the 35 lessons (objective, key idea, the trap
 each drill must test, the ordered **drill plan**, and the written task type). Content is generated
 once per lesson by the AI gateway, validated by a second AI pass, and cached in
-`curriculum_lessons`; validated drills also seed the shared `drill_variants` pool that reviews, the
-daily challenge and the placement check draw from. Relevant files: `curriculum-generate.server.ts`,
+`curriculum_lessons`; validated drills also seed the shared `drill_variants` pool that reviews and the
+placement check draw from. Relevant files: `curriculum-generate.server.ts`,
 `exercise-ai.server.ts` (prompts + normalisers), `exercise-validate.server.ts`, `drills.functions.ts`,
 and `routes/api/public/warm-curriculum.ts` (token-protected warm-up endpoint). Bump
 `CONTENT_VERSION` in `curriculum-generate.server.ts` whenever prompts, drill plans or validators
@@ -174,8 +195,8 @@ or open.
 My Path (`/courses`) is the only map, drawn as a line map: each unit opens in place into its five
 lessons as stops on its line, "You are here" marks the next one, the unit checks sit at either end as
 interchanges, and a finished stop links to its notes (`/notes`, also under Progress). Home answers "what
-should I do now?" (one sign for the next lesson, a row each for reviews and the daily challenge, the seven
-lines with their stops) and the skills graph lives under Progress → Skills → Map. A finished lesson ends on
+should I do now?" (one sign for the next lesson, a row each for reviews and today's case, the seven
+lines with their stops; after the whole map, "Keep it sharp" as above) and the skills graph lives under Progress → Skills → Map. A finished lesson ends on
 an arrival board (`LessonFinished`: three numbers, today's goal, the next stop). `/course/:slug` redirects
 to My Path. Onboarding is three screens (intro, one real question, setup); a companion can be chosen from
 Profile.

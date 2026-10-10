@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { AnswerFeedbackHost } from "../components/AnswerFeedback";
 import { ConsentGate } from "../components/ConsentGate";
 import { RewardHost } from "../components/RewardHost";
+import { UpkeepWatcher } from "../components/UpkeepWatcher";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../lib/theme";
 
@@ -137,6 +138,7 @@ function RootComponent() {
         <Outlet />
         <AnswerFeedbackHost />
         <RewardHost />
+        <UpkeepWatcher />
         <ConsentGate />
       </ThemeProvider>
     </QueryClientProvider>

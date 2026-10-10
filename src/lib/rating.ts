@@ -7,8 +7,7 @@ import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
  * Every drill answered nudges a simple Elo-style rating for that lesson's skill.
  * The rating decides which difficulty band (1-3) of pooled drill gets served
  * next, two right in a row steps up, two misses step down and offer a hint, and
- * the weakest / least-recently-practised skills are what reviews and the daily
- * challenge reach for first.
+ * the weakest / least-recently-practised skills are what reviews reach for first.
  */
 
 const KEY = "lamppost-rating-v1";
@@ -141,8 +140,8 @@ export type SkillNeed = {
 };
 
 /**
- * Weakest and least-recently-practised unlocked skills first. Used by reviews,
- * the daily challenge and the home "Continue" recommendation.
+ * Weakest and least-recently-practised unlocked skills first. Used by reviews and
+ * the home "Continue" recommendation.
  */
 export function skillsToPractise(done: ReadonlySet<number>): SkillNeed[] {
   const store = readStore();

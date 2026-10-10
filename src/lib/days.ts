@@ -3,7 +3,7 @@
  *
  * A "day key" is a YYYY-MM-DD string naming a calendar date. Every user-facing
  * notion of "today" (streaks, daily goal, review due dates, the calendar, the
- * daily challenge) is the device's LOCAL calendar date, so it rolls over at the
+ * daily case) is the device's LOCAL calendar date, so it rolls over at the
  * learner's midnight and not at 8pm Eastern / 5pm Pacific like the UTC date.
  */
 

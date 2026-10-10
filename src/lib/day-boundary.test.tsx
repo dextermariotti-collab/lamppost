@@ -211,22 +211,26 @@ describe("review due dates", () => {
   });
 });
 
-describe("daily challenge", () => {
+describe("daily case", () => {
   it("resets at local midnight", async () => {
     at(NINE_THIRTY_PM);
-    const { recordChallenge, useDailyChallenge } = await import("./challenge");
-    recordChallenge(true);
-    const saved = JSON.parse(window.localStorage.getItem("lamppost-challenge-v1") ?? "{}");
-    expect(saved.day).toBe("2026-09-23");
-
-    const evening = renderHook(() => useDailyChallenge(new Set([0, 1, 2, 3, 4])));
-    expect(evening.result.current.doneToday).toBe(true);
+    const { recordCase, useDailyCase } = await import("./daily-case");
+    const { DAILY_CASES } = await import("@/content/cases");
+    const done = new Set([0, 1, 2, 3, 4]);
+    const evening = renderHook(() => useDailyCase(DAILY_CASES, done));
+    const first = evening.result.current.pick!.case.id;
+    act(() => {
+      recordCase(first, 2, 3);
+    });
+    const saved = JSON.parse(window.localStorage.getItem("lamppost-case-v1") ?? "{}");
+    expect(saved.history[first]).toBe("2026-09-23");
+    expect(evening.result.current.pick?.done).toBe(true);
     cleanup();
 
     at(PAST_MIDNIGHT);
-    const morning = renderHook(() => useDailyChallenge(new Set([0, 1, 2, 3, 4])));
-    expect(morning.result.current.doneToday).toBe(false);
-    expect(morning.result.current.challenge?.day).toBe("2026-09-24");
+    const morning = renderHook(() => useDailyCase(DAILY_CASES, done));
+    expect(morning.result.current.pick?.done).toBe(false);
+    expect(morning.result.current.pick?.case.id).not.toBe(first);
   });
 });
 

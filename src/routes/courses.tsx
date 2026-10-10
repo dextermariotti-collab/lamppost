@@ -244,7 +244,9 @@ function UnitCard({
 function CheckStop({ unit, checks }: { unit: UnitProgress; checks: UnitCheckResults | undefined }) {
   const before = checkAvailability("before", unit, checks);
   const after = checkAvailability("after", unit, checks);
-  const phase = before === "open" ? "before" : after === "open" ? "after" : null;
+  const later = checkAvailability("later", unit, checks);
+  const phase =
+    before === "open" ? "before" : after === "open" ? "after" : later === "open" ? "later" : null;
   const line = checkLine(checks);
   const marker = (
     <span
@@ -264,14 +266,20 @@ function CheckStop({ unit, checks }: { unit: UnitProgress; checks: UnitCheckResu
           {marker}
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold text-foreground">
-              {phase === "before" ? "Before you start: a quick check" : "Check what changed"}
+              {phase === "before"
+                ? "Before you start: a quick check"
+                : phase === "after"
+                  ? "Check what changed"
+                  : "Three months on: what stuck?"}
             </span>
             <span className="block text-[11px] text-muted-foreground">
               {phase === "before"
                 ? "Three real-world questions, so you can see what the line changes."
-                : line
-                  ? `${line}. Three new questions.`
-                  : "Three new real-world questions."}
+                : phase === "later"
+                  ? "Your after-check's three questions, once more."
+                  : line
+                    ? `${line}. Three new questions.`
+                    : "Three new real-world questions."}
             </span>
           </span>
           <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-foreground" />

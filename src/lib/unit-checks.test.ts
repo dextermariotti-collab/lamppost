@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  LATER_CHECK_DAYS,
   checkAvailability,
   checkLine,
+  laterCheckDue,
   overallChange,
   readChecks,
   recordCheck,
@@ -51,6 +53,31 @@ describe("checkAvailability", () => {
   it("never offers a check twice", () => {
     expect(checkAvailability("before", fresh, { before: taken })).toBe("taken");
     expect(checkAvailability("after", done, { after: taken })).toBe("taken");
+    expect(checkAvailability("later", done, { after: taken, later: taken })).toBe("taken");
+  });
+
+  it("opens the three-months-later check 90 days after the after-check, and not before", () => {
+    expect(LATER_CHECK_DAYS).toBe(90);
+    const after = { right: 3, total: 3, day: "2026-10-01" };
+    expect(checkAvailability("later", done, undefined, "2027-06-01")).toBe("not-yet");
+    expect(checkAvailability("later", done, { after }, "2026-12-29")).toBe("not-yet");
+    expect(checkAvailability("later", done, { after }, "2026-12-30")).toBe("open");
+  });
+});
+
+describe("laterCheckDue", () => {
+  const after = (day: string) => ({ after: { right: 2, total: 3, day } });
+
+  it("lists the units whose three-months-later check is open, in curriculum order", () => {
+    const store = {
+      evidence: after("2026-07-01"),
+      claims: after("2026-06-01"),
+      fallacies: after("2026-10-01"),
+      biases: { ...after("2026-06-01"), later: { right: 3, total: 3, day: "2026-09-01" } },
+    };
+    expect(
+      laterCheckDue(store, ["claims", "evidence", "fallacies", "biases"], "2026-10-05"),
+    ).toEqual(["claims", "evidence"]);
   });
 });
 
@@ -70,6 +97,16 @@ describe("what the results say", () => {
     expect(checkLine({ before: { right: 2, total: 3, day: "d" } })).toBe(
       "Before 2 of 3 · after-check still to come",
     );
+  });
+
+  it("adds the three-months-later result when there is one", () => {
+    expect(
+      checkLine({
+        before: { right: 1, total: 3, day: "d" },
+        after: { right: 3, total: 3, day: "d" },
+        later: { right: 2, total: 3, day: "d" },
+      }),
+    ).toBe("Before 1 of 3 · after 3 of 3 · 3 months on 2 of 3");
   });
 
   it("totals only the units checked both times", () => {

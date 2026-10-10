@@ -7,8 +7,10 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { UNIT_CHECKS } from "@/content/unit-checks";
 import { CURRICULUM_SLUG, unitEntryIndex, unitProgress } from "@/lib/curriculum";
+import { dayKey, daysBetween } from "@/lib/days";
 import { useProgress } from "@/lib/progress";
 import {
+  LATER_CHECK_DAYS,
   checkAvailability,
   isCheckPhase,
   recordCheck,
@@ -28,7 +30,7 @@ export const Route = createFileRoute("/check/$unitId/$phase")({
       {
         name: "description",
         content:
-          "Three real-world questions before and after a unit, to see whether a reasoning skill carries over.",
+          "Three real-world questions before and after a unit, and again three months later, to see whether a reasoning skill carries over.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -40,7 +42,8 @@ function UnitCheckScreen() {
   const { unitId, phase: rawPhase } = Route.useParams();
   const phase = rawPhase as CheckPhase;
   const check = UNIT_CHECKS[unitId]!;
-  const items = check[phase];
+  // Three months on, the after-check's own questions come back, to see what stuck.
+  const items = phase === "later" ? check.after : check[phase];
   const { doneLessons, hydrated } = useProgress();
   const { checks, hydrated: checksReady } = useUnitChecks();
   const unit = useMemo(
@@ -53,7 +56,10 @@ function UnitCheckScreen() {
   const [right, setRight] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const title = `${phase === "before" ? "Before" : "After"} Unit ${unit.index + 1}`;
+  const title =
+    phase === "later"
+      ? `Unit ${unit.index + 1}, 3 months on`
+      : `${phase === "before" ? "Before" : "After"} Unit ${unit.index + 1}`;
   const results = checks[unitId];
   const availability = checkAvailability(phase, unit, results);
   const firstLesson = unitEntryIndex(unit.index, doneLessons) + 1;
@@ -69,15 +75,20 @@ function UnitCheckScreen() {
   if (finished || availability === "taken") {
     const mine = finished ? { right, total: items.length } : results![phase]!;
     const before = results?.before;
+    const after = results?.after;
     return (
       <PhoneFrame showNav={false}>
         <ScreenHeader title={title} description={unit.unit.title} backTo="/courses" />
         <div className="px-5 pb-10">
-          <section className="rounded-3xl border border-border bg-card p-5 text-center">
-            <p className="text-sm font-semibold text-muted-foreground">
-              {phase === "before" ? "Where you're starting" : "After the unit"}
+          <section className="sign p-5 text-center">
+            <p className="legend text-muted-foreground">
+              {phase === "before"
+                ? "Where you're starting"
+                : phase === "after"
+                  ? "After the unit"
+                  : "Three months on"}
             </p>
-            <p className="mt-1 font-display text-5xl font-bold">
+            <p className="mt-1 font-mono text-5xl font-bold">
               {mine.right} of {mine.total}
             </p>
             {phase === "after" && before && (
@@ -85,10 +96,17 @@ function UnitCheckScreen() {
                 Before the unit: {before.right} of {before.total}.
               </p>
             )}
+            {phase === "later" && after && (
+              <p className="mt-3 text-sm font-semibold">
+                Straight after the unit: {after.right} of {after.total}.
+              </p>
+            )}
             <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
               {phase === "before"
                 ? "Three new questions wait for you at the end of the unit, so you can see what changed."
-                : "The questions were different each time, so read any change as a rough signal, not a grade."}
+                : phase === "after"
+                  ? `The questions were different each time, so read any change as a rough signal, not a grade. In ${LATER_CHECK_DAYS / 30} months these three come back once more, to see what stuck.`
+                  : "The same three questions as your after-check, so this shows what stuck. A rough signal, not a grade."}
             </p>
           </section>
           {phase === "before" ? (
@@ -115,10 +133,12 @@ function UnitCheckScreen() {
       <PhoneFrame showNav={false}>
         <ScreenHeader title={title} description={unit.unit.title} backTo="/courses" />
         <div className="px-5 pb-10">
-          <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
-            {availability === "not-yet"
-              ? `This check opens once the unit's ${unit.total} lessons are done. You've done ${unit.completed}.`
-              : "The before-check only counts before any of the unit is studied, so it has closed. The after-check opens when the unit is done."}
+          <p className="sign p-5 text-sm text-muted-foreground">
+            {phase === "later"
+              ? laterNotYet(results?.after?.day)
+              : availability === "not-yet"
+                ? `This check opens once the unit's ${unit.total} lessons are done. You've done ${unit.completed}.`
+                : "The before-check only counts before any of the unit is studied, so it has closed. The after-check opens when the unit is done."}
           </p>
           <Button asChild variant="outline" className="mt-4 h-11 w-full rounded-sm">
             <Link to="/courses">Back to your path</Link>
@@ -134,7 +154,11 @@ function UnitCheckScreen() {
     <PhoneFrame showNav={false}>
       <ScreenHeader
         title={title}
-        description={`${unit.unit.title}. Three real-world questions, none from the lessons. No hints, and only your first answer counts.`}
+        description={
+          phase === "later"
+            ? `${unit.unit.title}. The same three questions as your after-check, three months on. No hints, and only your first answer counts.`
+            : `${unit.unit.title}. Three real-world questions, none from the lessons. No hints, and only your first answer counts.`
+        }
         backTo="/courses"
       />
       <div className="px-5 pb-10">
@@ -168,4 +192,11 @@ function UnitCheckScreen() {
       </div>
     </PhoneFrame>
   );
+}
+
+function laterNotYet(afterDay: string | undefined) {
+  if (!afterDay)
+    return "This check asks the after-check's questions again three months later. Take the after-check first.";
+  const days = LATER_CHECK_DAYS - daysBetween(afterDay, dayKey());
+  return `This check asks your after-check's questions again three months later, to see what stuck. It opens in ${days} day${days === 1 ? "" : "s"}.`;
 }

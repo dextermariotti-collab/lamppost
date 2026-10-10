@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, HelpCircle, Sparkles, XCircle } from "lucide-react";
+import { ArrowRight, HelpCircle, RefreshCw, Sparkles, XCircle } from "lucide-react";
 import { useMemo } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -56,9 +56,16 @@ function whenLabel(item: ScheduledDrill) {
   return `in ${item.dueInDays}d`;
 }
 
+const REASON: Record<ScheduledDrill["reason"], string> = {
+  missed: "missed it — comes back soonest",
+  unsure: "answered unsure — worth another look",
+  practice: "right last time — coming back less often",
+  keep: "a finished line — keeping it sharp",
+};
+
 function ReasonChip({ item }: { item: ScheduledDrill }) {
   const missed = item.reason === "missed";
-  const Icon = missed ? XCircle : HelpCircle;
+  const Icon = missed ? XCircle : item.reason === "unsure" ? HelpCircle : RefreshCw;
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-bold ${
@@ -66,7 +73,7 @@ function ReasonChip({ item }: { item: ScheduledDrill }) {
       }`}
     >
       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
-      {missed ? "missed it — comes back soonest" : "answered unsure — worth another look"}
+      {REASON[item.reason]}
     </span>
   );
 }
@@ -81,7 +88,7 @@ function ReviewSchedule() {
     <PhoneFrame>
       <ScreenHeader
         title="What comes back next"
-        description={`Every drill you miss, or answer without much confidence, gets a return date: ${DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when you don't. Reviews always use a new scenario for the same skill.`}
+        description={`Every drill you miss, or answer without much confidence, gets a return date: ${DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when you don't. Each lesson of a finished line comes back after 30, 60 and 120 days too. Reviews always use a new scenario for the same skill.`}
         backTo="/"
       />
       <div className="min-h-full px-5 pb-10">

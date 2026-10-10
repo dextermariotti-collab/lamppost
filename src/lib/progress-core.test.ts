@@ -6,6 +6,7 @@ import {
   applyUnlockLessons,
   doneLessonIndexes,
   applyReview,
+  applyCase,
   deriveInsights,
   gemsEarned,
   mergeAccountProgress,
@@ -135,6 +136,17 @@ describe("applyReview", () => {
     expect([right.xp, wrong.xp]).toEqual([20, 5]);
     expect(right.streak).toBe(1);
     expect(right.history["2026-09-23"]).toBe(1);
+  });
+});
+
+describe("applyCase", () => {
+  it("counts once for the day and the streak, and pays for each question right", () => {
+    const all = applyCase(DEFAULT_STATE, 3, "2026-09-23");
+    const none = applyCase(DEFAULT_STATE, 0, "2026-09-23");
+    expect([all.xp, none.xp]).toEqual([35, 5]);
+    expect(all.streak).toBe(1);
+    expect(all.history["2026-09-23"]).toBe(1);
+    expect(applyCase(DEFAULT_STATE, 9, "2026-09-23").xp).toBe(35);
   });
 });
 

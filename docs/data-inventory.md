@@ -54,10 +54,13 @@ generated course on-device and sent to the AI provider for that request.
 ## Device-local storage (not on the server)
 
 `localStorage` keys prefixed `lamppost-`: generated courses and lesson content, lesson/review
-progress, spaced-repetition schedule, streak/XP cache (plus the retired gem fields), the
-before-and-after unit check results (`lamppost-unit-checks-v1`: right/total/day per unit and
-phase, never sent to the server), companion selection, onboarding state, and one-time
-celebration flags. Cleared on account deletion from within the app and by
+progress, spaced-repetition schedule (including the 30/60/120-day upkeep of finished units),
+streak/XP cache (plus the retired gem fields), the before-and-after unit check results
+(`lamppost-unit-checks-v1`: right/total/day per unit for the before, after and three-months-later
+checks, never sent to the server), the daily cases read (`lamppost-case-v1`: case id, local day
+and how many of its three questions were right, never sent to the server; the streak and XP it
+earns travel with the rest of the progress sync), companion selection, onboarding state, and
+one-time celebration flags. Cleared on account deletion from within the app and by
 clearing browser storage.
 
 ## What leaves the app

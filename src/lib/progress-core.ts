@@ -274,11 +274,23 @@ export function applyUnlockLessons(
 
 /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
 export function applyReview(prev: ProgressState, correct: boolean, today: string): ProgressState {
+  return applyPractised(prev, correct ? 20 : 5, today);
+}
+
+/** XP for a daily case: something for reading it, more for each question right. */
+export const caseXp = (right: number) => 5 + 10 * Math.max(0, Math.min(right, 3));
+
+/** A daily case: counts for the day and the streak once, like a review. */
+export function applyCase(prev: ProgressState, right: number, today: string): ProgressState {
+  return applyPractised(prev, caseXp(right), today);
+}
+
+function applyPractised(prev: ProgressState, xp: number, today: string): ProgressState {
   const advanced = advanceStreak(prev, today);
   const streak = advanced.streak;
   return {
     ...prev,
-    xp: prev.xp + (correct ? 20 : 5),
+    xp: prev.xp + xp,
     streak,
     longestStreak: Math.max(prev.longestStreak, streak),
     freezes: advanced.freezes,

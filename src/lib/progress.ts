@@ -14,6 +14,7 @@ import {
   applyLessonComplete,
   applyPractice,
   applyReview,
+  applyCase,
   applyUnlockLessons,
   doneLessonIndexes,
   effectiveStreak,
@@ -237,6 +238,12 @@ export function useProgress() {
     [update],
   );
 
+  /** A finished daily case: one activity for the day, paid by how many questions were right. */
+  const completeCase = useCallback(
+    (right: number) => update((prev) => applyCase(prev, right, dayKey())),
+    [update],
+  );
+
   const recordPractice = useCallback(
     (verdict: "solid" | "shaky" | "revisit", connectionMade: boolean) =>
       update((prev) => applyPractice(prev, verdict, connectionMade)),
@@ -283,6 +290,7 @@ export function useProgress() {
     unlockLessons,
     completeLesson,
     recordReview,
+    completeCase,
     recordPractice,
     recordExercise,
     recordArgument,

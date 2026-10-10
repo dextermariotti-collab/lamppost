@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CaseRouteImport } from './routes/case'
 import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
+import { Route as FinalCheckRouteImport } from './routes/final-check'
 import { Route as LeagueRouteImport } from './routes/league'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
@@ -56,6 +58,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CaseRoute = CaseRouteImport.update({
+  id: '/case',
+  path: '/case',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChallengeRoute = ChallengeRouteImport.update({
   id: '/challenge',
   path: '/challenge',
@@ -79,6 +86,11 @@ const CoursesRoute = CoursesRouteImport.update({
 const DebatesRoute = DebatesRouteImport.update({
   id: '/debates',
   path: '/debates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinalCheckRoute = FinalCheckRouteImport.update({
+  id: '/final-check',
+  path: '/final-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeagueRoute = LeagueRouteImport.update({
@@ -230,11 +242,13 @@ const CourseSlugLessonIndexRoute = CourseSlugLessonIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/case': typeof CaseRoute
   '/challenge': typeof ChallengeRoute
   '/companion': typeof CompanionRoute
   '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -268,11 +282,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/case': typeof CaseRoute
   '/challenge': typeof ChallengeRoute
   '/companion': typeof CompanionRoute
   '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -307,11 +323,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/case': typeof CaseRoute
   '/challenge': typeof ChallengeRoute
   '/companion': typeof CompanionRoute
   '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -347,11 +365,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/case'
     | '/challenge'
     | '/companion'
     | '/consent'
     | '/courses'
     | '/debates'
+    | '/final-check'
     | '/league'
     | '/onboarding'
     | '/premium'
@@ -385,11 +405,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/case'
     | '/challenge'
     | '/companion'
     | '/consent'
     | '/courses'
     | '/debates'
+    | '/final-check'
     | '/league'
     | '/onboarding'
     | '/premium'
@@ -423,11 +445,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/case'
     | '/challenge'
     | '/companion'
     | '/consent'
     | '/courses'
     | '/debates'
+    | '/final-check'
     | '/league'
     | '/onboarding'
     | '/premium'
@@ -462,11 +486,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CaseRoute: typeof CaseRoute
   ChallengeRoute: typeof ChallengeRoute
   CompanionRoute: typeof CompanionRoute
   ConsentRoute: typeof ConsentRoute
   CoursesRoute: typeof CoursesRoute
   DebatesRoute: typeof DebatesRoute
+  FinalCheckRoute: typeof FinalCheckRoute
   LeagueRoute: typeof LeagueRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
@@ -514,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/case': {
+      id: '/case'
+      path: '/case'
+      fullPath: '/case'
+      preLoaderRoute: typeof CaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/challenge': {
       id: '/challenge'
       path: '/challenge'
@@ -547,6 +580,13 @@ declare module '@tanstack/react-router' {
       path: '/debates'
       fullPath: '/debates'
       preLoaderRoute: typeof DebatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/final-check': {
+      id: '/final-check'
+      path: '/final-check'
+      fullPath: '/final-check'
+      preLoaderRoute: typeof FinalCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/league': {
@@ -758,11 +798,13 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CaseRoute: CaseRoute,
   ChallengeRoute: ChallengeRoute,
   CompanionRoute: CompanionRoute,
   ConsentRoute: ConsentRoute,
   CoursesRoute: CoursesRoute,
   DebatesRoute: DebatesRoute,
+  FinalCheckRoute: FinalCheckRoute,
   LeagueRoute: LeagueRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,

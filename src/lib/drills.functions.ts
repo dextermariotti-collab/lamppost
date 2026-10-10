@@ -7,8 +7,7 @@ import { sayHypotheticalOnce } from "./hypothetical";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
 /**
- * Serves ONE fresh drill of a skill + type for reviews, the daily challenge and
- * the placement check.
+ * Serves ONE fresh drill of a skill + type for reviews and the placement check.
  *
  * Everything is served from a pre-validated pool so the learner never waits on
  * a model call and never sees a generation failure. Within the pool the pick is

@@ -66,8 +66,15 @@ export function StepLesson({
   const course = useCurriculumCourse();
   const { companion } = useCompanion();
   const { userId } = useSessionUser();
-  const { state, hydrated, completeLesson, recordPractice, recordExercise, recordArgument } =
-    useProgress();
+  const {
+    state,
+    hydrated,
+    doneLessons,
+    completeLesson,
+    recordPractice,
+    recordExercise,
+    recordArgument,
+  } = useProgress();
   const { record } = useLessonAttempts(meta.id);
   const unit = unitById(meta.unitId);
 
@@ -78,12 +85,18 @@ export function StepLesson({
   const [skippedWriting, setSkippedWriting] = useState(false);
   const [completing, setCompleting] = useState(false);
 
-  // XP when the lesson opened, so the finish can show what this lesson earned.
+  // XP and lessons done when the lesson opened, so the finish can show what this lesson earned
+  // and whether it was the last stop on the whole map.
   const xpAtStart = useRef<number | null>(null);
+  const doneAtStart = useRef<number | null>(null);
   const xpNow = useRef(state.xp);
+  const doneNow = useRef(doneLessons.size);
   xpNow.current = state.xp;
+  doneNow.current = doneLessons.size;
   useEffect(() => {
-    if (hydrated) xpAtStart.current = xpNow.current;
+    if (!hydrated) return;
+    xpAtStart.current = xpNow.current;
+    doneAtStart.current = doneNow.current;
   }, [hydrated, meta.id]);
 
   // Level-ups and badges wait until the lesson is over rather than interrupting a step.
@@ -165,6 +178,9 @@ export function StepLesson({
         wrote={argumentGrade !== null}
         takeaway={script.takeaway}
         tryIt={notes?.tryIt}
+        mapComplete={
+          doneLessons.size >= TOTAL_LESSONS && (doneAtStart.current ?? 0) < TOTAL_LESSONS
+        }
       />
     );
   }

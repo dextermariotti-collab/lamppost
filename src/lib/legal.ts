@@ -95,7 +95,7 @@ export const PRIVACY: LegalDoc = {
       heading: "What is sent to AI",
       review: true,
       body: [
-        `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, and the extra practice drills used in reviews and the daily challenge. When you use one, the text you typed for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back.`,
+        `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, and the extra practice drills used in reviews. When you use one, the text you typed for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back.`,
         `We send it through the Lovable AI Gateway, which at the time of writing routes to a Google Gemini model. We don't send your email, name, handle, friends or account history. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
         "The lessons themselves are written in advance and are not generated for you. AI-written replies are labelled in the app.",
         "[CONFIRM: whether the AI provider keeps or trains on requests sent through the gateway. Update this paragraph once confirmed.]",
@@ -123,7 +123,7 @@ export const PRIVACY: LegalDoc = {
       body: [
         "By default your profile is minimal: other people can see your display name and your companion, and nothing else.",
         "If you turn on \"Share my progress with friends\" (in Settings or on the Friends screen), people you have accepted as friends can also see your streak, XP, badges and league tier, and you appear in your friends' weekly league. People you haven't accepted as friends never see them.",
-        "When you start a shared streak with a friend, that friend sees the streak and whether you have done something today, even if you don\'t share your progress more widely.",
+        "When you start a shared streak with a friend, that friend sees the streak and whether you have done something today, even if you don't share your progress more widely.",
         "If someone blocks you, you can no longer find or add them, and you aren't told. If someone reports you, a person at [COMPANY NAME] reads the report; we don't tell you who sent it.",
         "You can remove a friend, block someone, or report someone at any time. There is no messaging. The only text of yours another person can see is your case in a debate you chose to take part in, and only once both sides have written theirs.",
       ],
@@ -351,7 +351,7 @@ export const AI_CONTENT: LegalDoc = {
             "The explain-it-back chat after a lesson.",
             "Feedback and scores on the short arguments you write.",
             "Debate topics and the scoring of both sides.",
-            "Extra practice drills in reviews, the daily challenge and the placement check.",
+            "Extra practice drills in reviews and the placement check.",
           ],
         },
         'These are marked with an "AI-generated" label. The lessons themselves are written in advance and are not generated as you use the app.',

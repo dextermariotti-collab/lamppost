@@ -66,12 +66,7 @@ export function RewardHost() {
           <div className="relative z-30 flex items-center gap-3">
             <BadgeIcon icon={badge.icon} tier={tier} size={46} />
             <div className="min-w-0">
-              <p
-                className="text-[11px] font-bold uppercase tracking-wide"
-                style={{ color: TIER_STYLE[tier].text }}
-              >
-                {TIER_STYLE[tier].label} unlocked
-              </p>
+              <p className="legend text-muted-foreground">{TIER_STYLE[tier].label} unlocked</p>
               <p className="truncate text-sm font-bold text-foreground">{badge.name}</p>
               <p className="truncate text-xs text-muted-foreground">{badge.description}</p>
             </div>

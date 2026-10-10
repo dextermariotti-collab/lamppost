@@ -275,6 +275,39 @@ The look you chose from the seven directions: transit signage by day and a lit s
 - **Needs you:** look at it on your own phone at night. The lamplight is deliberately faint; if you'd like
   more or less glow, it's one value (`--lamp-pool` in `src/styles.css`).
 
+## Follow-up: what happens after the 35 lessons
+
+Before this, finishing the course left Home showing "Curriculum complete" over lesson 35, with a
+button that replayed it. Now:
+
+- **Finishing is a graduation.** The lesson that completes the map says "Map complete", shows all
+  seven lines, and offers the **final check**: every after-check not yet taken, one line after
+  another, then a table of each line's before and after (and three months on, once there is one).
+  Results are saved line by line, so it can be done in sittings.
+- **Home changes once everything is done.** "Up next" becomes "Keep it sharp": today's case is the
+  main sign, with rows for the final check, any three-months-later check, and reviews. Any lesson can
+  still be played again from My Path.
+- **A case a day replaces the one-drill daily challenge.** One real-world text (an advert, a post, an
+  email, a chatbot answer, a council notice...) and three questions about it from three different
+  lines, about three minutes. It counts for the streak like the challenge did, pays 5 XP plus 10 per
+  right answer, and a missed question puts that lesson back in your reviews. Learners who are still
+  in the course get it too, as a row on Home, starting with the cases closest to what they've
+  studied. **28 cases are written** (four weeks), covering all 35 lessons. The old /challenge link
+  goes to today's case.
+- **Every finished line comes back.** When a unit is done, each of its five lessons returns as a
+  fresh review drill after 30 days, then 60, then 120, even if nothing was missed, one a day so they
+  never pile up. Missed drills now also stretch out to 120 days instead of stopping at 14.
+- **Three months on.** Ninety days after a unit's after-check, the same three questions come back
+  once, to see what stuck. It shows on Home, on My Path and in Progress.
+- **Checked:** new logic is unit-tested (which case comes up on which day, the upkeep schedule, the
+  three-month check, the case's XP and streak), the cases are held to the same rules as the lessons
+  (made-up names, no party line, answers spread across positions, nothing reused from the lessons or
+  checks), and every new screen was played through in the browser by day and by night.
+- **Needs you:** after four weeks of daily use, a learner has read every case and the oldest one comes
+  back. **New cases need writing, about seven a week**, to keep it fresh: add them to the end of
+  `src/content/cases.ts` (the tests will tell you if one breaks a rule). The privacy policy no longer
+  says the daily challenge uses AI drills, because the cases are written by hand.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

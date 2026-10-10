@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Target, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeShelf } from "@/components/BadgeShelf";
+import { BeforeAfterTable } from "@/components/BeforeAfterTable";
 import { DisclosureRow, LinkRow } from "@/components/DisclosureRow";
 import { MilestoneCard } from "@/components/MilestoneCard";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -185,19 +186,11 @@ function ProgressScreen() {
           >
             <p className="text-xs text-muted-foreground">
               Real-world questions none of the lessons use, different before and after, first answer
-              only. Read a change as a rough signal, not a grade. Start one from a unit on My Path.
+              only. Three months after a unit, its after-check comes back once more to see what
+              stuck. Read a change as a rough signal, not a grade. Start one from a unit on My Path.
             </p>
             {checkedUnits.length > 0 && (
-              <ul className="mt-3 space-y-2">
-                {checkedUnits.map((u) => (
-                  <li key={u.id} className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="font-bold">{u.title}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {checkLine(checks[u.id])}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <BeforeAfterTable units={checkedUnits} checks={checks} className="mt-3" />
             )}
           </DisclosureRow>
 

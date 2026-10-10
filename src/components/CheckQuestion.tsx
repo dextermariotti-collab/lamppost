@@ -25,18 +25,15 @@ export function CheckQuestion({
   const whyNot = picked !== null && !right ? item.options[picked]?.whyNot : undefined;
 
   return (
-    <section
-      aria-labelledby={headingId}
-      className="animate-rise-in rounded-3xl border border-border bg-card p-5"
-    >
-      <p className="text-[11px] font-semibold text-primary-text">
+    <section aria-labelledby={headingId} className="sign animate-rise-in p-5">
+      <p className="legend text-muted-foreground">
         Question {number} of {total}
       </p>
       <h2 id={headingId} className="mt-1 text-xl leading-snug">
         {item.prompt}
       </h2>
       {item.stimulus && (
-        <blockquote className="mt-4 rounded-2xl bg-primary-soft p-4 text-[15px] font-semibold leading-relaxed text-accent-foreground">
+        <blockquote className="mt-4 rounded-sm bg-primary-soft p-4 text-[15px] font-semibold leading-relaxed text-accent-foreground">
           {item.stimulus}
         </blockquote>
       )}

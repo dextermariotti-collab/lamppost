@@ -8,7 +8,7 @@ import { playCue } from "@/lib/feedback";
  * companion reacts, and the XP earned flies up towards the header counter.
  *
  * Any screen can fire it with `celebrateAnswer(...)`, so drills in lessons,
- * reviews and the daily challenge all feel the same.
+ * reviews and the daily case all feel the same.
  */
 
 export type AnswerCelebration = {

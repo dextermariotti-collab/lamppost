@@ -1,0 +1,148 @@
+// @vitest-environment jsdom
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+  caseForDay,
+  caseProblems,
+  caseXp,
+  readCaseStore,
+  recordCase,
+  studiedUnits,
+  type DailyCase,
+} from "./daily-case";
+
+beforeEach(() => window.localStorage.clear());
+
+const q = (id: string, lessonId: string, correct = 0): DailyCase["questions"][number] => ({
+  lessonId,
+  step: {
+    id,
+    kind: "choice",
+    prompt: "Which is it?",
+    options: [{ text: "This one" }, { text: "That one", whyNot: "No." }],
+    correct,
+    why: "Because.",
+  },
+});
+
+const text =
+  "Our new kettle boils in half the time, according to a survey of our happiest customers. Nine out of ten people who wrote in said they would never go back. Order today, because stock is running low and prices go up next week for everyone who waits.";
+
+const make = (id: string, lessons: [string, string, string]): DailyCase => ({
+  id,
+  source: "advert",
+  title: "A kettle",
+  text,
+  questions: [q("a", lessons[0]), q("b", lessons[1]), q("c", lessons[2])],
+  takeaway: "Ask who was asked.",
+});
+
+const mixed = make("case-001", [
+  "claims-the-actual-claim",
+  "evidence-types",
+  "probability-base-rates",
+]);
+const early = make("case-002", [
+  "claims-hidden-assumptions",
+  "evidence-anecdote-vs-data",
+  "fallacies-adhominem-strawman",
+]);
+const late = make("case-003", [
+  "media-ai-answers",
+  "probability-expected-value",
+  "biases-anchoring",
+]);
+const library = [mixed, early, late];
+
+describe("today's case", () => {
+  it("takes the next unread case in order once the learner has studied its units", () => {
+    const all = new Set([
+      "claims",
+      "evidence",
+      "fallacies",
+      "biases",
+      "arguments",
+      "probability",
+      "media",
+    ]);
+    expect(caseForDay(library, {}, all, "2026-10-10")).toEqual({
+      case: mixed,
+      done: false,
+      repeat: false,
+    });
+    expect(caseForDay(library, { "case-001": "2026-10-09" }, all, "2026-10-10")?.case.id).toBe(
+      "case-002",
+    );
+  });
+
+  it("prefers the case with fewest questions from units the learner hasn't started", () => {
+    const studied = new Set(["claims", "evidence", "fallacies"]);
+    expect(caseForDay(library, {}, studied, "2026-10-10")?.case.id).toBe("case-002");
+  });
+
+  it("keeps a case finished today as today's case, marked done", () => {
+    const pick = caseForDay(library, { "case-003": "2026-10-10" }, new Set(), "2026-10-10");
+    expect(pick).toEqual({ case: late, done: true, repeat: false });
+  });
+
+  it("brings back the case read longest ago once every case has been read", () => {
+    const history = {
+      "case-001": "2026-09-20",
+      "case-002": "2026-09-01",
+      "case-003": "2026-10-01",
+    };
+    expect(caseForDay(library, history, new Set(), "2026-10-10")).toEqual({
+      case: early,
+      done: false,
+      repeat: true,
+    });
+  });
+
+  it("has nothing to offer from an empty library", () => {
+    expect(caseForDay([], {}, new Set(), "2026-10-10")).toBeNull();
+  });
+});
+
+describe("the case format", () => {
+  it("accepts a well-formed case", () => {
+    expect(caseProblems(mixed)).toEqual([]);
+  });
+
+  it("wants three different units and a lesson that exists", () => {
+    const sameUnit = make("case-004", [
+      "claims-the-actual-claim",
+      "claims-hidden-assumptions",
+      "evidence-types",
+    ]);
+    expect(caseProblems(sameUnit)).toContain("two questions share a unit");
+    const unknown = make("case-005", ["nope", "evidence-types", "media-ai-answers"]);
+    expect(caseProblems(unknown)).toContain("a question names a lesson that doesn't exist");
+  });
+
+  it("keeps the case text to a phone-sized read", () => {
+    expect(caseProblems({ ...mixed, text: "Too short." })[0]).toMatch(/text is 2 words/);
+  });
+});
+
+describe("recording a case", () => {
+  it("saves it once a day, keeping the result", () => {
+    expect(recordCase("case-001", 2, 3, "2026-10-10")).toBe(true);
+    expect(recordCase("case-001", 3, 3, "2026-10-10")).toBe(false);
+    expect(readCaseStore()).toEqual({
+      history: { "case-001": "2026-10-10" },
+      results: [{ day: "2026-10-10", caseId: "case-001", right: 2, total: 3 }],
+    });
+  });
+
+  it("reads a broken store as empty", () => {
+    window.localStorage.setItem("lamppost-case-v1", "{nope");
+    expect(readCaseStore()).toEqual({ history: {}, results: [] });
+  });
+
+  it("pays something for reading and more for each question right", () => {
+    expect([0, 1, 2, 3].map(caseXp)).toEqual([5, 15, 25, 35]);
+  });
+
+  it("counts a unit as studied once one of its lessons is done", () => {
+    expect([...studiedUnits(new Set([0, 6]))].sort()).toEqual(["claims", "evidence"]);
+  });
+});

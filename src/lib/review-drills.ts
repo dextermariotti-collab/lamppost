@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
+import { LESSONS, lessonIndexOf, unitById, unitProgress } from "./curriculum";
 import { dayKey, daysBetween, shiftDay } from "./days";
 import { skillRating } from "./rating";
 import type { ExerciseKind } from "./exercises";
@@ -11,7 +11,9 @@ import type { ExerciseKind } from "./exercises";
  * right but with low stated confidence. It comes back as a FRESH variant of the
  * same skill and drill type, so the learner can't memorise an answer.
  *
- * Intervals: 1d → 3d → 7d → 14d. A miss resets to the first box.
+ * Intervals: 1d → 3d → 7d → 14d → 30d → 60d → 120d. A miss resets to the first box. A finished
+ * unit also puts each of its lessons on the 30-day rung, so skills that never went wrong still
+ * come back before they fade (`upkeepEntries`).
  */
 
 const KEY = "lamppost-review-drills-v1";
@@ -20,7 +22,9 @@ const EVENT = "lamppost-review-drills-change";
 /** Below this stated confidence, a correct answer still earns a review. */
 export const LOW_CONFIDENCE = 60;
 
-export const DRILL_INTERVALS = [1, 3, 7, 14];
+export const DRILL_INTERVALS = [1, 3, 7, 14, 30, 60, 120];
+/** Where a finished unit's lessons join the queue: the 30-day rung. */
+export const UPKEEP_BOX = 4;
 
 export type DrillItem = {
   lessonId: string;
@@ -32,7 +36,7 @@ export type DrillItem = {
   /** Variant numbers already served, so reviews stay fresh. */
   seen: number[];
   /** Why it entered the queue, shown in the schedule. */
-  reason: "missed" | "unsure" | "practice";
+  reason: "missed" | "unsure" | "practice" | "keep";
   at: number;
 };
 
@@ -114,6 +118,54 @@ export function trackDrillResult(
   });
 }
 
+/**
+ * Upkeep for a finished unit: one drill per lesson on the 30-day rung, a day apart, so a unit adds
+ * about one review a day when it comes due rather than five at once (`spread` pushes the first one
+ * later, so several units enrolled together keep to one a day too). The drill type changes from
+ * lesson to lesson. A lesson already in the queue keeps its place, which also makes this safe to
+ * run on every visit.
+ */
+export function upkeepEntries(
+  store: Store,
+  lessons: readonly { id: string; drills: readonly ExerciseKind[] }[],
+  today: string,
+  now: number,
+  spread = 0,
+): Store {
+  const queued = new Set(Object.values(store).map((item) => item.lessonId));
+  const added: Store = {};
+  lessons.forEach((lesson, i) => {
+    const kind = lesson.drills[i % lesson.drills.length];
+    if (queued.has(lesson.id) || !kind) return;
+    const day = spread + Object.keys(added).length;
+    added[drillKey(lesson.id, kind)] = {
+      lessonId: lesson.id,
+      kind,
+      box: UPKEEP_BOX,
+      due: shiftDay(today, DRILL_INTERVALS[UPKEEP_BOX]! + day),
+      seen: [],
+      reason: "keep",
+      at: now,
+    };
+  });
+  return added;
+}
+
+/** Puts every finished unit's lessons on the upkeep schedule, once. */
+export function enrolFinishedUnits(done: ReadonlySet<number>) {
+  const store = readStore();
+  let added: Store = {};
+  for (const unit of unitProgress(done)) {
+    if (unit.state !== "complete") continue;
+    const spread = Object.keys(added).length;
+    added = {
+      ...added,
+      ...upkeepEntries({ ...store, ...added }, unit.lessons, dayKey(), Date.now(), spread),
+    };
+  }
+  if (Object.keys(added).length > 0) writeStore({ ...store, ...added });
+}
+
 /** Records the outcome of a review/challenge answer against the schedule. */
 export function gradeDrillReview(key: string, correct: boolean, variant?: number) {
   const store = readStore();
@@ -122,7 +174,11 @@ export function gradeDrillReview(key: string, correct: boolean, variant?: number
   const box = correct ? Math.min(item.box + 1, DRILL_INTERVALS.length - 1) : 0;
   const seen = variant !== undefined ? [...new Set([...item.seen, variant])].slice(-20) : item.seen;
   // Once it comes back right, stop calling it a miss: it is upkeep from here.
-  const reason: DrillItem["reason"] = correct ? "practice" : "missed";
+  const reason: DrillItem["reason"] = !correct
+    ? "missed"
+    : item.reason === "keep"
+      ? "keep"
+      : "practice";
   writeStore({
     ...store,
     [key]: {
