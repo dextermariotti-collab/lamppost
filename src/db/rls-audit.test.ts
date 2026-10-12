@@ -114,6 +114,7 @@ describe("the policies on people's data", () => {
     const all = await tables();
     const serverOnly = [
       "consent_records",
+      "generated_cases",
       "league_results",
       "lesson_parts",
       "rate_limits",

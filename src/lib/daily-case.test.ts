@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   caseForDay,
@@ -6,9 +7,12 @@ import {
   caseXp,
   readCaseStore,
   recordCase,
+  saveGeneratedCase,
   studiedUnits,
+  useDailyCase,
   type DailyCase,
 } from "./daily-case";
+import { dayKey, shiftDay } from "./days";
 
 beforeEach(() => window.localStorage.clear());
 
@@ -123,6 +127,45 @@ describe("the case format", () => {
   });
 });
 
+describe("AI-written cases on this device", () => {
+  const ai = (day: string): DailyCase => ({ ...mixed, id: `ai-${day}` });
+
+  it("keeps a valid AI case, and ignores anything else", () => {
+    expect(saveGeneratedCase(ai("2026-11-02"))).toBe(true);
+    expect(saveGeneratedCase({ ...ai("2026-11-03"), text: "short" })).toBe(false);
+    expect(saveGeneratedCase(mixed)).toBe(false);
+    expect(Object.keys(readCaseStore().generated)).toEqual(["ai-2026-11-02"]);
+  });
+
+  it("keeps only the newest thirty", () => {
+    for (let i = 0; i < 35; i++) saveGeneratedCase(ai(shiftDay("2026-11-01", i)));
+    const kept = Object.keys(readCaseStore().generated).sort();
+    expect(kept).toHaveLength(30);
+    expect([kept[0], kept.at(-1)]).toEqual(["ai-2026-11-06", "ai-2026-12-05"]);
+  });
+
+  it("asks for a new case only once every case has been read, and then serves it", () => {
+    const all = new Set(Array.from({ length: 35 }, (_, i) => i));
+    const library = [mixed, early];
+    recordCase("case-001", 3, 3, "2026-01-01");
+    const hook = renderHook(() => useDailyCase(library, all));
+    expect(hook.result.current.pick?.case.id).toBe("case-002");
+    expect(hook.result.current.wantsNew).toBe(false);
+
+    act(() => {
+      recordCase("case-002", 3, 3, "2026-01-02");
+    });
+    expect(hook.result.current.pick?.repeat).toBe(true);
+    expect(hook.result.current.wantsNew).toBe(true);
+
+    act(() => {
+      saveGeneratedCase(ai(dayKey()));
+    });
+    expect(hook.result.current.pick?.case.id).toBe(`ai-${dayKey()}`);
+    expect(hook.result.current.wantsNew).toBe(false);
+  });
+});
+
 describe("recording a case", () => {
   it("saves it once a day, keeping the result", () => {
     expect(recordCase("case-001", 2, 3, "2026-10-10")).toBe(true);
@@ -130,12 +173,13 @@ describe("recording a case", () => {
     expect(readCaseStore()).toEqual({
       history: { "case-001": "2026-10-10" },
       results: [{ day: "2026-10-10", caseId: "case-001", right: 2, total: 3 }],
+      generated: {},
     });
   });
 
   it("reads a broken store as empty", () => {
     window.localStorage.setItem("lamppost-case-v1", "{nope");
-    expect(readCaseStore()).toEqual({ history: {}, results: [] });
+    expect(readCaseStore()).toEqual({ history: {}, results: [], generated: {} });
   });
 
   it("pays something for reading and more for each question right", () => {

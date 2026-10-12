@@ -133,6 +133,14 @@ and reviews.
   with fewest units the learner hasn't started; once all are read, the one read longest ago comes
   back. A finished case counts once for the day and the streak (`applyCase`, XP from `caseXp`), and
   a missed question puts its lesson in the review queue. Add new cases at the end with the next id.
+- **AI-written cases** take over once every written case has been read (`wantsNew` from
+  `useDailyCase`, fetched by `useAiCaseTopUp`). `getGeneratedCase` (`cases.functions.ts`) serves one
+  case per local day from the server-only `generated_cases` table; on a miss it writes one under
+  the `caseGeneration` limit and a per-day lease: the day's plan (`casePlanForDay`: three lessons
+  from three units, a source, a setting), a writer pass, `readGeneratedCase` (the same format,
+  content and fairness rules as the written cases, options reshuffled), then a reviewer pass. Any
+  failure falls back to the written case read longest ago. Devices keep the last 30 AI cases, and
+  every AI case carries the AI label.
 - **Upkeep reviews.** When a unit is finished (`UpkeepWatcher`, idempotent, also covers saves from
   before this existed), each of its lessons joins the review queue on the 30-day rung, then climbs
   to 60 and 120 days (`upkeepEntries`, reason `keep`), one per day so it never arrives in a lump.
@@ -200,6 +208,14 @@ lines with their stops; after the whole map, "Keep it sharp" as above) and the s
 an arrival board (`LessonFinished`: three numbers, today's goal, the next stop). `/course/:slug` redirects
 to My Path. Onboarding is three screens (intro, one real question, setup); a companion can be chosen from
 Profile.
+
+### Check something you saw
+`/look` (a row on Home once a learner has started): paste a post, an advert, a headline or a
+chatbot answer and get the questions from the lessons that matter most for it, what in the text
+to look at, and one way to check it elsewhere. **It never says whether the text is true**: the
+prompt forbids verdicts and `readLookResult` throws away a reply that gives one. `lookCloser`
+(`look-closer.functions.ts`) caps the text at 1,500 characters, screens it locally, counts it
+against the `lookCloser` limit (guests included, tightly), and stores nothing.
 
 ## Security model (read before touching Supabase)
 

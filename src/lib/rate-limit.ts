@@ -78,6 +78,25 @@ export const POLICIES = {
     ip: [t("hour", 30)],
     global: [t("hour", 60), t("day", 300)],
   },
+  /**
+   * Writing the AI daily case for a day, for learners who have read every written case. A day's
+   * case is written once and shared, so the global numbers are a handful a day.
+   */
+  caseGeneration: {
+    label: "new daily cases",
+    guest: [t("hour", 3), t("day", 6)],
+    user: [t("hour", 6), t("day", 12)],
+    ip: [t("hour", 20)],
+    global: [t("day", 20)],
+  },
+  /** "Check something you saw": one AI reply per pasted text. Nothing is cached, so every use counts. */
+  lookCloser: {
+    label: "checks of things you've seen",
+    guest: [t("hour", 3), t("day", 6)],
+    user: [t("minute", 3), t("hour", 15), t("day", 40)],
+    ip: [t("hour", 40)],
+    global: [t("day", 3000)],
+  },
   /** Open-ended course generation. The app no longer has a screen for it. */
   topicGeneration: {
     label: "course creation",

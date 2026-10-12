@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Check, Newspaper } from "lucide-react";
+import { ArrowRight, Check, Newspaper, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { skillsToPractise } from "@/lib/rating";
+import { AiLabel } from "@/components/AiLabel";
 import { Button } from "@/components/ui/button";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { LampMark, LineBullet, Stops } from "@/components/LineBullet";
@@ -20,7 +21,8 @@ import {
   unitProgress,
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
-import { CASE_SOURCES, caseUnits, useDailyCase, type CasePick } from "@/lib/daily-case";
+import { CASE_SOURCES, caseUnits, isAiCase, useDailyCase, type CasePick } from "@/lib/daily-case";
+import { useAiCaseTopUp } from "@/lib/daily-case-ai";
 import { dayKey, useProgress } from "@/lib/progress";
 import {
   nextReviewLine,
@@ -77,7 +79,8 @@ function Home() {
   const lessonsDone = doneLessons.size;
   const { items: dueItems, total: dueTotal } = useDueDrills();
   const { items: scheduled } = useDrillSchedule();
-  const { pick: todaysCase } = useDailyCase(DAILY_CASES, doneLessons);
+  const { pick: todaysCase, wantsNew } = useDailyCase(DAILY_CASES, doneLessons);
+  const writingCase = useAiCaseTopUp(wantsNew);
   const { checks } = useUnitChecks();
   const laterDue = laterCheckDue(
     checks,
@@ -148,7 +151,7 @@ function Home() {
           {finished ? "Keep it sharp" : "Up next"}
         </p>
         {finished && todaysCase ? (
-          <CaseSign pick={todaysCase} />
+          <CaseSign pick={todaysCase} writing={writingCase} />
         ) : (
           <section className="sign mt-2 p-4">
             <p className="legend flex items-center gap-2 text-muted-foreground">
@@ -270,6 +273,25 @@ function Home() {
               <ArrowRight aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
             </Link>
           )}
+
+          {started && (
+            <Link
+              to="/look"
+              className="flex min-h-14 w-full items-center gap-3 border-b-2 border-edge py-3"
+            >
+              <Search aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-bold text-foreground">
+                  Check something you saw
+                </span>
+                <span className="block text-xs leading-relaxed text-muted-foreground">
+                  Paste a post, an advert or a chatbot answer and get your lessons' questions about
+                  it.
+                </span>
+              </span>
+              <ArrowRight aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
+            </Link>
+          )}
         </div>
 
         <WeeklyRecapCard className="mt-4" />
@@ -318,8 +340,18 @@ function Home() {
 }
 
 /** After the map: today's case is the main thing to do. */
-function CaseSign({ pick }: { pick: CasePick }) {
+function CaseSign({ pick, writing }: { pick: CasePick; writing: boolean }) {
   const units = caseUnits(pick.case);
+  if (writing) {
+    return (
+      <section className="sign mt-2 p-4" role="status">
+        <p className="legend text-muted-foreground">Today's case</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          You've read every case so far, so today's is being written. It'll be here in a moment.
+        </p>
+      </section>
+    );
+  }
   return (
     <section className="sign mt-2 p-4">
       <p className="legend flex items-center gap-2 text-muted-foreground">
@@ -337,6 +369,7 @@ function CaseSign({ pick }: { pick: CasePick }) {
           : "One real-world text and three questions from three different lines."}
       </p>
       {!pick.done && <p className="mt-2 font-mono text-xs text-muted-foreground">about 3 min</p>}
+      {isAiCase(pick.case) && <AiLabel className="mt-2" />}
       <Button
         asChild
         variant={pick.done ? "secondary" : "default"}

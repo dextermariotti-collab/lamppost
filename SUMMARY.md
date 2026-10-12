@@ -308,6 +308,39 @@ button that replayed it. Now:
   `src/content/cases.ts` (the tests will tell you if one breaks a rule). The privacy policy no longer
   says the daily challenge uses AI drills, because the cases are written by hand.
 
+## Follow-up: AI-written cases, and "Check something you saw"
+
+- **The daily case keeps going after the written ones run out.** Once a learner has read every
+  written case, the server asks the AI to write that day's case, from a plan that rotates three
+  lessons from three different units, the kind of text and the setting. The draft has to pass the
+  same rules as the written cases (format, made-up names, no politics, fair answers) and then a
+  second AI review of every question; anything that fails is thrown away and the learner gets the
+  written case they read longest ago instead. A day's case is written once and shared by everyone
+  who needs it that day, so it costs a few generations a day at most, under its own rate limit. AI
+  cases carry the AI label. Written cases still always come first, so adding more by hand is still
+  the best way to keep quality high.
+- **Check something you saw.** A new row on Home opens a screen where a learner pastes a post, an
+  advert, a headline or a chatbot answer. They get back what it wants them to accept, three
+  questions from their lessons that matter most for it (each linked to the lesson or its notes),
+  what in the text to look at, and one way to check it elsewhere. It never says whether the text is
+  true: the prompt forbids it, and a reply that does is thrown away. The pasted text goes to the AI
+  service for that one reply and is not saved. It's rate limited (tighter for people who aren't
+  signed in) and is the natural thing for the Practice plan to offer more of.
+- **New in the database:** one server-only table, `generated_cases` (one AI case per day, nothing
+  about a person), with a tested rollback in `docs/rollback/20261012100000_generated_cases.down.sql`.
+- **Checked:** the plan, the reader for both replies, keeping AI cases on the device and the new
+  table are covered by tests; every model call goes through the guardrails; both screens were run in
+  the browser by day and night with sample AI replies standing in for the real service (there's no
+  AI key in this environment), and the accessibility scan is clean.
+- **Needs you:**
+  - Try both with the real AI key before release. I couldn't call the model from here, so the
+    prompts haven't met a real reply yet. If drafts keep failing the checks, the server logs say
+    which rule; loosen the prompt, not the checks.
+  - The privacy policy and the AI page now mention both features. Decide whether this counts as a
+    change people should be asked to accept again (if so, bump `PRIVACY_VERSION` in
+    `src/lib/legal-config.ts`). I didn't, because it's the same kind of data going to the same
+    service as the existing AI features.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.

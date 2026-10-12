@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { AiLabel } from "@/components/AiLabel";
 import { LessonPlayer } from "@/components/lesson/LessonPlayer";
 import { LineBullet } from "@/components/LineBullet";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -12,10 +13,12 @@ import {
   CASE_SOURCES,
   caseUnits,
   caseXp,
+  isAiCase,
   studiedUnits,
   useDailyCase,
   type DailyCase,
 } from "@/lib/daily-case";
+import { useAiCaseTopUp } from "@/lib/daily-case-ai";
 import { playCue } from "@/lib/feedback";
 import { useProgress } from "@/lib/progress";
 import { recordDrillOutcome } from "@/lib/rating";
@@ -47,7 +50,8 @@ export const Route = createFileRoute("/case")({
  */
 function CaseScreen() {
   const { doneLessons, completeCase } = useProgress();
-  const { pick, result, hydrated, record } = useDailyCase(DAILY_CASES, doneLessons);
+  const { pick, result, hydrated, wantsNew, record } = useDailyCase(DAILY_CASES, doneLessons);
+  const writing = useAiCaseTopUp(wantsNew);
   const [finished, setFinished] = useState<StepResult[] | null>(null);
 
   return (
@@ -58,7 +62,11 @@ function CaseScreen() {
         backTo="/"
       />
       <div className="px-5 pb-10">
-        {!hydrated || !pick ? null : finished ? (
+        {!hydrated || !pick ? null : writing ? (
+          <p className="sign p-5 text-sm text-muted-foreground" role="status">
+            You've read every case so far, so today's is being written. This takes a moment.
+          </p>
+        ) : finished ? (
           <CaseFinished item={pick.case} results={finished} />
         ) : pick.done ? (
           <CaseDone item={pick.case} right={result?.right ?? null} total={result?.total ?? 3} />
@@ -97,6 +105,7 @@ function CaseText({ item }: { item: DailyCase }) {
         {item.title}
       </h2>
       <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{item.text}</p>
+      {isAiCase(item) && <AiLabel note what="This case" className="mt-3" />}
     </section>
   );
 }

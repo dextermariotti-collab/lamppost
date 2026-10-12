@@ -95,7 +95,7 @@ export const PRIVACY: LegalDoc = {
       heading: "What is sent to AI",
       review: true,
       body: [
-        `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, and the extra practice drills used in reviews. When you use one, the text you typed for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back.`,
+        `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, Check something you saw, and the extra practice drills used in reviews. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
         `We send it through the Lovable AI Gateway, which at the time of writing routes to a Google Gemini model. We don't send your email, name, handle, friends or account history. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
         "The lessons themselves are written in advance and are not generated for you. AI-written replies are labelled in the app.",
         "[CONFIRM: whether the AI provider keeps or trains on requests sent through the gateway. Update this paragraph once confirmed.]",
@@ -352,6 +352,8 @@ export const AI_CONTENT: LegalDoc = {
             "Feedback and scores on the short arguments you write.",
             "Debate topics and the scoring of both sides.",
             "Extra practice drills in reviews and the placement check.",
+            "Check something you saw: the questions about a text you paste in.",
+            "Daily cases, once you've read every case written for the app.",
           ],
         },
         'These are marked with an "AI-generated" label. The lessons themselves are written in advance and are not generated as you use the app.',
@@ -368,7 +370,7 @@ export const AI_CONTENT: LegalDoc = {
     {
       heading: "What is sent",
       body: [
-        "To reply, the text you type and a little lesson context are sent to an AI service (see the Privacy Policy). Don't type private details into these features.",
+        "To reply, the text you type or paste and a little lesson context are sent to an AI service (see the Privacy Policy). What you paste into Check something you saw is used for that reply and isn't saved. Don't type or paste private details into these features.",
       ],
     },
     {

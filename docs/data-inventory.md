@@ -32,6 +32,7 @@ Last checked: 2026-09-30.
 | `server_locks` | short leases on jobs in progress (for example "generating lesson X") | no | server only | n/a (expire in minutes) |
 | `lesson_parts` | pieces of a lesson that isn't cached yet (idea card, drills, written task) while it is being written; cleared once the lesson is assembled | no (curriculum content, nothing about a learner) | server only | n/a (cleared on assembly; leftovers pruned after 2 days) |
 | `curriculum_lessons`, `drill_variants` | shared AI-generated lesson and drill content | no | server only | n/a |
+| `generated_cases` | one AI-written daily case per local day (the case and the model name), served to learners who have read every written case | no (case content, nothing about a learner) | server only | n/a |
 | `content_reports` | reason, free-text details, course slug/topic, lesson index/title, excerpt of flagged text, status | yes until anonymised | the reporting user | `user_id` set to null, report retained for audit |
 | `moderation_blocks` | refused topic text, category, stage (input/output) | pseudonymous | server only | `user_id` set to null, row retained for audit |
 
@@ -58,8 +59,9 @@ progress, spaced-repetition schedule (including the 30/60/120-day upkeep of fini
 streak/XP cache (plus the retired gem fields), the before-and-after unit check results
 (`lamppost-unit-checks-v1`: right/total/day per unit for the before, after and three-months-later
 checks, never sent to the server), the daily cases read (`lamppost-case-v1`: case id, local day
-and how many of its three questions were right, never sent to the server; the streak and XP it
-earns travel with the rest of the progress sync), companion selection, onboarding state, and
+and how many of its three questions were right, plus copies of the last 30 AI-written cases this
+device was given, never sent to the server; the streak and XP it earns travel with the rest of
+the progress sync), companion selection, onboarding state, and
 one-time celebration flags. Cleared on account deletion from within the app and by
 clearing browser storage.
 
@@ -67,8 +69,8 @@ clearing browser storage.
 
 | Recipient | Data sent | When | Purpose |
 | --- | --- | --- | --- |
-| AI provider (Lovable AI Gateway → a Google Gemini model) | what the learner typed for the tutor, the written-argument grader, a debate answer, and the small piece of lesson text those need; never email, name, handle, friends or history | only when one of those features is used | AI replies and feedback |
-| AI provider | lesson and drill generation prompts (curriculum text, no learner data) | server-side, when content is missing from the cache | write lessons/drills ahead of time |
+| AI provider (Lovable AI Gateway → a Google Gemini model) | what the learner typed for the tutor, the written-argument grader, a debate answer, or pasted into Check something you saw, and the small piece of lesson text those need; never email, name, handle, friends or history. Pasted text is used for that one reply and not stored by Lamppost | only when one of those features is used | AI replies and feedback |
+| AI provider | lesson, drill and daily-case generation prompts (curriculum text, no learner data) | server-side, when content is missing from the cache, or a day's case is needed after the written cases run out | write lessons, drills and daily cases |
 | Backend/auth host (Lovable Cloud, built on Supabase) | all backend tables above | signed-in use | hosting, auth, database |
 | Google (sign-in) | the Google account identity | only if the learner chooses Continue with Google | sign in |
 | Google Fonts | network address and browser details | every page load (fonts are loaded from Google's servers) | typefaces |

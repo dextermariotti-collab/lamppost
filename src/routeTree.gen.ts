@@ -19,6 +19,7 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
 import { Route as FinalCheckRouteImport } from './routes/final-check'
 import { Route as LeagueRouteImport } from './routes/league'
+import { Route as LookRouteImport } from './routes/look'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -96,6 +97,11 @@ const FinalCheckRoute = FinalCheckRouteImport.update({
 const LeagueRoute = LeagueRouteImport.update({
   id: '/league',
   path: '/league',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LookRoute = LookRouteImport.update({
+  id: '/look',
+  path: '/look',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/debates': typeof DebatesRoute
   '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
+  '/look': typeof LookRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/debates': typeof DebatesRoute
   '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
+  '/look': typeof LookRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/debates': typeof DebatesRoute
   '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
+  '/look': typeof LookRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/debates'
     | '/final-check'
     | '/league'
+    | '/look'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/debates'
     | '/final-check'
     | '/league'
+    | '/look'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/debates'
     | '/final-check'
     | '/league'
+    | '/look'
     | '/onboarding'
     | '/premium'
     | '/profile'
@@ -494,6 +506,7 @@ export interface RootRouteChildren {
   DebatesRoute: typeof DebatesRoute
   FinalCheckRoute: typeof FinalCheckRoute
   LeagueRoute: typeof LeagueRoute
+  LookRoute: typeof LookRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
@@ -594,6 +607,13 @@ declare module '@tanstack/react-router' {
       path: '/league'
       fullPath: '/league'
       preLoaderRoute: typeof LeagueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/look': {
+      id: '/look'
+      path: '/look'
+      fullPath: '/look'
+      preLoaderRoute: typeof LookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -806,6 +826,7 @@ const rootRouteChildren: RootRouteChildren = {
   DebatesRoute: DebatesRoute,
   FinalCheckRoute: FinalCheckRoute,
   LeagueRoute: LeagueRoute,
+  LookRoute: LookRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
