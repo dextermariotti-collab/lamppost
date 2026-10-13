@@ -40,7 +40,7 @@ const usable = (content: unknown): DailyCase | null => {
  * day without touching the limiter; only writing a new one is counted, under a per-day lease.
  */
 export const getGeneratedCase = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<GeneratedCaseResult> => {
     if (!isPlausibleLocalDay(data.day)) return { ok: false, reason: "That isn't today." };
     try {
@@ -52,7 +52,7 @@ export const getGeneratedCase = createServerFn({ method: "POST" })
       const cached = stored.data ? usable(stored.data.content) : null;
       if (cached) return { ok: true, case: cached };
 
-      const key = process.env["LOVABLE_API_KEY"];
+      const key = process.env["AI_API_KEY"];
       if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
       const { guardedGeneration } = await import("./rate-limit.server");

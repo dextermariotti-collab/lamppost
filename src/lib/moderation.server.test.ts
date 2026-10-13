@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const model = vi.hoisted(() => ({ generateText: vi.fn() }));
 vi.mock("ai", () => model);
-vi.mock("./ai-gateway.server", () => ({ createLovableAiGatewayProvider: () => () => "model" }));
+vi.mock("./ai-gateway.server", () => ({ createAiProvider: () => () => "model" }));
 
 import { CHECK_UNAVAILABLE, parseTopicVerdict, screenTopicText } from "./moderation.server";
 

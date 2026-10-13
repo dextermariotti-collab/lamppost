@@ -15,7 +15,7 @@
 -- exactly as they were. Drop them by hand only if you mean to delete that history.
 --
 -- This file is deliberately NOT in supabase/migrations so it is never applied
--- automatically. Run it by hand (Lovable Cloud -> Database -> SQL editor) as an
+-- automatically. Run it by hand (Supabase dashboard -> SQL editor) as an
 -- administrator. It is safe to run more than once.
 
 BEGIN;

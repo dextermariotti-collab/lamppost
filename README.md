@@ -1,24 +1,32 @@
-# Lamppost Reimagined
+# Lamppost
 
-copy this ui and turn in into a working website, its a rebrand of lamppost my other project
+A critical-thinking trainer: seven units, 35 lessons, each a run of interactive steps ending on a
+harder real-world case, then the idea in full, a graded written argument and an "explain it back"
+chat. After the map there's a daily case and spaced reviews. It's a mobile-first web app that
+works fully signed out; an account carries progress across devices and adds friends.
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/e6f325ca-0128-444a-ae9a-a10415a5ad52).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Run it
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+cp .env.example .env    # fill in as you set up each service (docs/deploy.md)
+npm install
+npm run dev             # http://localhost:8080
 ```
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | local app with hot reload |
+| `npm test` | the test suite (pure logic, components, and the database rules in an in-memory Postgres) |
+| `npm run typecheck` / `npm run lint` | TypeScript and ESLint, as CI runs them |
+| `npm run build` | production build for Cloudflare Workers, into `.output/` |
+| `npm run deploy` | build and upload to Cloudflare |
+| `npm run db:push` / `npm run db:types` | apply `supabase/migrations` to the linked project / regenerate its types |
+
+## Where things are
+
+- **Stack:** TanStack Start (React 19), Tailwind v4, Supabase (Postgres, auth, row-level security),
+  the Vercel AI SDK against Google's Gemini API, deployed to Cloudflare Workers.
+- **Setting it up and deploying:** `docs/deploy.md`.
+- **How the code is put together, and the rules it keeps:** `CLAUDE.md`; the reasoning and the
+  roadmap are in `docs/architecture.md`.
+- **What data is stored where:** `docs/data-inventory.md`.

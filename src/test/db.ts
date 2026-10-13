@@ -10,11 +10,6 @@ import { PGlite } from "@electric-sql/pglite";
  */
 
 const ROOT = process.cwd();
-const sqlFiles = (dir: string) =>
-  readdirSync(join(ROOT, dir))
-    .filter((f) => f.endsWith(".sql"))
-    .sort()
-    .map((f) => readFileSync(join(ROOT, dir, f), "utf8"));
 
 /**
  * `before` stops at a migration: only the ones sorted ahead of that file are
@@ -32,16 +27,11 @@ export async function migratedDb(opts: { before?: string } = {}): Promise<PGlite
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
   `);
-  // Lovable applies supabase/migrations and drizzle/migrations to one database; the
-  // drizzle tables are older than the newest supabase migration.
-  const supabase = readdirSync(join(ROOT, "supabase/migrations"))
+  const migrations = readdirSync(join(ROOT, "supabase/migrations"))
     .filter((f) => f.endsWith(".sql") && (opts.before === undefined || f < opts.before))
     .sort();
-  const before = supabase.filter((f) => f < "20260928");
-  const after = supabase.filter((f) => f >= "20260928");
-  for (const f of before) await db.exec(readFileSync(join(ROOT, "supabase/migrations", f), "utf8"));
-  for (const sql of sqlFiles("drizzle/migrations")) await db.exec(sql);
-  for (const f of after) await db.exec(readFileSync(join(ROOT, "supabase/migrations", f), "utf8"));
+  for (const f of migrations)
+    await db.exec(readFileSync(join(ROOT, "supabase/migrations", f), "utf8"));
   return db;
 }
 

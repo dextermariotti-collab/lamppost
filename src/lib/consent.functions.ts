@@ -22,7 +22,7 @@ export type RecordConsentResult =
  */
 export const recordConsent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data, context }): Promise<RecordConsentResult> => {
     if (data.termsVersion !== TERMS_VERSION || data.privacyVersion !== PRIVACY_VERSION) {
       return {

@@ -188,11 +188,11 @@ export const getPracticeAccess = createServerFn({ method: "POST" })
  */
 export const practiceTurn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => TurnSchema.parse(input))
+  .validator((input: unknown) => TurnSchema.parse(input))
   .handler(async ({ data, context }): Promise<PracticeReply> => {
     const ctx = context as unknown as Ctx;
     const { supabase: db, userId } = ctx;
-    const key = process.env["LOVABLE_API_KEY"];
+    const key = process.env["AI_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
     const opening = data.sessionId === null;
@@ -264,11 +264,11 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
-      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+      const { createAiProvider } = await import("./ai-gateway.server");
       const { PRACTICE_SYSTEM, openingPrompt, turnPrompt } = await import("./practice.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
-      const gateway = createLovableAiGatewayProvider(key);
+      const gateway = createAiProvider(key);
 
       const forcedClose = learnerTurns >= MAX_PRACTICE_TURNS;
       const result = streamText({

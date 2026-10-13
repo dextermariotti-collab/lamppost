@@ -22,27 +22,29 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 /** Tier colours: metal tones, readable in both themes. */
-export const TIER_STYLE: Record<BadgeTier, { ring: string; fill: string; text: string; label: string }> =
-  {
-    bronze: {
-      ring: "oklch(0.62 0.1 55)",
-      fill: "oklch(0.62 0.1 55 / 0.16)",
-      text: "oklch(0.68 0.1 55)",
-      label: "Bronze",
-    },
-    silver: {
-      ring: "oklch(0.74 0.02 250)",
-      fill: "oklch(0.74 0.02 250 / 0.18)",
-      text: "oklch(0.78 0.02 250)",
-      label: "Silver",
-    },
-    gold: {
-      ring: "oklch(0.78 0.14 85)",
-      fill: "oklch(0.78 0.14 85 / 0.2)",
-      text: "oklch(0.8 0.14 85)",
-      label: "Gold",
-    },
-  };
+export const TIER_STYLE: Record<
+  BadgeTier,
+  { ring: string; fill: string; text: string; label: string }
+> = {
+  bronze: {
+    ring: "oklch(0.62 0.1 55)",
+    fill: "oklch(0.62 0.1 55 / 0.16)",
+    text: "oklch(0.68 0.1 55)",
+    label: "Bronze",
+  },
+  silver: {
+    ring: "oklch(0.74 0.02 250)",
+    fill: "oklch(0.74 0.02 250 / 0.18)",
+    text: "oklch(0.78 0.02 250)",
+    label: "Silver",
+  },
+  gold: {
+    ring: "oklch(0.78 0.14 85)",
+    fill: "oklch(0.78 0.14 85 / 0.2)",
+    text: "oklch(0.8 0.14 85)",
+    label: "Gold",
+  },
+};
 
 /** A badge medallion: earned badges take their tier's metal, locked ones stay grey. */
 export function BadgeIcon({

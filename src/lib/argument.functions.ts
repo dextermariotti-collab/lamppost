@@ -91,7 +91,7 @@ function describe(error: unknown): string {
  * the grader is instructed to refuse off-topic or unsafe answers.
  */
 export const gradeArgument = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => GradeInput.parse(input))
+  .validator((input: unknown) => GradeInput.parse(input))
   .handler(async ({ data }): Promise<GradeResult> => {
     const screened = screenLocally(data.answer);
     if (!screened.allowed) return { ok: false, reason: screened.message, blocked: true };
@@ -110,7 +110,7 @@ export const gradeArgument = createServerFn({ method: "POST" })
       };
     }
 
-    const key = process.env["LOVABLE_API_KEY"];
+    const key = process.env["AI_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
     // Everything above is free. Only a request that would really call the model is counted.
@@ -120,11 +120,11 @@ export const gradeArgument = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
-      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+      const { createAiProvider } = await import("./ai-gateway.server");
       const { graderSystem, graderPrompt } = await import("./argument.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
-      const gateway = createLovableAiGatewayProvider(key);
+      const gateway = createAiProvider(key);
 
       const result = streamText({
         model: gateway(MODEL),

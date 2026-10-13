@@ -145,8 +145,9 @@ export function computeBadges(state: ProgressState): BadgeState[] {
     if (at.getHours() < 9) earlyDays.add(dayKey(at));
   }
 
-  const flawless = [...byLesson.values()].filter((row) => row.total >= 3 && row.right === row.total)
-    .length;
+  const flawless = [...byLesson.values()].filter(
+    (row) => row.total >= 3 && row.right === row.total,
+  ).length;
 
   const steelman = writtenTrend().points.filter((point) => point.pct >= 90).length;
 

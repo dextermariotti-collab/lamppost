@@ -25,7 +25,7 @@ export type ReportInput = {
 
 export const submitContentReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: ReportInput) => {
+  .validator((input: ReportInput) => {
     const reason = String(input?.reason ?? "").slice(0, 40);
     if (!REPORT_REASONS.some((r) => r.value === reason)) {
       throw new Error("Pick a reason for the report.");

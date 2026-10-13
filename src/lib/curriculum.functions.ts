@@ -53,7 +53,7 @@ async function cachedLesson(meta: CurriculumLesson): Promise<LessonComplete | nu
  * while the rest is written and never sees a parser or quality-check error.
  */
 export const getCurriculumLesson = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<LessonContentResult> => {
     const meta = LESSONS.find((l) => l.id === data.lessonId);
     if (!meta) return { ok: false, reason: "That lesson isn't part of the curriculum." };
@@ -71,7 +71,7 @@ export const getCurriculumLesson = createServerFn({ method: "POST" })
  * touching the limits or the model.
  */
 export const getLessonPart = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => PartInput.parse(input))
+  .validator((input: unknown) => PartInput.parse(input))
   .handler(async ({ data }): Promise<LessonContentResult> => {
     const meta = LESSONS.find((l) => l.id === data.lessonId);
     if (!meta) return { ok: false, reason: "That lesson isn't part of the curriculum." };

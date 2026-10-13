@@ -29,7 +29,7 @@ export type SocraticResult =
  * UI simply hides the bubble when this fails.
  */
 export const socraticLine = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<SocraticResult> => {
     if (data.mode === "reply") {
       const screened = screenLocally(data.reply);
@@ -37,7 +37,7 @@ export const socraticLine = createServerFn({ method: "POST" })
       if (!data.reply.trim()) return { ok: false, reason: "Nothing to respond to yet." };
     }
 
-    const key = process.env["LOVABLE_API_KEY"];
+    const key = process.env["AI_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
     const { limiter } = await import("./rate-limit.server");
@@ -46,12 +46,12 @@ export const socraticLine = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
-      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+      const { createAiProvider } = await import("./ai-gateway.server");
       const { SOCRATIC_SYSTEM, socraticQuestionPrompt, socraticReplyPrompt } =
         await import("./socratic.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
-      const gateway = createLovableAiGatewayProvider(key);
+      const gateway = createAiProvider(key);
 
       const result = streamText({
         model: gateway(MODEL),

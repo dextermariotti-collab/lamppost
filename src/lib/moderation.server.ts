@@ -109,8 +109,8 @@ export async function screenTopicText(
 
   try {
     const { generateText } = await import("ai");
-    const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-    const gateway = createLovableAiGatewayProvider(apiKey);
+    const { createAiProvider } = await import("./ai-gateway.server");
+    const gateway = createAiProvider(apiKey);
     const result = await generateText({
       model: gateway(AI_MODELS.screen),
       system: SCREEN_SYSTEM,

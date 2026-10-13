@@ -33,19 +33,31 @@ describe("what reaches the browser", () => {
     expect(found).toEqual([]);
   });
 
-  it("reads server secrets only in server code, and never puts them in .env", () => {
-    const secret = /SUPABASE_SERVICE_ROLE_KEY|LOVABLE_API_KEY|WARM_TOKEN/;
+  it("reads server secrets only in server code, and never ships them to the browser", () => {
+    const secret = /SUPABASE_SERVICE_ROLE_KEY|AI_API_KEY|WARM_TOKEN/;
     const serverSide = (file: string) =>
       /\.(server|functions)\.ts$/.test(file) || file.startsWith(join("src", "routes", "api"));
     const found = source
       .filter(({ file, text }) => secret.test(text) && !serverSide(file))
       .map(({ file }) => file);
     expect(found).toEqual([]);
-    expect(
-      source.filter(({ text }) => /import\.meta\.env\.\w*(SERVICE_ROLE|LOVABLE|WARM)/.test(text)),
-    ).toEqual([]);
-    const env = existsSync(join(ROOT, ".env")) ? readFileSync(join(ROOT, ".env"), "utf8") : "";
-    expect(env).not.toMatch(secret);
+    // Vite builds every VITE_ value into the browser bundle.
+    const example = readFileSync(join(ROOT, ".env.example"), "utf8");
+    const exposed = /VITE_\w*(SERVICE_ROLE|SECRET|AI_API|WARM)/;
+    expect(example).not.toMatch(exposed);
+    expect(source.filter(({ text }) => exposed.test(text)).map(({ file }) => file)).toEqual([]);
+  });
+
+  it("keeps real settings out of the repository", () => {
+    // .env holds the real values locally; only the example, with blanks and placeholders, is shared.
+    const ignored = readFileSync(join(ROOT, ".gitignore"), "utf8").split("\n");
+    expect(ignored).toContain(".env");
+    const example = readFileSync(join(ROOT, ".env.example"), "utf8");
+    const filled = example
+      .split("\n")
+      .filter((line) => /^[A-Z_]+=/.test(line))
+      .filter((line) => !/=("")?$|\.\.\."$|YOUR-PROJECT-REF/.test(line));
+    expect(filled).toEqual([]);
   });
 });
 
@@ -79,7 +91,11 @@ describe("conventions that keep data consistent", () => {
   it("names AI models only in ai-models.ts", () => {
     const found = source
       .filter(({ file }) => file !== join("src", "lib", "ai-models.ts"))
-      .filter(({ text }) => /["'`](google|openai|anthropic|meta|mistral)\/[\w.-]+["'`]/.test(text))
+      .filter(({ text }) =>
+        /["'`]((google|openai|anthropic|meta|mistral)\/[\w.-]+|(gemini|gpt|claude)-[\w.-]+)["'`]/.test(
+          text,
+        ),
+      )
       .map(({ file }) => file);
     expect(found).toEqual([]);
   });

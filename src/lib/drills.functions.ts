@@ -40,7 +40,7 @@ export type DrillVariantResult =
   | LimitedFailure;
 
 export const getDrillVariant = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<DrillVariantResult> => {
     const meta = LESSONS.find((l) => l.id === data.lessonId);
     if (!meta) return { ok: false, reason: "That drill isn't part of the curriculum." };

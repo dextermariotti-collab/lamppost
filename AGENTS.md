@@ -1,10 +1,10 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Notes for coding agents
+
+Read `CLAUDE.md` first: it holds the architecture, the security model and the rules the tests
+enforce. In short:
+
+- Work on a branch and open a pull request. Don't push to `main`, and don't rewrite history that
+  has been pushed (no force-push, rebase, amend or squash of pushed commits).
+- Before pushing, run what CI runs: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
+- Never put a secret in code, in a `VITE_` variable, or in a committed file. Real values live in
+  `.env` locally (ignored by git) and as Cloudflare secrets in production (`docs/deploy.md`).

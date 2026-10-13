@@ -102,11 +102,11 @@ export async function ensureLessonContent(
     if (isUsableLesson(cached, meta.drills)) return { ok: true, lesson: cached!, cached: true };
   }
 
-  const key = process.env["LOVABLE_API_KEY"];
+  const key = process.env["AI_API_KEY"];
   if (!key) return { ok: false, reason: "ai-unconfigured" };
 
   const { streamText } = await import("ai");
-  const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+  const { createAiProvider } = await import("./ai-gateway.server");
   const { screenOutput } = await import("./moderation.server");
   const { withGuardrails } = await import("./ai-guardrails.server");
   const {
@@ -123,7 +123,7 @@ export async function ensureLessonContent(
   const domains = domainPlan(null, meta.drills.length);
   const difficulty = opts.difficulty ?? 2;
 
-  const gateway = createLovableAiGatewayProvider(key);
+  const gateway = createAiProvider(key);
   const system = exerciseSystemPrompt(meta.drills, meta.written);
   const ask = async (systemPrompt: string, prompt: string) =>
     await streamText({
@@ -260,11 +260,11 @@ export async function generateValidatedDrill(
     conceptBody?: string;
   } = {},
 ): Promise<Exercise | null> {
-  const key = process.env["LOVABLE_API_KEY"];
+  const key = process.env["AI_API_KEY"];
   if (!key) return null;
 
   const { streamText } = await import("ai");
-  const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+  const { createAiProvider } = await import("./ai-gateway.server");
   const { screenOutput } = await import("./moderation.server");
   const { withGuardrails } = await import("./ai-guardrails.server");
   const { variantSystemPrompt, variantPrompt, normalizeExercise, extractJson } =
@@ -273,7 +273,7 @@ export async function generateValidatedDrill(
     await import("./exercise-validate.server");
 
   const difficulty = opts.difficulty ?? 2;
-  const gateway = createLovableAiGatewayProvider(key);
+  const gateway = createAiProvider(key);
   const ask = async (system: string, prompt: string) =>
     await streamText({
       model: gateway(MODEL),

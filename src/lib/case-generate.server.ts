@@ -75,12 +75,12 @@ export type WrittenCase = { ok: true; case: DailyCase } | { ok: false; reason: s
 /** Writes and checks the case for a day. Never stores anything; the caller does. */
 export async function writeCaseForDay(day: string, apiKey: string): Promise<WrittenCase> {
   const { streamText } = await import("ai");
-  const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+  const { createAiProvider } = await import("./ai-gateway.server");
   const { withGuardrails } = await import("./ai-guardrails.server");
   const { screenOutput } = await import("./moderation.server");
   const { extractJson } = await import("./exercise-ai.server");
 
-  const gateway = createLovableAiGatewayProvider(apiKey);
+  const gateway = createAiProvider(apiKey);
   const plan = casePlanForDay(day);
 
   for (let round = 0; round < ROUNDS; round++) {

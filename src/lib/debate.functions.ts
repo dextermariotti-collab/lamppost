@@ -178,12 +178,12 @@ personal details of real named individuals. Nothing partisan about live election
 
 export const challengeToDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ opponentId: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ opponentId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (data.opponentId === userId) throw new Error("You can't debate yourself.");
 
-    const key = process.env["LOVABLE_API_KEY"];
+    const key = process.env["AI_API_KEY"];
     if (!key) throw new Error("AI isn't configured for this project yet.");
 
     // Debates are written by the server (the browser can't insert a pre-graded one),
@@ -204,10 +204,10 @@ export const challengeToDebate = createServerFn({ method: "POST" })
     if (!verdict.ok) throw new Error(verdict.message);
 
     const { streamText } = await import("ai");
-    const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+    const { createAiProvider } = await import("./ai-gateway.server");
     const { screenOutput } = await import("./moderation.server");
     const { withGuardrails } = await import("./ai-guardrails.server");
-    const gateway = createLovableAiGatewayProvider(key);
+    const gateway = createAiProvider(key);
 
     const text = await streamText({
       model: gateway(MODEL),
@@ -271,7 +271,7 @@ export const listDebates = createServerFn({ method: "POST" })
 
 export const getDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<DebateSummary | null> => {
     const { supabase, userId } = context;
     const { data: row, error } = await supabase
@@ -290,7 +290,7 @@ export const getDebate = createServerFn({ method: "POST" })
 
 export const submitDebateResponse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ id: z.string().uuid(), answer: z.string().min(1).max(4000) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -317,7 +317,7 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
       return { ok: false as const, reason: "You've already made your case." };
     }
 
-    const key = process.env["LOVABLE_API_KEY"];
+    const key = process.env["AI_API_KEY"];
     if (!key)
       return { ok: false as const, reason: "Grading isn't configured for this project yet." };
 
@@ -326,10 +326,10 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     if (!verdict.ok) return limitedFailure(verdict);
 
     const { streamText } = await import("ai");
-    const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+    const { createAiProvider } = await import("./ai-gateway.server");
     const { graderSystem, graderPrompt } = await import("./argument.server");
     const { withGuardrails } = await import("./ai-guardrails.server");
-    const gateway = createLovableAiGatewayProvider(key);
+    const gateway = createAiProvider(key);
 
     const side = mine ? typed.challenger_side : typed.opponent_side;
     const graded = await streamText({
@@ -394,7 +394,7 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
 
 export const markDebateSeen = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: row } = await supabase

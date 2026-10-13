@@ -8,7 +8,7 @@
 -- the code that needs it is deployed.
 --
 -- This file is deliberately NOT in supabase/migrations so it is never applied
--- automatically. Run it by hand (Lovable Cloud -> Database -> SQL editor) as an
+-- automatically. Run it by hand (Supabase dashboard -> SQL editor) as an
 -- administrator. It is safe to run more than once. Columns the migration added
 -- (goal, day_key_version, progress_synced_at) are left in place; they are harmless.
 

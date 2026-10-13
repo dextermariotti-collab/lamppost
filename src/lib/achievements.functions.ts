@@ -10,7 +10,7 @@ import type { Badge } from "./achievements";
  */
 export const listAchievements = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => TodayInput.parse(input))
+  .validator((input: unknown) => TodayInput.parse(input))
   .handler(async ({ data, context }): Promise<{ badges: Badge[]; justUnlocked: string[] }> => {
     const { supabase, userId } = context;
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");

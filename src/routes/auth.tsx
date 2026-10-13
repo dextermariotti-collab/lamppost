@@ -9,7 +9,6 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { readDraft, syncDraftAfterSignIn, useSessionUser } from "@/lib/companion-store";
 import { DEFAULT_COMPANION, companionName } from "@/lib/companions";
 import { clearPendingConsent, stashPendingConsent } from "@/lib/consent";
-import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
@@ -93,10 +92,12 @@ function AuthScreen() {
       if (!consent.claim) return;
       stashPendingConsent(consent.claim);
     }
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    // Back to this screen, which attaches the onboarding pick to the account and goes home.
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth` },
     });
-    if (result.error) {
+    if (err) {
       clearPendingConsent();
       setError("Google sign-in didn't complete. Try again.");
       return;

@@ -96,9 +96,9 @@ export const PRIVACY: LegalDoc = {
       review: true,
       body: [
         `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, Check something you saw, and the extra practice drills used in reviews. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
-        `We send it through the Lovable AI Gateway, which at the time of writing routes to a Google Gemini model. We don't send your email, name, handle, friends or account history. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
+        `We send it to Google's Gemini API, which runs a Google Gemini model. We don't send your email, name, handle, friends or account history. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
         "The lessons themselves are written in advance and are not generated for you. AI-written replies are labelled in the app.",
-        "[CONFIRM: whether the AI provider keeps or trains on requests sent through the gateway. Update this paragraph once confirmed.]",
+        "[CONFIRM: Google's terms for the Gemini API differ between unpaid use, where requests may be used to improve Google's products, and paid use, where they are not. Use a key from a billing-enabled project, check the current terms, and update this paragraph.]",
       ],
     },
     {
@@ -108,10 +108,11 @@ export const PRIVACY: LegalDoc = {
         "These companies handle some information so the app works. We don't sell your information and we show no ads; what each company does with what it receives is governed by its own terms.",
         {
           list: [
-            "Lovable (Lovable Cloud): runs our database, sign-in and servers, and the AI gateway described above. Database and sign-in are built on Supabase.",
-            "Google: if you choose Continue with Google, Google signs you in. Separately, this app loads its text fonts from Google Fonts, so when a page loads, your browser contacts Google's font servers and Google sees your network address and browser details. We do not choose what Google does with that.",
+            "Supabase: runs our database and sign-in, and sends sign-in emails.",
+            "Cloudflare: runs our servers, so it sees your network address and browser details when you connect.",
+            "Google: runs the AI model described above (the Gemini API).",
+            "Google, also: if you choose Continue with Google, Google signs you in. Separately, this app loads its text fonts from Google Fonts, so when a page loads, your browser contacts Google's font servers and Google sees your network address and browser details. We do not choose what Google does with that.",
             "QR code service (only if you ask for it): if you tap Show QR code on the Friends screen, your invite link is sent to api.qrserver.com so it can draw the code. Nothing is sent unless you tap.",
-            "Email delivery: confirmation emails are sent through our sign-in provider.",
           ],
         },
         "We may also share information if the law requires it, or to protect someone's safety.",

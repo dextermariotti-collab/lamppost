@@ -96,7 +96,7 @@ export const exportMyData = createServerFn({ method: "POST" })
  */
 export const deleteMyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { confirm: string }) => {
+  .validator((input: { confirm: string }) => {
     if (input?.confirm !== "DELETE") throw new Error("Type DELETE to confirm.");
     return { confirm: "DELETE" as const };
   })

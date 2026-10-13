@@ -12,10 +12,13 @@ const h = vi.hoisted(() => ({
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { auth: { signUp: h.signUp, signInWithPassword: h.signInWithPassword } },
-}));
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth: h.google } },
+  supabase: {
+    auth: {
+      signUp: h.signUp,
+      signInWithPassword: h.signInWithPassword,
+      signInWithOAuth: h.google,
+    },
+  },
 }));
 vi.mock("@/lib/companion-store", () => ({
   readDraft: () => null,
@@ -65,7 +68,10 @@ beforeEach(() => {
   window.localStorage.clear();
   h.signUp.mockResolvedValue({ data: { session: null }, error: null });
   h.signInWithPassword.mockResolvedValue({ error: null });
-  h.google.mockResolvedValue({ redirected: true });
+  h.google.mockResolvedValue({
+    data: { provider: "google", url: "https://example.test" },
+    error: null,
+  });
 });
 afterEach(() => {
   cleanup();
@@ -137,7 +143,10 @@ describe("creating an account", () => {
     fillBirth(yearsAgo(30));
     agree();
     await act(async () => fireEvent.click(googleButton()));
-    expect(h.google).toHaveBeenCalledTimes(1);
+    expect(h.google).toHaveBeenCalledWith({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth` },
+    });
     expect(pending()).toMatchObject({ ageBand: "18+" });
   });
 

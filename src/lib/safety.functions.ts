@@ -29,7 +29,7 @@ async function guard(): Promise<Done | null> {
 
 export const blockUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Person.parse(input))
+  .validator((input: unknown) => Person.parse(input))
   .handler(async ({ data, context }): Promise<Done> => {
     if (data.userId === context.userId) return failed("You can't block yourself.");
     const limited = await guard();
@@ -50,7 +50,7 @@ export const blockUser = createServerFn({ method: "POST" })
 
 export const unblockUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Person.parse(input))
+  .validator((input: unknown) => Person.parse(input))
   .handler(async ({ data, context }): Promise<Done> => {
     const limited = await guard();
     if (limited) return limited;
@@ -107,7 +107,7 @@ export const listBlockedPeople = createServerFn({ method: "POST" })
 
 export const reportUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Report.parse(input))
+  .validator((input: unknown) => Report.parse(input))
   .handler(async ({ data, context }): Promise<Done> => {
     if (data.userId === context.userId) return failed("You can't report yourself.");
     const limited = await guard();
@@ -130,7 +130,7 @@ export const reportUser = createServerFn({ method: "POST" })
 
 export const setProfileVisibility = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ visibility: z.enum(VISIBILITIES) }).parse(input))
+  .validator((input: unknown) => z.object({ visibility: z.enum(VISIBILITIES) }).parse(input))
   .handler(
     async ({
       data,

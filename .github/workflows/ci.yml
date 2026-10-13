@@ -21,9 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # bun.lock points at Lovable's private package mirror and package-lock.json is stale,
-      # so install from package.json alone (see CLAUDE.md, "Dependencies").
-      - run: npm install --no-package-lock --no-audit --no-fund
+          cache: npm
+      - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
       - run: npm run build

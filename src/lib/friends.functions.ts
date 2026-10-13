@@ -81,7 +81,7 @@ const toCard = (row: ProfileRow, asFriend = false): PersonCard => {
 
 export const listFriends = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => TodayInput.parse(input))
+  .validator((input: unknown) => TodayInput.parse(input))
   .handler(async ({ data, context }): Promise<FriendsSnapshot> => {
     const { supabase, userId } = context;
     const today = resolveToday(data);
@@ -237,7 +237,7 @@ export const listFriends = createServerFn({ method: "POST" })
 
 export const searchPeople = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { query: string }) => input)
+  .validator((input: { query: string }) => input)
   .handler(async ({ data, context }): Promise<PersonCard[]> => {
     const query = data.query.trim();
     if (query.length < 2) return [];
@@ -250,7 +250,7 @@ export const searchPeople = createServerFn({ method: "POST" })
 
 export const sendFriendRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string }) => input)
+  .validator((input: { userId: string }) => input)
   .handler(async ({ data, context }) => {
     if (data.userId === context.userId) throw new Error("You can't add yourself.");
     const { error } = await context.supabase.from("friendships").insert({
@@ -272,7 +272,7 @@ export const sendFriendRequest = createServerFn({ method: "POST" })
 
 export const respondToRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { friendshipId: string; accept: boolean }) => input)
+  .validator((input: { friendshipId: string; accept: boolean }) => input)
   .handler(async ({ data, context }) => {
     if (!data.accept) {
       const { error } = await context.supabase
@@ -293,7 +293,7 @@ export const respondToRequest = createServerFn({ method: "POST" })
 
 export const removeFriend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { friendshipId: string }) => input)
+  .validator((input: { friendshipId: string }) => input)
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("friendships")
@@ -305,7 +305,7 @@ export const removeFriend = createServerFn({ method: "POST" })
 
 export const proposeSharedStreak = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { friendshipId: string }) => input)
+  .validator((input: { friendshipId: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Shared streaks are written by the server, so membership is checked here:
@@ -342,7 +342,7 @@ export const proposeSharedStreak = createServerFn({ method: "POST" })
 
 export const respondToSharedStreak = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { sharedStreakId: string; accept: boolean }) => input)
+  .validator((input: { sharedStreakId: string; accept: boolean }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: streak, error: readError } = await supabase
@@ -373,7 +373,7 @@ export const respondToSharedStreak = createServerFn({ method: "POST" })
 
 export const sendNudge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { toUserId: string; sharedStreakId?: string; today?: string }) => input)
+  .validator((input: { toUserId: string; sharedStreakId?: string; today?: string }) => input)
   .handler(async ({ data, context }) => {
     // "One nudge per friend per day" is counted on the sender's local day, the
     // same day listFriends uses to say whether they've already nudged today.
@@ -430,7 +430,7 @@ export const markNudgesRead = createServerFn({ method: "POST" })
 
 export const resolveInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { code: string }) => input)
+  .validator((input: { code: string }) => input)
   .handler(async ({ data, context }): Promise<PersonCard | null> => {
     const { data: rows, error } = await context.supabase.rpc("profile_by_invite", {
       _code: data.code,
@@ -450,7 +450,7 @@ const ownProgress = (profile: { current_streak: number; total_xp: number }) => (
 
 export const getFriendProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { handle: string }) => input)
+  .validator((input: { handle: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Only accepted friends' rows are readable through the browser grant, but this

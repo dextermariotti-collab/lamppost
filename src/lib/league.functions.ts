@@ -153,7 +153,7 @@ async function settleLastWeek(userId: string, lastWeek: string): Promise<LeagueL
 /** This week's standings among the learner's friends, after settling last week. */
 export const getLeague = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => TodayInput.parse(input))
+  .validator((input: unknown) => TodayInput.parse(input))
   .handler(
     async ({
       data,

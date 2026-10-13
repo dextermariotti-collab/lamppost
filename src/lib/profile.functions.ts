@@ -152,7 +152,7 @@ export const getMyProfile = createServerFn({ method: "POST" })
 
 export const updateMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       displayName?: string;
       handle?: string;
@@ -253,7 +253,7 @@ const STREAK_WINDOW_DAYS = 400;
  */
 export const syncProgress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => SyncInput.parse(input))
+  .validator((input: unknown) => SyncInput.parse(input))
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");

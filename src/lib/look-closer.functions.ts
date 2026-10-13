@@ -26,7 +26,7 @@ const COULD_NOT = "That one didn't work out. Try again, or paste a different par
  * for it. Nothing is stored: the text goes to the AI service for this one reply and no further.
  */
 export const lookCloser = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<LookCloserResult> => {
     const text = data.text.trim();
     const problem = lookInputProblem(text);
@@ -34,7 +34,7 @@ export const lookCloser = createServerFn({ method: "POST" })
     const screened = screenLocally(text);
     if (!screened.allowed) return { ok: false, reason: screened.message };
 
-    const key = process.env["LOVABLE_API_KEY"];
+    const key = process.env["AI_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
     const { limiter } = await import("./rate-limit.server");
@@ -43,12 +43,12 @@ export const lookCloser = createServerFn({ method: "POST" })
 
     try {
       const { streamText } = await import("ai");
-      const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+      const { createAiProvider } = await import("./ai-gateway.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
       const { extractJson } = await import("./exercise-ai.server");
       const { LOOK_MODEL, LOOK_SYSTEM, lookPrompt } = await import("./look-closer.server");
-      const gateway = createLovableAiGatewayProvider(key);
+      const gateway = createAiProvider(key);
 
       const reply = await streamText({
         model: gateway(LOOK_MODEL),

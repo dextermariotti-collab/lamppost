@@ -8,7 +8,7 @@ const enforce = vi.hoisted(() => vi.fn());
 vi.mock("./rate-limit.server", () => ({ limiter: () => ({ enforce }) }));
 const model = vi.hoisted(() => ({ streamText: vi.fn() }));
 vi.mock("ai", () => model);
-vi.mock("./ai-gateway.server", () => ({ createLovableAiGatewayProvider: () => () => "model" }));
+vi.mock("./ai-gateway.server", () => ({ createAiProvider: () => () => "model" }));
 const moderation = vi.hoisted(() => ({
   screenOutput: vi.fn(() => ({ allowed: true })),
   logModerationBlock: vi.fn(),
@@ -49,7 +49,7 @@ const gradeInput = (over: Record<string, unknown> = {}) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env["LOVABLE_API_KEY"] = "test-key";
+  process.env["AI_API_KEY"] = "test-key";
   enforce.mockResolvedValue({ ok: true });
 });
 

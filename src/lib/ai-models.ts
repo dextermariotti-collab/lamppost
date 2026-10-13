@@ -1,9 +1,10 @@
 /**
- * The model each AI feature calls, by Lovable AI Gateway name. Kept in one place so moving to a
- * newer model is one change that can't leave a feature behind, and so a feature can be moved on
- * its own when it needs to be. `ai-models.test.ts` fails if a model name appears anywhere else.
+ * The model each AI feature calls, by the name the AI service uses (Google's Gemini API by default;
+ * see `ai-gateway.server.ts`). Kept in one place so moving to a newer model is one change that
+ * can't leave a feature behind, and so a feature can be moved on its own when it needs to be.
+ * `architecture.test.ts` fails if a model name appears anywhere else.
  */
-const FLASH = "google/gemini-3.6-flash";
+const FLASH = "gemini-3.6-flash";
 
 export const AI_MODELS = {
   /** Lesson content and its validation pass (also stored with each cached lesson). */
@@ -19,7 +20,7 @@ export const AI_MODELS = {
   /** "Check something you saw". */
   look: FLASH,
   /** The explain-it-back tutor, a longer back-and-forth. */
-  tutor: "google/gemini-3.7-flash",
+  tutor: "gemini-3.7-flash",
   /** The allow/refuse screen on free text before anything is generated: small and fast. */
-  screen: "google/gemini-3.6-flash-lite",
+  screen: "gemini-3.6-flash-lite",
 } as const;

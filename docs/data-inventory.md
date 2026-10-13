@@ -69,9 +69,10 @@ clearing browser storage.
 
 | Recipient | Data sent | When | Purpose |
 | --- | --- | --- | --- |
-| AI provider (Lovable AI Gateway → a Google Gemini model) | what the learner typed for the tutor, the written-argument grader, a debate answer, or pasted into Check something you saw, and the small piece of lesson text those need; never email, name, handle, friends or history. Pasted text is used for that one reply and not stored by Lamppost | only when one of those features is used | AI replies and feedback |
+| AI provider (Google's Gemini API) | what the learner typed for the tutor, the written-argument grader, a debate answer, or pasted into Check something you saw, and the small piece of lesson text those need; never email, name, handle, friends or history. Pasted text is used for that one reply and not stored by Lamppost | only when one of those features is used | AI replies and feedback |
 | AI provider | lesson, drill and daily-case generation prompts (curriculum text, no learner data) | server-side, when content is missing from the cache, or a day's case is needed after the written cases run out | write lessons, drills and daily cases |
-| Backend/auth host (Lovable Cloud, built on Supabase) | all backend tables above | signed-in use | hosting, auth, database |
+| Database and sign-in (Supabase) | all backend tables above | signed-in use | hosting, auth, database |
+| Cloudflare (Workers) | every request to the app: network address, browser details and the request itself | every visit | runs the app and its server functions |
 | Google (sign-in) | the Google account identity | only if the learner chooses Continue with Google | sign in |
 | Google Fonts | network address and browser details | every page load (fonts are loaded from Google's servers) | typefaces |
 | api.qrserver.com | the invite link (contains the invite code) | only if the learner taps Show QR code | draw the QR code |

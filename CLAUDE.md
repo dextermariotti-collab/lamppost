@@ -2,50 +2,51 @@
 
 Lamppost is a critical-thinking trainer: a fixed 7-unit / 35-lesson curriculum, each lesson
 interactive steps (ending on a harder real-world case) → the idea in full (the lesson's notes) → a
-graded written argument → an "explain it back" tutor chat. It is a mobile-first web app (a 420px "phone frame" that also runs on desktop), built with
-Lovable and two-way synced with this repo.
+graded written argument → an "explain it back" tutor chat. It is a mobile-first web app (a 420px "phone frame" that also runs on desktop). It was started in
+Lovable and moved off it in October 2026: it now builds with plain Vite, deploys to Cloudflare
+Workers, and uses a Supabase project and a Gemini API key of its own (`docs/deploy.md`).
 
 ## Read this first
 
-- **Lovable sync.** `main` syncs both ways with Lovable. Never push to `main`, never force-push,
-  rebase, amend or squash pushed commits (see `AGENTS.md`). Work on a branch and open a PR. Keep
-  every pushed commit buildable — commits on the connected branch show up in the Lovable editor.
-- **Don't hand-edit generated files:** `src/routeTree.gen.ts`, `src/integrations/supabase/*`
-  (client, server client, middleware, types), `drizzle/schema.ts`, `.env`.
+- **Branches.** Never push to `main`, never force-push, rebase, amend or squash pushed commits (see
+  `AGENTS.md`). Work on a branch and open a PR; CI must pass.
+- **Generated files:** `src/routeTree.gen.ts` (TanStack Router, on dev/build),
+  `src/integrations/supabase/types.ts` (`npm run db:types`) and `src/lib/acknowledgements.generated.ts`
+  (`npm run licenses`). Regenerate them; don't hand-edit. The rest of `src/integrations/supabase`
+  (clients, auth middleware) is ordinary code now.
+- **Settings.** `.env.example` lists every setting; real values go in `.env` (ignored by git) and,
+  in production, Cloudflare secrets. `src/architecture.test.ts` fails if a secret could reach the
+  browser or a real value is committed.
 - **Architecture.** `docs/architecture.md` has the October 2026 review: what is solid, how to extend
   each part, and the roadmap in order. `src/architecture.test.ts` enforces the structural rules below.
-- **Two migration folders.** `supabase/migrations/` (timestamped, Lovable Cloud) and
-  `drizzle/migrations/` (drizzle-kit). Both are applied to the same Postgres. Add new SQL to
-  `supabase/migrations/` with a later timestamp than the newest file there.
+- **Migrations** live in `supabase/migrations/` only (`npm run db:push` applies them in order). Add
+  new SQL there with a later timestamp than the newest file. The four `20260920…` files are the
+  former `drizzle/migrations`, folded in at the point Lovable used to apply them.
 
 ## Commands
 
 ```sh
-npm install --no-package-lock   # see "Dependencies" below
-npm run dev                     # vite dev
-npm run build                   # production build (nitro, Cloudflare-style worker output)
-npm test                        # vitest run (pure logic + a few jsdom component tests)
+npm install                     # package-lock.json is the lockfile (npm ci in CI)
+npm run dev                     # vite dev on :8080, loads .env
+npm run build                   # production build: Nitro, Cloudflare Workers output in .output/
+npm run deploy                  # build + wrangler deploy (docs/deploy.md)
+npm test                        # vitest run (pure logic, jsdom components, pglite database rules)
 npm run typecheck               # tsc --noEmit
-npx eslint <files>              # lint (prettier is an eslint rule)
+npm run lint                    # eslint (prettier is an eslint rule); npx eslint --fix <files>
+npm run db:push / db:types      # Supabase CLI: apply migrations / regenerate types
 ```
 
-CI (`.github/workflows/ci.yml`) runs typecheck, tests and build on every PR. Baseline you should not
-make worse: `tsc` reports **zero** errors; eslint reports only pre-existing `prettier/prettier` noise
-in generated or Lovable-authored files (`types.ts`, `previewAuthStorage.ts` plus its `prefer-const`,
-`badges.ts`, `BadgeIcon.tsx`, `legal.health.tsx`). Format only the files you touch; do not run
-`prettier --write .` (it rewrites those unrelated files and creates sync conflicts with Lovable).
-
-**Dependencies.** `bun.lock` is the canonical lockfile but it points at Lovable's private
-package mirror, which returns 403 outside Lovable's sandbox. `package-lock.json` is stale and does
-not match `package.json`. Outside Lovable, install with `npm install --no-package-lock` and don't
-commit lockfile churn you can't verify.
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests and build on every PR, and all four are
+clean: keep them that way. `vite.config.ts` is an explicit config (TanStack Start, React, Tailwind,
+Nitro with the `cloudflare-module` preset; set `NITRO_PRESET` to build for another host).
 
 ## Stack
 
 TanStack Start (React 19, file routes in `src/routes`, server functions via `createServerFn`),
 Tailwind v4 (tokens in `src/styles.css`), shadcn/Radix primitives in `src/components/ui`,
-Supabase (auth + Postgres + RLS) via `@supabase/supabase-js`, Vercel AI SDK talking to the
-Lovable AI Gateway (`LOVABLE_API_KEY`). TypeScript is `strict` with `noUncheckedIndexedAccess` and
+Supabase (auth + Postgres + RLS) via `@supabase/supabase-js`, Vercel AI SDK talking to Google's
+Gemini API through its OpenAI-compatible endpoint (`AI_API_KEY`; `AI_BASE_URL` points it at another
+OpenAI-compatible service; `lib/ai-gateway.server.ts`). Google sign-in is Supabase's own OAuth. TypeScript is `strict` with `noUncheckedIndexedAccess` and
 `exactOptionalPropertyTypes` — index access returns `T | undefined`, and optional props must be
 omitted, not set to `undefined`.
 
@@ -282,9 +283,10 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
 - `requireSupabaseAuth` verifies the bearer token and gives handlers a per-user client that
   respects RLS. Use it on every mutating server function. Public server functions (lesson fetch,
   drill pool, grader) call the AI gateway with server-held credentials — keep inputs bounded.
-- Secrets: only `SUPABASE_URL` and the publishable (anon) key are in `.env`; those are public by
-  design. `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY` and `WARM_TOKEN` must exist only as
-  server environment variables. Never add them to `.env` or client code.
+- Secrets: only `SUPABASE_URL` and the publishable key reach the browser (as `VITE_` values); those
+  are public by design. `SUPABASE_SERVICE_ROLE_KEY`, `AI_API_KEY` and `WARM_TOKEN` are server-only:
+  in the local `.env` (never committed) and as Cloudflare secrets. Never give them a `VITE_` name or
+  read them in client code.
 - User-generated text goes through `lib/moderation.ts` (`screenLocally`) before it reaches a model,
   and generated text through `screenOutput`.
 - When the schema changes, update `docs/data-inventory.md` and `src/lib/legal.ts` (privacy policy).
@@ -296,7 +298,7 @@ invariants, colour contrast of `styles.css`) is tested in node; component tests 
 database rules run against the real migrations in pglite (`src/db`). Tests that depend on the timezone set it
 explicitly (`process.env.TZ`) — the day-boundary suite simulates 9pm US Eastern. `src/architecture.test.ts`
 scans the source for the structural rules: no static import of a `.server` module from browser code,
-secrets only in server code and never in `.env`, every device key prefixed `lamppost-` (account deletion
+secrets only in server code and never under a `VITE_` name, `.env` ignored and `.env.example` blank, every device key prefixed `lamppost-` (account deletion
 clears by that prefix), no UTC day keys outside `days.ts`, model names only in `ai-models.ts`, and a
 rollback in `docs/rollback/` for every migration since the write lockdown. When you fix a bug
 in progress/streak/day logic, add the failing case to those suites first.

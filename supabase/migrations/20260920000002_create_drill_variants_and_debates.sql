@@ -1,3 +1,6 @@
+-- Formerly drizzle/migrations/0002_create_drill_variants_and_debates.sql, which Lovable applied with drizzle-kit between the
+-- 2026-09-07 and 2026-09-28 Supabase migrations. Kept unchanged, in that same order.
+
 -- Fresh drill variants: same skill + drill type, new scenario, cached and shared.
 CREATE TABLE public.drill_variants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

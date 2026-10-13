@@ -14,8 +14,7 @@ export const Route = createFileRoute("/legal/health")({
       { property: "og:title", content: "Not Professional Advice — Lamppost" },
       {
         property: "og:description",
-        content:
-          "Educational use only. Ask a qualified professional about anything that matters.",
+        content: "Educational use only. Ask a qualified professional about anything that matters.",
       },
       { property: "og:type", content: "website" },
     ],

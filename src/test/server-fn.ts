@@ -1,7 +1,7 @@
 /**
  * A stand-in for `createServerFn` so a server function's handler can be run in a
  * test without the framework's request context. It keeps the chain the app uses
- * (`middleware`, `inputValidator`, `handler`) and calls the handler directly with
+ * (`middleware`, `validator`, `handler`) and calls the handler directly with
  * the validated input, so the input schema and the handler are both exercised.
  *
  *   vi.mock("@tanstack/react-start", async () => (await import("@/test/server-fn")).startMock);
@@ -13,7 +13,7 @@ export function createServerFn() {
   let context: unknown = {};
   const chain = {
     middleware: () => chain,
-    inputValidator(fn: (input: unknown) => unknown) {
+    validator(fn: (input: unknown) => unknown) {
       validate = fn;
       return chain;
     },

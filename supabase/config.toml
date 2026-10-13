@@ -1,1 +1,3 @@
-project_id = "yxlzlagdkmvhhucludfv"
+# Used by the Supabase CLI. `supabase link --project-ref <your project ref>` points it at the
+# hosted project; `supabase db push` then applies supabase/migrations in order (docs/deploy.md).
+project_id = "lamppost"

@@ -87,12 +87,10 @@ the learning state. None of it blocks new features, but each gets more expensive
    client, which loads even for signed-out visitors. Load Supabase on first sign-in or sync, and
    add a size budget to CI.
 7. **Regenerate the database types.** `generated_cases` and `profiles.done_lessons` are reached
-   through small untyped accessors (`casesTable`, `doneLessonsOf`), because `types.ts` is generated
-   in Lovable. Once both migrations are applied there, regenerate the types and delete the accessors.
+   through small untyped accessors (`casesTable`, `doneLessonsOf`), because `types.ts` predates them.
+   Once the new Supabase project is built, run `npm run db:types` and delete the accessors.
 8. **Decide on the retired economy.** Gems, carry-over and hint tokens still travel in every sync so
    that accounts stay consistent. If they are not coming back, one migration (with a rollback) can
    drop the columns and tables and shrink the sync payload.
-9. **Lint in CI.** It can't run on the whole tree yet because of formatting noise in generated and
-   Lovable-authored files (`types.ts`, `previewAuthStorage.ts`, `badges.ts`, `BadgeIcon.tsx`,
-   `legal.health.tsx`). Ignore the generated ones in the eslint config, ask Lovable to format the
-   rest, then add `npm run lint` to CI.
+9. ~~**Lint in CI.**~~ Done when the app moved off Lovable: generated files are ignored, the rest is
+   formatted, and CI runs `npm run lint`.

@@ -1,3 +1,6 @@
+-- Formerly drizzle/migrations/0000_create_curriculum_lesson_cache.sql, which Lovable applied with drizzle-kit between the
+-- 2026-09-07 and 2026-09-28 Supabase migrations. Kept unchanged, in that same order.
+
 CREATE TABLE public.curriculum_lessons (
   lesson_id TEXT PRIMARY KEY,
   unit_id TEXT NOT NULL,
