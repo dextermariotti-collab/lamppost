@@ -99,3 +99,22 @@ export function weeklyXpCredit(input: {
   if (input.firstSync) return 0;
   return Math.max(0, input.after - input.before);
 }
+
+/** Most finished lessons an account keeps (the database holds the same bound). */
+export const MAX_DONE_LESSONS = 200;
+
+/**
+ * The account's finished lessons after a sync: what it already had, plus the ids the device
+ * reports that are real lessons. Nothing is ever removed, and an id the curriculum no longer has
+ * stays once stored. Returns null when nothing new would be stored.
+ */
+export function doneLessonsToStore(
+  stored: readonly string[],
+  claimed: readonly string[],
+  known: ReadonlySet<string>,
+): string[] | null {
+  const have = new Set(stored);
+  const added = [...new Set(claimed)].filter((id) => known.has(id) && !have.has(id));
+  if (added.length === 0) return null;
+  return [...stored, ...added].slice(0, MAX_DONE_LESSONS);
+}

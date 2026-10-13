@@ -9,6 +9,7 @@ import {
   TOTAL_LESSONS,
   UNITS,
   lessonAt,
+  lessonPlace,
   nextLessonIndex,
   unitById,
   unitProgress,
@@ -65,7 +66,7 @@ export function LessonFinished({
   const perfect = answered > 0 && accuracy === 100;
   const nextIndex = nextLessonIndex(doneLessons);
   const nextMeta = doneLessons.size < TOTAL_LESSONS ? lessonAt(nextIndex) : undefined;
-  const stop = ((lessonNumber - 1) % 5) + 1;
+  const place = lessonPlace(lessonNumber - 1);
   const { checks } = useUnitChecks();
   const checksLeft = UNITS.filter((u) => !checks[u.id]?.after).length;
 
@@ -74,7 +75,7 @@ export function LessonFinished({
       <div className="px-5 py-8">
         <p className="legend flex items-center gap-2 text-muted-foreground">
           <LineBullet unitId={meta.unitId} />
-          {unit.title} / stop {stop} of 5
+          {unit.title} / stop {place.stop} of {place.stops}
         </p>
         <p className="legend mt-5 text-muted-foreground">
           {mapComplete ? "Map complete" : unitDone ? "Line complete" : "Lesson complete"}

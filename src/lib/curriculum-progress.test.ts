@@ -1,13 +1,88 @@
 import { describe, expect, it } from "vitest";
 import {
-  LESSONS_PER_UNIT,
+  LESSONS,
   TOTAL_LESSONS,
+  UNITS,
+  lessonPlace,
   nextLessonIndex,
   unitEntryIndex,
   unitProgress,
 } from "./curriculum";
 
 const first = (n: number) => new Set(Array.from({ length: n }, (_, i) => i));
+const firstUnitSize = LESSONS.filter((lesson) => lesson.unitId === UNITS[0]!.id).length;
+
+/**
+ * Finished lessons are saved and synced by id, so an id that has shipped is permanent: renaming
+ * one would quietly un-finish that lesson for everyone who did it. Add a lesson rather than
+ * rename one. Retiring a lesson on purpose means taking it off this list in the same change
+ * (saved progress keeps the old id either way).
+ */
+const SHIPPED_LESSON_IDS = [
+  "claims-the-actual-claim",
+  "claims-hidden-assumptions",
+  "claims-facts-opinions-values",
+  "claims-burden-of-proof",
+  "claims-vague-language",
+  "evidence-types",
+  "evidence-anecdote-vs-data",
+  "evidence-source-reliability",
+  "evidence-correlation-causation",
+  "evidence-sample-cherry-picking",
+  "fallacies-adhominem-strawman",
+  "fallacies-dilemma-slippery-slope",
+  "fallacies-authority-popularity",
+  "fallacies-circular-reasoning",
+  "fallacies-hasty-generalization",
+  "biases-confirmation",
+  "biases-anchoring",
+  "biases-availability",
+  "biases-sunk-cost",
+  "biases-overconfidence",
+  "arguments-premise-conclusion",
+  "arguments-strong-vs-weak",
+  "arguments-steelmanning",
+  "arguments-counterarguments",
+  "arguments-qualifying-claims",
+  "probability-base-rates",
+  "probability-expected-value",
+  "probability-thinking-in-bets",
+  "probability-updating-beliefs",
+  "probability-second-order",
+  "media-headlines-vs-findings",
+  "media-misleading-charts",
+  "media-manipulation",
+  "media-ai-answers",
+  "media-lateral-reading",
+];
+
+describe("lesson ids", () => {
+  it("keeps every id that has shipped", () => {
+    const ids = new Set(LESSONS.map((lesson) => lesson.id));
+    expect(SHIPPED_LESSON_IDS.filter((id) => !ids.has(id))).toEqual([]);
+  });
+
+  it("never repeats one", () => {
+    expect(new Set(LESSONS.map((lesson) => lesson.id)).size).toBe(LESSONS.length);
+  });
+});
+
+describe("where a lesson sits", () => {
+  it("keeps each unit's lessons together, in unit order", () => {
+    const order = LESSONS.map((lesson) => lesson.unitId).filter((id, i, all) => id !== all[i - 1]);
+    expect(order).toEqual(UNITS.map((unit) => unit.id));
+  });
+
+  it("names the unit and the stop from the lessons themselves", () => {
+    LESSONS.forEach((lesson, index) => {
+      const place = lessonPlace(index);
+      const unitLessons = LESSONS.filter((l) => l.unitId === lesson.unitId);
+      expect(UNITS[place.unitIndex]!.id).toBe(lesson.unitId);
+      expect(place.stops).toBe(unitLessons.length);
+      expect(unitLessons[place.stop - 1]!.id).toBe(lesson.id);
+    });
+  });
+});
 
 describe("nextLessonIndex", () => {
   it("suggests the first lesson to a newcomer", () => {
@@ -44,7 +119,7 @@ describe("unitProgress", () => {
     const units = unitProgress(new Set([0, 1, 27]));
     expect(units[0]).toMatchObject({
       completed: 2,
-      total: LESSONS_PER_UNIT,
+      total: firstUnitSize,
       pct: 40,
       state: "current",
     });
@@ -54,8 +129,8 @@ describe("unitProgress", () => {
   });
 
   it("marks a finished unit complete and moves 'current' to the one holding the next lesson", () => {
-    const units = unitProgress(first(LESSONS_PER_UNIT));
-    expect(units[0]).toMatchObject({ completed: LESSONS_PER_UNIT, pct: 100, state: "complete" });
+    const units = unitProgress(first(firstUnitSize));
+    expect(units[0]).toMatchObject({ completed: firstUnitSize, pct: 100, state: "complete" });
     expect(units[1]!.state).toBe("current");
     expect(units[2]!.state).toBe("open");
   });

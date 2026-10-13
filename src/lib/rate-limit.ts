@@ -97,14 +97,6 @@ export const POLICIES = {
     ip: [t("hour", 40)],
     global: [t("day", 3000)],
   },
-  /** Open-ended course generation. The app no longer has a screen for it. */
-  topicGeneration: {
-    label: "course creation",
-    guest: [t("day", 3)],
-    user: [t("hour", 3), t("day", 8)],
-    ip: [t("day", 10)],
-    global: [t("day", 100)],
-  },
   /** The "explain it back" tutor. Signed-in only. */
   practiceTurn: {
     label: "practice chat",

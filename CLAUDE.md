@@ -12,6 +12,8 @@ Lovable and two-way synced with this repo.
   every pushed commit buildable — commits on the connected branch show up in the Lovable editor.
 - **Don't hand-edit generated files:** `src/routeTree.gen.ts`, `src/integrations/supabase/*`
   (client, server client, middleware, types), `drizzle/schema.ts`, `.env`.
+- **Architecture.** `docs/architecture.md` has the October 2026 review: what is solid, how to extend
+  each part, and the roadmap in order. `src/architecture.test.ts` enforces the structural rules below.
 - **Two migration folders.** `supabase/migrations/` (timestamped, Lovable Cloud) and
   `drizzle/migrations/` (drizzle-kit). Both are applied to the same Postgres. Add new SQL to
   `supabase/migrations/` with a later timestamp than the newest file there.
@@ -23,17 +25,15 @@ npm install --no-package-lock   # see "Dependencies" below
 npm run dev                     # vite dev
 npm run build                   # production build (nitro, Cloudflare-style worker output)
 npm test                        # vitest run (pure logic + a few jsdom component tests)
-npx tsc --noEmit                # typecheck
+npm run typecheck               # tsc --noEmit
 npx eslint <files>              # lint (prettier is an eslint rule)
 ```
 
-Baseline you should not make worse: `tsc` reports one pre-existing error
-(`src/routes/__root.tsx` `errorComponent` prop type) and eslint reports pre-existing
-`prettier/prettier` noise in a few generated or Lovable-authored files (`types.ts`, `badges.ts`,
-`BadgeIcon.tsx`, `CompanionAura.tsx`, `share-image.ts`, `settings.tsx`, `previewAuthStorage.ts`)
-plus three non-prettier errors (`prefer-const` in `previewAuthStorage.ts`, two `no-explicit-any`
-in `practice.functions.ts`). Format only the files you touch; do not run `prettier --write .` (it
-rewrites those unrelated files and creates sync conflicts with Lovable).
+CI (`.github/workflows/ci.yml`) runs typecheck, tests and build on every PR. Baseline you should not
+make worse: `tsc` reports **zero** errors; eslint reports only pre-existing `prettier/prettier` noise
+in generated or Lovable-authored files (`types.ts`, `previewAuthStorage.ts` plus its `prefer-const`,
+`badges.ts`, `BadgeIcon.tsx`, `legal.health.tsx`). Format only the files you touch; do not run
+`prettier --write .` (it rewrites those unrelated files and creates sync conflicts with Lovable).
 
 **Dependencies.** `bun.lock` is the canonical lockfile but it points at Lovable's private
 package mirror, which returns 403 outside Lovable's sandbox. `package-lock.json` is stale and does
@@ -57,7 +57,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 
 | Key | Module | Holds |
 | --- | --- | --- |
-| `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history`, per-course lesson counts, the finished lessons (`doneLessons`) |
+| `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history`, per-course lesson counts, the finished lessons (`doneLessonIds`, with `doneLessons` positions derived from them) |
 | `lamppost-courses-v1` | `lib/course-store.ts`, `lib/curriculum-store.ts` | the curriculum course + downloaded lesson content |
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
 | `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d → 30d → 60d → 120d), including the upkeep of finished units |
@@ -72,10 +72,19 @@ prove a lesson was done** — see "Security model".
 
 ### Progress, streaks and days
 - **Every unit is open from day one.** The 35 lessons have a suggested order, not a lock: any lesson can
-  be started, and finishing one records *that* lesson (`doneLessons`, 0-based indexes; `courses[slug].completed`
-  is always its size). A save from before this has only the count and reads as the first N lessons
-  (`doneLessonIndexes`). Use `useProgress().doneLessons` (a `Set`) with `nextLessonIndex`, `unitProgress` and
-  `unitEntryIndex`; never treat `completed` as "everything before this is done".
+  be started, and finishing one records *that* lesson. Finished lessons are **saved by id**
+  (`doneLessonIds`); the 0-based positions in `doneLessons` are derived from the ids whenever the state
+  is loaded or saved (`loadLessons`/`saveLessons`), so adding or reordering a lesson never moves anyone's
+  progress. Older saves (positions, or only a count) upgrade on read. Use `useProgress().doneLessons`
+  (a `Set` of positions) with `nextLessonIndex`, `unitProgress` and `unitEntryIndex`; never treat
+  `completed` as "everything before this is done". **A shipped lesson id is permanent**
+  (`curriculum-progress.test.ts` pins them): add a lesson rather than rename one.
+- **Unit sizes come from the data.** Never write `% 5` or `index * 5`: `lessonPlace(index)` gives the
+  unit and "stop n of m", and `unitProgress` works out each unit's span from `LESSONS`.
+- **Finished lessons follow the account.** `syncProgress` adds the device's ids to `profiles.done_lessons`
+  (server-only, known ids only, never removes one) and returns the list; `getMyProfile` returns it on
+  sign-in and the device unions it in (`adoptLessons`). The rest of the learning state (reviews,
+  ratings, checks) is still device-only — see `docs/architecture.md`, roadmap 2.
 - **The day boundary is the device's local calendar day**, as a `YYYY-MM-DD` key. Use
   `dayKey()` / `shiftDay()` from `lib/days.ts` (never `toISOString().slice(0, 10)`, which is UTC).
   History keys, `lastActiveDay`, freeze logs, review due dates and the daily case all use it.
@@ -229,8 +238,8 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
   browser role either — read the owner's row on the server. Don't add a client-side write path
   for any of this; `src/db/rls.test.ts` runs the real migrations in an in-memory Postgres and fails
   if the allowlist grows. `syncProgress` (`profile.functions.ts`) is the only way progress reaches
-  the account: it recomputes the streak from stored activity and bounds XP/gems and back-dating
-  (`lib/progress-limits.ts`) — it cannot prove a lesson was done.
+  the account: it recomputes the streak from stored activity, bounds XP/gems and back-dating, and only
+  adds known lesson ids to `done_lessons` (`lib/progress-limits.ts`) — it cannot prove a lesson was done.
 - **Gems (retired) were spent only on the server.** The account keeps `gems_earned` (reported by
   devices in each sync, bounded, only rises) and `gems_spent` (changed only by `spend_gems()`, one
   atomic statement). Nothing calls it now; if anything is ever sold again, it goes through that
@@ -261,6 +270,8 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
   pair). Search and invite lookup never return a streak. Every model call passes its system prompt through
   `withGuardrails()` (`ai-guardrails.server.ts`); `ai-guardrails.test.ts` scans the source and fails if a
   call skips it.
+- **Models are named in one place.** `lib/ai-models.ts` maps each feature to its gateway model;
+  `architecture.test.ts` fails if a model name appears anywhere else.
 - **Public AI endpoints are rate limited in the database** (`lib/rate-limit.ts` holds the numbers,
   `rate-limit.server.ts` enforces them and **fails closed**). Cached content is served without
   touching the limiter; only a cache miss that would call the model is counted, under a per-job
@@ -283,7 +294,11 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
 Vitest (`npm test`). Pure logic (`lib/days.ts`, `lib/streak.ts`, `lib/progress-core.ts`, curriculum
 invariants, colour contrast of `styles.css`) is tested in node; component tests use jsdom; the
 database rules run against the real migrations in pglite (`src/db`). Tests that depend on the timezone set it
-explicitly (`process.env.TZ`) — the day-boundary suite simulates 9pm US Eastern. When you fix a bug
+explicitly (`process.env.TZ`) — the day-boundary suite simulates 9pm US Eastern. `src/architecture.test.ts`
+scans the source for the structural rules: no static import of a `.server` module from browser code,
+secrets only in server code and never in `.env`, every device key prefixed `lamppost-` (account deletion
+clears by that prefix), no UTC day keys outside `days.ts`, model names only in `ai-models.ts`, and a
+rollback in `docs/rollback/` for every migration since the write lockdown. When you fix a bug
 in progress/streak/day logic, add the failing case to those suites first.
 
 ## Conventions

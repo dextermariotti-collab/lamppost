@@ -16,6 +16,7 @@ import {
   TOTAL_LESSONS,
   UNITS,
   lessonAt,
+  lessonPlace,
   nextLessonIndex,
   unitById,
   unitProgress,
@@ -105,6 +106,7 @@ function Home() {
   const next = lessonAt(nextIndex);
   const finished = lessonsDone >= TOTAL_LESSONS;
   const unit = unitById(next?.unitId ?? "claims");
+  const place = lessonPlace(nextIndex);
   const minutes = Math.max(5, (next?.drills.length ?? 4) * 2);
 
   const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
@@ -156,7 +158,7 @@ function Home() {
           <section className="sign mt-2 p-4">
             <p className="legend flex items-center gap-2 text-muted-foreground">
               <LineBullet unitId={unit.id} />
-              {unit.title} / stop {(nextIndex % 5) + 1} of 5
+              {unit.title} / stop {place.stop} of {place.stops}
             </p>
             <h1 className="mt-2.5 text-[28px] leading-[1.05]">{next?.title}</h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{next?.objective}</p>

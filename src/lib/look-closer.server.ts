@@ -1,4 +1,5 @@
 import { LESSONS, unitById } from "./curriculum";
+import { AI_MODELS } from "./ai-models";
 import { LOOK_SOURCES, type LookSource } from "./look-closer";
 
 /**
@@ -7,7 +8,7 @@ import { LOOK_SOURCES, type LookSource } from "./look-closer";
  * text is true: that stays with the learner.
  */
 
-export const LOOK_MODEL = "google/gemini-3.6-flash";
+export const LOOK_MODEL = AI_MODELS.look;
 
 export const LOOK_SYSTEM = `You help a learner on Lamppost, a critical-thinking trainer, look closely at a piece of text they came across: a post, an advert, a headline, a chatbot answer.
 Your job is to point them to the questions from their lessons that matter most for this text, and to show where in the text to look. You never decide for them.

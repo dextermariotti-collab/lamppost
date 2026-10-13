@@ -4,6 +4,7 @@ import { Download, Loader2, Mail, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteMyAccount, exportMyData } from "@/lib/account-data.functions";
+import { dayKey } from "@/lib/days";
 import { clearDeviceData } from "@/lib/device-data";
 import { CONTACT_EMAIL, contactHref } from "@/lib/legal-config";
 
@@ -34,7 +35,7 @@ export function YourDataSection() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `lamppost-data-${new Date().toISOString().slice(0, 10)}.json`;
+      link.download = `lamppost-data-${dayKey()}.json`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {

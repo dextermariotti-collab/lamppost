@@ -1,4 +1,5 @@
 import { DAILY_CASES } from "@/content/cases";
+import { AI_MODELS } from "./ai-models";
 import {
   asReplyExample,
   casePlanForDay,
@@ -16,7 +17,7 @@ import { CASE_SOURCES, CASE_TEXT_WORDS, type DailyCase } from "./daily-case";
  * answer. Anything that fails is thrown away; the learner then gets an older written case.
  */
 
-export const CASE_MODEL = "google/gemini-3.6-flash";
+export const CASE_MODEL = AI_MODELS.cases;
 const ROUNDS = 2;
 
 export const CASE_WRITER_SYSTEM = `You write the daily case for Lamppost, a critical-thinking trainer.

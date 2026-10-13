@@ -9,7 +9,13 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { WrittenArgument } from "@/components/exercises/WrittenArgument";
 import { useCompanion, useSessionUser } from "@/lib/companion-store";
-import { CURRICULUM_SLUG, TOTAL_LESSONS, unitById, type CurriculumLesson } from "@/lib/curriculum";
+import {
+  CURRICULUM_SLUG,
+  TOTAL_LESSONS,
+  lessonPlace,
+  unitById,
+  type CurriculumLesson,
+} from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useLessonAttempts } from "@/lib/exercise-store";
 import { recordWrittenScore } from "@/lib/mastery";
@@ -77,6 +83,7 @@ export function StepLesson({
   } = useProgress();
   const { record } = useLessonAttempts(meta.id);
   const unit = unitById(meta.unitId);
+  const place = lessonPlace(lessonNumber - 1);
 
   const [phase, setPhase] = useState<Phase>("steps");
   const [results, setResults] = useState<Record<number, StepResult>>({});
@@ -215,7 +222,7 @@ export function StepLesson({
           <div className="px-5 pb-3">
             <p className="legend flex items-center gap-2 text-muted-foreground">
               <LineBullet unitId={meta.unitId} />
-              {unit.title} / stop {((lessonNumber - 1) % 5) + 1} of 5
+              {unit.title} / stop {place.stop} of {place.stops}
             </p>
             <h1 className="mt-2 text-[26px] leading-[1.08]">{meta.title}</h1>
           </div>

@@ -627,7 +627,24 @@ export const lessonIndexOf = (id: string) => LESSONS.findIndex((lesson) => lesso
 
 export const TOTAL_LESSONS = LESSONS.length;
 
-export const LESSONS_PER_UNIT = 5;
+/**
+ * Where each unit's lessons sit in `LESSONS`. Read from the lessons themselves, so a unit can
+ * gain or lose a lesson without any position arithmetic changing.
+ */
+const UNIT_SPANS = UNITS.map((unit) => ({
+  start: LESSONS.findIndex((lesson) => lesson.unitId === unit.id),
+  count: LESSONS.filter((lesson) => lesson.unitId === unit.id).length,
+}));
+
+/** Where a lesson sits on its line: its unit's index, and "stop n of m". */
+export function lessonPlace(index: number): { unitIndex: number; stop: number; stops: number } {
+  const found = UNIT_SPANS.findIndex(
+    (span) => index >= span.start && index < span.start + span.count,
+  );
+  const unitIndex = Math.max(0, found);
+  const span = UNIT_SPANS[unitIndex]!;
+  return { unitIndex, stop: Math.max(0, index - span.start) + 1, stops: span.count };
+}
 
 /**
  * Zero-based index of the lesson to suggest next: the first one not finished, or the last
@@ -654,7 +671,7 @@ export function unitProgress(done: ReadonlySet<number>): UnitProgress[] {
   const next = nextLessonIndex(done);
   return UNITS.map((unit, index) => {
     const lessons = LESSONS.filter((lesson) => lesson.unitId === unit.id);
-    const start = index * LESSONS_PER_UNIT;
+    const { start } = UNIT_SPANS[index]!;
     const finished = lessons.filter((_, i) => done.has(start + i)).length;
     const pct = lessons.length > 0 ? Math.round((finished / lessons.length) * 100) : 0;
     const holdsNext = next >= start && next < start + lessons.length;
@@ -676,11 +693,11 @@ export function unitProgress(done: ReadonlySet<number>): UnitProgress[] {
  * lesson to go back over once they all are.
  */
 export function unitEntryIndex(unitIndex: number, done: ReadonlySet<number>): number {
-  const start = unitIndex * LESSONS_PER_UNIT;
-  for (let i = start; i < start + LESSONS_PER_UNIT && i < TOTAL_LESSONS; i++) {
+  const { start, count } = UNIT_SPANS[unitIndex] ?? { start: 0, count: 0 };
+  for (let i = start; i < start + count; i++) {
     if (!done.has(i)) return i;
   }
-  return start;
+  return Math.max(0, start);
 }
 
 export type UnitLink = CurriculumLink & { fromUnit: string; toUnit: string };

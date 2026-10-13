@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_STATE,
+  adoptLessons,
   adoptWallet,
   applyLessonComplete,
   applyUnlockLessons,
   doneLessonIndexes,
+  loadLessons,
+  saveLessons,
   applyReview,
   applyCase,
   deriveInsights,
@@ -274,5 +277,85 @@ describe("wallet adoption with grants", () => {
     const local = { ...DEFAULT_STATE, gems: 50, gemsGranted: 20 };
     expect(adoptWallet(local, { spent: 0 })).toBe(local);
     expect(adoptWallet(local, { spent: 5 }).gems).toBe(45);
+  });
+});
+
+describe("finished lessons are kept by id", () => {
+  const course = { slug: "critical-thinking", topic: "Critical thinking" };
+  const v1 = ["a", "b", "c"];
+
+  it("turns an older save's indexes into ids", () => {
+    const loaded = loadLessons({ ...DEFAULT_STATE, doneLessons: [1] }, v1, course);
+    expect(loaded.doneLessonIds).toEqual(["b"]);
+    expect(loaded.doneLessons).toEqual([1]);
+  });
+
+  it("reads a save from before indexes existed (only a count) as the first lessons", () => {
+    const counted = {
+      ...DEFAULT_STATE,
+      courses: { [course.slug]: { topic: course.topic, completed: 2, total: 3 } },
+    };
+    expect(loadLessons(counted, v1, course).doneLessonIds).toEqual(["a", "b"]);
+  });
+
+  it("keeps the right lessons done when one is inserted or the order changes", () => {
+    const saved = saveLessons({ ...DEFAULT_STATE, doneLessons: [1, 2] }, v1, course);
+    expect(saved.doneLessonIds).toEqual(["b", "c"]);
+    const v2 = ["a", "new", "c", "b"];
+    const reloaded = loadLessons(saved, v2, course);
+    expect(reloaded.doneLessons).toEqual([2, 3]);
+    expect(reloaded.courses[course.slug]?.completed).toBe(2);
+  });
+
+  it("ignores stale indexes once ids are saved", () => {
+    const stale = { ...DEFAULT_STATE, doneLessonIds: ["c"], doneLessons: [0] };
+    expect(loadLessons(stale, v1, course).doneLessons).toEqual([2]);
+  });
+
+  it("keeps the id of a lesson that is gone, so it's still done if it comes back", () => {
+    const loaded = loadLessons({ ...DEFAULT_STATE, doneLessonIds: ["b", "retired"] }, v1, course);
+    expect(loaded.doneLessons).toEqual([1]);
+    const saved = saveLessons({ ...loaded, doneLessons: [0, 1] }, v1, course);
+    expect(saved.doneLessonIds).toEqual(["b", "retired", "a"]);
+  });
+
+  it("saves a lesson finished now by its id", () => {
+    const loaded = loadLessons(DEFAULT_STATE, v1, course);
+    const next = applyLessonComplete(
+      loaded,
+      { slug: course.slug, topic: course.topic, index: 2, total: 3 },
+      "2026-09-23",
+      1,
+      never,
+    );
+    expect(saveLessons(next, v1, course).doneLessonIds).toEqual(["c"]);
+  });
+
+  it("adds the lessons another device finished, and shows them once saved", () => {
+    const here = loadLessons({ ...DEFAULT_STATE, doneLessons: [0] }, v1, course);
+    const merged = adoptLessons(here, ["c", "a"]);
+    expect(saveLessons(merged, v1, course)).toMatchObject({
+      doneLessonIds: ["a", "c"],
+      doneLessons: [0, 2],
+    });
+    expect(adoptLessons(merged, ["a"])).toBe(merged);
+  });
+
+  it("brings the account's lessons to a new device on sign-in", () => {
+    const account = {
+      totalXp: 0,
+      gems: 0,
+      gemsEarned: 0,
+      gemsGranted: 0,
+      gemsSpent: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastActiveDay: null,
+      doneLessons: ["b"],
+    };
+    const fresh = loadLessons(DEFAULT_STATE, v1, course);
+    const merged = mergeAccountProgress(fresh, account, "2026-09-23");
+    expect(saveLessons(merged, v1, course).doneLessons).toEqual([1]);
+    expect(mergeAccountProgress(merged, account, "2026-09-23")).toBe(merged);
   });
 });

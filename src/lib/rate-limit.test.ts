@@ -63,11 +63,6 @@ describe("checksFor", () => {
 });
 
 describe("policies protect the expensive paths", () => {
-  it("has a tight cap on the unused topic-generation endpoints", () => {
-    const day = POLICIES.topicGeneration.guest.find((t) => t.name === "day")!;
-    expect(day.max).toBeLessThanOrEqual(5);
-  });
-
   it("caps lesson generation globally, per hour", () => {
     expect(POLICIES.lessonGeneration.global.some((t) => t.name === "hour")).toBe(true);
   });

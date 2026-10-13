@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
-import { CURRICULUM_SLUG } from "./curriculum";
+import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS } from "./curriculum";
 import { dayKey, shiftDay } from "./days";
 import { migrateHistoryToLocalDays, readActivityTimes } from "./progress-migrate";
 import { withWeeklyXp } from "./weekly-xp";
@@ -9,6 +9,7 @@ import {
   DAY_KEY_VERSION,
   DEFAULT_STATE,
   applyArgument,
+  adoptLessons,
   adoptWallet,
   applyExercise,
   applyLessonComplete,
@@ -19,7 +20,9 @@ import {
   doneLessonIndexes,
   effectiveStreak,
   gemsEarned,
+  loadLessons,
   mergeAccountProgress,
+  saveLessons,
   type ProgressState,
 } from "./progress-core";
 
@@ -41,6 +44,9 @@ export { dayKey, shiftDay };
 
 const KEY = "lamppost-progress-v1";
 const PROGRESS_EVENT = "lamppost-progress-change";
+/** Today's lessons, so finished lessons saved by id map to where they sit now. */
+const LESSON_ORDER = LESSONS.map((lesson) => lesson.id);
+const COURSE = { slug: CURRICULUM_SLUG, topic: CURRICULUM_TITLE };
 
 /**
  * Loads the saved state. Progress written by older builds keyed days by their
@@ -57,14 +63,14 @@ function read(): ProgressState {
       ...parsed,
       dayKeyVersion: typeof parsed.dayKeyVersion === "number" ? parsed.dayKeyVersion : 1,
     };
-    if (loaded.dayKeyVersion >= DAY_KEY_VERSION) return loaded;
+    if (loaded.dayKeyVersion >= DAY_KEY_VERSION) return loadLessons(loaded, LESSON_ORDER, COURSE);
     const migrated = migrateHistoryToLocalDays(loaded, readActivityTimes(window.localStorage));
     try {
       window.localStorage.setItem(KEY, JSON.stringify(migrated));
     } catch {
       /* the in-memory copy is still correct */
     }
-    return migrated;
+    return loadLessons(migrated, LESSON_ORDER, COURSE);
   } catch {
     return DEFAULT_STATE;
   }
@@ -119,6 +125,7 @@ function syncPayload(state: ProgressState) {
     totalXp: state.xp,
     gemsEarned: gemsEarned(state),
     history: state.history,
+    doneLessons: state.doneLessonIds ?? [],
     freezeLog: state.freezeLog,
     today: dayKey(),
     dayKeyVersion: state.dayKeyVersion,
@@ -134,7 +141,8 @@ function syncPayload(state: ProgressState) {
 const signatureOf = (payload: ReturnType<typeof syncPayload>) =>
   JSON.stringify({ ...payload, carryOver: undefined });
 
-function writeState(next: ProgressState) {
+function writeState(changed: ProgressState) {
+  const next = saveLessons(changed, LESSON_ORDER, COURSE);
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
@@ -194,13 +202,16 @@ export function useProgress() {
     if (signature === lastSynced.current) return;
     lastSynced.current = signature;
     void syncProgress({ data: payload })
-      // The account is the truth for what has been spent and granted, wherever that happened.
+      // The account is the truth for what has been spent and granted, wherever that happened,
+      // and holds the lessons finished on other devices.
       .then((account) =>
         update(
-          (prev) => adoptWallet(prev, { spent: account.gemsSpent, granted: account.gemsGranted }),
-          {
-            earned: false,
-          },
+          (prev) =>
+            adoptLessons(
+              adoptWallet(prev, { spent: account.gemsSpent, granted: account.gemsGranted }),
+              account.doneLessons,
+            ),
+          { earned: false },
         ),
       )
       .catch(() => undefined);

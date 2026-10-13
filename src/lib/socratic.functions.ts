@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { AI_MODELS } from "./ai-models";
 import { screenLocally } from "./moderation";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
-const MODEL = "google/gemini-3.6-flash";
+const MODEL = AI_MODELS.socratic;
 
 const Input = z.object({
   mode: z.enum(["question", "reply"]),

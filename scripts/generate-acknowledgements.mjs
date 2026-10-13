@@ -17,7 +17,9 @@ function licenceOf(info) {
 
 function urlOf(info) {
   const raw =
-    info.homepage ?? (typeof info.repository === "string" ? info.repository : info.repository?.url) ?? "";
+    info.homepage ??
+    (typeof info.repository === "string" ? info.repository : info.repository?.url) ??
+    "";
   return String(raw)
     .replace(/^git\+/, "")
     .replace(/^git:\/\//, "https://")

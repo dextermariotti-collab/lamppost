@@ -40,11 +40,7 @@ describe("the app's copy", () => {
     const found: string[] = [];
     for (const file of files) {
       // The prompts sent to the model may say "think sharper"; only what a learner reads counts.
-      if (
-        /\.server\.ts$/.test(file) ||
-        /ai-guardrails|exercise-ai|course-ai|thinking\.ts/.test(file)
-      )
-        continue;
+      if (/\.server\.ts$/.test(file) || /ai-guardrails|exercise-ai/.test(file)) continue;
       // Comments explain the code; only what a learner can read counts.
       const source = readFileSync(file, "utf8")
         .split("\n")

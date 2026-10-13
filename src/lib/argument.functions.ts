@@ -1,11 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { AI_MODELS } from "./ai-models";
 import { screenLocally } from "./moderation";
 import { LESSONS } from "./curriculum";
 import { WRITTEN_TASKS, type ArgumentGrade, type RubricCriterion } from "./exercises";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
-const MODEL = "google/gemini-3.6-flash";
+const MODEL = AI_MODELS.grading;
 
 /** Longest answer the grader will read; matches the answer box in the lesson. */
 export const MAX_ANSWER_CHARS = 3000;

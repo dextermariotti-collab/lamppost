@@ -6,7 +6,9 @@ import type { UnitMastery } from "@/lib/mastery";
 import { SkillsCard } from "./SkillsCard";
 
 vi.mock("@/components/ThinkingGraph", () => ({
-  ThinkingGraph: ({ done }: { done: ReadonlySet<number> }) => <div>graph of {done.size} lessons</div>,
+  ThinkingGraph: ({ done }: { done: ReadonlySet<number> }) => (
+    <div>graph of {done.size} lessons</div>
+  ),
 }));
 
 afterEach(cleanup);

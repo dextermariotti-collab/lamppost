@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeAdmin } from "@/test/admin";
+import type { FriendsSnapshot, PersonCard, getFriendProfile } from "./friends.functions";
 
 vi.mock("@tanstack/react-start", async () => (await import("@/test/server-fn")).startMock);
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
@@ -28,10 +29,11 @@ const profile = (id: string, handle: string, visibility: string, streak: number,
   companion_expression: "happy",
 });
 
-type Fn = (i: unknown) => Promise<any>;
-const call = async (name: string, data: unknown, supabase: unknown) => {
+type Fn = (i: unknown) => Promise<unknown>;
+type FriendProfile = Awaited<ReturnType<typeof getFriendProfile>>;
+const call = async <T>(name: string, data: unknown, supabase: unknown): Promise<T> => {
   const mod = (await import("./friends.functions")) as unknown as Record<string, Fn>;
-  return mod[name]!({ data, context: { userId: ME, supabase } });
+  return (await mod[name]!({ data, context: { userId: ME, supabase } })) as T;
 };
 
 beforeEach(() => {
@@ -65,13 +67,13 @@ describe("the friends list", () => {
       shared_streaks: { rows: [] },
       nudges: { rows: [] },
     });
-    return call("listFriends", { today: TODAY }, user.client);
+    return call<FriendsSnapshot>("listFriends", { today: TODAY }, user.client);
   };
 
   it("shows streak, XP and today's activity only for a friend who shares", async () => {
     const snapshot = await listAsMe();
-    const sharer = snapshot.friends.find((f: any) => f.handle === "sharer");
-    const hidden = snapshot.friends.find((f: any) => f.handle === "private");
+    const sharer = snapshot.friends.find((f) => f.handle === "sharer");
+    const hidden = snapshot.friends.find((f) => f.handle === "private");
     expect(sharer).toMatchObject({
       sharesProgress: true,
       currentStreak: 5,
@@ -99,7 +101,7 @@ describe("finding people", () => {
       data: [{ ...profile(SHARER, "sharer", "friends", 5, 100), total_xp: undefined }],
       error: null,
     });
-    const [person] = await call("searchPeople", { query: "shar" }, user.client);
+    const [person] = await call<PersonCard[]>("searchPeople", { query: "shar" }, user.client);
     expect(person).toMatchObject({ handle: "sharer", currentStreak: null, sharesProgress: false });
     expect(person).not.toHaveProperty("totalXp");
   });
@@ -110,7 +112,7 @@ describe("finding people", () => {
       data: [profile(SHARER, "sharer", "friends", 5, 100)],
       error: null,
     });
-    const person = await call("resolveInvite", { code: "abc" }, user.client);
+    const person = await call<PersonCard>("resolveInvite", { code: "abc" }, user.client);
     expect(person.currentStreak).toBeNull();
     expect(person.sharesProgress).toBe(false);
   });
@@ -138,7 +140,7 @@ describe("a friend's profile page", () => {
       friendships: { single: status ? { id: "f1", status } : null },
       user_achievements: { rows: [{ achievement_code: "streak_7", unlocked_at: "2026-09-01" }] },
     });
-    return call("getFriendProfile", { handle: "sharer" }, user.client);
+    return call<NonNullable<FriendProfile>>("getFriendProfile", { handle: "sharer" }, user.client);
   };
 
   it("hides progress, badges and join date unless they share", async () => {

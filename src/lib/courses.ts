@@ -1,4 +1,3 @@
-import type { CourseBrief } from "./course-brief";
 import type { Exercise, WrittenPrompt } from "./exercises";
 
 export type Quiz = {
@@ -63,7 +62,6 @@ export type Course = {
   topic: string;
   tagline: string;
   emoji: string;
-  brief?: CourseBrief;
   lessons: Lesson[];
 };
 

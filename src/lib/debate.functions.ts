@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { AI_MODELS } from "./ai-models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
@@ -14,7 +15,7 @@ import { WRITTEN_TASKS, type ArgumentGrade } from "./exercises";
  * answer until both are in, so it can't be copied.
  */
 
-const MODEL = "google/gemini-3.6-flash";
+const MODEL = AI_MODELS.debate;
 const TASK = WRITTEN_TASKS.case;
 const MAX_SCORE = TASK.criteria.length * 4;
 

@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { AI_MODELS } from "./ai-models";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import { screenLocally } from "./moderation";
 import { FREE_WEEKLY_PRACTICE, MAX_PRACTICE_TURNS, type PracticeTurn } from "./practice";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
@@ -142,13 +145,9 @@ function describe(error: unknown): { reason: string } {
   return { reason: "Practice is unavailable right now. Tap retry in a moment." };
 }
 
-type Ctx = { supabase: SupabaseLike; userId: string };
-type SupabaseLike = {
-  from: (table: string) => any;
-};
+type Ctx = { supabase: SupabaseClient<Database>; userId: string };
 
-async function readAccess({ supabase, userId }: Ctx): Promise<PracticeAccess> {
-  const db = supabase as any;
+async function readAccess({ supabase: db, userId }: Ctx): Promise<PracticeAccess> {
   const [{ data: sub }, { count }] = await Promise.all([
     db
       .from("subscriptions")
@@ -273,7 +272,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
       const forcedClose = learnerTurns >= MAX_PRACTICE_TURNS;
       const result = streamText({
-        model: gateway("google/gemini-3.7-flash"),
+        model: gateway(AI_MODELS.tutor),
         system: withGuardrails(PRACTICE_SYSTEM(data.context)),
         prompt: opening
           ? openingPrompt(data.context)

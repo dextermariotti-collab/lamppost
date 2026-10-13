@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   BACKFILL_DAYS,
   MAX_ACTIVITY_PER_DAY,
+  MAX_DONE_LESSONS,
   MAX_XP_PER_DAY,
   activityToStore,
   boundedTotal,
+  doneLessonsToStore,
   firstSyncCarryOver,
   growthAllowance,
   weeklyXpCredit,
@@ -138,5 +140,29 @@ describe("weeklyXpCredit", () => {
   it("credits nothing when XP didn't grow", () => {
     expect(weeklyXpCredit({ firstSync: false, before: 300, after: 300 })).toBe(0);
     expect(weeklyXpCredit({ firstSync: false, before: 300, after: 100 })).toBe(0);
+  });
+});
+
+describe("doneLessonsToStore", () => {
+  const known = new Set(["a", "b", "c"]);
+
+  it("adds the real lessons a device reports, once each", () => {
+    expect(doneLessonsToStore([], ["b", "a", "b"], known)).toEqual(["b", "a"]);
+    expect(doneLessonsToStore(["a"], ["a", "c"], known)).toEqual(["a", "c"]);
+  });
+
+  it("stores nothing new for ids it doesn't know or already has", () => {
+    expect(doneLessonsToStore(["a"], ["a", "made-up"], known)).toBeNull();
+    expect(doneLessonsToStore([], [], known)).toBeNull();
+  });
+
+  it("never drops a stored lesson, even one the curriculum no longer has", () => {
+    expect(doneLessonsToStore(["retired"], ["b"], known)).toEqual(["retired", "b"]);
+  });
+
+  it("keeps the list within the database's bound", () => {
+    const many = Array.from({ length: MAX_DONE_LESSONS + 5 }, (_, i) => `l${i}`);
+    const stored = doneLessonsToStore([], many, new Set(many));
+    expect(stored).toHaveLength(MAX_DONE_LESSONS);
   });
 });

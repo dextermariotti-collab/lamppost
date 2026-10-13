@@ -65,6 +65,12 @@ export type ProgressState = {
    * `courses[slug].completed` is always the number of these.
    */
   doneLessons: number[] | null;
+  /**
+   * The lessons finished, by id: what is saved and synced. An index points at a different
+   * lesson once one is added or the order changes; an id doesn't. `doneLessons` is derived from
+   * these whenever the state is loaded or saved (`loadLessons`, `saveLessons`).
+   */
+  doneLessonIds: string[] | null;
   /** unused streak freezes held */
   freezes: number;
   /** YYYY-MM-DD days a freeze covered, so they're only spent once */
@@ -96,6 +102,7 @@ export const DEFAULT_STATE: ProgressState = {
   celebration: null,
   courses: {},
   doneLessons: null,
+  doneLessonIds: null,
   freezes: 1,
   freezeLog: [],
   freezeSaved: null,
@@ -169,6 +176,81 @@ export function doneLessonIndexes(
   if (state.doneLessons) return [...state.doneLessons].sort((x, y) => x - y);
   const count = state.courses[slug]?.completed ?? 0;
   return Array.from({ length: count }, (_, i) => i);
+}
+
+type CourseRef = { slug: string; topic: string };
+
+/** Indexes into `order` for the given ids, sorted; ids not in `order` are skipped. */
+function indexesOf(ids: readonly string[], order: readonly string[]): number[] {
+  const position = new Map(order.map((id, i) => [id, i]));
+  return ids
+    .flatMap((id) => {
+      const i = position.get(id);
+      return i === undefined ? [] : [i];
+    })
+    .sort((x, y) => x - y);
+}
+
+function withLessons(
+  state: ProgressState,
+  ids: string[],
+  order: readonly string[],
+  course: CourseRef,
+): ProgressState {
+  const doneLessons = indexesOf(ids, order);
+  const existing = state.courses[course.slug];
+  const courses =
+    existing || doneLessons.length > 0
+      ? {
+          ...state.courses,
+          [course.slug]: {
+            ...(existing ?? { topic: course.topic }),
+            total: order.length,
+            completed: doneLessons.length,
+          },
+        }
+      : state.courses;
+  return { ...state, doneLessonIds: ids, doneLessons, courses };
+}
+
+/**
+ * Finished lessons as loaded: from the saved ids when there are any (their saved indexes may be
+ * from an older lesson order, so they're ignored), otherwise from an older save's indexes or
+ * count. `order` is today's lesson ids in curriculum order.
+ */
+export function loadLessons(
+  state: ProgressState,
+  order: readonly string[],
+  course: CourseRef,
+): ProgressState {
+  const ids = state.doneLessonIds
+    ? [...new Set(state.doneLessonIds)]
+    : doneLessonIndexes(state, course.slug).flatMap((i) => (order[i] ? [order[i]] : []));
+  return withLessons(state, ids, order, course);
+}
+
+/**
+ * Finished lessons as saved: the ids already known (including any for lessons no longer in the
+ * curriculum) plus any lesson finished since, by its id.
+ */
+export function saveLessons(
+  state: ProgressState,
+  order: readonly string[],
+  course: CourseRef,
+): ProgressState {
+  const now = doneLessonIndexes(state, course.slug).flatMap((i) => (order[i] ? [order[i]] : []));
+  const ids = [...new Set([...(state.doneLessonIds ?? []), ...now])];
+  return withLessons(state, ids, order, course);
+}
+
+/**
+ * Adds lessons the account has finished on another device. Returns `prev` when none are new.
+ * The indexes follow when the state is saved (`saveLessons`).
+ */
+export function adoptLessons(prev: ProgressState, ids: readonly string[]): ProgressState {
+  const have = new Set(prev.doneLessonIds ?? []);
+  const added = [...new Set(ids)].filter((id) => !have.has(id));
+  return added.length === 0 ? prev : { ...prev, doneLessonIds: [...have, ...added] };
 }
 
 /** Applies a finished lesson. Returns `prev` untouched when nothing new was earned. */
@@ -379,11 +461,13 @@ export type AccountProgress = {
   currentStreak: number;
   longestStreak: number;
   lastActiveDay: string | null;
+  /** Lessons finished on any of the account's devices, by id. */
+  doneLessons?: readonly string[];
 };
 
 /**
  * Folds the signed-in account's numbers into this device's, so a new device
- * isn't blank. XP, gems and the longest streak only ever go up. The account's
+ * isn't blank. XP, gems, finished lessons and the longest streak only ever go up. The account's
  * *current* streak is only adopted when the account was active more recently
  * than this device, or on the same day with a longer run — a stale number from
  * an old sync must never overrule a fresher local streak (that is how one screen
@@ -412,8 +496,9 @@ export function mergeAccountProgress(
   const spent = Math.max(prev.gemsSpent, account.gemsSpent);
   const granted = Math.max(prev.gemsGranted, account.gemsGranted);
 
+  const withLessons = adoptLessons(prev, account.doneLessons ?? []);
   const next: ProgressState = {
-    ...prev,
+    ...withLessons,
     xp: Math.max(prev.xp, account.totalXp),
     gems: Math.max(earned + granted - spent, 0),
     gemsSpent: spent,
@@ -430,6 +515,7 @@ export function mergeAccountProgress(
     next.gemsGranted === prev.gemsGranted &&
     next.longestStreak === prev.longestStreak &&
     next.streak === prev.streak &&
-    next.lastActiveDay === prev.lastActiveDay;
+    next.lastActiveDay === prev.lastActiveDay &&
+    withLessons === prev;
   return unchanged ? prev : next;
 }

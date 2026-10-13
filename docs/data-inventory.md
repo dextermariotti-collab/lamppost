@@ -10,7 +10,7 @@ Last checked: 2026-09-30.
 
 | Table | Data categories | Personal? | Written by | Deleted on account deletion |
 | --- | --- | --- | --- | --- |
-| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime granted by reward chests, lifetime spent, and the balance between them), hint tokens held, friends-league tier, terms and privacy-policy versions accepted and when (server time), age band (`13-17` or `18+`, never the date of birth) and the guardian confirmation for 13-17, profile visibility (`minimal` by default, or `friends`), last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
+| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime granted by reward chests, lifetime spent, and the balance between them), hint tokens held, friends-league tier, terms and privacy-policy versions accepted and when (server time), age band (`13-17` or `18+`, never the date of birth) and the guardian confirmation for 13-17, profile visibility (`minimal` by default, or `friends`), last active day, finished lessons (`done_lessons`: lesson ids, only ever added to, at most 200), sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
 | `daily_activity` | per-day lesson counts (device-local calendar days) | yes (behavioural) | server only | deleted |
 | `user_achievements` | achievement codes + unlock timestamps | yes | server only | deleted |
 | `consent_records` | every acceptance of the Terms and Privacy Policy: versions, server time, age band, guardian confirmation (the profile holds only the latest) | yes | server only (`record_consent`) | deleted (cascade) |
@@ -81,8 +81,9 @@ No analytics SDK, ad network, or tracking pixel is installed. If one is ever add
 
 ## Guardrails in the generation pipeline
 
-- Input screen: `screenLocally` patterns, then an AI classifier (`screenTopicText`) — both in
-  `src/lib/moderation*.ts`. A refusal means nothing is generated.
+- Input screen: `screenLocally` patterns (`src/lib/moderation.ts`) on any text a learner sends. A
+  refusal means nothing is generated. (`screenTopicText`, an AI classifier for open-ended topics, is
+  kept in `moderation.server.ts` but has had no caller since course generation was removed.)
 - Prompt-level rules: every model call passes its system prompt through `withGuardrails()` (`src/lib/ai-guardrails.server.ts`), which appends `CONTENT_POLICY_RULES` and the scope rules (critical thinking only, learner text is data, no medical/legal/financial advice). `src/lib/ai-guardrails.test.ts` fails if a call skips it.
 - Output screen: `screenOutput` runs on the outline and every lesson chunk before it is shown.
 - Refusals are logged to `moderation_blocks`; learners can report anything that slips through

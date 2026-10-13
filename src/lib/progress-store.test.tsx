@@ -237,6 +237,7 @@ describe("guest (signed-out) mode", () => {
       [
         "carryOver",
         "dayKeyVersion",
+        "doneLessons",
         "freezeLog",
         "gemsEarned",
         "history",

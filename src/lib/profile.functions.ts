@@ -4,12 +4,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { resolveToday } from "./client-day";
 import type { ConsentState } from "./consent";
+import { LESSONS } from "./curriculum";
 import { isDayKey, shiftDay, utcDay } from "./days";
 import {
+  MAX_DONE_LESSONS,
   MAX_GEMS_PER_DAY,
   MAX_XP_PER_DAY,
   activityToStore,
   boundedTotal,
+  doneLessonsToStore,
   firstSyncCarryOver,
   growthAllowance,
   weeklyXpCredit,
@@ -40,6 +43,8 @@ export type AccountProfile = {
   /** 0-4: the learner's tier in their friends league. */
   leagueTier: number;
   lastActiveDay: string | null;
+  /** The lessons finished on any of the account's devices, by id. */
+  doneLessons: string[];
   companion: {
     preset: string;
     palette: string;
@@ -51,6 +56,39 @@ export type AccountProfile = {
   /** What friends can see. `minimal` (name and avatar) until the person turns sharing on. */
   visibility: Visibility;
 };
+
+type DoneLessonsRow = { done_lessons: string[] | null };
+type DoneLessonsTable = {
+  select(columns: "done_lessons"): {
+    eq(
+      column: "id",
+      value: string,
+    ): {
+      maybeSingle(): PromiseLike<{
+        data: DoneLessonsRow | null;
+        error: { message: string } | null;
+      }>;
+    };
+  };
+  update(row: { done_lessons: string[] }): {
+    eq(column: "id", value: string): PromiseLike<{ error: { message: string } | null }>;
+  };
+};
+
+/** `done_lessons` isn't in the generated client types until its migration is applied there. */
+const doneLessonsOf = (client: unknown) =>
+  (client as { from(name: "profiles"): DoneLessonsTable }).from("profiles");
+
+/** The account's finished lessons, or null if the column isn't there yet (an unmigrated database). */
+async function readDoneLessons(client: unknown, userId: string): Promise<string[] | null> {
+  const { data, error } = await doneLessonsOf(client)
+    .select("done_lessons")
+    .eq("id", userId)
+    .maybeSingle();
+  return error ? null : (data?.done_lessons ?? []);
+}
+
+const KNOWN_LESSONS: ReadonlySet<string> = new Set(LESSONS.map((lesson) => lesson.id));
 
 const SELECT =
   "id, display_name, handle, invite_code, created_at, daily_goal, notify_nudges_inapp, notify_nudges_email, current_streak, longest_streak, total_xp, gems, gems_earned, gems_granted, gems_spent, hint_tokens, league_tier, last_active_day, companion_preset, companion_palette, companion_accessory, companion_expression";
@@ -76,6 +114,7 @@ export const getMyProfile = createServerFn({ method: "POST" })
       .select("profile_visibility")
       .eq("id", context.userId)
       .maybeSingle();
+    const doneLessons = (await readDoneLessons(supabaseAdmin, context.userId)) ?? [];
     const email = (context.claims as { email?: string } | null)?.email ?? null;
     return {
       id: data.id,
@@ -97,6 +136,7 @@ export const getMyProfile = createServerFn({ method: "POST" })
       hintTokens: data.hint_tokens,
       leagueTier: data.league_tier,
       lastActiveDay: data.last_active_day,
+      doneLessons,
       companion: {
         preset: data.companion_preset,
         palette: data.companion_palette,
@@ -161,6 +201,8 @@ const SyncInput = z.object({
   gems: z.number().int().min(0).max(10_000_000).optional(),
   /** Days (device-local) with activity, and how much. The server decides what it accepts. */
   history: z.record(z.string(), z.number()),
+  /** The lessons finished on the device, by id. Only real lessons are kept, and only ever added. */
+  doneLessons: z.array(z.string().max(80)).max(MAX_DONE_LESSONS).optional(),
   /** Days a streak freeze covered on the device. */
   freezeLog: z.array(z.string()).max(60).default([]),
   /** The device's local today; validated against the server clock. */
@@ -203,6 +245,8 @@ const STREAK_WINDOW_DAYS = 400;
  *   had an account, bounded (firstSyncCarryOver).
  * - the XP an account gains is also credited to the week it was synced in, for the
  *   friends league, except on the first sync.
+ * - the lessons finished are added to the account's list by id (doneLessonsToStore); none is
+ *   ever removed, so two devices end up with the same map.
  *
  * Lessons are completed in the browser, so this bounds a forged request rather
  * than proving a lesson was done.
@@ -336,6 +380,18 @@ export const syncProgress = createServerFn({ method: "POST" })
       });
     }
 
+    // Kept apart from the update above so an account still syncs before this column exists.
+    let doneLessons = await readDoneLessons(admin, userId);
+    const toStore =
+      doneLessons && doneLessonsToStore(doneLessons, data.doneLessons ?? [], KNOWN_LESSONS);
+    if (toStore) {
+      const { error } = await doneLessonsOf(admin)
+        .update({ done_lessons: toStore })
+        .eq("id", userId);
+      if (error) throw new Error(error.message);
+      doneLessons = toStore;
+    }
+
     const spent = next.gems_spent ?? current.gems_spent;
     return {
       ok: true as const,
@@ -346,5 +402,6 @@ export const syncProgress = createServerFn({ method: "POST" })
       gemsSpent: spent,
       gemsGranted: current.gems_granted,
       lastActiveDay: next.last_active_day,
+      doneLessons: doneLessons ?? [],
     };
   });

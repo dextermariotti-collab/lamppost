@@ -363,6 +363,7 @@ describe("what other people can see of you", () => {
       "gems",
       "day_key_version",
       "progress_synced_at",
+      "done_lessons",
     ]) {
       denied(
         await asUser(BOB, () => attempt(db, `SELECT ${column} FROM profiles WHERE id=$1`, [ALICE])),

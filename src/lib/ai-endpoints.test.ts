@@ -10,7 +10,6 @@ const model = vi.hoisted(() => ({ streamText: vi.fn() }));
 vi.mock("ai", () => model);
 vi.mock("./ai-gateway.server", () => ({ createLovableAiGatewayProvider: () => () => "model" }));
 const moderation = vi.hoisted(() => ({
-  screenTopicText: vi.fn(),
   screenOutput: vi.fn(() => ({ allowed: true })),
   logModerationBlock: vi.fn(),
 }));
@@ -162,57 +161,5 @@ describe("the practice tutor's inputs", () => {
     expect(
       TurnSchema.safeParse(turn({ sessionId: "11111111-1111-4111-8111-111111111111" })).success,
     ).toBe(true);
-  });
-});
-
-describe("course generation", () => {
-  const brief = {
-    topic: "Bread",
-    lessons: 5,
-    difficulty: "beginner",
-    quizRigor: "light",
-    experience: "none",
-    focus: "practical",
-    goal: "Bake a loaf",
-  };
-
-  it("is limited after the free screen and before the model", async () => {
-    enforce.mockResolvedValue(refusal);
-    const { generateOutline } = await import("./course-ai.functions");
-    expect(await generateOutline({ data: brief })).toEqual(limitedResult);
-    expect(enforce).toHaveBeenCalledWith("topicGeneration");
-    expect(model.streamText).not.toHaveBeenCalled();
-  });
-
-  it("stops, without blaming the topic or logging a block, when the topic check can't run", async () => {
-    moderation.screenTopicText.mockResolvedValue({
-      allowed: false,
-      category: "other",
-      message: "Topic checks are temporarily unavailable, so nothing was created.",
-      unavailable: true,
-    });
-    const { generateOutline } = await import("./course-ai.functions");
-    const result = await generateOutline({ data: brief });
-    expect(result).toEqual({
-      ok: false,
-      reason: "Topic checks are temporarily unavailable, so nothing was created.",
-    });
-    expect(moderation.logModerationBlock).not.toHaveBeenCalled();
-    expect(model.streamText).not.toHaveBeenCalled();
-  });
-
-  it("caps the brief, so a topic can't be a wall of text or ask for a hundred lessons", async () => {
-    const { BriefSchema, ChunkSchema } = await import("./course-brief");
-    expect(BriefSchema.safeParse(brief).success).toBe(true);
-    expect(BriefSchema.safeParse({ ...brief, topic: "x".repeat(500) }).success).toBe(false);
-    expect(BriefSchema.safeParse({ ...brief, lessons: 100 }).success).toBe(false);
-    expect(BriefSchema.safeParse({ ...brief, lessons: 0 }).success).toBe(false);
-    const stubs = Array.from({ length: 50 }, (_, index) => ({
-      index,
-      title: "t",
-      subtitle: "s",
-      emoji: "x",
-    }));
-    expect(ChunkSchema.safeParse({ brief, courseTitle: "t", stubs }).success).toBe(false);
   });
 });

@@ -6,9 +6,9 @@ import { LineBullet } from "@/components/LineBullet";
 import {
   CURRICULUM_SLUG,
   CURRICULUM_TITLE,
-  LESSONS_PER_UNIT,
   TOTAL_LESSONS,
   lessonIndexOf,
+  lessonPlace,
   nextLessonIndex,
   unitProgress,
   type UnitProgress,
@@ -63,17 +63,17 @@ function MyPath() {
   const dueByUnit = useMemo(() => {
     const map: Record<number, number> = {};
     for (const item of dueItems) {
-      const unitIndex = Math.floor(item.lessonIndex / LESSONS_PER_UNIT);
+      const { unitIndex } = lessonPlace(item.lessonIndex);
       map[unitIndex] = (map[unitIndex] ?? 0) + 1;
     }
     return map;
   }, [dueItems]);
 
   // The unit holding the next lesson starts open; opening another closes it.
-  const [openUnit, setOpenUnit] = useState<number>(Math.floor(nextIndex / LESSONS_PER_UNIT));
+  const [openUnit, setOpenUnit] = useState<number>(lessonPlace(nextIndex).unitIndex);
   const [touched, setTouched] = useState(false);
   useEffect(() => {
-    if (!touched) setOpenUnit(Math.floor(nextIndex / LESSONS_PER_UNIT));
+    if (!touched) setOpenUnit(lessonPlace(nextIndex).unitIndex);
   }, [nextIndex, touched]);
 
   const pct = Math.round((completed / TOTAL_LESSONS) * 100);
@@ -136,7 +136,6 @@ function UnitCard({
   const accent = unitAccent(unit.unit.id);
   // The before-check belongs before the lessons; everything else about checks comes after them.
   const checkFirst = checkAvailability("before", unit, checks) === "open";
-  const start = unit.index * LESSONS_PER_UNIT;
   return (
     <li className="border-t-2 border-edge">
       <h2 className="font-sans text-base">
@@ -176,7 +175,7 @@ function UnitCard({
       >
         <span aria-hidden className="absolute top-5 bottom-5 left-[9px] w-1.5 bg-[var(--line)]" />
         {checkFirst && <CheckStop unit={unit} checks={checks} />}
-        {unit.lessons.map((lesson, i) => {
+        {unit.lessons.map((lesson) => {
           const index = lessonIndexOf(lesson.id);
           const isDone = done.has(index);
           const isNext = index === nextIndex && !isDone;
@@ -184,7 +183,7 @@ function UnitCard({
             <li key={lesson.id} className="relative flex items-center">
               <Link
                 to="/course/$slug/lesson/$index"
-                params={{ slug: CURRICULUM_SLUG, index: String(start + i + 1) }}
+                params={{ slug: CURRICULUM_SLUG, index: String(index + 1) }}
                 className="flex min-h-12 min-w-0 flex-1 items-center gap-3 py-1.5 pl-9"
               >
                 <span
@@ -212,7 +211,7 @@ function UnitCard({
                 ) : (
                   !isDone && (
                     <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
-                      {start + i + 1}
+                      {index + 1}
                     </span>
                   )
                 )}

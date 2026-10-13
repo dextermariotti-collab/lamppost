@@ -128,8 +128,8 @@ automatically).
 
 **Recommended follow-ups:**
 - [ ] Self-host the five fonts. Google Fonts sees every visitor's address and browser; the policy discloses it.
-- [ ] Delete `generateOutline` and `generateLessonChunk` (`course-ai.functions.ts`): no screen calls them, but
-      they are still public, rate-limited AI endpoints.
+- [x] Delete `generateOutline` and `generateLessonChunk` (`course-ai.functions.ts`): done in the architecture
+      review below.
 - [ ] A signed-out person can use every screen, including the AI features, without an age check (they are
       limited by IP rate limits only). Decide whether that is acceptable.
 - [ ] Payments are not live (the Practice page says so). When you enable them, update the policy and Terms.
@@ -340,6 +340,36 @@ button that replayed it. Now:
     change people should be asked to accept again (if so, bump `PRIVACY_VERSION` in
     `src/lib/legal-config.ts`). I didn't, because it's the same kind of data going to the same
     service as the existing AI features.
+
+## Follow-up: architecture review
+
+The full write-up, with the roadmap in order, is `docs/architecture.md`. In short:
+
+- **Progress no longer depends on lesson positions.** Finished lessons are saved by id, and every
+  "stop n of 5" or unit boundary is worked out from the lesson list. A lesson can be added, moved or
+  given a unit of any size without anyone's progress shifting. Old saves upgrade on their own, and
+  a test pins the 35 shipped ids so none gets renamed by accident.
+- **Which lessons someone finished now follows their account.** Before, a second device showed the
+  right XP and streak over an empty map. This needs one new column (below).
+- **Guard rails.**
+  - CI runs the typecheck, the tests and the build on every pull request, and the typecheck is at
+    zero errors.
+  - A new test reads the source and fails on the structural mistakes that are easy to make: server
+    code reaching the browser, secrets outside server code, a device key that account deletion
+    wouldn't clear, a UTC date used as a day, a model name outside the one file that lists them, or
+    a migration without a rollback.
+  - All AI model names now live in `src/lib/ai-models.ts`.
+- **Removed:** 14 unused files (about 1,400 lines), including the course-generation AI endpoint that
+  no screen used but anyone could call.
+- **New in the database:** `profiles.done_lessons` (`20261013100000_done_lessons.sql`). It's written
+  only by the server, holds known lesson ids and only ever grows, and is not readable from the
+  browser. It has a tested rollback in `docs/rollback/`. The app works the same before it's applied.
+- **Needs you:**
+  - Apply the migration in Lovable, then let Lovable regenerate `types.ts`. After that, the two small
+    untyped accessors (`casesTable`, `doneLessonsOf`) can be deleted (roadmap 7).
+  - Turn on GitHub Actions for the repository if it's off, so the new CI runs.
+  - Decide on roadmap 1 (reviews served from the authored steps, retiring the old AI drill pipeline).
+    It's the biggest simplification left, and it removes most of the AI cost.
 
 ## Suggested App Store privacy label (from the data the code actually handles)
 

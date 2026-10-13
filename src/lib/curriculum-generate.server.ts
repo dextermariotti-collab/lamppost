@@ -1,4 +1,5 @@
 import { LESSONS, UNITS, type CurriculumLesson } from "./curriculum";
+import { AI_MODELS } from "./ai-models";
 import type { Lesson } from "./courses";
 import type { Exercise, ExerciseKind } from "./exercises";
 import { exercisesMatchPlan } from "./drill-plan";
@@ -14,7 +15,7 @@ import { exercisesMatchPlan } from "./drill-plan";
  * instantly.
  */
 
-export const MODEL = "google/gemini-3.6-flash";
+export const MODEL = AI_MODELS.lessons;
 /** Bumped when the generation pipeline changes; invalidates cached lessons. */
 export const CONTENT_VERSION = 7;
 /** Regeneration rounds allowed for drills that fail review. */
