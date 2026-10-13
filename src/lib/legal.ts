@@ -111,7 +111,7 @@ export const PRIVACY: LegalDoc = {
             "Supabase: runs our database and sign-in, and sends sign-in emails.",
             "Cloudflare: runs our servers, so it sees your network address and browser details when you connect.",
             "Google: runs the AI model described above (the Gemini API).",
-            "Google, also: if you choose Continue with Google, Google signs you in. Separately, this app loads its text fonts from Google Fonts, so when a page loads, your browser contacts Google's font servers and Google sees your network address and browser details. We do not choose what Google does with that.",
+            "Google and Apple, for sign-in: if you choose Continue with Google or Continue with Apple, that company signs you in and tells us your email address.",
             "QR code service (only if you ask for it): if you tap Show QR code on the Friends screen, your invite link is sent to api.qrserver.com so it can draw the code. Nothing is sent unless you tap.",
           ],
         },
@@ -409,7 +409,7 @@ export const COOKIES: LegalDoc = {
       heading: "Third-party requests",
       review: true,
       body: [
-        "The app loads its fonts from Google Fonts. That is a request from your browser to Google, which sees your network address and browser details. If you use Continue with Google, Google's sign-in page is involved as well.",
+        "The app's fonts are part of the app, so loading a page doesn't contact anyone else. If you use Continue with Google or Continue with Apple, that company's sign-in page is involved.",
         "[CONFIRM: if analytics, ads or other third-party scripts are ever added, update this page and the Privacy Policy first, and get consent where the law requires it.]",
       ],
     },

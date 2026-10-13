@@ -5,9 +5,13 @@ import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
-// The build targets Cloudflare Workers (`npm run deploy`). Nitro writes the worker and its
+// The web build targets Cloudflare Workers (`npm run deploy`). Nitro writes the worker and its
 // Wrangler config to `.output/`; set NITRO_PRESET to build for another host instead.
-export default defineConfig(({ command }) => ({
+//
+// `--mode app` builds the phone app instead: the same screens as a single-page app (TanStack
+// Start's SPA mode renders one shell page), copied into dist-app/ for Capacitor by
+// scripts/build-app.mjs. Its server functions run on the deployed backend (VITE_API_URL).
+export default defineConfig(({ command, mode }) => ({
   plugins: [
     tailwindcss(),
     tanstackStart({
@@ -18,12 +22,13 @@ export default defineConfig(({ command }) => ({
         behavior: "error",
         client: { files: ["**/server/**"], specifiers: ["server-only"] },
       },
+      ...(mode === "app" ? { spa: { enabled: true } } : {}),
     }),
-    ...(command === "build"
+    ...(command === "build" && mode !== "app"
       ? [
           nitro({
             defaultPreset: "cloudflare-module",
-            compatibilityDate: "2026-10-01",
+            compatibilityDate: "2026-07-30",
             cloudflare: { nodeCompat: true, deployConfig: true, wrangler: { name: "lamppost" } },
           }),
         ]
@@ -51,5 +56,7 @@ export default defineConfig(({ command }) => ({
       "react/jsx-dev-runtime",
     ],
   },
-  server: { port: 8080 },
+  // CORS is src/server.ts's job (lib/app-origins.ts), in development as in production; Vite's own
+  // would answer preflights first and allow a different set of origins.
+  server: { port: 8080, cors: false },
 }));

@@ -36,10 +36,14 @@ describe("the acknowledgements", () => {
   });
 
   it("name every typeface the app loads", () => {
-    const root = read("src/routes/__root.tsx");
-    const families = [...root.matchAll(/family=([A-Za-z+]+)/g)].map((m) =>
-      m[1]!.replace(/\+/g, " "),
-    );
+    // The fonts are bundled from @fontsource packages; each one's CSS names its family.
+    const styles = read("src/styles.css");
+    const imports = [...styles.matchAll(/@import "(@fontsource\/[^"]+)"/g)].map((m) => m[1]!);
+    const families = [
+      ...new Set(
+        imports.map((path) => /font-family: '([^']+)'/.exec(read(`node_modules/${path}`))![1]!),
+      ),
+    ];
     expect(families).toEqual(["Overpass", "Overpass Mono"]);
     const listed = new Set<string>(FONTS.map((f) => f.name));
     expect(families.filter((f) => !listed.has(f))).toEqual([]);

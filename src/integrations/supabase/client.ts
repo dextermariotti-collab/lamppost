@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { isNativeApp } from "@/lib/platform";
 import { requireEnv, supabaseFetch } from "./shared";
 import type { Database } from "./types";
 
@@ -13,7 +14,13 @@ function createSupabaseClient() {
   const key = env["SUPABASE_PUBLISHABLE_KEY"]!;
   return createClient<Database>(env["SUPABASE_URL"]!, key, {
     global: { fetch: supabaseFetch(key) },
-    auth: { persistSession: true, autoRefreshToken: true },
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      // The app gets a sign-in back as a code through its own link (lib/oauth.ts), never in its
+      // page address, so it uses the PKCE flow and doesn't look for one there.
+      ...(isNativeApp() ? { flowType: "pkce" as const, detectSessionInUrl: false } : {}),
+    },
   });
 }
 

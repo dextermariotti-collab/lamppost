@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteMyAccount, exportMyData } from "@/lib/account-data.functions";
 import { dayKey } from "@/lib/days";
+import { saveTextFile } from "@/lib/save-file";
 import { clearDeviceData } from "@/lib/device-data";
 import { CONTACT_EMAIL, contactHref } from "@/lib/legal-config";
 
@@ -31,13 +32,11 @@ export function YourDataSection() {
     setProblem(null);
     try {
       const payload = await runExport();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `lamppost-data-${dayKey()}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
+      await saveTextFile(
+        `lamppost-data-${dayKey()}.json`,
+        JSON.stringify(payload, null, 2),
+        "application/json",
+      );
     } catch (err) {
       setProblem(err instanceof Error ? err.message : "That download didn't work. Try again.");
     } finally {

@@ -60,7 +60,7 @@ export function AnswerFeedbackHost() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(var(--inset-bottom)+1rem)]"
       aria-live="polite"
     >
       <div

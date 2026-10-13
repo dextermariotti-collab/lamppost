@@ -9,6 +9,60 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "https://ai-sdk.dev/docs"
   },
   {
+    "name": "@capacitor/android",
+    "version": "8.5.2",
+    "license": "MIT",
+    "url": "https://capacitorjs.com"
+  },
+  {
+    "name": "@capacitor/app",
+    "version": "8.1.1",
+    "license": "MIT",
+    "url": "https://github.com/ionic-team/capacitor-plugins"
+  },
+  {
+    "name": "@capacitor/browser",
+    "version": "8.0.4",
+    "license": "MIT",
+    "url": "https://github.com/ionic-team/capacitor-plugins"
+  },
+  {
+    "name": "@capacitor/core",
+    "version": "8.5.2",
+    "license": "MIT",
+    "url": "https://capacitorjs.com"
+  },
+  {
+    "name": "@capacitor/filesystem",
+    "version": "8.1.3",
+    "license": "MIT",
+    "url": "https://github.com/ionic-team/capacitor-filesystem"
+  },
+  {
+    "name": "@capacitor/ios",
+    "version": "8.5.2",
+    "license": "MIT",
+    "url": "https://capacitorjs.com"
+  },
+  {
+    "name": "@capacitor/share",
+    "version": "8.0.2",
+    "license": "MIT",
+    "url": "https://github.com/ionic-team/capacitor-plugins"
+  },
+  {
+    "name": "@fontsource/overpass",
+    "version": "5.3.0",
+    "license": "OFL-1.1",
+    "url": "https://fontsource.org/fonts/overpass"
+  },
+  {
+    "name": "@fontsource/overpass-mono",
+    "version": "5.3.0",
+    "license": "OFL-1.1",
+    "url": "https://fontsource.org/fonts/overpass-mono"
+  },
+  {
     "name": "@hookform/resolvers",
     "version": "5.9.1",
     "license": "MIT",

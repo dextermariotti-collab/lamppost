@@ -1,5 +1,6 @@
 import "./lib/error-capture";
 
+import { allowedAppOrigin, preflightResponse, withCors } from "./lib/app-origins";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
@@ -46,10 +47,15 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    // The phone apps call from their own origins; see lib/app-origins.ts.
+    const appOrigin = allowedAppOrigin(request.headers.get("Origin"), process.env["APP_ORIGINS"]);
+    if (appOrigin && request.method === "OPTIONS") return preflightResponse(request, appOrigin);
     try {
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const response = await normalizeCatastrophicSsrResponse(
+        await handler.fetch(request, env, ctx),
+      );
+      return appOrigin ? withCors(response, appOrigin) : response;
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

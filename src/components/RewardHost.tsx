@@ -60,7 +60,7 @@ export function RewardHost() {
     return (
       <div
         role="status"
-        className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex justify-center px-4 pt-4"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex justify-center px-4 pt-[calc(var(--inset-top)+1rem)]"
       >
         <div className="sign relative w-full max-w-[22rem] overflow-hidden p-4 animate-rise-in">
           <div className="relative z-30 flex items-center gap-3">

@@ -127,7 +127,7 @@ automatically).
       for facts and tone; the worked figures (base rates, expected value) were checked by hand.
 
 **Recommended follow-ups:**
-- [ ] Self-host the five fonts. Google Fonts sees every visitor's address and browser; the policy discloses it.
+- [x] Self-host the fonts: done for the phone app (they're bundled, so nothing is fetched from Google).
 - [x] Delete `generateOutline` and `generateLessonChunk` (`course-ai.functions.ts`): done in the architecture
       review below.
 - [ ] A signed-out person can use every screen, including the AI features, without an age check (they are
@@ -419,6 +419,46 @@ setup is in `docs/deploy.md`.
   - Check the model names in `src/lib/ai-models.ts` against Google's current list the first time you
     run with a real key.
 
+## Follow-up: iOS and Android apps (Capacitor)
+
+Lamppost is now an iOS and Android app as well as a website, from the same code. The full guide is
+`docs/mobile.md`.
+
+- **How it works.**
+  - The app carries its own copy of the screens, so it opens instantly and the written lessons work
+    offline.
+  - Everything that needs a server (sync, friends, AI, rate limits) goes to the deployed backend.
+  - The AI key never ships inside the app.
+- **Sign-in in the app.** Google sign-in opens the system browser, which Google requires, and
+  returns to the app through its own link.
+- **Sign in with Apple.** Added, on the web and in both apps, because Apple requires it next to
+  Google sign-in.
+- **Phone details:**
+  - Screens leave room for the notch, status bar and home indicator.
+  - The status bar follows the light and dark themes.
+  - The Android back button works.
+  - "Download your data" opens the share sheet.
+  - The fonts are bundled, so nothing is fetched from Google any more; the policy is updated to say
+    so.
+- **Icon and splash screen.** Made from the lamp mark, in every size both stores need.
+- **Checked here:**
+  - The app's screens served the way Capacitor serves them, talking to the real backend build on
+    another address, in a browser: server calls, sign-in start and fonts all work, with no errors.
+  - The backend accepts the app's addresses and refuses others.
+  - Tests cover all of it, and CI now builds the app and syncs the native projects on every pull
+    request.
+- **Not checked here.** The native projects themselves weren't compiled: there's no Xcode here, and
+  Google's Android downloads were blocked. Compile them once in Xcode and Android Studio.
+- **Needs you:**
+  - Settle the app id (`com.lamppost.app` for now) before the first upload; it can't change later.
+  - A Mac with Xcode, Android Studio, an Apple Developer account and a Google Play developer
+    account.
+  - Add `com.lamppost.app://auth-callback` to Supabase's redirect URLs, and set up Sign in with
+    Apple (`docs/mobile.md`, setup step 4).
+  - Set `VITE_API_URL` and `VITE_PUBLIC_URL`, then `npm run app:sync` and run it on a phone.
+  - If the paid Practice plan is sold in the iOS app, it must use Apple's in-app purchase.
+  - Later: Universal Links / App Links so invite links open the app, and push notifications.
+
 ## Suggested App Store privacy label (from the data the code actually handles)
 
 Not legal advice; check against the live app before submitting.
@@ -439,8 +479,8 @@ Not legal advice; check against the live app before submitting.
 - **Data used to track you:** none.
 - **Account deletion in the app:** Yes (Settings, Your data).
 - **Third parties that receive data:** the hosting and auth provider, the AI provider (typed text only when a
-  feature is used), Google Fonts (address and browser details), Google (only if the person signs in with it),
-  api.qrserver.com (only if the person taps Show QR code).
+  feature is used), Google or Apple (only if the person signs in with them), api.qrserver.com (only if the
+  person taps Show QR code). Fonts are bundled, so Google Fonts is no longer contacted.
 - **Google Play Data safety:** same answers; data is encrypted in transit (HTTPS); deletion is available in the
   app and by contacting support.
 

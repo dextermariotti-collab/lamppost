@@ -40,4 +40,7 @@ export const PERMISSIVE = new Set([
   "BSD-2-Clause",
   "BSD-3-Clause",
   "0BSD",
+  // The bundled fonts. The SIL Open Font License allows shipping them inside an app; it only
+  // forbids selling the fonts on their own. They are credited under Typefaces as well.
+  "OFL-1.1",
 ]);

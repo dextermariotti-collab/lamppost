@@ -10,6 +10,8 @@ import { readDraft, syncDraftAfterSignIn, useSessionUser } from "@/lib/companion
 import { DEFAULT_COMPANION, companionName } from "@/lib/companions";
 import { clearPendingConsent, stashPendingConsent } from "@/lib/consent";
 import { supabase } from "@/integrations/supabase/client";
+import { startOAuth, type OAuthProvider } from "@/lib/oauth";
+import { publicUrl } from "@/lib/platform";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -66,7 +68,8 @@ function AuthScreen() {
         const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          // The confirmation link opens a browser, so it returns to the website, never the app.
+          options: { emailRedirectTo: publicUrl() },
         });
         if (err) {
           clearPendingConsent();
@@ -86,21 +89,16 @@ function AuthScreen() {
     }
   };
 
-  const google = async () => {
+  const oauth = async (provider: OAuthProvider) => {
     setError(null);
     if (signingUp) {
       if (!consent.claim) return;
       stashPendingConsent(consent.claim);
     }
-    // Back to this screen, which attaches the onboarding pick to the account and goes home.
-    const { error: err } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth` },
-    });
+    const { error: err } = await startOAuth(provider);
     if (err) {
       clearPendingConsent();
-      setError("Google sign-in didn't complete. Try again.");
-      return;
+      setError(`${provider === "apple" ? "Apple" : "Google"} sign-in didn't complete. Try again.`);
     }
   };
 
@@ -145,10 +143,19 @@ function AuthScreen() {
 
         <button
           type="button"
-          onClick={google}
+          onClick={() => void oauth("apple")}
           disabled={blockedFromSignup}
           aria-describedby={blockedFromSignup ? "signup-needs" : undefined}
-          className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-card p-4 text-sm font-extrabold shadow-soft transition-transform enabled:hover:-translate-y-0.5 disabled:opacity-60"
+          className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-foreground p-4 text-sm font-extrabold text-background shadow-soft transition-transform enabled:hover:-translate-y-0.5 disabled:opacity-60"
+        >
+          <AppleLogo /> Continue with Apple
+        </button>
+        <button
+          type="button"
+          onClick={() => void oauth("google")}
+          disabled={blockedFromSignup}
+          aria-describedby={blockedFromSignup ? "signup-needs" : undefined}
+          className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-card p-4 text-sm font-extrabold shadow-soft transition-transform enabled:hover:-translate-y-0.5 disabled:opacity-60"
         >
           <Sparkles aria-hidden className="h-4 w-4 text-primary-text" /> Continue with Google
         </button>
@@ -246,5 +253,14 @@ function AuthScreen() {
       </div>
       <LegalFooter />
     </PhoneFrame>
+  );
+}
+
+/** Apple's logo, as its sign-in button guidelines ask for. */
+function AppleLogo() {
+  return (
+    <svg aria-hidden viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
+      <path d="M11.18 8.47c-.02-1.67 1.37-2.48 1.43-2.52-.78-1.14-1.99-1.3-2.42-1.31-1.03-.1-2.01.6-2.53.6-.52 0-1.32-.59-2.17-.57-1.12.02-2.15.65-2.73 1.65-1.16 2.02-.3 5 .84 6.64.55.8 1.21 1.7 2.08 1.67.83-.03 1.15-.54 2.16-.54 1 0 1.29.54 2.17.52.9-.01 1.47-.82 2.02-1.62.63-.93.89-1.83.91-1.88-.02-.01-1.75-.67-1.76-2.66zM9.53 3.56c.46-.56.77-1.33.68-2.1-.66.03-1.46.44-1.93 1-.43.49-.8 1.28-.7 2.03.73.06 1.48-.37 1.95-.93z" />
+    </svg>
   );
 }

@@ -2,9 +2,11 @@
 
 Lamppost is a critical-thinking trainer: a fixed 7-unit / 35-lesson curriculum, each lesson
 interactive steps (ending on a harder real-world case) → the idea in full (the lesson's notes) → a
-graded written argument → an "explain it back" tutor chat. It is a mobile-first web app (a 420px "phone frame" that also runs on desktop). It was started in
-Lovable and moved off it in October 2026: it now builds with plain Vite, deploys to Cloudflare
-Workers, and uses a Supabase project and a Gemini API key of its own (`docs/deploy.md`).
+graded written argument → an "explain it back" tutor chat. It is a **mobile app for iOS and Android**
+(Capacitor, `docs/mobile.md`) and a website, from one codebase: the screens are a 420px "phone frame"
+that also runs on desktop. It was started in Lovable and moved off it in October 2026: it builds with
+plain Vite, the backend deploys to Cloudflare Workers, and it uses a Supabase project and a Gemini
+API key of its own (`docs/deploy.md`).
 
 ## Read this first
 
@@ -34,10 +36,12 @@ npm test                        # vitest run (pure logic, jsdom components, pgli
 npm run typecheck               # tsc --noEmit
 npm run lint                    # eslint (prettier is an eslint rule); npx eslint --fix <files>
 npm run db:push / db:types      # Supabase CLI: apply migrations / regenerate types
+npm run app:sync                # build the phone app's screens (dist-app/) and copy into ios/ + android/
+npm run app:ios / app:android   # open the native project in Xcode / Android Studio
 ```
 
-CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests and build on every PR, and all four are
-clean: keep them that way. `vite.config.ts` is an explicit config (TanStack Start, React, Tailwind,
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests, the web build, the app build and
+`cap sync` on every PR, and all of them are clean: keep them that way. `vite.config.ts` is an explicit config (TanStack Start, React, Tailwind,
 Nitro with the `cloudflare-module` preset; set `NITRO_PRESET` to build for another host).
 
 ## Stack
@@ -186,6 +190,25 @@ written task in parallel, and the request that stores the last part assembles th
 `curriculum_lessons`. `lib/lesson-loader.ts` drives this in the browser and the lesson screen shows
 the idea card and fills drills in as they arrive. Every part is generated under a per-part lease and
 the `lessonPart` rate limit; parts already written are read, never counted.
+
+### The phone apps
+`vite build --mode app` (`npm run build:app`) builds the same screens as a single-page app (TanStack
+Start's SPA shell) into `dist-app/`, which Capacitor bundles into `ios/` and `android/`. Everything a
+server does still runs on the deployed backend: in the app build, server-function calls go to
+`VITE_API_URL` (`apiFetch` in `lib/platform.ts`, set in `start.ts`), and the backend accepts the app
+origins `capacitor://localhost` and `https://localhost` (`lib/app-origins.ts`: CORS in `server.ts`,
+the cross-site check in `start.ts`; Vite's own CORS is off so dev matches production). Rules:
+- **Never assume the page's origin is the website.** Links that leave the device (invites, email
+  redirects) use `publicUrl()`. Native-only behaviour checks `isNativeApp()` and loads Capacitor
+  plugins with a dynamic `import()`.
+- **Sign-in** goes through `startOAuth` (`lib/oauth.ts`): in the app, the system browser and back
+  through `com.lamppost.app://auth-callback` with PKCE, finished by `NativeShell`. Google sign-in comes
+  with Sign in with Apple (App Store rule 4.8).
+- **Edge to edge:** anything pinned to the top or bottom of the screen pads with `var(--inset-top)` /
+  `var(--inset-bottom)` (status bar, notch, home indicator).
+- **Files** go through `saveTextFile` (a download on the web, the share sheet in the app).
+- Fonts are bundled (`@fontsource`), so the app works offline and contacts no font service.
+- The app id `com.lamppost.app` appears in six places; `oauth.test.ts` keeps them the same.
 
 ### UI shell
 Every screen renders inside `components/PhoneFrame.tsx` (bottom nav on phones, sidebar layout at

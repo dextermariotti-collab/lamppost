@@ -36,6 +36,7 @@ import {
   type PersonCard,
 } from "@/lib/friends.functions";
 import { MAX_SHARED_STREAKS, SHARED_STREAK_MILESTONES } from "@/lib/shared-streak";
+import { publicUrl } from "@/lib/platform";
 
 export const Route = createFileRoute("/friends/")({
   head: () => ({
@@ -116,7 +117,7 @@ function FriendsScreen() {
 
   const inviteLink =
     data?.inviteCode && typeof window !== "undefined"
-      ? `${window.location.origin}/invite/${data.inviteCode}`
+      ? `${publicUrl()}/invite/${data.inviteCode}`
       : "";
 
   const atCap = (data?.activeSharedStreaks ?? 0) >= MAX_SHARED_STREAKS;

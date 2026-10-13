@@ -73,8 +73,7 @@ clearing browser storage.
 | AI provider | lesson, drill and daily-case generation prompts (curriculum text, no learner data) | server-side, when content is missing from the cache, or a day's case is needed after the written cases run out | write lessons, drills and daily cases |
 | Database and sign-in (Supabase) | all backend tables above | signed-in use | hosting, auth, database |
 | Cloudflare (Workers) | every request to the app: network address, browser details and the request itself | every visit | runs the app and its server functions |
-| Google (sign-in) | the Google account identity | only if the learner chooses Continue with Google | sign in |
-| Google Fonts | network address and browser details | every page load (fonts are loaded from Google's servers) | typefaces |
+| Google or Apple (sign-in) | the account identity | only if the learner chooses Continue with Google or Continue with Apple | sign in |
 | api.qrserver.com | the invite link (contains the invite code) | only if the learner taps Show QR code | draw the QR code |
 
 No analytics SDK, ad network, or tracking pixel is installed. If one is ever added, update

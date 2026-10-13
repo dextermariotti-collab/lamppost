@@ -13,6 +13,7 @@ import { type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { AnswerFeedbackHost } from "../components/AnswerFeedback";
 import { ConsentGate } from "../components/ConsentGate";
+import { NativeShell } from "../components/NativeShell";
 import { RewardHost } from "../components/RewardHost";
 import { UpkeepWatcher } from "../components/UpkeepWatcher";
 import { ThemeProvider } from "../lib/theme";
@@ -78,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Lamppost — Practise critical thinking" },
       {
         name: "description",
@@ -94,12 +95,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: appCss,
-      },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Overpass+Mono:wght@500;700&display=swap",
       },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", sizes: "256x256" },
@@ -138,6 +133,7 @@ function RootComponent() {
         <RewardHost />
         <UpkeepWatcher />
         <ConsentGate />
+        <NativeShell />
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -54,8 +54,13 @@ export function PhoneFrame({
 
         {showNav && <SideNav pathname={pathname} />}
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col pt-[var(--inset-top)]">
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto overscroll-contain",
+              !showNav && "pb-[var(--inset-bottom)]",
+            )}
+          >
             <main
               id="main-content"
               tabIndex={-1}
@@ -68,7 +73,7 @@ export function PhoneFrame({
           {showNav && (
             <nav
               aria-label="Primary"
-              className="relative border-t-2 border-edge bg-card px-2 pt-1.5 pb-2 lg:hidden"
+              className="relative border-t-2 border-edge bg-card px-2 pt-1.5 pb-[calc(var(--inset-bottom)+0.5rem)] lg:hidden"
             >
               <div className="grid grid-cols-4 items-end">
                 {NAV.map((item) => (

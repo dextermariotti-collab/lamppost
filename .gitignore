@@ -35,3 +35,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# The phone app build (npm run build:app); copied into the native projects by cap sync
+dist-app

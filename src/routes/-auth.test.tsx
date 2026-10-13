@@ -150,6 +150,20 @@ describe("creating an account", () => {
     expect(pending()).toMatchObject({ ageBand: "18+" });
   });
 
+  it("offers Sign in with Apple beside Google, held to the same agreement", async () => {
+    await load();
+    const apple = screen.getByRole("button", { name: /Continue with Apple/ }) as HTMLButtonElement;
+    expect(apple.disabled).toBe(true);
+    fillBirth(yearsAgo(30));
+    agree();
+    await act(async () => fireEvent.click(apple));
+    expect(h.google).toHaveBeenCalledWith({
+      provider: "apple",
+      options: { redirectTo: `${window.location.origin}/auth` },
+    });
+    expect(pending()).toMatchObject({ ageBand: "18+" });
+  });
+
   it("never reaches the server for someone under the minimum age", async () => {
     await load();
     fillCredentials();

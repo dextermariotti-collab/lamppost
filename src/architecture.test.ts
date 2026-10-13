@@ -56,7 +56,7 @@ describe("what reaches the browser", () => {
     const filled = example
       .split("\n")
       .filter((line) => /^[A-Z_]+=/.test(line))
-      .filter((line) => !/=("")?$|\.\.\."$|YOUR-PROJECT-REF/.test(line));
+      .filter((line) => !/=("")?$|\.\.\."$|YOUR-[A-Z-]+/.test(line));
     expect(filled).toEqual([]);
   });
 });

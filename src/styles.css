@@ -1,6 +1,15 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+/* Bundled, not fetched from Google: the phone apps work offline, and no page load tells a third
+   party who is reading. Latin only; the curriculum is in English. */
+@import "@fontsource/overpass/latin-400.css";
+@import "@fontsource/overpass/latin-400-italic.css";
+@import "@fontsource/overpass/latin-600.css";
+@import "@fontsource/overpass/latin-700.css";
+@import "@fontsource/overpass/latin-800.css";
+@import "@fontsource/overpass-mono/latin-500.css";
+@import "@fontsource/overpass-mono/latin-700.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -751,10 +760,20 @@
   }
 }
 
+/*
+ * Space the system keeps: the status bar and notch above, the home indicator below. Zero in an
+ * ordinary browser window; real values in the phone apps, which draw edge to edge. Capacitor
+ * sets --safe-area-inset-* on Android, where older web views report env() as 0.
+ */
+:root {
+  --inset-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --inset-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+}
+
 /* Primary action stays reachable on long passages (lessons, reviews, challenge). */
 .sticky-action {
   position: sticky;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  bottom: calc(var(--inset-bottom) + 12px);
   z-index: 20;
   box-shadow: none;
 }
