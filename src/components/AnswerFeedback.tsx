@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { playCue } from "@/lib/feedback";
 
 /**
- * The visible reward for a single answer: a full-width banner slides up, the
- * companion reacts, and the XP earned flies up towards the header counter.
+ * The visible reward for a single answer: a full-width banner drops in at the top, the
+ * companion reacts, and the XP earned floats up. It sits at the top so it never covers
+ * a screen's Continue bar.
  *
  * Any screen can fire it with `celebrateAnswer(...)`, so drills in lessons,
  * reviews and the daily case all feel the same.
@@ -19,7 +20,7 @@ export type AnswerCelebration = {
   combo?: number;
   /** Extra XP paid by the combo. */
   bonus?: number;
-  /** One short line, e.g. the skill practised. */
+  /** One short line, e.g. the skill practiced. */
   note?: string;
 };
 
@@ -60,7 +61,7 @@ export function AnswerFeedbackHost() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(var(--inset-bottom)+1rem)]"
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-[calc(var(--inset-top)+0.75rem)]"
       aria-live="polite"
     >
       <div
