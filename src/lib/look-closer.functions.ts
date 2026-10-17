@@ -62,7 +62,7 @@ export const lookCloser = createServerFn({ method: "POST" })
         return {
           ok: false,
           reason:
-            "There's no claim in that to look at. Try a post, an advert, a headline or a chatbot answer.",
+            "There's no claim in that to look at. Try a post, an ad, a headline or a chatbot answer.",
         };
       const result = readLookResult(json);
       return result ? { ok: true, result } : { ok: false, reason: COULD_NOT };

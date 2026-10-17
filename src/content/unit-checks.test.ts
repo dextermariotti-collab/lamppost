@@ -70,7 +70,7 @@ describe("the unit checks", () => {
 
   it("take no side on party politics", () => {
     const text = JSON.stringify(all);
-    for (const word of ["republican", "democrat", "labour party", "tory", "election", "abortion"]) {
+    for (const word of ["republican", "democrat", "labor party", "tory", "election", "abortion"]) {
       expect(new RegExp(`\\b${word}\\b`, "i").test(text), word).toBe(false);
     }
   });

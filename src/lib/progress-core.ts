@@ -329,7 +329,7 @@ export function applyLessonComplete(
 
 /**
  * Marks the first `count` lessons as already known (added to any already finished) — used by the optional
- * onboarding placement check. No XP, no streak: nothing was practised.
+ * onboarding placement check. No XP, no streak: nothing was practiced.
  */
 export function applyUnlockLessons(
   prev: ProgressState,
@@ -356,7 +356,7 @@ export function applyUnlockLessons(
 
 /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
 export function applyReview(prev: ProgressState, correct: boolean, today: string): ProgressState {
-  return applyPractised(prev, correct ? 20 : 5, today);
+  return applyPracticed(prev, correct ? 20 : 5, today);
 }
 
 /** XP for a daily case: something for reading it, more for each question right. */
@@ -364,10 +364,10 @@ export const caseXp = (right: number) => 5 + 10 * Math.max(0, Math.min(right, 3)
 
 /** A daily case: counts for the day and the streak once, like a review. */
 export function applyCase(prev: ProgressState, right: number, today: string): ProgressState {
-  return applyPractised(prev, caseXp(right), today);
+  return applyPracticed(prev, caseXp(right), today);
 }
 
-function applyPractised(prev: ProgressState, xp: number, today: string): ProgressState {
+function applyPracticed(prev: ProgressState, xp: number, today: string): ProgressState {
   const advanced = advanceStreak(prev, today);
   const streak = advanced.streak;
   return {

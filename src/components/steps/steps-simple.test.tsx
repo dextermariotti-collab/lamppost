@@ -43,7 +43,7 @@ describe("Spot the flaw", () => {
     expect(screen.queryByRole("button", { name: /Towns with more/ })).toBeNull();
   });
 
-  it("names the specific reason a wrong phrase isn't the flaw, and marks it without colour", () => {
+  it("names the specific reason a wrong phrase isn't the flaw, and marks it without color", () => {
     setup((r) => <SpotTheFlaw step={flawSample} onResolve={r} />);
     click(/also have more sunburn cases/);
     expect(status()).toContain("Not quite");
@@ -254,7 +254,7 @@ describe("Confidence slider", () => {
 });
 
 describe("every simple step", () => {
-  it("has a labelled section and a live region for feedback", () => {
+  it("has a labeled section and a live region for feedback", () => {
     for (const ui of [
       (r: (x: StepResult) => void) => <SpotTheFlaw step={flawSample} onResolve={r} />,
       (r: (x: StepResult) => void) => <FillTheGap step={gapSample} onResolve={r} />,

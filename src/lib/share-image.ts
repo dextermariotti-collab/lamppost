@@ -6,7 +6,7 @@
 
 export type ShareCard = {
   unitTitle: string;
-  /** The unit's line number and colours, drawn as its bullet. */
+  /** The unit's line number and colors, drawn as its bullet. */
   line: number;
   lineColor: string;
   lineOn: string;
@@ -105,7 +105,7 @@ export async function shareUnitCard(card: ShareCard) {
       });
       return;
     } catch {
-      /* cancelled: fall through to download */
+      /* canceled: fall through to download */
     }
   }
   const url = URL.createObjectURL(blob);

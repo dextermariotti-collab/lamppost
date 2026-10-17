@@ -48,7 +48,7 @@ function run(server: {
   const states: LoaderState[] = [];
   const asked: PartName[] = [];
   const sleeps: number[] = [];
-  let cancelled = false;
+  let canceled = false;
   const promise = loadLesson(plan, {
     fetchLesson: async () => server.lesson(),
     fetchPart: async (part) => {
@@ -56,7 +56,7 @@ function run(server: {
       return server.part!(part);
     },
     onChange: (state) => states.push(state),
-    isCancelled: () => cancelled,
+    isCancelled: () => canceled,
     sleep: async (ms) => void sleeps.push(ms),
     pollMs: 2000,
     maxWaitMs: 10_000,
@@ -68,7 +68,7 @@ function run(server: {
     asked,
     sleeps,
     last: () => states.at(-1)!,
-    cancel: () => (cancelled = true),
+    cancel: () => (canceled = true),
   };
 }
 
@@ -182,7 +182,7 @@ describe("a lesson that is written in parts", () => {
     });
     await r.promise;
     expect(r.last()).toMatchObject({ complete: true });
-    // Slower parts that answer afterwards can't move it back to "in progress".
+    // Slower parts that answer afterward can't move it back to "in progress".
     expect(r.states.filter((s) => s.complete).length).toBeGreaterThan(0);
     expect(r.states.slice(r.states.findIndex((s) => s.complete)).every((s) => s.complete)).toBe(
       true,
@@ -285,7 +285,7 @@ describe("when the server is slow, busy or refusing", () => {
 });
 
 describe("leaving the lesson", () => {
-  it("stops reporting once cancelled", async () => {
+  it("stops reporting once canceled", async () => {
     let seenAtCancel = -1;
     const r: ReturnType<typeof run> = run({
       lesson: () => inProgress(),

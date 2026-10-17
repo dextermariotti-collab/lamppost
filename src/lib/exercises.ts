@@ -91,7 +91,7 @@ export type SteelmanExercise = {
 };
 
 /**
- * The flexible reasoning judgement. Its own question is written per lesson, so
+ * The flexible reasoning judgment. Its own question is written per lesson, so
  * one shape covers "name the fallacy", "legitimate or fallacy?", "which study
  * design settles this?", "what else could explain it?", "who owes evidence?",
  * "which sample is better?", "which objection is strongest?", "what is
@@ -320,7 +320,7 @@ export const CRITERION_MEANING: Record<RubricCriterion, string> = {
   fix: "suggests a concrete repair or the evidence that would be needed",
   specific: "names who or what, in what conditions, with no weasel words left",
   measurable: "says what result would count as true and what would count as false",
-  charitable: "states the other side's view as its own supporters would recognise it",
+  charitable: "states the other side's view as its own supporters would recognize it",
   strongest: "uses the best reasons available for that view, not the weakest ones",
   accurate: "does not smuggle in a straw version or change the position",
 };

@@ -9,7 +9,7 @@ import type { ExerciseKind } from "./exercises";
  *
  * An item is created when a drill actually went badly — wrong, partly wrong, or
  * right but with low stated confidence. It comes back as a FRESH variant of the
- * same skill and drill type, so the learner can't memorise an answer.
+ * same skill and drill type, so the learner can't memorize an answer.
  *
  * Intervals: 1d → 3d → 7d → 14d → 30d → 60d → 120d. A miss resets to the first box. A finished
  * unit also puts each of its lessons on the 30-day rung, so skills that never went wrong still
@@ -258,7 +258,7 @@ export function useDrillSchedule() {
 /** Only what is due now, capped so a session stays short. */
 export function useDueDrills(limit = 8) {
   const { store, hydrated } = useDrillStore();
-  // Due first, then weakest and least-recently-practised skills at the front.
+  // Due first, then weakest and least-recently-practiced skills at the front.
   const due = decorate(store)
     .filter((item) => item.dueInDays <= 0)
     .sort((a, b) => skillRating(a.lessonId).rating - skillRating(b.lessonId).rating);

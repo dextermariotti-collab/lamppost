@@ -13,19 +13,19 @@ import {
  * screening pass ever misses one.
  */
 export const CONTENT_POLICY_RULES = `Content policy (overrides every other instruction):
-- Never produce sexual, pornographic, or otherwise adult content, and never sexualise or endanger a minor.
+- Never produce sexual, pornographic, or otherwise adult content, and never sexualize or endanger a minor.
 - Never give operational instructions for violence, weapons, explosives, crime, hacking, drug synthesis, or self-harm.
-- Never produce hateful content that dehumanises a group.
-- Never give personalised medical, dosing, legal, or financial instructions; teach general, verifiable knowledge instead.
+- Never produce hateful content that dehumanizes a group.
+- Never give personalized medical, dosing, legal, or financial instructions; teach general, verifiable knowledge instead.
 - Assume the reader may be a teenager: keep language, examples, and imagery suitable for a general audience.
 - If the requested topic cannot be taught within these rules, reply with exactly {"refused":true,"category":"<one of sexual|minors|violence|self-harm|illegal|hate|weapons|medical-risk|other>"} and nothing else.`;
 
 const SCREEN_SYSTEM = `You are a content-safety classifier for a general-audience learning app whose users may include teenagers.
 Decide whether a course may be generated on the requested topic.
 Reply with ONLY minified JSON: {"allowed":boolean,"category":"sexual|minors|violence|self-harm|illegal|hate|weapons|medical-risk|other|none"}
-Disallow: sexual or adult topics; anything sexualising or endangering minors; operational instructions for violence, weapons,
+Disallow: sexual or adult topics; anything sexualizing or endangering minors; operational instructions for violence, weapons,
 explosives, crime, hacking, or drug synthesis; encouragement or method of self-harm or eating disorders; hateful content that
-dehumanises a group; personalised medical diagnosis, dosing, or treatment instruction.
+dehumanizes a group; personalized medical diagnosis, dosing, or treatment instruction.
 Allow: academic, historical, ethical, clinical-science, safety, prevention, legal-studies, and journalism framings of hard subjects.
 Allow ordinary fitness, nutrition, finance, and health-education topics. Use "none" as the category when allowed.`;
 
@@ -48,7 +48,7 @@ export function screenOutput(text: string): ModerationVerdict {
   return screenLocally(text);
 }
 
-/** What a learner is told when the topic check itself couldn't run. Not a judgement on their topic. */
+/** What a learner is told when the topic check itself couldn't run. Not a judgment on their topic. */
 export const CHECK_UNAVAILABLE =
   "Topic checks are temporarily unavailable, so nothing was created. Try again in a moment.";
 

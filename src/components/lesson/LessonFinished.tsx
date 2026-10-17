@@ -23,7 +23,7 @@ import { TryItCard } from "./NotesView";
 
 /**
  * The end of a lesson, as an arrival board: where you are on the line, what this lesson earned,
- * today's goal, what was practised, and the next stop. Finishing a whole unit adds its line
+ * today's goal, what was practiced, and the next stop. Finishing a whole unit adds its line
  * badge to share, and finishing the last of the 35 points to the final check. Nothing bounces or
  * falls from the sky; the numbers are the reward.
  */
@@ -33,7 +33,7 @@ export function LessonFinished({
   totalLessons,
   accuracy,
   answered,
-  practised,
+  practiced,
   xpEarned,
   wrote,
   takeaway,
@@ -46,7 +46,7 @@ export function LessonFinished({
   /** 0-100, across the steps that were answered. */
   accuracy: number;
   answered: number;
-  practised: string[];
+  practiced: string[];
   xpEarned: number;
   wrote: boolean;
   takeaway?: string | undefined;
@@ -192,9 +192,9 @@ export function LessonFinished({
               style={{ width: `${Math.min(100, Math.round((doneToday / goal) * 100))}%` }}
             />
           </div>
-          <p className="legend mt-5 text-muted-foreground">What you practised</p>
+          <p className="legend mt-5 text-muted-foreground">What you practiced</p>
           <ul className="mt-2 space-y-1.5">
-            {[...practised, ...(wrote ? ["Writing an argument"] : [])].map((label) => (
+            {[...practiced, ...(wrote ? ["Writing an argument"] : [])].map((label) => (
               <li key={label} className="flex items-center gap-2 text-sm font-semibold">
                 <Check aria-hidden className="h-4 w-4 shrink-0 text-success" strokeWidth={3} />
                 {label}

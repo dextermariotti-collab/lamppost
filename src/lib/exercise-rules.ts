@@ -2,7 +2,7 @@ import type { Exercise } from "./exercises";
 
 /**
  * Structural rules every drill must satisfy, checked deterministically before any
- * AI reviewer is asked. The reviewer is good at judgement ("is this really the best
+ * AI reviewer is asked. The reviewer is good at judgment ("is this really the best
  * answer?") and poor at arithmetic ("are there three different options?"), and a
  * drill that fails a rule here is not worth a review call.
  *

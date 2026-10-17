@@ -92,7 +92,7 @@ export const exportMyData = createServerFn({ method: "POST" })
  * audit but are no longer linked to them). `src/db/deletion.test.ts` fails if a table is
  * ever added that doesn't. Doing it first means there is no half-deleted state: it either
  * all goes or nothing does. Only the abuse-limiting counters, which have no foreign key,
- * are removed afterwards.
+ * are removed afterward.
  */
 export const deleteMyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

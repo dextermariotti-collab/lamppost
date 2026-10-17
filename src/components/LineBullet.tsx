@@ -8,7 +8,7 @@ const SIZES = {
 } as const;
 
 /**
- * A unit's bullet: its line number on its line colour, the way a transit map marks a route.
+ * A unit's bullet: its line number on its line color, the way a transit map marks a route.
  * Decorative by default, because the unit's name always sits beside it.
  */
 export function LineBullet({

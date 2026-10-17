@@ -3,7 +3,7 @@ import { Capacitor } from "@capacitor/core";
 /**
  * What differs between the web app and the iOS/Android apps. The phone apps are the same screens
  * built with `--mode app` and bundled inside the app (docs/mobile.md), so three things change:
- * where server functions run, which address links point at, and a few native behaviours
+ * where server functions run, which address links point at, and a few native behaviors
  * (sign-in, the back button, the status bar, sharing a file).
  */
 

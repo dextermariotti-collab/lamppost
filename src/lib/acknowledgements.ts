@@ -23,7 +23,7 @@ export const ALSO_BUILT_WITH = [
   { name: "Vite", license: "MIT", url: "https://vite.dev" },
 ] as const;
 
-/** Groups packages by licence, most common first. */
+/** Groups packages by license, most common first. */
 export function groupByLicence(packages: readonly PackageLicence[] = PACKAGES) {
   const groups = new Map<string, PackageLicence[]>();
   for (const pkg of packages) groups.set(pkg.license, [...(groups.get(pkg.license) ?? []), pkg]);
@@ -32,7 +32,7 @@ export function groupByLicence(packages: readonly PackageLicence[] = PACKAGES) {
     .sort((a, b) => b.items.length - a.items.length || a.license.localeCompare(b.license));
 }
 
-/** The licences a shipped dependency may carry without someone reading it first. */
+/** The licenses a shipped dependency may carry without someone reading it first. */
 export const PERMISSIVE = new Set([
   "MIT",
   "ISC",

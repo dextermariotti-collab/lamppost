@@ -1,7 +1,7 @@
 import { LESSONS } from "./curriculum";
 
 /**
- * "Check something you saw": a learner pastes a post, an advert, a headline or a chatbot answer,
+ * "Check something you saw": a learner pastes a post, an ad, a headline or a chatbot answer,
  * and gets back the questions from the lessons that matter most for it. It never says whether
  * the text is true; it shows where to look. This module holds the limits and reads the model's
  * reply; the prompt and the call are in `look-closer.server.ts` and `look-closer.functions.ts`.
@@ -12,7 +12,7 @@ export const LOOK_TEXT = { min: 40, max: 1500 } as const;
 
 export const LOOK_SOURCES = {
   post: "A post",
-  advert: "An advert",
+  advert: "An ad",
   headline: "A headline",
   article: "An article",
   message: "An email or message",
@@ -48,11 +48,11 @@ export function lookInputProblem(text: string): string | null {
 }
 
 /**
- * A reply that passes judgement on the text instead of pointing to the questions. The feature
+ * A reply that passes judgment on the text instead of pointing to the questions. The feature
  * promises not to decide what's true, so a reply that does is thrown away.
  */
 const VERDICT =
-  /\b(this|the|that) (claim|post|text|advert|headline|article|answer|statement) is (true|false|fake|accurate|correct|wrong|a lie|misinformation|disinformation)\b|\bis (definitely|certainly|clearly) (true|false)\b|\bfake news\b/i;
+  /\b(this|the|that) (claim|post|text|advert|ad|headline|article|answer|statement) is (true|false|fake|accurate|correct|wrong|a lie|misinformation|disinformation)\b|\bis (definitely|certainly|clearly) (true|false)\b|\bfake news\b/i;
 
 const str = (value: unknown, max: number) =>
   typeof value === "string" && value.trim() ? value.trim().slice(0, max) : "";

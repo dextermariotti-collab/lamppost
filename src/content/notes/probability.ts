@@ -8,7 +8,7 @@ const probability: Record<string, LessonNotes> = {
     idea: [
       "The base rate is how common something is before you look at any specific evidence. With a rare condition, most people tested don't have it, so even a small false-alarm rate in that large healthy group can produce more false positives than true ones.",
       "The clearest way to see it is to count people instead of using percentages. Picture 1,000 people. If 1 in 100 has the condition, that's 10. A test that catches 9 of them and wrongly flags 5% of the other 990 flags about 50 healthy people. Only 9 of 59 positives are real: about 15%.",
-      "Start every judgement from the base rate, then let the evidence move you.",
+      "Start every judgment from the base rate, then let the evidence move you.",
     ],
     terms: [
       {
@@ -46,14 +46,14 @@ const probability: Record<string, LessonNotes> = {
     ],
     ask: "How common is this to begin with, in this group?",
     tryIt:
-      "Next time you see a test, screening or alert called “accurate”, picture 1,000 cases. Using a rough guess at how common the thing is, estimate how many real alarms and false alarms there would be.",
+      "Next time you see a test, screening or alert called “accurate,” picture 1,000 cases. Using a rough guess at how common the thing is, estimate how many real alarms and false alarms there would be.",
   },
 
   "probability-expected-value": {
     lessonId: "probability-expected-value",
     hook: "Choices with uncertain results are easy to judge by their best case. A simple sum gives a fairer comparison, and shows when the best case is a trap.",
     idea: [
-      "Expected value is the average result you'd get if you could make the same choice many times. Multiply each possible payoff by its chance, then add them up. A 10% chance of winning £500 is worth £50 on average; if the ticket costs £60, you lose £10 on average, however exciting £500 sounds.",
+      "Expected value is the average result you'd get if you could make the same choice many times. Multiply each possible payoff by its chance, then add them up. A 10% chance of winning $500 is worth $50 on average; if the ticket costs $60, you lose $10 on average, however exciting $500 sounds.",
       "Comparing options by expected value stops the biggest prize from crowding out its small chance. But it isn't the whole story. When you get only one try, when a loss would be ruinous, or when money isn't what matters most, the spread of outcomes matters as well as the average.",
     ],
     terms: [
@@ -69,18 +69,18 @@ const probability: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A bakery has one free weekend. It can cater a wedding for a certain £800 profit, or enter a baking contest: a 30% chance of a £2,000 prize, a 70% chance of nothing, and £100 of ingredients either way.",
+      case: "A bakery has one free weekend. It can cater a wedding for a certain $800 profit, or enter a baking contest: a 30% chance of a $2,000 prize, a 70% chance of nothing, and $100 of ingredients either way.",
       moves: [
-        "Wedding: £800 for certain, so its expected value is £800.",
-        "Contest: 0.3 × £2,000 = £600, minus £100 of ingredients, gives £500 on average.",
-        "The contest's best case is bigger, but on average the wedding is worth £300 more.",
+        "Wedding: $800 for certain, so its expected value is $800.",
+        "Contest: 0.3 × $2,000 = $600, minus $100 of ingredients, gives $500 on average.",
+        "The contest's best case is bigger, but on average the wedding is worth $300 more.",
         "Then ask what the averages leave out: could the bakery afford a weekend that earns nothing? Would a prize bring new customers? Those can change the choice, but weigh them openly.",
       ],
     },
     subtleties: [
       {
         title: "The average may never happen",
-        body: "The contest never pays £500. It pays £1,900 or loses £100. Expected value describes the long run, so for a one-off decision look at the range of outcomes as well.",
+        body: "The contest never pays $500. It pays $1,900 or loses $100. Expected value describes the long run, so for a one-off decision look at the range of outcomes as well.",
       },
       {
         title: "Payoffs aren't only money",
@@ -126,12 +126,12 @@ const probability: Record<string, LessonNotes> = {
       },
       {
         title: "Hindsight rewrites what was knowable",
-        body: "Afterwards, outcomes feel obvious, and we forget how uncertain things looked. Writing down your reasons and odds before deciding is the best protection.",
+        body: "Afterward, outcomes feel obvious, and we forget how uncertain things looked. Writing down your reasons and odds before deciding is the best protection.",
       },
     ],
     ask: "Was the decision sound given what was known, whatever the result?",
     tryIt:
-      "Before one decision this week, write down what you expect and how sure you are. After the result, review the decision separately from the outcome: what was judgement, and what was luck?",
+      "Before one decision this week, write down what you expect and how sure you are. After the result, review the decision separately from the outcome: what was judgment, and what was luck?",
   },
 
   "probability-updating-beliefs": {
@@ -158,12 +158,12 @@ const probability: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Ravi thinks his local swimming pool might be closing: maybe 30% likely. Then three things happen: he hears a rumour in the changing room, a council agenda lists “future of Ravenbrook Pool”, and the pool cancels all bookings after March.",
+      case: "Ravi thinks his local swimming pool might be closing: maybe 30% likely. Then three things happen: he hears a rumor in the changing room, a council agenda lists “future of Ravenbrook Pool,” and the pool cancels all bookings after March.",
       moves: [
         "Start from his prior: about 30%.",
-        "The rumour: rumours like this spread whether or not a pool is closing. A small nudge at most.",
+        "The rumor: rumors like this spread whether or not a pool is closing. A small nudge at most.",
         "The agenda item: likelier if closure is being considered, but councils review pools for many reasons. A moderate move.",
-        "The cancelled bookings: hard to explain unless something is ending. A big move, though a refit would fit too, so not all the way to certain.",
+        "The canceled bookings: hard to explain unless something is ending. A big move, though a refit would fit too, so not all the way to certain.",
       ],
     },
     subtleties: [
@@ -185,7 +185,7 @@ const probability: Record<string, LessonNotes> = {
     lessonId: "probability-second-order",
     hook: "Most plans are judged by what they do first. What people do in response often matters more, and it's the part nobody planned.",
     idea: [
-      "A first-order effect is the direct, intended result of a change: a parking charge reduces parking. A second-order effect is what follows as people respond: drivers park on side streets, shoppers go to the retail park instead, the high street gets quieter.",
+      "A first-order effect is the direct, intended result of a change: a parking charge reduces parking. A second-order effect is what follows as people respond: drivers park on side streets, shoppers go to the retail park instead, the main street gets quieter.",
       "To find second-order effects, ask “and then what?” at least twice, and ask who will change what they do. People respond to prices, rules and rewards, and when a measure becomes a target they work on the measure. The response can be bigger than the change, cancel it out, or even reverse it.",
     ],
     terms: [
@@ -208,7 +208,7 @@ const probability: Record<string, LessonNotes> = {
       moves: [
         "First order: staff work to see patients faster. Good.",
         "Then what? Patients close to four hours get moved to a ward to stop the clock, whether or not that's best for them.",
-        "And then what? Wards fill up, and planned operations are cancelled to make room.",
+        "And then what? Wards fill up, and planned operations are canceled to make room.",
         "So judge the target on all three, and also measure what it was meant to improve: how patients do.",
       ],
     },

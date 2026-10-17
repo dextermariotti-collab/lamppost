@@ -37,13 +37,13 @@ describe("Evidence updater", () => {
     expect(screen.getByRole("button", { name: /More likely.*Correct/ })).toBeTruthy();
   });
 
-  it("names what a wrong call should have been, in words as well as colour", () => {
+  it("names what a wrong call should have been, in words as well as color", () => {
     mount();
     click("More likely");
     click("Next piece of evidence");
-    click("More likely"); // the power cut lowers it
+    click("More likely"); // the power outage lowers it
     expect(status()).toContain("It's actually less likely");
-    expect(status()).toContain("A power cut explains it");
+    expect(status()).toContain("A power outage explains it");
     expect(meter()).toBe(40);
     expect(screen.getByRole("button", { name: /More likely.*Not this one/ }).className).toMatch(
       /border-dashed/,
@@ -161,7 +161,7 @@ describe("Correlation vs causation", () => {
     expect(screen.getByText(/Inside each group: Cool days — .*; Hot days — /)).toBeTruthy();
     expect(screen.getByText("Cool days")).toBeTruthy(); // legend
     expect(screen.getByText("Hot days")).toBeTruthy();
-    // Different shapes per group, so the groups are told apart without colour.
+    // Different shapes per group, so the groups are told apart without color.
     const svg = screen.getByRole("img");
     expect(svg.querySelectorAll("rect").length).toBe(5);
     expect(svg.querySelectorAll("circle").length).toBe(5);
@@ -248,7 +248,7 @@ describe("every kind of step, through the dispatcher", () => {
     },
   );
 
-  it("never relies on colour alone: every success and failure message has words and an icon", async () => {
+  it("never relies on color alone: every success and failure message has words and an icon", async () => {
     render(<StepView step={allSamples[0]} onResolve={() => undefined} />);
     click(/also have more sunburn cases/);
     const panel = screen.getByRole("status");

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 /**
  * Sound and haptics for the reward loop.
  *
- * Tones are synthesised so there are no audio files to load, and both channels
+ * Tones are synthesized so there are no audio files to load, and both channels
  * are user-controlled from Settings. Nothing here is required for progress: if
  * the browser blocks audio or has no vibration motor, the cue just does nothing.
  */
@@ -111,7 +111,7 @@ function audio(): AudioContext | null {
   return context;
 }
 
-/** Plays the sound and fires the haptic for one cue, honouring the prefs. */
+/** Plays the sound and fires the haptic for one cue, honoring the prefs. */
 export function playCue(kind: Cue) {
   const prefs = readFeedbackPrefs();
 

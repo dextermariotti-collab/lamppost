@@ -29,7 +29,7 @@ export const Route = createFileRoute("/companion")({
       {
         name: "description",
         content:
-          "Choose the companion who trains with you and set their colour, accessory and mood.",
+          "Choose the companion who trains with you and set their color, accessory and mood.",
       },
       { property: "og:title", content: "Your companion — Lamppost" },
       {
@@ -95,7 +95,7 @@ function CompanionScreen() {
           })}
         </div>
 
-        <Row label="Colour">
+        <Row label="Color">
           {COMPANION_PALETTES.map((p) => (
             <button
               key={p.id}

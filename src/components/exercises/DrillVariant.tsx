@@ -66,7 +66,7 @@ export function DrillVariant({
   const retries = useRef(0);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     let timer = 0;
     setDrill(null);
     setAnswer(undefined);
@@ -90,7 +90,7 @@ export function DrillVariant({
         },
       })
         .then((result) => {
-          if (cancelled) return;
+          if (canceled) return;
           if (result.ok) {
             markPoolVariantSeen(lessonId, result.variant);
             setDrill({
@@ -107,7 +107,7 @@ export function DrillVariant({
           throw new Error(result.reason);
         })
         .catch(() => {
-          if (cancelled) return;
+          if (canceled) return;
           if (retries.current >= QUIET_RETRIES) {
             setPause(TAKING_LONG);
             return;
@@ -120,7 +120,7 @@ export function DrillVariant({
     load();
 
     return () => {
-      cancelled = true;
+      canceled = true;
       window.clearTimeout(timer);
     };
     // `seen` is a snapshot for this fetch; changing it mid-drill must not refetch.

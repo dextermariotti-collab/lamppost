@@ -20,7 +20,7 @@ function readStore(): Store {
  * Change notifications are deferred and de-duplicated.
  *
  * Dispatching synchronously from inside `saveCourse` meant a listener that
- * itself normalised and re-saved the course re-entered `saveCourse` on the same
+ * itself normalized and re-saved the course re-entered `saveCourse` on the same
  * call stack — one blip of disagreement between two writers was enough to
  * recurse until the stack blew up. A queued, guarded notification keeps writers
  * and readers on separate turns of the event loop.

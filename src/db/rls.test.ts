@@ -73,7 +73,7 @@ describe("a signed-in user cannot write server-owned data", () => {
 
   it("cannot get around the column grant through the guard trigger either", async () => {
     // Even the service role's own broader grant is fine, but a browser role hitting the
-    // trigger directly is refused (defence in depth if a grant were widened later).
+    // trigger directly is refused (defense in depth if a grant were widened later).
     await db.exec(`GRANT UPDATE (total_xp) ON public.profiles TO authenticated`);
     const r = await asUser(ALICE, () =>
       attempt(db, `UPDATE profiles SET total_xp = 5 WHERE id = $1`, [ALICE]),

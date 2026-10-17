@@ -89,7 +89,7 @@ describe("weekStrip", () => {
     expect(days.map((d) => d.isToday)).toEqual([false, false, false, false, false, false, true]);
   });
 
-  it("marks practised days, freeze days and quiet days", () => {
+  it("marks practiced days, freeze days and quiet days", () => {
     const days = weekStrip(
       { history: { "2026-09-29": 2, "2026-09-30": 1 }, freezeLog: ["2026-09-28"] },
       today,
@@ -98,7 +98,7 @@ describe("weekStrip", () => {
     expect(days.slice(0, 4).every((d) => d.status === "quiet")).toBe(true);
   });
 
-  it("counts a practised day as practised even if a freeze was also logged", () => {
+  it("counts a practiced day as practiced even if a freeze was also logged", () => {
     const [, , , , , yesterday] = weekStrip(
       { history: { "2026-09-29": 1 }, freezeLog: ["2026-09-29"] },
       today,

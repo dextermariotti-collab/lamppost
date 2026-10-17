@@ -60,7 +60,7 @@ describe("isDayKey", () => {
 describe("isPlausibleLocalDay", () => {
   const now = new Date("2026-09-24T01:30:00Z");
 
-  it("allows the UTC day and its neighbours, for every real timezone", () => {
+  it("allows the UTC day and its neighbors, for every real timezone", () => {
     expect(isPlausibleLocalDay("2026-09-23", now)).toBe(true);
     expect(isPlausibleLocalDay("2026-09-24", now)).toBe(true);
     expect(isPlausibleLocalDay("2026-09-25", now)).toBe(true);

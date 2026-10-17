@@ -10,7 +10,7 @@ const claims: Record<string, LessonScript> = {
     written: {
       prompt: "In one sentence, restate the writer's main claim in your own words.",
       passage:
-        "Every time the Crestwood ferry is cancelled, the island shops lose a day's income. Last winter it was cancelled eleven times. The shopkeepers aren't asking for a bridge. They're asking for a second, smaller boat that can sail in rougher weather.",
+        "Every time the Crestwood ferry is canceled, the island stores lose a day's income. Last winter it was canceled eleven times. The store owners aren't asking for a bridge. They're asking for a second, smaller boat that can sail in rougher weather.",
       guidance: "Say what the writer wants, not just what the passage describes.",
     },
     steps: [
@@ -68,7 +68,7 @@ const claims: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Nobody states the conclusion here. What claim is the writer really making?",
         stimulus:
-          "The new bus lane took two parking spaces from Elm Street. Since then, shops there report fewer customers than last winter. Nobody asked the shopkeepers.",
+          "The new bus lane took two parking spaces from Elm Street. Since then, shops there report fewer customers than last winter. Nobody asked the shop owners.",
         options: [
           {
             text: "Every shop on Elm Street is about to close.",
@@ -82,7 +82,7 @@ const claims: Record<string, LessonScript> = {
           },
         ],
         correct: 1,
-        hint: "What is the passage building towards, even though it never says it?",
+        hint: "What is the passage building toward, even though it never says it?",
         why: "An implied claim is what the parts add up to. Check it: it should follow from the details without going further than they do.",
       },
       {
@@ -147,7 +147,7 @@ const claims: Record<string, LessonScript> = {
       {
         id: "roles",
         kind: "sort",
-        prompt: "Sort each sentence from a leaflet: the claim, a reason, or just background.",
+        prompt: "Sort each sentence from a flyer: the claim, a reason, or just background.",
         buckets: [
           { id: "claim", label: "The claim" },
           { id: "reason", label: "A reason" },
@@ -158,7 +158,7 @@ const claims: Record<string, LessonScript> = {
             id: "1",
             text: "Ridgeway Park needs ten more benches.",
             bucket: "claim",
-            why: "This is what the leaflet wants you to accept.",
+            why: "This is what the flyer wants you to accept.",
           },
           {
             id: "2",
@@ -168,7 +168,7 @@ const claims: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "People who sit down stay longer and spend more at the gate cafe.",
+            text: "People who sit down stay longer and spend more at the gate café.",
             bucket: "reason",
             why: "Another reason, this time about who benefits.",
           },
@@ -185,8 +185,8 @@ const claims: Record<string, LessonScript> = {
             why: "A pleasant detail with no link to the benches.",
           },
         ],
-        hint: "Does the sentence push towards the conclusion, or just sit there?",
-        why: "Only the claim is being argued, only reasons push towards it, and background is true but idle.",
+        hint: "Does the sentence push toward the conclusion, or just sit there?",
+        why: "Only the claim is being argued, only reasons push toward it, and background is true but idle.",
       },
       {
         id: "together",
@@ -195,7 +195,7 @@ const claims: Record<string, LessonScript> = {
         prompt:
           "A longer one, with a claim inside a claim. Which sentence states the writer's main claim?",
         stimulus:
-          "“The Westfield footbridge has been closed for repairs twice this year, and the engineers' report calls its supports ‘worn beyond economic repair’. Patching it again would cost nearly as much as a new bridge. So the bridge is no longer worth fixing. The council should put the money towards a replacement instead.”",
+          "“The Westfield footbridge has been closed for repairs twice this year, and the engineers' report calls its supports ‘worn beyond economic repair.’ Patching it again would cost nearly as much as a new bridge. So the bridge is no longer worth fixing. The council should put the money toward a replacement instead.”",
         options: [
           {
             text: "The footbridge has been closed for repairs twice this year.",
@@ -228,7 +228,7 @@ const claims: Record<string, LessonScript> = {
     written: {
       prompt: "Name one assumption this argument depends on, and say why it might not hold.",
       passage:
-        "Northfield School's new bell schedule ends lessons ten minutes earlier so students can catch their buses. Since September, the head teacher reports, fewer students have been late for buses. This proves the new schedule works, so it should stay.",
+        "Northfield School's new bell schedule ends lessons ten minutes earlier so students can catch their buses. Since September, the principal reports, fewer students have been late for buses. This proves the new schedule works, so it should stay.",
       guidance: "Ask what else might explain the change, or what the argument takes for granted.",
     },
     steps: [
@@ -242,7 +242,7 @@ const claims: Record<string, LessonScript> = {
           {
             text: "Mia watches a lot of video on her phone every day, mostly at night.",
             whyNot:
-              "That adds a detail about her habits, but it doesn't connect “died after two hours” to “faulty”.",
+              "That adds a detail about her habits, but it doesn't connect “died after two hours” to “faulty.”",
           },
           {
             text: "Batteries in most phones are made of lithium.",
@@ -258,8 +258,8 @@ const claims: Record<string, LessonScript> = {
         id: "chess",
         kind: "gap",
         prompt: "Find the missing link in this one.",
-        reason: "Every student who joined the chess club raised their maths grade.",
-        conclusion: "So the chess club raises maths grades.",
+        reason: "Every student who joined the chess club raised their math grade.",
+        conclusion: "So the chess club raises math grades.",
         options: [
           { text: "Nothing else explains the rise, such as keen students joining." },
           {
@@ -267,7 +267,7 @@ const claims: Record<string, LessonScript> = {
             whyNot: "Popularity doesn't connect joining the club to improving.",
           },
           {
-            text: "Maths grades matter for getting into college.",
+            text: "Math grades matter for getting into college.",
             whyNot: "Probably true, but it isn't what links the club to the improvement.",
           },
         ],
@@ -296,7 +296,7 @@ const claims: Record<string, LessonScript> = {
         ],
         fallacy: "Unstated assumption: lights off means closed for good",
         hint: "What else could explain the lights being off?",
-        why: "Lights off could mean a lunch break, a power cut or a holiday. The conclusion needs “lights off at noon means closed for good” to be true.",
+        why: "Lights off could mean a lunch break, a power outage or a holiday. The conclusion needs “lights off at noon means closed for good” to be true.",
       },
       {
         id: "late",
@@ -414,7 +414,7 @@ const claims: Record<string, LessonScript> = {
       prompt:
         "Pick one sentence from the passage and say whether it is a fact, an opinion or a value claim, and why.",
       passage:
-        "The Harbour Line ferry is the fastest way to cross the bay: the trip takes 18 minutes, against 35 by road. It is also the nicest, with sea views the whole way. Because of that, the council should keep the ferry running even if it loses money.",
+        "The Harbor Line ferry is the fastest way to cross the bay: the trip takes 18 minutes, against 35 by road. It is also the nicest, with sea views the whole way. Because of that, the council should keep the ferry running even if it loses money.",
       guidance: "Say how you could check it, or why you couldn't.",
     },
     steps: [
@@ -431,7 +431,7 @@ const claims: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "The Alder Street bridge is 42 metres long.",
+            text: "The Alder Street bridge is 140 feet long.",
             bucket: "fact",
             why: "You could measure it.",
           },
@@ -455,7 +455,7 @@ const claims: Record<string, LessonScript> = {
           },
           {
             id: "5",
-            text: "Blue is the nicest colour for a bridge.",
+            text: "Blue is the nicest color for a bridge.",
             bucket: "opinion",
             why: "A preference, not something you can measure.",
           },
@@ -470,21 +470,21 @@ const claims: Record<string, LessonScript> = {
         prompt: "Real sentences mix types. Tap the part that data alone can't settle.",
         passage: [
           {
-            text: "The new timetable cut delays by 9%,",
+            text: "The new schedule cut delays by 9%,",
             tappable: true,
             whyNot: "That's a checkable fact: you could count delays before and after.",
           },
           { text: "so" },
           { text: "it was the right call.", tappable: true, flaw: true },
           {
-            text: "Fewer trains were also cancelled.",
+            text: "Fewer trains were also canceled.",
             tappable: true,
             whyNot: "Another checkable statement about the numbers.",
           },
         ],
-        fallacy: "A value judgement presented as a fact",
+        fallacy: "A value judgment presented as a fact",
         hint: "Which part says what ought to have been done?",
-        why: "The 9% is a fact. “The right call” is a value judgement: it depends on what matters, such as cost or convenience, not only on delay figures.",
+        why: "The 9% is a fact. “The right call” is a value judgment: it depends on what matters, such as cost or convenience, not only on delay figures.",
       },
       {
         id: "which-value",
@@ -510,7 +510,7 @@ const claims: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Decide, then say how sure you are.",
         question:
-          "“The council's new bike lane cut cycling injuries by a third, so it was worth the cost.” Which part is a value judgement?",
+          "“The council's new bike lane cut cycling injuries by a third, so it was worth the cost.” Which part is a value judgment?",
         options: [
           { text: "It was worth the cost." },
           {
@@ -604,27 +604,27 @@ const claims: Record<string, LessonScript> = {
         label: "Putting it together",
         kind: "choice",
         prompt:
-          "Two neighbours disagree about new floodlights. Where does their disagreement really lie?",
+          "Two neighbors disagree about new floodlights. Where does their disagreement really lie?",
         stimulus:
-          "Jonah: “The new floodlights at Brook Park are a waste. They cost £40,000 and they're only used twice a week.” Ama: “Twice a week is 100 extra hours of football a year for kids who had nowhere to play in winter. That's money well spent.”",
+          "Jonah: “The new floodlights at Brook Park are a waste. They cost $40,000 and they're only used twice a week.” Ama: “Twice a week is 100 extra hours of soccer a year for kids who had nowhere to play in winter. That's money well spent.”",
         options: [
           {
             text: "In what the floodlights cost and how often they're used.",
             whyNot:
-              "They agree on those facts: £40,000, used about twice a week. Neither disputes the numbers.",
+              "They agree on those facts: $40,000, used about twice a week. Neither disputes the numbers.",
           },
           {
             text: "In whether the use they agree on is worth the cost.",
           },
           {
-            text: "In whether children like playing football in winter.",
+            text: "In whether children like playing soccer in winter.",
             whyNot:
               "That's a preference nobody here disputes. Their argument is about whether the spending is justified.",
           },
         ],
         correct: 1,
         hint: "Check which facts both of them accept. What's left once those are agreed?",
-        why: "They agree on the facts: the cost and the use. What divides them is a value question, whether that use is worth £40,000, and more data alone won't settle it.",
+        why: "They agree on the facts: the cost and the use. What divides them is a value question, whether that use is worth $40,000, and more data alone won't settle it.",
       },
     ],
   },
@@ -691,8 +691,8 @@ const claims: Record<string, LessonScript> = {
             whyNot: "Ordinary and easy to check: a small amount of evidence settles it.",
           },
           {
-            text: "A new tram line will open on the high street next year.",
-            whyNot: "Plausible. A council notice or timetable would be enough.",
+            text: "A new streetcar line will open on the main street next year.",
+            whyNot: "Plausible. A council notice or schedule would be enough.",
           },
         ],
         correct: 0,
@@ -712,7 +712,7 @@ const claims: Record<string, LessonScript> = {
           },
           {
             text: "Drinking water is healthy for people of every age and in every season.",
-            whyNot: "True in general, but it doesn't connect “no evidence” to “safe”.",
+            whyNot: "True in general, but it doesn't connect “no evidence” to “safe.”",
           },
           { text: "Someone has tested it properly and would have found any problem." },
         ],
@@ -725,13 +725,13 @@ const claims: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "Ola says the new ferry timetable won't save anyone time. Sam replies: “Prove it will save time.” Is Sam's reply fair?",
+          "Ola says the new ferry schedule won't save anyone time. Sam replies: “Prove it will save time.” Is Sam's reply fair?",
         options: [
           { text: "No: Ola made the claim, so Ola owes the support." },
           {
-            text: "Yes: new timetables should prove themselves first.",
+            text: "Yes: new schedules should prove themselves first.",
             whyNot:
-              "That might be a fair demand of the timetable's designers, but Ola still made a claim and owes support for it.",
+              "That might be a fair demand of the schedule's designers, but Ola still made a claim and owes support for it.",
           },
           {
             text: "Yes: it's always the other person's job to disprove.",
@@ -858,7 +858,7 @@ const claims: Record<string, LessonScript> = {
             text: "help you",
             tappable: true,
             whyNot:
-              "Loose, yes, but even a firm “helps you” could be tested. The escape hatch is “may”.",
+              "Loose, yes, but even a firm “helps you” could be tested. The escape hatch is “may.”",
           },
           { text: "feel more" },
           {
@@ -996,7 +996,7 @@ const claims: Record<string, LessonScript> = {
         id: "unfalsifiable",
         kind: "gap",
         prompt: "What makes this conclusion follow?",
-        reason: "Whatever happened, the supplement's makers said it “may have helped”.",
+        reason: "Whatever happened, the supplement's makers said it “may have helped.”",
         conclusion: "So there's no way to show the supplement doesn't work.",
         options: [
           { text: "A claim that fits every result can't be shown wrong." },
@@ -1020,18 +1020,18 @@ const claims: Record<string, LessonScript> = {
         prompt:
           "A real-sounding promise. Which rewrite would let residents check, in a few years, whether it was kept?",
         stimulus:
-          "From Mayfield council's plan: “We will work towards cleaner air in the town centre, aiming for significant improvements in the coming years through a range of measures.”",
+          "From Mayfield council's plan: “We will work toward cleaner air in the town center, aiming for significant improvements in the coming years through a range of measures.”",
         options: [
           {
-            text: "We are fully committed to making air in the town centre dramatically cleaner, as a top priority.",
+            text: "We are fully committed to making air in the town center dramatically cleaner, as a top priority.",
             whyNot:
               "Stronger words, but still no measure and no date. “Dramatically” could mean anything.",
           },
           {
-            text: "We will cut average nitrogen dioxide on the High Street by a quarter by 2030, measured monthly.",
+            text: "We will cut average nitrogen dioxide on Main Street by a quarter by 2030, measured monthly.",
           },
           {
-            text: "We will take many important steps to help tackle air pollution across the whole town centre.",
+            text: "We will take many important steps to help tackle air pollution across the whole town center.",
             whyNot:
               "“Help tackle” and “many steps” can't fail: any action at all would count as keeping it.",
           },

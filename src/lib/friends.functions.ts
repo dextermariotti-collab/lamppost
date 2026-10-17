@@ -191,7 +191,7 @@ export const listFriends = createServerFn({ method: "POST" })
         {
           ...card,
           friendshipId: link.id,
-          // Accepting a shared streak means sharing whether you practised today with that friend.
+          // Accepting a shared streak means sharing whether you practiced today with that friend.
           activeToday:
             (card.sharesProgress || streak?.status === "active") && activeToday.has(profile.id),
           nudgedToday: nudgedToday.has(profile.id),

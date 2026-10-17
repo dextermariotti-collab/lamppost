@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { LEGAL_DOCS } from "@/lib/legal";
 
 const EXTRA = [
-  { to: "/legal/acknowledgements", title: "Acknowledgements" },
+  { to: "/legal/acknowledgements", title: "Acknowledgments" },
   { to: "/support", title: "Help and support" },
 ];
 

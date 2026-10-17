@@ -9,11 +9,11 @@ export const SAMPLES = {
   claim: {
     kind: "claim",
     passage:
-      "The corner shop closed last month. Prices keep rising and nobody visits the high street. The town is dying and the council must act.",
+      "The corner store closed last month. Prices keep rising and nobody visits the main street. The town is dying and the council must act.",
     options: [
       "The town is dying and the council must act",
-      "The corner shop closed down last month",
-      "Prices keep rising and nobody visits the high street",
+      "The corner store closed down last month",
+      "Prices keep rising and nobody visits the main street",
     ],
     correct: 0,
     explanation: "Everything else is offered to support that conclusion.",
@@ -32,11 +32,11 @@ export const SAMPLES = {
   },
   assumption: {
     kind: "assumption",
-    argument: "Sales rose after the new advert ran, so the advert worked.",
+    argument: "Sales rose after the new ad ran, so the ad worked.",
     options: [
       "Nothing else changed that could explain the rise",
-      "The advert was expensive to make",
-      "Sales always rise in the autumn",
+      "The ad was expensive to make",
+      "Sales always rise in the fall",
     ],
     correct: 0,
     explanation: "Without that link, the rise could have any other cause.",
@@ -46,7 +46,7 @@ export const SAMPLES = {
     claim: "Drinking coffee helps people live longer.",
     items: [
       {
-        text: "A large randomised trial with a control group",
+        text: "A large randomized trial with a control group",
         why: "It rules out most other causes.",
       },
       { text: "A cohort study following thousands of people", why: "Strong but observational." },
@@ -91,7 +91,7 @@ export const SAMPLES = {
     kind: "judge",
     question: "Who owes evidence here?",
     passage: "You cannot prove that the supplement does not work, so it must be safe to take.",
-    options: ["The person making the claim", "The sceptic", "Nobody"],
+    options: ["The person making the claim", "The skeptic", "Nobody"],
     correct: 0,
     explanation: "Whoever makes the claim carries the burden of support.",
   },
@@ -117,11 +117,11 @@ export const SAMPLES = {
   rewrite: {
     kind: "rewrite",
     question: "Which rewrite could actually be shown false?",
-    original: "The programme helps people a lot.",
+    original: "The program helps people a lot.",
     options: [
-      "The programme cut average waits by ten percent",
-      "The programme helps people even more",
-      "The programme is widely loved",
+      "The program cut average waits by ten percent",
+      "The program helps people even more",
+      "The program is widely loved",
     ],
     correct: 0,
     explanation: "It says what result would count as failure.",
@@ -129,11 +129,11 @@ export const SAMPLES = {
   order: {
     kind: "order",
     question: "Order these into a working argument.",
-    passage: "A council is deciding whether to ban cars from the centre.",
+    passage: "A council is deciding whether to ban cars from the center.",
     items: [
-      { text: "Cars in the centre cause most of its air pollution", why: "The premise." },
+      { text: "Cars in the center cause most of its air pollution", why: "The premise." },
       { text: "Air pollution harms people who live there", why: "The link." },
-      { text: "So the council should limit cars in the centre", why: "The conclusion." },
+      { text: "So the council should limit cars in the center", why: "The conclusion." },
     ],
   },
   numeric: {
@@ -168,7 +168,7 @@ export const SAMPLES = {
     options: [
       "The axis starts near the data, so tiny changes look huge",
       "The data behind the chart was probably made up",
-      "The bars use a colour that is hard to read",
+      "The bars use a color that is hard to read",
     ],
     correct: 0,
     explanation: "A truncated axis exaggerates a small change.",

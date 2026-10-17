@@ -330,6 +330,7 @@ in progress/streak/day logic, add the failing case to those suites first.
 ## Conventions
 
 - Match the surrounding code: no new comments unless they explain a non-obvious *why*.
-- Copy is short and plain; the app talks to learners as a calm coach, not a game show.
+- Copy is short and plain; the app talks to learners as a calm coach, not a game show. It is American
+  English: US spelling and punctuation, dollars, US units (`content/american-english.test.ts`).
 - Prefer server-side truth for anything social (friends, shared streaks, debates); prefer
   local-first for anything a signed-out learner can do.

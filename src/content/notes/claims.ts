@@ -19,7 +19,7 @@ const claims: Record<string, LessonNotes> = {
       {
         term: "Implied claim",
         meaning:
-          "A claim the writer builds towards but never states. Say it out loud before you judge it.",
+          "A claim the writer builds toward but never states. Say it out loud before you judge it.",
       },
       {
         term: "Background",
@@ -28,22 +28,22 @@ const claims: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A post in the Harbour Lane residents' group: “Third time this month the bins weren't collected on Tuesday. The council changed contractors in June. Families with small children can't leave rubbish in the hall for a week. Other streets get their collections without any trouble.”",
+      case: "A post in the Harbor Lane neighborhood group: “Third time this month the trash wasn't picked up on Tuesday. The town changed contractors in June. Families with small children can't leave garbage in the hall for a week. Other streets get their pickups without any trouble.”",
       moves: [
-        "Ask what the post wants. Nothing says “should”, so the claim is implied.",
-        "Add up the details: missed collections, a new contractor, a real cost to families, other streets doing fine. They all point one way.",
-        "Say it in one sentence: “The council should fix the Tuesday bin collections on Harbour Lane.”",
-        "Check it goes no further than the details. “The new contractor should be sacked” is a bigger claim the post never makes.",
+        "Ask what the post wants. Nothing says “should,” so the claim is implied.",
+        "Add up the details: missed pickups, a new contractor, a real cost to families, other streets doing fine. They all point one way.",
+        "Say it in one sentence: “The town should fix the Tuesday trash pickup on Harbor Lane.”",
+        "Check it goes no further than the details. “The new contractor should be fired” is a bigger claim the post never makes.",
       ],
     },
     subtleties: [
       {
         title: "Claims inside claims",
-        body: "Longer pieces argue for a main claim through smaller ones: “the bridge is unsafe, so it should close”. “The bridge is unsafe” is a claim with its own support, and also a reason for the main one. Find the main claim first, then the steps on the way.",
+        body: "Longer pieces argue for a main claim through smaller ones: “the bridge is unsafe, so it should close.” “The bridge is unsafe” is a claim with its own support, and also a reason for the main one. Find the main claim first, then the steps on the way.",
       },
       {
         title: "A question can be a claim",
-        body: "“Do we really need another car park?” is a question in form, but it argues that we don't. Rhetorical questions, and even jokes, can carry the claim. Restate them as plain statements before you weigh them.",
+        body: "“Do we really need another parking lot?” is a question in form, but it argues that we don't. Rhetorical questions, and even jokes, can carry the claim. Restate them as plain statements before you weigh them.",
       },
     ],
     ask: "What is this trying to get me to accept or do?",
@@ -135,7 +135,7 @@ const claims: Record<string, LessonNotes> = {
     subtleties: [
       {
         title: "A value can hide inside a fact",
-        body: "“The council wasted £20,000” sounds factual, but “wasted” is a judgement. The £20,000 can be checked; whether it was wasted depends on what you think it should have bought. Watch for loaded verbs and adjectives.",
+        body: "“The council wasted $20,000” sounds factual, but “wasted” is a judgment. The $20,000 can be checked; whether it was wasted depends on what you think it should have bought. Watch for loaded verbs and adjectives.",
       },
       {
         title: "Values still need reasons",
@@ -152,7 +152,7 @@ const claims: Record<string, LessonNotes> = {
     hook: "Whoever has to prove a claim often loses an argument by default. Knowing who owes the evidence stops you being talked into proving a negative.",
     idea: [
       "The person who makes a claim owes the support for it. If someone says a supplement doubles your energy, it is up to them to show it, not up to you to show it doesn't. “You can't prove it isn't true” tries to shift that burden, and it adds no evidence at all.",
-      "How much support is owed depends on how surprising the claim is. “I had cereal for breakfast” needs little more than my word. “I saw a flying car” needs far more, because it clashes with everything else we know. A negative claim, like “the new timetable won't save time”, is still a claim, and owes support too.",
+      "How much support is owed depends on how surprising the claim is. “I had cereal for breakfast” needs little more than my word. “I saw a flying car” needs far more, because it clashes with everything else we know. A negative claim, like “the new schedule won't save time,” is still a claim, and owes support too.",
     ],
     terms: [
       {
@@ -174,7 +174,7 @@ const claims: Record<string, LessonNotes> = {
       case: "At a staff meeting at Pinecrest Clinic, Dana says the new booking app is losing appointments. Rob replies: “Show me one appointment it lost. Until you can, the app is fine.”",
       moves: [
         "Dana made a claim: the app is losing appointments. The burden is hers, so Rob can fairly ask for evidence.",
-        "But Rob made a claim too: “the app is fine”. It needs support as well, and the lack of Dana's evidence isn't it.",
+        "But Rob made a claim too: “the app is fine.” It needs support as well, and the lack of Dana's evidence isn't it.",
         "How surprising is Dana's claim? New software losing bookings is ordinary, so modest evidence would do: a few patients whose bookings vanished.",
         "The fair outcome: Dana gathers examples, and nobody declares the app fine or broken until someone has looked.",
       ],
@@ -191,7 +191,7 @@ const claims: Record<string, LessonNotes> = {
     ],
     ask: "Who made the claim, and have they supported it as much as it needs?",
     tryIt:
-      "Notice the next time someone says “prove me wrong” or “you can't show it isn't so”, in person or online. Write down what the original claim was and what support it would be fair to ask for.",
+      "Notice the next time someone says “prove me wrong” or “you can't show it isn't so,” in person or online. Write down what the original claim was and what support it would be fair to ask for.",
   },
 
   "claims-vague-language": {
@@ -214,9 +214,9 @@ const claims: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "An advert for Glowfield Water: “Our mineral water supports healthy digestion and may help you feel more energised. Thousands of customers say they feel the difference.”",
+      case: "An ad for Glowfield Water: “Our mineral water supports healthy digestion and may help you feel more energized. Thousands of customers say they feel the difference.”",
       moves: [
-        "Find the escape words: “supports”, “may help”, “feel the difference”.",
+        "Find the escape words: “supports,” “may help,” “feel the difference.”",
         "Ask what result would count against it. If nobody's digestion changes, the water still “supports” it. If people feel the same, it only “may” help.",
         "Look at the testimonial: thousands feeling a difference says nothing about how many felt none, or whether tap water would do as well.",
         "A testable version: “People who drank it for a month reported fewer digestive problems than people who drank tap water.”",
@@ -234,7 +234,7 @@ const claims: Record<string, LessonNotes> = {
     ],
     ask: "What result would count as this claim being wrong?",
     tryIt:
-      "Read three adverts or product labels this week and underline every weasel word. Rewrite one claim so it could fail a test, and ask yourself whether the company would be willing to print it.",
+      "Read three ads or product labels this week and underline every weasel word. Rewrite one claim so it could fail a test, and ask yourself whether the company would be willing to print it.",
   },
 };
 

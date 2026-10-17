@@ -35,7 +35,7 @@ import { LessonPlayer } from "./LessonPlayer";
 import { NotesView } from "./NotesView";
 
 /** What each kind of step is listed as on the finished screen. */
-const PRACTISED: Record<StepKind, string> = {
+const PRACTICED: Record<StepKind, string> = {
   flaw: "Spotting the flaw",
   builder: "Building an argument",
   sort: "Sorting claims",
@@ -166,10 +166,10 @@ export function StepLesson({
       : 0;
 
   if (phase === "finished") {
-    const practised = Array.from(
+    const practiced = Array.from(
       new Set(
         script.steps.flatMap((step, i) =>
-          results[i] && PRACTISED[step.kind] ? [PRACTISED[step.kind]] : [],
+          results[i] && PRACTICED[step.kind] ? [PRACTICED[step.kind]] : [],
         ),
       ),
     );
@@ -180,7 +180,7 @@ export function StepLesson({
         totalLessons={course.lessons.length || TOTAL_LESSONS}
         accuracy={accuracy}
         answered={answered}
-        practised={practised}
+        practiced={practiced}
         xpEarned={Math.max(state.xp - (xpAtStart.current ?? state.xp), 0)}
         wrote={argumentGrade !== null}
         takeaway={script.takeaway}

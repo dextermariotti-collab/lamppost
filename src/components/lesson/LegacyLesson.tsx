@@ -268,7 +268,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     const doneToday = state.history[dayKey()] ?? 0;
     const goal = state.dailyGoal;
     // Only what was actually done gets listed.
-    const practised = Array.from(
+    const practiced = Array.from(
       new Set(
         exercises.flatMap((e, i) =>
           e && attempts[i] !== undefined ? [EXERCISE_LABEL[e.kind]] : [],
@@ -370,9 +370,9 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                 style={{ width: `${Math.min(100, Math.round((doneToday / goal) * 100))}%` }}
               />
             </div>
-            <p className="mt-4 text-[11px] font-semibold text-primary-text">What you practised</p>
+            <p className="mt-4 text-[11px] font-semibold text-primary-text">What you practiced</p>
             <ul className="mt-2 space-y-1.5">
-              {practised.map((label) => (
+              {practiced.map((label) => (
                 <li key={label} className="flex items-center gap-2 text-[13px] font-semibold">
                   <Check className="h-4 w-4 shrink-0 rounded-sm bg-success/15 p-0.5 text-success" />
                   {label}

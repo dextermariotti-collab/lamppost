@@ -55,7 +55,7 @@ describe("weeks start on Monday", () => {
     expect(days[6]).toBe("2026-10-04");
   });
 
-  it("recognises a week key, and counts weeks between two", () => {
+  it("recognizes a week key, and counts weeks between two", () => {
     expect(isWeekStart("2026-09-21")).toBe(true);
     expect(isWeekStart("2026-09-22")).toBe(false);
     expect(isWeekStart("not a day")).toBe(false);

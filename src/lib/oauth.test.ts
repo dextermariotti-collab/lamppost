@@ -54,7 +54,7 @@ describe("signing in from the app", () => {
     expect(h.close).toHaveBeenCalled();
   });
 
-  it("ignores other links and a cancelled sign-in", async () => {
+  it("ignores other links and a canceled sign-in", async () => {
     expect(await completeNativeSignIn("https://lamppost.example/invite/abc")).toBe(false);
     expect(await completeNativeSignIn(`${AUTH_CALLBACK}?error=access_denied`)).toBe(false);
     expect(h.exchangeCodeForSession).not.toHaveBeenCalled();

@@ -11,7 +11,7 @@ export const MIN_DRILLS = 4;
 export const MAX_DRILLS = 5;
 
 /**
- * Pairs that ask for the same judgement in a different costume, so a lesson must
+ * Pairs that ask for the same judgment in a different costume, so a lesson must
  * not contain both. (Lesson 6 shipped "rank the evidence" and "order the
  * evidence" — one drill twice.)
  */

@@ -53,7 +53,7 @@ const evidence: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "The transport board's press release says “faster journeys”.",
+            text: "The transport board's press release says “faster journeys.”",
             bucket: "weak",
             why: "A claim from the people who built the route, with no data shown.",
           },
@@ -65,7 +65,7 @@ const evidence: Record<string, LessonScript> = {
           },
           {
             id: "5",
-            text: "A neighbour's cousin got to work early once.",
+            text: "A neighbor's cousin got to work early once.",
             bucket: "weak",
             why: "A single occasion, which could have had many causes.",
           },
@@ -100,7 +100,7 @@ const evidence: Record<string, LessonScript> = {
         prompt: "Tap the step where the evidence can't support the conclusion.",
         passage: [
           {
-            text: "A survey of 800 pupils found that breakfast-eaters scored higher,",
+            text: "A survey of 800 students found that breakfast-eaters scored higher,",
             tappable: true,
             whyNot: "A survey is fine for showing a link. That part is reasonable.",
           },
@@ -150,7 +150,7 @@ const evidence: Record<string, LessonScript> = {
         stronger: "b",
         factor: "Measured results over opinion",
         weakerWhy:
-          "An expert's view is worth something, but it's a judgement. Measured sleep over two years shows the pattern directly.",
+          "An expert's view is worth something, but it's a judgment. Measured sleep over two years shows the pattern directly.",
         hint: "Which one shows its measurements?",
         why: "Opinion ranks below measured data, though an expert's view is still worth more than a story.",
       },
@@ -158,23 +158,23 @@ const evidence: Record<string, LessonScript> = {
         id: "school",
         kind: "choice",
         prompt:
-          "A school wants to know whether a reading programme works. Which evidence would be strongest?",
+          "A school wants to know whether a reading program works. Which evidence would be strongest?",
         options: [
           {
-            text: "Test scores for pupils randomly given the programme, compared with those not given it.",
+            text: "Test scores for students randomly given the program, compared with those not given it.",
           },
           {
-            text: "A warm letter from a parent whose child loved the programme.",
+            text: "A warm letter from a parent whose child loved the program.",
             whyNot: "One family's experience, with nothing to compare it to.",
           },
           {
-            text: "Teachers say at the staff meeting that the programme feels effective.",
-            whyNot: "Impressions from people who like the programme, without measured results.",
+            text: "Teachers say at the staff meeting that the program feels effective.",
+            whyNot: "Impressions from people who like the program, without measured results.",
           },
         ],
         correct: 0,
         hint: "Which option measures something and compares two groups?",
-        why: "Measured results from randomly chosen groups let the school separate the programme from everything else going on.",
+        why: "Measured results from randomly chosen groups let the school separate the program from everything else going on.",
       },
       {
         id: "together",
@@ -294,7 +294,7 @@ const evidence: Record<string, LessonScript> = {
           },
         ],
         correct: 0,
-        hint: "Think about the difference between “can” and “usually”.",
+        hint: "Think about the difference between “can” and “usually.”",
         why: "One case is enough to show something is possible. It can't show how common it is or what is typical.",
       },
       {
@@ -310,7 +310,7 @@ const evidence: Record<string, LessonScript> = {
           },
           { text: "It tells you little without knowing how many entered and how many won." },
           {
-            text: "Proof that the raffle is rigged in favour of her friends.",
+            text: "Proof that the raffle is rigged in favor of her friends.",
             whyNot: "That jumps to a cause with no evidence for it. The numbers just aren't there.",
           },
         ],
@@ -407,7 +407,7 @@ const evidence: Record<string, LessonScript> = {
     written: {
       prompt: "Judge how reliable the source is, using expertise, incentives and track record.",
       passage:
-        "A report titled “Petrol Prices Are Fair” was published by the Bayview Fuel Association, a group funded by petrol station owners. Its author, a respected economist, has written on fuel markets for twenty years but was paid for this report. The report includes forty pages of tables and no independent review.",
+        "A report titled “Gas Prices Are Fair” was published by the Bayview Fuel Association, a group funded by gas station owners. Its author, a respected economist, has written on fuel markets for twenty years but was paid for this report. The report includes forty pages of tables and no independent review.",
       guidance:
         "Say what the source knows, what it stands to gain, and what would help you trust it.",
     },
@@ -475,7 +475,7 @@ const evidence: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "Dr Alder, a well-known cardiologist, is paid by Lumen Sweets to say sugar is harmless. How should you treat her statement?",
+          "Dr. Alder, a well-known cardiologist, is paid by Lumen Sweets to say sugar is harmless. How should you treat her statement?",
         options: [
           {
             text: "Accept it: she's an expert, so what she says is true.",
@@ -491,7 +491,7 @@ const evidence: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "Two things can be true at once: she knows the subject, and she is paid.",
-        why: "Credentials answer “does she know?” but not “does she gain?”. A paid expert needs independent confirmation.",
+        why: "Credentials answer “does she know?” but not “does she gain?.” A paid expert needs independent confirmation.",
       },
       {
         id: "stake",
@@ -500,12 +500,12 @@ const evidence: Record<string, LessonScript> = {
         prompt: "Tap the phrase that shows why this source can't settle the question alone.",
         passage: [
           {
-            text: "A report from the Bayview Fuel Association, which is funded by petrol stations,",
+            text: "A report from the Bayview Fuel Association, which is funded by gas stations,",
             tappable: true,
             flaw: true,
           },
           {
-            text: "finds that petrol prices are fair.",
+            text: "finds that gas prices are fair.",
             tappable: true,
             whyNot: "That's the claim being made. The question is who is making it.",
           },
@@ -569,7 +569,7 @@ const evidence: Record<string, LessonScript> = {
         label: "Which source do you lean on?",
         noun: "Source",
         prompt: "You want to know if a local bridge is safe. Which source should you lean on more?",
-        a: "A neighbour who is sure it's fine because he drives over it daily.",
+        a: "A neighbor who is sure it's fine because he drives over it daily.",
         b: "The council's structural inspection, carried out by a licensed engineer and open to public view.",
         stronger: "b",
         factor: "Expertise and accountability",
@@ -584,7 +584,7 @@ const evidence: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Three sources on one question. Who should residents rely on most, and why?",
         stimulus:
-          "Is the Coldwater dam safe? The firm that built it says it's “among the safest in the country”. An engineering professor who inspected it last year for the regional water authority found minor cracks that need monitoring. A popular local social media page says it's “about to burst”.",
+          "Is the Coldwater dam safe? The firm that built it says it's “among the safest in the country.” An engineering professor who inspected it last year for the regional water authority found minor cracks that need monitoring. A popular local social media page says it's “about to burst.”",
         options: [
           {
             text: "The builder, because it knows the dam better than anyone else does.",
@@ -614,7 +614,7 @@ const evidence: Record<string, LessonScript> = {
       prompt: "Name the specific rival explanation that applies, and say why it fits.",
       passage:
         "In Coral Bay, weeks with higher ice cream sales also have more cases of sunburn. A columnist writes: “The data are clear. Ice cream leads to sunburn, so the council should ban stalls near the beach.”",
-      guidance: "Don't just say “correlation isn't causation”. Name the alternative.",
+      guidance: "Don't just say “correlation isn't causation.” Name the alternative.",
     },
     steps: [
       {
@@ -672,7 +672,7 @@ const evidence: Record<string, LessonScript> = {
       {
         id: "three-rivals",
         kind: "sort",
-        prompt: "Sort each explanation by the rival it offers to “A causes B”.",
+        prompt: "Sort each explanation by the rival it offers to “A causes B.”",
         buckets: [
           { id: "common", label: "A common cause" },
           { id: "reverse", label: "The reverse" },
@@ -705,13 +705,13 @@ const evidence: Record<string, LessonScript> = {
           },
         ],
         hint: "Does a third thing drive both, does B drive A, or is it luck?",
-        why: "Before accepting “A causes B”, check the three rivals: a common cause, the reverse direction, and coincidence.",
+        why: "Before accepting “A causes B,” check the three rivals: a common cause, the reverse direction, and coincidence.",
       },
       {
         id: "reverse",
         kind: "gap",
         prompt: "What would have to be true for “A causes B” to be the better story?",
-        reason: "Pupils who use the school library more get better grades.",
+        reason: "Students who use the school library more get better grades.",
         conclusion: "So using the library raises grades.",
         options: [
           {
@@ -722,11 +722,11 @@ const evidence: Record<string, LessonScript> = {
             text: "Books are cheaper to borrow than to buy in the shops.",
             whyNot: "True, but it doesn't say which way the link runs.",
           },
-          { text: "Pupils don't use the library more because they already do well." },
+          { text: "Students don't use the library more because they already do well." },
         ],
         correct: 2,
-        hint: "Could better pupils be the ones who go to the library?",
-        why: "The argument assumes the link runs from library to grades. If strong pupils are simply the ones who visit, it runs the other way.",
+        hint: "Could better students be the ones who go to the library?",
+        why: "The argument assumes the link runs from library to grades. If strong students are simply the ones who visit, it runs the other way.",
       },
       {
         id: "coffee",
@@ -789,7 +789,7 @@ const evidence: Record<string, LessonScript> = {
         weakerWhy:
           "Students who are calmer, healthier or less stressed may both sleep more and do better, so the data alone don't show sleep is the cause.",
         hint: "Which one goes no further than the numbers?",
-        why: "A link supports “these go together”. Saying one causes the other needs more, such as an experiment or ruling out rivals.",
+        why: "A link supports “these go together.” Saying one causes the other needs more, such as an experiment or ruling out rivals.",
       },
       {
         id: "test",
@@ -797,10 +797,12 @@ const evidence: Record<string, LessonScript> = {
         prompt: "How could a school test whether a homework club raises grades?",
         options: [
           {
-            text: "Compare grades of pupils who chose to attend with those who didn't.",
-            whyNot: "Keen pupils choose to attend, so any gap could just reflect who they are.",
+            text: "Compare grades of students who chose to attend with those who didn't.",
+            whyNot: "Keen students choose to attend, so any gap could just reflect who they are.",
           },
-          { text: "Randomly invite half of the eligible pupils and compare grades a term later." },
+          {
+            text: "Randomly invite half of the eligible students and compare grades a term later.",
+          },
           {
             text: "Ask attendees whether they think it helped.",
             whyNot:
@@ -816,9 +818,9 @@ const evidence: Record<string, LessonScript> = {
         label: "Putting it together",
         kind: "choice",
         prompt:
-          "A study, an advert and a detail in the small print. Which rival explanation fits best?",
+          "A study, an ad and a detail in the small print. Which rival explanation fits best?",
         stimulus:
-          "A study of 2,000 office workers finds that those with standing desks take fewer sick days. A furniture company's advert says: “Standing desks keep you healthy.” In the study, standing desks went mostly to staff in newer offices, who were also younger on average.",
+          "A study of 2,000 office workers finds that those with standing desks take fewer sick days. A furniture company's ad says: “Standing desks keep you healthy.” In the study, standing desks went mostly to staff in newer offices, who were also younger on average.",
         options: [
           {
             text: "Reverse causation: being off sick makes people choose sitting desks.",
@@ -848,7 +850,7 @@ const evidence: Record<string, LessonScript> = {
       prompt:
         "Say what is wrong with how the sample was chosen, and what a better one would look like.",
       passage:
-        "A gym advertises: “Members lost an average of 11 kg!” The figure comes from 30 members who entered a transformation contest and stayed the full 12 weeks. The gym has 1,400 members, and does not say how many joined the contest or how many dropped out.",
+        "A gym advertises: “Members lost an average of 24 pounds!” The figure comes from 30 members who entered a transformation contest and stayed the full 12 weeks. The gym has 1,400 members, and does not say how many joined the contest or how many dropped out.",
       guidance: "Think about who is missing from the figure.",
     },
     steps: [
@@ -866,7 +868,7 @@ const evidence: Record<string, LessonScript> = {
         weakerWhy:
           "People who bother to review are often the ones with strong feelings, so the reviews tilt away from the typical user, even though the number is more flattering.",
         hint: "Who decided to be included?",
-        why: "A sample that picks itself tilts towards keen people. A random one gives everyone the same chance, even if the result is less flattering.",
+        why: "A sample that picks itself tilts toward keen people. A random one gives everyone the same chance, even if the result is less flattering.",
       },
       {
         id: "small",
@@ -958,8 +960,8 @@ const evidence: Record<string, LessonScript> = {
         id: "gym",
         kind: "gap",
         prompt: "What has to be true for the gym's figure to describe members in general?",
-        reason: "Contest entrants who finished lost 11 kg on average.",
-        conclusion: "So members typically lose 11 kg.",
+        reason: "Contest entrants who finished lost 24 pounds on average.",
+        conclusion: "So members typically lose 24 pounds.",
         options: [
           {
             text: "Contests are fun to enter and to watch, and members love them.",
@@ -979,7 +981,7 @@ const evidence: Record<string, LessonScript> = {
         id: "worse",
         kind: "choice",
         prompt:
-          "Which is the better sample for “how satisfied are our customers?”, even though it looks worse?",
+          "Which is the better sample for “how satisfied are our customers?,” even though it looks worse?",
         options: [
           {
             text: "200 customers picked at random from all who bought this year: 64% satisfied.",
@@ -987,11 +989,11 @@ const evidence: Record<string, LessonScript> = {
           {
             text: "3,000 customers who filled in the optional form at the till: 91% satisfied.",
             whyNot:
-              "It's bigger, but customers chose themselves, so it's tilted towards those with something to say.",
+              "It's bigger, but customers chose themselves, so it's tilted toward those with something to say.",
           },
           {
             text: "40 customers chosen by the manager: 98% satisfied.",
-            whyNot: "The manager decided who was asked, so it can tilt towards happy customers.",
+            whyNot: "The manager decided who was asked, so it can tilt toward happy customers.",
           },
         ],
         correct: 0,

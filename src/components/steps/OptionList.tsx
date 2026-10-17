@@ -5,7 +5,7 @@ import type { StepOption } from "@/lib/steps/types";
 /**
  * Pick-one answers. After the learner acts, a right answer is marked with a tick and the
  * word "Correct", a wrong pick with a cross and "Not this one" (read out too), so the
- * outcome never rests on colour.
+ * outcome never rests on color.
  */
 export function OptionList({
   options,

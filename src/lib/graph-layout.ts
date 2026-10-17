@@ -6,7 +6,7 @@ import { unitLinks, type UnitLink } from "./curriculum";
  * viewBox and the nodes use for their percentage positions, so a distance
  * measured here is a distance on screen at any width. (The previous version
  * measured "clearance" in percent of a non-square box, so edges that looked
- * clear of a node in the maths still ran behind it.)
+ * clear of a node in the math still ran behind it.)
  */
 
 export const GRAPH_W = 360;

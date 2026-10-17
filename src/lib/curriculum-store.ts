@@ -96,7 +96,7 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
 
   useEffect(() => {
     if (!meta) return;
-    let cancelled = false;
+    let canceled = false;
     const kinds = meta.drills;
     const course = ensureCurriculumCourse();
     const local = course.lessons[index];
@@ -133,7 +133,7 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
       initial,
       fetchLesson: () => getCurriculumLesson({ data: { lessonId: meta.id } }),
       fetchPart: (part) => getLessonPart({ data: { lessonId: meta.id, part } }),
-      isCancelled: () => cancelled,
+      isCancelled: () => canceled,
       onChange: (next) => {
         const lesson = next.lesson ? withMeta(next.lesson) : null;
         if (next.complete && lesson && !stored) {
@@ -146,7 +146,7 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
     });
 
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [index, meta, attempt, finished]);
 

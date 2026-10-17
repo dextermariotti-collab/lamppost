@@ -20,7 +20,7 @@ export type LimitPolicy = {
   user: readonly LimitTier[];
   /** Backstop per network key for everyone (shared networks: schools, offices). */
   ip: readonly LimitTier[];
-  /** One shared budget across the whole app; the last line of defence for cost. */
+  /** One shared budget across the whole app; the last line of defense for cost. */
   global: readonly LimitTier[];
 };
 

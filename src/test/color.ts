@@ -1,5 +1,5 @@
 /**
- * Just enough colour maths to check WCAG contrast on the design tokens in
+ * Just enough color math to check WCAG contrast on the design tokens in
  * src/styles.css: oklch()/hex parsing, sRGB conversion, alpha compositing and
  * the WCAG 2.x contrast ratio.
  */
@@ -42,7 +42,7 @@ export function parseColor(value: string): Rgb {
     const n = parseInt(raw, 16);
     return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255, a: 1 };
   }
-  throw new Error(`Unsupported colour: ${value}`);
+  throw new Error(`Unsupported color: ${value}`);
 }
 
 /** Lays `top` over an opaque `bottom`. */

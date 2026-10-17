@@ -167,7 +167,7 @@ export function useProgress() {
   const lastSynced = useRef("");
 
   /**
-   * Applies a change and saves it. XP a transition earns is also counted towards
+   * Applies a change and saves it. XP a transition earns is also counted toward
    * the week it was earned in, unless `earned` is false (numbers folded in from the
    * account were not earned just now).
    */
@@ -229,7 +229,7 @@ export function useProgress() {
 
   /**
    * Marks the first `count` lessons as already known — used by the optional
-   * onboarding placement check. No XP, no streak: nothing was practised.
+   * onboarding placement check. No XP, no streak: nothing was practiced.
    */
   const unlockLessons = useCallback(
     (slug: string, topic: string, count: number, total: number) =>

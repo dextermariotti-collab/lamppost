@@ -93,7 +93,7 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
       </div>
       <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-primary/85" /> practised
+          <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-primary/85" /> practiced
         </span>
         <span className="flex items-center gap-1.5">
           <Snowflake aria-hidden className="h-3 w-3 text-gem" /> freeze used

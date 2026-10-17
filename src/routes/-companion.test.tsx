@@ -24,7 +24,7 @@ const button = (name: RegExp) => screen.getByRole("button", { name }) as HTMLBut
 afterEach(cleanup);
 
 describe("Companion screen", () => {
-  it("lets every colour and accessory be worn: nothing is locked or for sale", () => {
+  it("lets every color and accessory be worn: nothing is locked or for sale", () => {
     render(<Screen />);
     for (const palette of COMPANION_PALETTES) {
       expect(button(new RegExp(`^${palette.name}$`, "i")).disabled, palette.name).toBe(false);
@@ -43,7 +43,7 @@ describe("Companion screen", () => {
     expect(button(/^ocean$/i).getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("gives every colour and accessory a 44px target", () => {
+  it("gives every color and accessory a 44px target", () => {
     render(<Screen />);
     for (const name of [/^lavender$/i, /^ocean$/i, /little hat/i, /little crown/i]) {
       expect(button(name).className, String(name)).toMatch(/\b(min-)?h-11\b/);

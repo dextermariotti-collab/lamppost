@@ -68,7 +68,7 @@ export function boundedTotal(existing: number, claimed: number, allowance: numbe
  * account has never heard of the spend) and the things would vanish. So the FIRST
  * sync, and only the first, accepts the device's word for it, bounded by what the
  * account can bear: nobody spends more than they earned, holds more hint tokens
- * than the pouch, or unlocks anything outside the catalogue. All of it is low-stakes
+ * than the pouch, or unlocks anything outside the catalog. All of it is low-stakes
  * (cosmetics and hints), which is why the device's word is enough.
  */
 export function firstSyncCarryOver(input: {

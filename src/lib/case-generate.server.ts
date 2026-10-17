@@ -21,19 +21,19 @@ export const CASE_MODEL = AI_MODELS.cases;
 const ROUNDS = 2;
 
 export const CASE_WRITER_SYSTEM = `You write the daily case for Lamppost, a critical-thinking trainer.
-A case is one short, realistic piece of everyday text (an advert, a post, an email, a notice, a chatbot answer...) and three multiple-choice questions about it. Each question practises one named lesson, using that lesson's idea on this text.
+A case is one short, realistic piece of everyday text (an ad, a post, an email, a notice, a chatbot answer...) and three multiple-choice questions about it. Each question practices one named lesson, using that lesson's idea on this text.
 Rules:
-- Every person, company, product, place and organisation is made up. Never use real brands, public figures or news events.
+- Every person, company, product, place and organization is made up. Never use real brands, public figures or news events.
 - Never touch party politics, elections, or contested social issues. Prefer everyday life: shops, clubs, councils, schools, work, travel, health products, apps, money decisions.
-- The text is ${CASE_TEXT_WORDS.min}-${CASE_TEXT_WORDS.max} words and reads like the real thing, with the reasoning problems inside it, not labelled.
+- The text is ${CASE_TEXT_WORDS.min}-${CASE_TEXT_WORDS.max} words and reads like the real thing, with the reasoning problems inside it, not labeled.
 - Each question has exactly three options. Exactly one is clearly best; the other two are tempting but wrong, and each wrong one has a "whyNot" of at most 30 words naming the specific mistake.
 - Keep the right option about as long as the wrong ones. Prompts are at most 25 words; "why" is one or two sentences, at most 40 words, explaining the answer using the text.
 - The takeaway is one sentence of at most 18 words.
-- Plain, calm English. No exclamation marks outside the case text itself. No emoji.
+- Plain, calm English. No exclamation points outside the case text itself. No emoji.
 Reply with ONLY minified JSON in the shape of the example, and nothing else.`;
 
 export const CASE_REVIEW_SYSTEM = `You are a strict reviewer of multiple-choice reasoning questions. You do not rewrite anything; you judge.
-For each question, pass it only if: it can be answered from the case text; the keyed option is clearly the best; no other option is also defensible; it really practises the named lesson; and nothing in the case uses a real brand or person or takes a side on a contested public issue.
+For each question, pass it only if: it can be answered from the case text; the keyed option is clearly the best; no other option is also defensible; it really practices the named lesson; and nothing in the case uses a real brand or person or takes a side on a contested public issue.
 Reply with ONLY minified JSON: {"questions":[{"pass":true|false,"problem":"<short reason or empty>"}, ... one per question, in order]}`;
 
 function lessonLine(lessonId: string) {
@@ -46,7 +46,7 @@ export function casePrompt(plan: CasePlan): string {
   return `Write today's case.
 Kind of text: ${CASE_SOURCES[plan.source].toLowerCase()} (use "source": "${plan.source}").
 Setting: ${plan.setting}.
-The three questions, in this order, practise these lessons (use these lessonId values):
+The three questions, in this order, practice these lessons (use these lessonId values):
 ${plan.lessons.map(lessonLine).join("\n")}
 
 Example of the exact JSON shape (a different case; don't reuse its topic, names or wording):

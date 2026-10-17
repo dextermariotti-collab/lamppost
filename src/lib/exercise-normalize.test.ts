@@ -13,7 +13,7 @@ const raw = (kind: keyof typeof SAMPLES, over: Record<string, unknown> = {}) => 
   ...over,
 });
 
-describe("normalising what the model writes, for every drill type", () => {
+describe("normalizing what the model writes, for every drill type", () => {
   it.each(EXERCISE_KINDS)(
     "%s: a well-formed drill comes through with its content intact",
     (kind) => {

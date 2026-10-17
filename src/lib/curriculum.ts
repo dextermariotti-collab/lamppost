@@ -131,7 +131,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       drills: ["sort", "judge", "highlight", "rewrite"],
       written: "critique",
       title: "Facts, opinions, values",
-      objective: "Sort a statement into fact, opinion or value judgement before debating it.",
+      objective: "Sort a statement into fact, opinion or value judgment before debating it.",
       keyIdea:
         "A factual claim can be checked, an opinion reports a preference, and a value claim says what ought to matter — 'should' claims can never be settled by data alone.",
       trap: "Real sentences mix types in one breath ('the policy cut delays by 9%, so it was the right call'). Use borderline items and sentences that need splitting.",
@@ -168,7 +168,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       title: "Types of evidence",
       objective: "Rank the main kinds of evidence by what each one can actually show.",
       keyIdea:
-        "Evidence strength is how well it rules out other explanations: randomised experiment beats cohort study, which beats survey, which beats expert opinion, which beats anecdote.",
+        "Evidence strength is how well it rules out other explanations: randomized experiment beats cohort study, which beats survey, which beats expert opinion, which beats anecdote.",
       trap: "Learners rank by how convincing the wording sounds. Every item must be checkable evidence, never a restated claim.",
       emoji: "🧾",
     },
@@ -191,7 +191,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       objective: "Judge a source by expertise, incentives and track record.",
       keyIdea:
         "Four questions decide a source: relevant expertise, who pays, what they got right before, and whether anyone independent agrees.",
-      trap: "Learners judge on tone or prestige. Include a well-credentialled source with an obvious incentive problem.",
+      trap: "Learners judge on tone or prestige. Include a well-credentialed source with an obvious incentive problem.",
       emoji: "🏛️",
     },
     {
@@ -266,11 +266,11 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       id: "fallacies-hasty-generalization",
       drills: ["judge", "flaw", "rank", "predict"],
       written: "critique",
-      title: "Hasty generalisation",
+      title: "Hasty generalization",
       objective: "Catch conclusions drawn from too few or unrepresentative cases.",
       keyIdea:
         "A general rule needs enough cases, chosen in a way that could have shown the rule false.",
-      trap: "Learners flag any generalisation. Include one properly supported general claim to be left alone.",
+      trap: "Learners flag any generalization. Include one properly supported general claim to be left alone.",
       emoji: "⚡",
     },
   ],
@@ -291,9 +291,9 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       drills: ["numeric", "judge", "flaw", "predict"],
       written: "critique",
       title: "Anchoring",
-      objective: "Recognise how a first number quietly sets your later judgements.",
+      objective: "Recognize how a first number quietly sets your later judgments.",
       keyIdea:
-        "The first number mentioned drags every later estimate towards it, even when it is arbitrary and known to be arbitrary.",
+        "The first number mentioned drags every later estimate toward it, even when it is arbitrary and known to be arbitrary.",
       trap: "Learners believe they are immune. Have them estimate with an anchor present, then compare against what the numbers actually support.",
       emoji: "⚓",
     },
@@ -316,7 +316,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       objective: "Decide from what is ahead rather than what you already spent.",
       keyIdea:
         "Money and time already spent are gone either way; only the remaining costs and benefits can change the right choice.",
-      trap: "Learners honour the investment. Make quitting feel wasteful but correct.",
+      trap: "Learners honor the investment. Make quitting feel wasteful but correct.",
       emoji: "🕳️",
     },
     {
@@ -472,7 +472,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       drills: ["highlight", "judge", "flaw", "rewrite"],
       written: "critique",
       title: "Spotting manipulation",
-      objective: "Recognise emotional framing, selective omission and manufactured urgency.",
+      objective: "Recognize emotional framing, selective omission and manufactured urgency.",
       keyIdea:
         "Urgency, outrage and false scarcity are used to stop you checking; the tell is pressure without new information.",
       trap: "Learners flag strong feeling itself. Some passages are emotive and honest.",
@@ -586,7 +586,7 @@ export const CROSS_LINKS: CurriculumLink[] = [
   {
     from: "fallacies-hasty-generalization",
     to: "evidence-sample-cherry-picking",
-    concept: "Hasty generalisation ↔ sample size",
+    concept: "Hasty generalization ↔ sample size",
     detail:
       "Both fail the same test: too few or unrepresentative cases carrying a conclusion far too wide.",
   },
@@ -595,7 +595,7 @@ export const CROSS_LINKS: CurriculumLink[] = [
     to: "arguments-counterarguments",
     concept: "Updating beliefs ↔ rebuttals",
     detail:
-      "Taking a counterargument seriously and updating on evidence are the same skill applied in argument and in judgement.",
+      "Taking a counterargument seriously and updating on evidence are the same skill applied in argument and in judgment.",
   },
   {
     from: "claims-vague-language",

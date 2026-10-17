@@ -5,14 +5,14 @@ import { dayKey } from "./days";
 import { choiceStep, confidenceStep, stepProblems, wordCount } from "./steps/types";
 
 /**
- * The daily case: one real-world text (an advert, a post, an email, a chatbot answer...) and three
+ * The daily case: one real-world text (an ad, a post, an email, a chatbot answer...) and three
  * questions about it, each from a different unit, so a day's practice mixes skills the way real
  * reading does. Cases are written as data in `content/cases.ts`; this module holds their format,
  * which case a learner gets on a given day, and what they've read (on this device only).
  */
 
 export const CASE_SOURCES = {
-  advert: "An advert",
+  advert: "An ad",
   post: "A post",
   headline: "A headline",
   email: "An email",
@@ -23,7 +23,7 @@ export const CASE_SOURCES = {
   article: "An article",
   report: "A report",
   listing: "A listing",
-  leaflet: "A leaflet",
+  leaflet: "A flyer",
 } as const;
 export type CaseSource = keyof typeof CASE_SOURCES;
 

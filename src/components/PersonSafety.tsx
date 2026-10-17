@@ -110,7 +110,7 @@ export function BlockPersonButton({
   );
 }
 
-/** Reports a person to be looked at by a human. Blocking is offered afterwards, not bundled in. */
+/** Reports a person to be looked at by a human. Blocking is offered afterward, not bundled in. */
 export function ReportPersonButton({
   person,
   className = "",

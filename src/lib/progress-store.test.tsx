@@ -308,7 +308,7 @@ describe("syncing a signed-in learner", () => {
     }
   });
 
-  it("counts XP earned towards the week it was earned in, but not XP folded in from the account", async () => {
+  it("counts XP earned toward the week it was earned in, but not XP folded in from the account", async () => {
     mocks.getMyProfile.mockResolvedValue({
       totalXp: 900,
       gems: 0,

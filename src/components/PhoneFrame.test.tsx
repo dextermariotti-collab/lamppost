@@ -40,7 +40,7 @@ afterEach(cleanup);
  * rendered result was checked in a real browser at 375, 768, 1024, 1280 and 1920.
  */
 describe("PhoneFrame", () => {
-  it("centres the frame on the page at every width", async () => {
+  it("centers the frame on the page at every width", async () => {
     const body = await mount();
     const frame = body.querySelector<HTMLElement>("div[class*='max-w-[420px]']")!;
     expect(frame.className).toContain("mx-auto");

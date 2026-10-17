@@ -23,7 +23,7 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
         { property: "og:title", content: `${title} — Lamppost` },
         {
           property: "og:description",
-          content: meta?.objective ?? "Practise spotting weak reasoning in everyday arguments.",
+          content: meta?.objective ?? "Practice spotting weak reasoning in everyday arguments.",
         },
         { property: "og:type", content: "article" },
       ],

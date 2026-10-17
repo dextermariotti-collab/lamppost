@@ -55,7 +55,7 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
   restatements of the claim, opinions or conclusions — every item must be something a person could
   check. text max 22 words. why = one sentence on why it sits at that strength.`,
   sort: `{"kind":"sort","statements":[{"text":string,"bucket":"fact","why":string}]}
-  4 statements, bucket is one of "fact" (checkable), "opinion" (a preference or judgement) or
+  4 statements, bucket is one of "fact" (checkable), "opinion" (a preference or judgment) or
   "value" (a claim about what matters or what ought to be). Mix the buckets. why = one sentence.`,
   predict: `{"kind":"predict","scenario":string,"question":string,"options":[string,string,string],"correct":number,"explanation":string}
   scenario = a decision, situation or study described in 2-3 sentences, stopping BEFORE the outcome.
@@ -102,10 +102,10 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
   drill (if invented, begin it with the exact words "Hypothetical scenario: ", which is the only
   place the word "hypothetical" may appear in the drill). question = what to work out, max 16 words. answer = the single correct number,
   computable from the scenario alone. tolerance = allowed absolute difference (never zero).
-  unit = "%", "£", "people" or "" as appropriate. solution = the working in max 45 words.`,
+  unit = "%", "$", "people" or "" as appropriate. solution = the working in max 45 words.`,
   slider: `{"kind":"slider","claim":string,"evidence":string,"direction":"up","size":number,"explanation":string}
   claim = a specific claim the learner rates their confidence in, one sentence.
-  evidence = one new piece of evidence revealed afterwards, 1-2 sentences.
+  evidence = one new piece of evidence revealed afterward, 1-2 sentences.
   direction = "up" if the evidence should raise confidence, "down" if it should lower it.
   size = roughly how many percentage points a good reasoner moves (5-40): small for weak or
   expected evidence, large for strong, hard-to-fake evidence.
@@ -118,7 +118,7 @@ const KIND_SPEC: Record<ExerciseKind, string> = {
 };
 
 const WRITTEN_SPEC: Record<WrittenTaskType, string> = {
-  restate: `"written" is a RESTATE task: passage = a 3-5 sentence opinion piece or advert written out in
+  restate: `"written" is a RESTATE task: passage = a 3-5 sentence opinion piece or ad written out in
 full inside the JSON. prompt asks the learner to restate its central claim in ONE sentence,
 excluding evidence and background. Never tell the learner to go and find an article.`,
   case: `"written" is a MAKE THE CASE task: passage = the 2-4 sentence situation, motion or question being
@@ -128,7 +128,7 @@ with a claim, support and the strongest objection answered.`,
 prompt asks the learner, in 2-4 sentences, to name the flaw, say why it matters for the conclusion
 and suggest a fix.`,
   testable: `"written" is a REWRITE IT TESTABLE task: passage = a vague, unfalsifiable claim (a headline,
-advert line or announcement) written out in full, 1-3 sentences. prompt asks the learner to rewrite
+ad line or announcement) written out in full, 1-3 sentences. prompt asks the learner to rewrite
 it in one or two sentences so it could actually be shown false — specific about who, how much and
 under what conditions — without changing what was originally claimed.`,
   steelmanWrite: `"written" is a STEELMAN task: passage = a position stated weakly or unsympathetically,
@@ -303,7 +303,7 @@ Return the JSON for that one drill now.`;
  */
 export function conceptSystemPrompt() {
   return `You write the opening concept card for a lesson in Lamppost, a critical-thinking trainer.
-The lesson is a workout, not a reading: the card is short and the learner does the reasoning afterwards.
+The lesson is a workout, not a reading: the card is short and the learner does the reasoning afterward.
 Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
 {"concept":{"title":string,"body":string,"example":string},"summary":[string,string,string]}
 

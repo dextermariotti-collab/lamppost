@@ -45,14 +45,14 @@ export function useDragDrop<Item extends string, Zone extends string>(options: {
   }, []);
 
   const finish = useCallback(
-    (x: number, y: number, cancelled: boolean) => {
+    (x: number, y: number, canceled: boolean) => {
       const started = press.current;
       press.current = null;
       if (!started?.moved) return;
       suppressClick.current = true;
       window.setTimeout(() => (suppressClick.current = false), 0);
       setDrag(null);
-      if (cancelled) return;
+      if (canceled) return;
       const zone = zoneAt(x, y);
       if (zone) {
         setSelected(null);

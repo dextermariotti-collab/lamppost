@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 const KEY = "lamppost-exercises-v1";
 
 export type ExerciseAttempt = {
-  /** Serialised answer: option index, bucket map or ordering, per exercise kind. */
+  /** Serialized answer: option index, bucket map or ordering, per exercise kind. */
   answer: unknown;
   /** 0..1 share of the exercise answered correctly. */
   score: number;

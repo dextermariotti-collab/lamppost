@@ -6,17 +6,17 @@ const media: Record<string, LessonNotes> = {
     lessonId: "media-headlines-vs-findings",
     hook: "Most people read the headline and perhaps the first paragraph. Headlines are written to be read, not to be precise, and the gap is often large.",
     idea: [
-      "Headlines overstate in predictable ways. They drop the conditions: a study in mice becomes “cure found”, a link in one survey becomes “causes”. And they report relative change where the absolute change would sound tiny: “risk doubles” when it went from 1 in 10,000 to 2 in 10,000.",
+      "Headlines overstate in predictable ways. They drop the conditions: a study in mice becomes “cure found,” a link in one survey becomes “causes.” And they report relative change where the absolute change would sound tiny: “risk doubles” when it went from 1 in 10,000 to 2 in 10,000.",
       "Before trusting a headline about a study, find four things: who was studied, how many, what they were compared with, and how big the change was in absolute terms. Then check the verb. Linked to, associated with and may are honest about a correlation; causes, proves and cures claim far more.",
     ],
     terms: [
       {
         term: "Relative change",
-        meaning: "How much something changed as a share of where it started, like “50% higher”.",
+        meaning: "How much something changed as a share of where it started, like “50% higher.”",
       },
       {
         term: "Absolute change",
-        meaning: "The actual difference, like “from 2 in 1,000 to 3 in 1,000”.",
+        meaning: "The actual difference, like “from 2 in 1,000 to 3 in 1,000.”",
       },
     ],
     example: {
@@ -66,12 +66,12 @@ const media: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A leaflet from Elmstead Buses shows a bar chart headed “Punctuality soars!”. The bars go from 91% of buses on time last year to 94% this year, and the vertical axis runs from 90% to 95%.",
+      case: "A flyer from Elmstead Buses shows a bar chart headed “Punctuality soars!.” The bars go from 91% of buses on time last year to 94% this year, and the vertical axis runs from 90% to 95%.",
       moves: [
         "Read the axis: it starts at 90%, so a 3-point difference fills most of the chart.",
         "Read the numbers: 91% to 94% on time. Late buses fell from 9 in 100 to 6 in 100, a real improvement.",
         "Check the window: only two years. Was last year unusually bad?",
-        "An honest caption: “On-time buses rose from 91% to 94% this year.” No “soars”.",
+        "An honest caption: “On-time buses rose from 91% to 94% this year.” No “soars.”",
       ],
     },
     subtleties: [
@@ -86,12 +86,12 @@ const media: Record<string, LessonNotes> = {
     ],
     ask: "Where does the axis start, what's the window, and what are the units?",
     tryIt:
-      "Find one chart this week, in the news, at work or in an advert. Check its axis, time window and units, and sketch how it would look starting at zero or covering a longer period.",
+      "Find one chart this week, in the news, at work or in an ad. Check its axis, time window and units, and sketch how it would look starting at zero or covering a longer period.",
   },
 
   "media-manipulation": {
     lessonId: "media-manipulation",
-    hook: "Some messages are built to make you act before you think. The techniques are few and recognisable, and noticing them is most of the defence.",
+    hook: "Some messages are built to make you act before you think. The techniques are few and recognisable, and noticing them is most of the defense.",
     idea: [
       "Manipulation works by pressure, not information. The common tools are urgency (“only today”), scarcity (“3 left!”), outrage, fear, flattery and social proof (“everyone's switching”). Each one shortens the time between feeling and acting, so you don't check.",
       "Strong feeling isn't the problem in itself. An honest appeal can be moving and still give figures you can check. The tell is pressure with nothing new to weigh: a deadline with no reason, a claim of scarcity you can't verify. When a message makes you feel rushed, that's the moment to slow down and ask what it isn't telling you.",
@@ -108,13 +108,13 @@ const media: Record<string, LessonNotes> = {
       },
       {
         term: "Scarcity claim",
-        meaning: "“Only a few left”. Honest when you can check it; pressure when you can't.",
+        meaning: "“Only a few left.” Honest when you can check it; pressure when you can't.",
       },
     ],
     example: {
-      case: "A text message: “Your Swiftlane Parcels delivery is on hold! Pay the £1.99 redelivery fee within 2 hours or your parcel will be returned. Tap here now.”",
+      case: "A text message: “Your Swiftlane Delivery package is on hold! Pay the $1.99 redelivery fee within 2 hours or your package will be returned. Tap here now.”",
       moves: [
-        "Find the pressure: “on hold!”, “within 2 hours”, “tap here now”.",
+        "Find the pressure: “on hold!,” “within 2 hours,” “tap here now.”",
         "Ask what's new to weigh: no order number, no sender you can check, no reason for the deadline.",
         "Notice what it asks for: card details through a link, which is exactly what a scam would want.",
         "The move: don't tap. Check any delivery through the company's own app or a website address you type yourself.",
@@ -127,7 +127,7 @@ const media: Record<string, LessonNotes> = {
       },
       {
         title: "Pressure works best when you're tired",
-        body: "Rushed, tired or upset, everyone is easier to push, which is why scams arrive late at night and sales end at midnight. A standing rule, like “I never pay through a link in a message”, saves deciding under pressure.",
+        body: "Rushed, tired or upset, everyone is easier to push, which is why scams arrive late at night and sales end at midnight. A standing rule, like “I never pay through a link in a message,” saves deciding under pressure.",
       },
     ],
     ask: "Is this giving me something new to check, or just pushing me to act?",
@@ -203,10 +203,10 @@ const media: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A link takes you to “The Clear Water Institute”, a polished site with an official-sounding name. Its article says tap water in your area is unsafe and recommends a particular filter. The site lists a panel of doctors.",
+      case: "A link takes you to “The Clear Water Institute,” a polished site with an official-sounding name. Its article says tap water in your area is unsafe and recommends a particular filter. The site lists a panel of doctors.",
       moves: [
         "Don't judge by looks. A polished design and an official name cost little and prove nothing.",
-        "Open a new tab and search for the institute's name with words like “funded by” or “who runs”.",
+        "Open a new tab and search for the institute's name with words like “funded by” or “who runs.”",
         "Suppose it turns out to be funded by a filter maker. That doesn't prove the claim false, but it's a reason to check independently.",
         "Search the claim itself: what does your water supplier's published test report say?",
       ],
@@ -214,7 +214,7 @@ const media: Record<string, LessonNotes> = {
     subtleties: [
       {
         title: "You need context, not the final word",
-        body: "To find out who runs an organisation, a general encyclopedia or a search of reputable news is often enough. You're not settling the question yet, just learning who's talking.",
+        body: "To find out who runs an organization, a general encyclopedia or a search of reputable news is often enough. You're not settling the question yet, just learning who's talking.",
       },
       {
         title: "Many copies can be one source",

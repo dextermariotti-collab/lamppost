@@ -4,8 +4,8 @@ import { unitAccent } from "@/lib/unit-accent";
 /**
  * A lesson's progress as a stretch of its unit's line: one stop per step, filled as steps are
  * finished, with the current one ringed. A visible "Step 3 of 8" says the same in words, and
- * the whole thing is a labelled progress bar for assistive technology. A daily case mixes units,
- * so each of its stops can take its own unit's colour instead (`stopUnits`).
+ * the whole thing is a labeled progress bar for assistive technology. A daily case mixes units,
+ * so each of its stops can take its own unit's color instead (`stopUnits`).
  */
 export function StepProgress({
   total,
@@ -19,9 +19,9 @@ export function StepProgress({
   current: number;
   /** How many steps are finished. */
   done: number;
-  /** Whose line colour to draw it in. */
+  /** Whose line color to draw it in. */
   unitId?: string;
-  /** One unit per stop, to colour each stop by its own unit. */
+  /** One unit per stop, to color each stop by its own unit. */
   stopUnits?: readonly string[] | undefined;
 }) {
   return (

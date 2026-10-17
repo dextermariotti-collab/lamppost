@@ -19,16 +19,16 @@ const biases: Record<string, LessonScript> = {
         id: "tram",
         kind: "choice",
         prompt:
-          "Noor thinks the new tram line is a mistake. She has read three articles that criticise it. What should she do next to test her belief?",
+          "Noor thinks the new streetcar line is a mistake. She has read three articles that criticize it. What should she do next to test her belief?",
         options: [
           {
-            text: "Search for even more articles that criticise the tram line.",
+            text: "Search for even more articles that criticize the streetcar line.",
             whyNot:
               "More of the same can only add to what she already believes. It can't show her she's wrong.",
           },
-          { text: "Look for the best evidence that the tram works, and test it." },
+          { text: "Look for the best evidence that the streetcar works, and test it." },
           {
-            text: "Ask a few friends who also dislike the tram what they think.",
+            text: "Ask a few friends who also dislike the streetcar what they think.",
             whyNot: "They probably agree, so she learns very little that she didn't already know.",
           },
         ],
@@ -234,7 +234,7 @@ const biases: Record<string, LessonScript> = {
       prompt:
         "Point out where an anchor is at work, and say how you would judge the price without it.",
       passage:
-        "At the Alder Street furniture shop, a sofa is tagged “Was £1,400, now £790”. The salesman adds: “Most of our customers spend around £1,200 on a sofa like this.” A similar sofa in another shop costs £650 with no “was” price.",
+        "At the Alder Street furniture shop, a sofa is tagged “Was $1,400, now $790.” The salesman adds: “Most of our customers spend around $1,200 on a sofa like this.” A similar sofa in another shop costs $650 with no “was” price.",
       guidance: "Say which numbers are doing the pulling, and what evidence you'd use instead.",
     },
     steps: [
@@ -250,7 +250,7 @@ const biases: Record<string, LessonScript> = {
             whyNot:
               "Groups were formed at random, so skill should be about equal. The spinner number is the difference.",
           },
-          { text: "The first number pulled guesses towards it, though it meant nothing." },
+          { text: "The first number pulled guesses toward it, though it meant nothing." },
           {
             text: "The spinner numbers gave real information about how tall the tree was.",
             whyNot: "The spinner was random. It carried no information about the tree at all.",
@@ -258,7 +258,7 @@ const biases: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "What was the only thing that differed between the groups?",
-        why: "That is anchoring: a number seen first drags later estimates towards it, even when it's random and known to be.",
+        why: "That is anchoring: a number seen first drags later estimates toward it, even when it's random and known to be.",
       },
       {
         id: "sort",
@@ -272,7 +272,7 @@ const biases: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "The “was £200” price printed on a sale tag.",
+            text: "The “was $200” price printed on a sale tag.",
             bucket: "anchor",
             why: "It sets a reference number, whether or not it was ever a real price.",
           },
@@ -286,7 +286,7 @@ const biases: Record<string, LessonScript> = {
             id: "3",
             text: "The seller's first offer in a negotiation.",
             bucket: "anchor",
-            why: "The opening number tends to pull the whole discussion towards it.",
+            why: "The opening number tends to pull the whole discussion toward it.",
           },
           {
             id: "4",
@@ -311,12 +311,12 @@ const biases: Record<string, LessonScript> = {
         prompt: "Tap the phrase that plants a number to make another look small.",
         passage: [
           {
-            text: "The estate agent mentioned that a house nearby sold for £900,000.",
+            text: "The real estate agent mentioned that a house nearby sold for $900,000.",
             tappable: true,
             flaw: true,
           },
           {
-            text: "“This one, at £780,000, is a bargain,”",
+            text: "“This one, at $780,000, is a bargain,”",
             tappable: true,
             whyNot: "That's the claim. It works because of the number planted before it.",
           },
@@ -328,7 +328,7 @@ const biases: Record<string, LessonScript> = {
         ],
         fallacy: "Anchoring: a first number sets the reference",
         hint: "Which number was introduced first, and what did it make the next one look like?",
-        why: "The £900,000 makes £780,000 look cheap. Compared with similar houses that actually sold, it might not be a bargain at all.",
+        why: "The $900,000 makes $780,000 look cheap. Compared with similar houses that actually sold, it might not be a bargain at all.",
       },
       {
         id: "own-first",
@@ -355,7 +355,7 @@ const biases: Record<string, LessonScript> = {
         options: [
           {
             text: "People enjoy guessing numbers together in a group setting.",
-            whyNot: "Enjoyment says nothing about why guesses moved towards the number.",
+            whyNot: "Enjoyment says nothing about why guesses moved toward the number.",
           },
           { text: "The number told them nothing, so only the anchor explains it." },
           {
@@ -366,17 +366,17 @@ const biases: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "If the number was random, what else could have moved the guesses?",
-        why: "Because the number was random, it couldn't have informed anyone. The pull towards it is the anchor at work.",
+        why: "Because the number was random, it couldn't have informed anyone. The pull toward it is the anchor at work.",
       },
       {
         id: "protect",
         kind: "choice",
-        prompt: "A seller names a price first. Which response best protects your judgement?",
+        prompt: "A seller names a price first. Which response best protects your judgment?",
         options: [
           {
             text: "Take their number as a starting point and move a little each way.",
             whyNot:
-              "That keeps their number at the centre of your thinking, which is what an anchor does.",
+              "That keeps their number at the center of your thinking, which is what an anchor does.",
           },
           { text: "Look up what comparable ones sold for, and judge the price against that." },
           {
@@ -395,25 +395,25 @@ const biases: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A number arrives before Jess has said hers. What should she do with it?",
         stimulus:
-          "Jess is negotiating her salary for a new job. Before she names a figure, the employer says: “Candidates for this role usually ask for around £24,000.” Jess has researched similar roles nearby, which pay £27,000 to £30,000.",
+          "Jess is negotiating her salary for a new job. Before she names a figure, the employer says: “Candidates for this role usually ask for around $24,000.” Jess has researched similar roles nearby, which pay $27,000 to $30,000.",
         options: [
           {
-            text: "Ask for a little more than £24,000, to show she's being reasonable.",
+            text: "Ask for a little more than $24,000, to show she's being reasonable.",
             whyNot:
               "That lets the anchor set the range. Her research says the going rate is well above it.",
           },
           {
-            text: "Start from her research and ask within £27,000 to £30,000.",
+            text: "Start from her research and ask within $27,000 to $30,000.",
           },
           {
             text: "Ignore all numbers and ask for whatever feels fair on the day.",
             whyNot:
-              "“Feels fair” is exactly where the anchor pulls hardest. Her research is the defence.",
+              "“Feels fair” is exactly where the anchor pulls hardest. Her research is the defense.",
           },
         ],
         correct: 1,
         hint: "Which number came from evidence, and which simply arrived first?",
-        why: "£24,000 arrived first and will drag her estimate down if she lets it. Her research on similar roles is evidence about real value, so it should set the range she negotiates in.",
+        why: "$24,000 arrived first and will drag her estimate down if she lets it. Her research on similar roles is evidence about real value, so it should set the range she negotiates in.",
       },
     ],
   },
@@ -442,7 +442,7 @@ const biases: Record<string, LessonScript> = {
           {
             text: "Tomas has weighed every risk of the trip very carefully indeed.",
             whyNot:
-              "Cancelling right after a vivid story suggests his feeling, not a calculation, is driving it.",
+              "Canceling right after a vivid story suggests his feeling, not a calculation, is driving it.",
           },
         ],
         correct: 1,
@@ -552,7 +552,7 @@ const biases: Record<string, LessonScript> = {
         ],
         fallacy: "Availability: recall standing in for frequency",
         hint: "Are three remembered cases enough to compare with police figures?",
-        why: "Three cases that come to mind, perhaps because neighbours talked about them, can't outweigh a count of all break-ins.",
+        why: "Three cases that come to mind, perhaps because neighbors talked about them, can't outweigh a count of all break-ins.",
       },
       {
         id: "sure",
@@ -562,7 +562,7 @@ const biases: Record<string, LessonScript> = {
         options: [
           {
             text: "How many examples you can remember at once, without effort.",
-            whyNot: "Memory favours vivid, recent and repeated stories, not the common ones.",
+            whyNot: "Memory favors vivid, recent and repeated stories, not the common ones.",
           },
           {
             text: "How strongly and how often the news covers it each week.",
@@ -631,7 +631,7 @@ const biases: Record<string, LessonScript> = {
     written: {
       prompt: "Decide what the club should do, using only the costs and benefits still ahead.",
       passage:
-        "The Fenwick Chess Club has spent £20,000 on a new website that isn't finished. Finishing it would cost another £8,000. Once done, it is expected to bring in about £3,000 in membership over five years. The club treasurer says: “We've already spent so much. Stopping now would waste it all.”",
+        "The Fenwick Chess Club has spent $20,000 on a new website that isn't finished. Finishing it would cost another $8,000. Once done, it is expected to bring in about $3,000 in membership over five years. The club treasurer says: “We've already spent so much. Stopping now would waste it all.”",
       guidance: "Say which numbers should count and which should be ignored.",
     },
     steps: [
@@ -639,14 +639,14 @@ const biases: Record<string, LessonScript> = {
         id: "concert",
         kind: "choice",
         prompt:
-          "Ines paid £40 for concert tickets, then feels ill on the day. Which reasoning is sound?",
+          "Ines paid $40 for concert tickets, then feels ill on the day. Which reasoning is sound?",
         options: [
           {
-            text: "I paid £40, so I have to go or the money is wasted.",
+            text: "I paid $40, so I have to go or the money is wasted.",
             whyNot:
-              "The £40 is spent whether she goes or stays home, so going doesn't get it back.",
+              "The $40 is spent whether she goes or stays home, so going doesn't get it back.",
           },
-          { text: "The £40 is gone either way; is going worth it tonight?" },
+          { text: "The $40 is gone either way; is going worth it tonight?" },
           {
             text: "The tickets were expensive, so it would be rude not to go.",
             whyNot: "How much they cost doesn't change what happens next.",
@@ -668,13 +668,13 @@ const biases: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "£12,000 already paid for the old software.",
+            text: "$12,000 already paid for the old software.",
             bucket: "sunk",
             why: "It's gone whatever they decide next.",
           },
           {
             id: "2",
-            text: "Another £3,000 needed to finish the project.",
+            text: "Another $3,000 needed to finish the project.",
             bucket: "ahead",
             why: "They only pay it if they carry on.",
           },
@@ -686,13 +686,13 @@ const biases: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "A £200 monthly licence for the next two years.",
+            text: "A $200 monthly license for the next two years.",
             bucket: "ahead",
             why: "It depends on what they choose from here.",
           },
           {
             id: "5",
-            text: "A £900 deposit that cannot be refunded.",
+            text: "A $900 deposit that cannot be refunded.",
             bucket: "sunk",
             why: "It's lost whether or not they continue.",
           },
@@ -729,13 +729,13 @@ const biases: Record<string, LessonScript> = {
         label: "Which decision is sounder?",
         noun: "Reasoning",
         prompt:
-          "A home owner has already spent £50,000 on a roof repair that keeps failing. Whose reasoning is sounder?",
-        a: "“We've spent £50,000 on this, so we must spend another £20,000 to see it through.”",
-        b: "“Ignoring what's spent, is another £20,000 worth what a working roof would give us?”",
+          "A home owner has already spent $50,000 on a roof repair that keeps failing. Whose reasoning is sounder?",
+        a: "“We've spent $50,000 on this, so we must spend another $20,000 to see it through.”",
+        b: "“Ignoring what's spent, is another $20,000 worth what a working roof would give us?”",
         stronger: "b",
         factor: "It looks only at what's ahead",
         weakerWhy:
-          "The £50,000 is gone whether they spend more or stop. Using it as a reason to spend more can add a second loss to the first.",
+          "The $50,000 is gone whether they spend more or stop. Using it as a reason to spend more can add a second loss to the first.",
         hint: "Which one ignores the money already spent?",
         why: "The sound question is always “from here, what will more cost and bring?” The past spending is the same in both cases.",
       },
@@ -743,7 +743,7 @@ const biases: Record<string, LessonScript> = {
         id: "assume",
         kind: "gap",
         prompt: "What does this argument quietly assume?",
-        reason: "We've already put two years and £30,000 into the project.",
+        reason: "We've already put two years and $30,000 into the project.",
         conclusion: "So we should keep going.",
         options: [
           {
@@ -753,7 +753,7 @@ const biases: Record<string, LessonScript> = {
           },
           { text: "What was already spent should count when deciding what to do next." },
           {
-            text: "Projects that cost £30,000 always earn their money back in the end.",
+            text: "Projects that cost $30,000 always earn their money back in the end.",
             whyNot:
               "No claim is made about future earnings. The argument leans on the past instead.",
           },
@@ -780,44 +780,44 @@ const biases: Record<string, LessonScript> = {
           },
           {
             id: "pe",
-            text: "Remaining cost £8,000; expected income over five years £3,000.",
+            text: "Remaining cost $8,000; expected income over five years $3,000.",
             role: "evidence",
           },
           {
             id: "px",
-            text: "The club has already spent £20,000 on it.",
+            text: "The club has already spent $20,000 on it.",
             role: null,
             note: "That money is gone either way, so it shouldn't change the decision.",
           },
         ],
         hint: "Which numbers can still change with the decision?",
-        why: "Only the figures ahead matter: £8,000 to finish against £3,000 to gain. The £20,000 is the same either way.",
+        why: "Only the figures ahead matter: $8,000 to finish against $3,000 to gain. The $20,000 is the same either way.",
       },
       {
         id: "together",
         label: "Putting it together",
         kind: "choice",
-        prompt: "A theatre group has spent a lot already. Which reasoning is sound?",
+        prompt: "A theater group has spent a lot already. Which reasoning is sound?",
         stimulus:
-          "A theatre group has spent £6,000 and four months rehearsing a play. Two weeks before opening, ticket sales suggest they'll take £1,500, and the venue hire still to pay is £3,000. A cheaper venue has offered them a slot next spring.",
+          "A theater group has spent $6,000 and four months rehearsing a play. Two weeks before opening, ticket sales suggest they'll take $1,500, and the venue hire still to pay is $3,000. A cheaper venue has offered them a slot next spring.",
         options: [
           {
-            text: "Go ahead: £6,000 and four months are too much to waste now.",
+            text: "Go ahead: $6,000 and four months are too much to waste now.",
             whyNot:
-              "The £6,000 and four months are spent whatever they decide. They can't make going ahead a better choice.",
+              "The $6,000 and four months are spent whatever they decide. They can't make going ahead a better choice.",
           },
           {
-            text: "Cancel: the £6,000 already spent proves the play was a mistake.",
+            text: "Cancel: the $6,000 already spent proves the play was a mistake.",
             whyNot:
               "Past spending doesn't prove anything either way. The decision rests on what's still ahead.",
           },
           {
-            text: "Compare what's ahead: £3,000 to take £1,500, or the spring slot.",
+            text: "Compare what's ahead: $3,000 to take $1,500, or the spring slot.",
           },
         ],
         correct: 2,
         hint: "Cross out everything already spent. What's left to compare?",
-        why: "The £6,000 and the rehearsals are gone on every path. What can still change is ahead: paying £3,000 to take about £1,500 now, against the cheaper spring slot.",
+        why: "The $6,000 and the rehearsals are gone on every path. What can still change is ahead: paying $3,000 to take about $1,500 now, against the cheaper spring slot.",
       },
     ],
   },
@@ -854,24 +854,24 @@ const biases: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose an answer, then set how sure you are.",
         question:
-          "A bat and a ball cost £1.10 together. The bat costs £1 more than the ball. Does the ball cost 10p?",
+          "A bat and a ball cost $1.10 together. The bat costs $1 more than the ball. Does the ball cost 10 cents?",
         options: [
           {
-            text: "Yes: the ball costs 10p.",
+            text: "Yes: the ball costs 10 cents.",
             whyNot:
-              "If the ball were 10p, the bat would be £1.10 and the total £1.20. The ball costs 5p.",
+              "If the ball were 10 cents, the bat would be $1.10 and the total $1.20. The ball costs 5 cents.",
           },
-          { text: "No: the ball costs 5p." },
+          { text: "No: the ball costs 5 cents." },
         ],
         correct: 1,
-        hint: "Check the total if the ball is 10p.",
-        why: "A 5p ball and a £1.05 bat make £1.10, and the bat is exactly £1 more. Quick answers here feel certain and are often wrong.",
+        hint: "Check the total if the ball is 10 cents.",
+        why: "A 5-cent ball and a $1.05 bat make $1.10, and the bat is exactly $1 more. Quick answers here feel certain and are often wrong.",
       },
       {
         id: "days",
         kind: "confidence",
         prompt: "Choose an answer, then set how sure you are.",
-        question: "Are there more than 100 days between 1 March and 1 July of the same year?",
+        question: "Are there more than 100 days between March 1 and July 1 of the same year?",
         options: [
           { text: "Yes: there are 122 days." },
           {

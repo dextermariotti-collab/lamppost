@@ -128,7 +128,7 @@ function ProgressScreen() {
             ? `You've reviewed more this week than ${insights.percentile}% of your past weeks.`
             : hasDrills
               ? "What you have learned, and how sure you were."
-              : "It fills in as you practise."}
+              : "It fills in as you practice."}
         </p>
 
         {state.freezeSaved && (

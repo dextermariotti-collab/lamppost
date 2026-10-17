@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Newspaper, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { skillsToPractise } from "@/lib/rating";
+import { skillsToPractice } from "@/lib/rating";
 import { AiLabel } from "@/components/AiLabel";
 import { Button } from "@/components/ui/button";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -98,7 +98,7 @@ function Home() {
   // One-line reason for the recommendation, from the learner's own drill history.
   const [recommendation, setRecommendation] = useState<{ reason: string } | null>(null);
   useEffect(() => {
-    const top = skillsToPractise(doneLessons)[0];
+    const top = skillsToPractice(doneLessons)[0];
     setRecommendation(top ? { reason: top.reason } : null);
   }, [doneLessons]);
 
@@ -287,8 +287,7 @@ function Home() {
                   Check something you saw
                 </span>
                 <span className="block text-xs leading-relaxed text-muted-foreground">
-                  Paste a post, an advert or a chatbot answer and get your lessons' questions about
-                  it.
+                  Paste a post, an ad or a chatbot answer and get your lessons' questions about it.
                 </span>
               </span>
               <ArrowRight aria-hidden className="h-5 w-5 shrink-0 text-foreground" />

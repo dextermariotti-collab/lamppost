@@ -98,14 +98,14 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which part of this review could be checked as a plain fact?",
         stimulus:
-          "The Brightwater Hotel is 400 metres from the beach. The rooms are too small to be worth the price, and no hotel should charge for wifi.",
+          "The Brightwater Hotel is a quarter mile from the beach. The rooms are too small to be worth the price, and no hotel should charge for wifi.",
         options: [
           {
             text: "The rooms are too small to be worth the price.",
             whyNot:
-              '"Worth the price" is a judgement. Two guests could disagree and both be honest.',
+              '"Worth the price" is a judgment. Two guests could disagree and both be honest.',
           },
-          { text: "The hotel is 400 metres from the beach." },
+          { text: "The hotel is a quarter mile from the beach." },
           {
             text: "No hotel should charge for wifi.",
             whyNot: '"Should" makes it a value: what ought to happen, not what is.',
@@ -165,7 +165,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         stimulus:
           'A website called SleepFacts says the Dreamcloud mattress is the best for back pain. In small print at the bottom: "SleepFacts is run by Dreamcloud Ltd."',
         options: [
-          { text: "The site has a reason to favour what it recommends." },
+          { text: "The site has a reason to favor what it recommends." },
           {
             text: "No mattress can make any difference to back pain.",
             whyNot: "That's too strong. The issue is the source, not mattresses in general.",
@@ -176,7 +176,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           },
         ],
         correct: 0,
-        why: 'The "review" comes from the company selling the product, so it isn\'t an independent judgement.',
+        why: 'The "review" comes from the company selling the product, so it isn\'t an independent judgment.',
       },
       {
         id: "evidence-b3",
@@ -205,7 +205,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Why can't this poll speak for the whole town?",
         stimulus:
-          "An online poll on a cycling club's website finds 85% of respondents want more bike lanes. A councillor says this shows the town wants them.",
+          "An online poll on a cycling club's website finds 85% of respondents want more bike lanes. A council member says this shows the town wants them.",
         options: [
           {
             text: "85% is too high a figure to be believable.",
@@ -245,7 +245,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which other explanation does this newsletter ignore?",
         stimulus:
-          "Pupils who eat breakfast get better grades, so from next term the school will give every pupil breakfast to raise grades.",
+          "Students who eat breakfast get better grades, so from next term the school will give every student breakfast to raise grades.",
         options: [
           {
             text: "Breakfast is the most important meal of the day.",
@@ -331,7 +331,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What's the flaw?",
         stimulus:
-          "You can't trust Priya's report on the new bus timetable. She doesn't even own a car.",
+          "You can't trust Priya's report on the new bus schedule. She doesn't even own a car.",
         options: [
           {
             text: "It assumes buses are better than cars.",
@@ -351,7 +351,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What kind of reasoning is this?",
         stimulus:
-          "If we let pupils use calculators in this test, next they'll want phones, then they'll copy everything, and soon nobody will be able to think.",
+          "If we let students use calculators in this test, next they'll want phones, then they'll copy everything, and soon nobody will be able to think.",
         options: [
           {
             text: "A fair warning backed by evidence from other schools.",
@@ -396,7 +396,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which thinking trap is Mo falling into?",
         stimulus:
-          "Mo paid £400 for an evening course he now finds useless. \"I can't quit now, I've already spent so much,\" he says, and books the next term too.",
+          "Mo paid $400 for an evening course he now finds useless. \"I can't quit now, I've already spent so much,\" he says, and books the next term too.",
         options: [
           {
             text: "Trusting a friend's opinion too much.",
@@ -409,23 +409,23 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           },
         ],
         correct: 1,
-        why: "The £400 is gone whatever he does. Only future costs and benefits should decide. That's the sunk cost trap.",
+        why: "The $400 is gone whatever he does. Only future costs and benefits should decide. That's the sunk cost trap.",
       },
       {
         id: "biases-b2",
         kind: "choice",
         prompt: "What most likely shaped Jo's sense of a good price?",
         stimulus:
-          'A used car is listed at £15,000, "reduced to £11,000". Jo pays £11,000 and feels she got a bargain, though similar cars sell for £9,500.',
+          'A used car is listed at $15,000, "reduced to $11,000". Jo pays $11,000 and feels she got a bargain, though similar cars sell for $9,500.',
         options: [
-          { text: "The high first price, which made £11,000 look low." },
+          { text: "The high first price, which made $11,000 look low." },
           {
-            text: "The colour of the car she chose.",
-            whyNot: "Nothing suggests the colour affected the price she accepted.",
+            text: "The color of the car she chose.",
+            whyNot: "Nothing suggests the color affected the price she accepted.",
           },
           {
             text: "A careful comparison with similar cars.",
-            whyNot: "If she had compared, she'd have known similar cars cost £9,500.",
+            whyNot: "If she had compared, she'd have known similar cars cost $9,500.",
           },
         ],
         correct: 0,
@@ -434,7 +434,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "biases-b3",
         kind: "choice",
-        prompt: "Why might Sam's judgement be off?",
+        prompt: "Why might Sam's judgment be off?",
         stimulus:
           "After seeing three news stories about shark attacks, Sam decides swimming in the sea is more dangerous than driving to the beach.",
         options: [
@@ -498,13 +498,13 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What best explains the difference in donations?",
         stimulus:
-          'A charity tests two letters. One says "Many people give £50", the other "Many people give £10". People sent the first letter give more.',
+          'A charity tests two letters. One says "Many people give $50", the other "Many people give $10". People sent the first letter give more.',
         options: [
           {
-            text: "People sent the £50 letter were richer.",
+            text: "People sent the $50 letter were richer.",
             whyNot: "Letters in a fair test go to similar people. The number is what changed.",
           },
-          { text: "The number people see first pulls their choice towards it." },
+          { text: "The number people see first pulls their choice toward it." },
           {
             text: "Letters with bigger numbers are easier to read.",
             whyNot: "Readability isn't the difference. The amount mentioned is.",
@@ -564,7 +564,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which version of the claim fits the evidence best?",
         stimulus:
-          'Claim: "Homework improves test scores." Evidence: a study of 2,000 secondary pupils found a small improvement for up to an hour a night, and none beyond that.',
+          'Claim: "Homework improves test scores." Evidence: a study of 2,000 high school students found a small improvement for up to an hour a night, and none beyond that.',
         options: [
           { text: "Up to an hour a night is linked to a small gain." },
           {
@@ -585,7 +585,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "arguments-a1",
         kind: "choice",
         prompt: "Which is the strongest, fairest version of their view to answer?",
-        stimulus: "Some residents oppose a new bus lane on High Street.",
+        stimulus: "Some residents oppose a new bus lane on Main Street.",
         options: [
           {
             text: "They just don't like anything new.",
@@ -604,20 +604,20 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "arguments-a2",
         kind: "choice",
         prompt: "Which counterargument would the author most need to answer?",
-        stimulus: "Our school should ban phones in class, because they distract pupils.",
+        stimulus: "Our school should ban phones in class, because they distract students.",
         options: [
-          { text: "Some pupils use phones in class for translation." },
+          { text: "Some students use phones in class for translation." },
           {
-            text: "Phones come in many colours and sizes.",
+            text: "Phones come in many colors and sizes.",
             whyNot: "That has nothing to do with whether they distract.",
           },
           {
-            text: "Many pupils also enjoy listening to music.",
+            text: "Many students also enjoy listening to music.",
             whyNot: "That isn't a reason against the ban.",
           },
         ],
         correct: 0,
-        why: "A real use in class is a serious objection: a total ban would take away help some pupils need.",
+        why: "A real use in class is a serious objection: a total ban would take away help some students need.",
       },
       {
         id: "arguments-a3",
@@ -669,34 +669,34 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "probability-b2",
         kind: "choice",
         prompt: "On average, what is one ticket worth?",
-        stimulus: "A raffle ticket costs £5. There are 1,000 tickets and one prize of £2,000.",
+        stimulus: "A raffle ticket costs $5. There are 1,000 tickets and one prize of $2,000.",
         options: [
-          { text: "£2" },
+          { text: "$2" },
           {
-            text: "£5",
+            text: "$5",
             whyNot: "That's what it costs, not what it's worth on average.",
           },
           {
-            text: "£2,000",
+            text: "$2,000",
             whyNot: "That's the prize, but only one ticket in 1,000 wins it.",
           },
         ],
         correct: 0,
-        why: "£2,000 shared across 1,000 tickets is £2 each, so a £5 ticket loses £3 on average.",
+        why: "$2,000 shared across 1,000 tickets is $2 each, so a $5 ticket loses $3 on average.",
       },
       {
         id: "probability-b3",
         kind: "choice",
         prompt: "How should you update?",
         stimulus:
-          "You think it's 50/50 whether the corner shop opens on the bank holiday. Its website hasn't been updated for a year, but a neighbour says she bought bread there this morning.",
+          "You think it's 50/50 whether the corner store opens on Labor Day. Its website hasn't been updated for a year, but a neighbor says she bought bread there this morning.",
         options: [
           {
             text: "Trust the website: it's more official.",
             whyNot:
               "A year-old page says little about today. A fresh first-hand report says a lot.",
           },
-          { text: "Lean towards open: a fresh report beats an old page." },
+          { text: "Lean toward open: a fresh report beats an old page." },
           {
             text: "Stay at 50/50: the two cancel out.",
             whyNot: "They aren't equally strong, so they don't cancel.",
@@ -732,7 +732,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which pays more on average, if you could choose many times?",
         stimulus:
-          "Option A: a guaranteed £50. Option B: a coin flip that pays £120 on heads and nothing on tails.",
+          "Option A: a guaranteed $50. Option B: a coin flip that pays $120 on heads and nothing on tails.",
         options: [
           {
             text: "A, because it is guaranteed.",
@@ -740,18 +740,18 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           },
           {
             text: "They pay the same on average.",
-            whyNot: "Half of £120 is £60, which is more than £50.",
+            whyNot: "Half of $120 is $60, which is more than $50.",
           },
-          { text: "B, because it averages £60 a go." },
+          { text: "B, because it averages $60 a go." },
         ],
         correct: 2,
-        why: "Expected value is the payoff times its chance: £120 × 0.5 = £60, against a sure £50.",
+        why: "Expected value is the payoff times its chance: $120 × 0.5 = $60, against a sure $50.",
       },
       {
         id: "probability-a3",
         kind: "choice",
         prompt: "Which knock-on effect should the town plan for?",
-        stimulus: "To bring more shoppers into the centre, a town makes all its car parks free.",
+        stimulus: "To bring more shoppers into the center, a town makes all its parking lots free.",
         options: [
           {
             text: "Shops will sell more umbrellas on rainy days.",
@@ -759,7 +759,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           },
           { text: "Commuters may take the free spaces all day long." },
           {
-            text: "The car parks will need repainting more often.",
+            text: "The parking lots will need repainting more often.",
             whyNot: "That isn't caused by the change in price.",
           },
         ],
@@ -804,8 +804,8 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
             whyNot: "Hours are the usual measure. The axis is the trick.",
           },
           {
-            text: "Brand X should be shown in a brighter colour.",
-            whyNot: "Colour isn't the issue. The scale is.",
+            text: "Brand X should be shown in a brighter color.",
+            whyNot: "Color isn't the issue. The scale is.",
           },
         ],
         correct: 0,
@@ -816,7 +816,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What's the quickest good check?",
         stimulus:
-          'You find a polished website, "Institute for Healthy Families", arguing against a new food label. You\'ve never heard of the organisation.',
+          'You find a polished website, "Institute for Healthy Families", arguing against a new food label. You\'ve never heard of the organization.',
         options: [
           {
             text: "Read the whole site carefully to judge its tone.",

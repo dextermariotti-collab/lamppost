@@ -34,7 +34,7 @@ export const Route = createFileRoute("/case")({
       {
         name: "description",
         content:
-          "One real-world text a day, and three questions about it from three different thinking skills. About three minutes, and it counts towards your streak.",
+          "One real-world text a day, and three questions about it from three different thinking skills. About three minutes, and it counts toward your streak.",
       },
       { property: "og:title", content: "Today's case — Lamppost" },
       { name: "robots", content: "noindex" },
@@ -122,7 +122,7 @@ function CasePlayer({
   onComplete: (results: StepResult[]) => void;
 }) {
   const units = caseUnits(item);
-  // Each question is labelled with its unit, so the mix of skills is visible as it happens.
+  // Each question is labeled with its unit, so the mix of skills is visible as it happens.
   const steps = useMemo<LessonStep[]>(
     () =>
       item.questions.map((q, i) => ({

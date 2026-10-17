@@ -7,7 +7,7 @@ import { ALICE, createUsers } from "@/test/seed";
 
 /**
  * The account's finished lessons are the server's to write, private to it, bounded, and the
- * documented rollback really removes them (and the migration can be applied again afterwards).
+ * documented rollback really removes them (and the migration can be applied again afterward).
  */
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 

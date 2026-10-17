@@ -48,7 +48,7 @@ For each drill, decide whether ALL of these hold:
    computable from the scenario. Fail anything that asks the learner to guess how hypothetical
    people reacted.
 12. NO TWO DRILLS DO THE SAME JOB. Fail the later of any two drills in the lesson that make the learner
-   perform the same judgement in different words (for example two drills that both ask the learner to
+   perform the same judgment in different words (for example two drills that both ask the learner to
    put the same kind of evidence in order of strength).
 
 

@@ -18,9 +18,9 @@ export function useLessonScript(
 
   useEffect(() => {
     if (!unitId || !lessonId) return;
-    let cancelled = false;
+    let canceled = false;
     void loadLessonScript(unitId, lessonId).then((result) => {
-      if (cancelled) return;
+      if (canceled) return;
       if (!result.ok && result.reason === "invalid") {
         console.error(`Lesson ${lessonId} failed validation`, result.problems);
       }
@@ -30,7 +30,7 @@ export function useLessonScript(
       });
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [unitId, lessonId, key]);
 

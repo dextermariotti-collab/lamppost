@@ -7,12 +7,12 @@ const evidence: Record<string, LessonNotes> = {
     hook: "“Studies show” can mean anything from a careful experiment to one person's impression. Knowing what each kind of evidence can show tells you how much weight it bears.",
     idea: [
       "Evidence is strong to the degree that it rules out other explanations. If people who drink a herbal tea sleep better, maybe the tea helped, or calmer people choose herbal tea, or they expected to sleep better. Good evidence is designed to separate those.",
-      "A randomised experiment does it best: chance decides who gets the tea, so the groups differ only in the tea. A cohort study follows people over time but can't control who chose what. A survey records what people report at one moment. Expert opinion is only as good as the evidence behind it, and a single story rules out nothing.",
+      "A randomized experiment does it best: chance decides who gets the tea, so the groups differ only in the tea. A cohort study follows people over time but can't control who chose what. A survey records what people report at one moment. Expert opinion is only as good as the evidence behind it, and a single story rules out nothing.",
       "Rank evidence by what it can show, not by how confident it sounds.",
     ],
     terms: [
       {
-        term: "Randomised controlled trial",
+        term: "Randomized controlled trial",
         meaning:
           "An experiment where chance decides who gets the treatment, so the groups differ only in the thing tested.",
       },
@@ -48,14 +48,14 @@ const evidence: Record<string, LessonNotes> = {
     ],
     ask: "What other explanations does this evidence rule out?",
     tryIt:
-      "The next time you see “research shows” in an article or advert, find out what kind of study it was. Was there a comparison group, and did chance decide who was in it?",
+      "The next time you see “research shows” in an article or ad, find out what kind of study it was. Was there a comparison group, and did chance decide who was in it?",
   },
 
   "evidence-anecdote-vs-data": {
     lessonId: "evidence-anecdote-vs-data",
     hook: "A single story can move us more than a page of numbers. That is useful when the story is typical, and misleading when it isn't.",
     idea: [
-      "An anecdote is one case: my uncle never wore a cycle helmet and was fine, my neighbour's car was stolen on our street. One case proves that something can happen. It can't tell you how often it happens, or what is typical, because you don't know how many cases went the other way.",
+      "An anecdote is one case: my uncle never wore a cycle helmet and was fine, my neighbor's car was stolen on our street. One case proves that something can happen. It can't tell you how often it happens, or what is typical, because you don't know how many cases went the other way.",
       "Data counts all the cases, including the dull ones nobody tells stories about. The piece missing from most anecdotes is the denominator: out of how many? Three lottery winners from one shop sounds remarkable until you learn the shop sold two million tickets.",
       "Stories still have uses. They suggest what to look into, and show what an average means for a person.",
     ],
@@ -76,11 +76,11 @@ const evidence: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A parents' forum post: “My son started at Kestrel Academy in September and he's been bullied twice already. Avoid this school.” Another parent replies with the school's anonymous survey: 92% of pupils said they felt safe, slightly above the local average.",
+      case: "A parents' forum post: “My son started at Kestrel Academy in September and he's been bullied twice already. Avoid this school.” Another parent replies with the school's anonymous survey: 92% of students said they felt safe, slightly above the local average.",
       moves: [
         "Take the story seriously as a fact: this child was bullied, and it matters.",
         "Ask what it can show. It proves bullying happens there. It can't show it happens more than at other schools.",
-        "Check the data's denominator: every pupil who answered, compared with nearby schools. That speaks to how common the problem is.",
+        "Check the data's denominator: every student who answered, compared with nearby schools. That speaks to how common the problem is.",
         "A fair conclusion uses both: the school looks no worse than others, and this case still needs dealing with.",
       ],
     },
@@ -122,7 +122,7 @@ const evidence: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A report says Ridgeline's new water filters remove 99% of microplastics. It was written by Ridgeline's own lab. A university team tested the same filters and found 80%. A popular home blog calls them “amazing”.",
+      case: "A report says Ridgeline's new water filters remove 99% of microplastics. It was written by Ridgeline's own lab. A university team tested the same filters and found 80%. A popular home blog calls them “amazing.”",
       moves: [
         "Expertise: both labs test filters; the blog's writer has no stated training.",
         "Incentives: Ridgeline gains if you believe 99%. The university team sells nothing, though it's worth checking who funded the study.",
@@ -218,7 +218,7 @@ const evidence: Record<string, LessonNotes> = {
       case: "Sproutly, a language app, says: “Our learners reach conversational level in six months.” The evidence is a set of interviews with 25 learners who are still using the app after a year.",
       moves: [
         "Who was counted: learners still using it after a year. People who stopped, perhaps because they weren't progressing, are missing.",
-        "How many: 25 is small, and the interviews were probably picked to suit an advert.",
+        "How many: 25 is small, and the interviews were probably picked to suit an ad.",
         "A fair sample: a random set of everyone who started in one month, tested after six months, including those who stopped.",
         "Expect the fair figure to look worse, and to be worth far more.",
       ],

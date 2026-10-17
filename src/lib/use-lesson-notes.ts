@@ -14,12 +14,12 @@ export function useLessonNotes(
 
   useEffect(() => {
     if (!unitId || !lessonId) return;
-    let cancelled = false;
+    let canceled = false;
     void loadLessonNotes(unitId, lessonId).then((notes) => {
-      if (!cancelled) setState({ key, notes });
+      if (!canceled) setState({ key, notes });
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [unitId, lessonId, key]);
 
@@ -33,12 +33,12 @@ export function useAllNotes(unitIds: readonly string[]): Record<string, LessonNo
   const key = unitIds.join(",");
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     void Promise.all(key.split(",").map((id) => loadUnitNotes(id))).then((units) => {
-      if (!cancelled) setAll(Object.assign({}, ...units));
+      if (!canceled) setAll(Object.assign({}, ...units));
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [key]);
 

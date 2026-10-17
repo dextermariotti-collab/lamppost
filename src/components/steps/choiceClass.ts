@@ -1,4 +1,4 @@
-/** Shared styling for a tappable choice: a sign with a heavy rule, and a mark that isn't just colour. */
+/** Shared styling for a tappable choice: a sign with a heavy rule, and a mark that isn't just color. */
 export function choiceClass(state: "idle" | "selected" | "right" | "wrong" | "dim") {
   const base =
     "flex min-h-12 w-full items-start gap-3 rounded-sm border-2 px-4 py-3 text-left text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";

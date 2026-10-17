@@ -24,7 +24,7 @@ export const Route = createFileRoute("/look")({
       {
         name: "description",
         content:
-          "Paste a post, an advert, a headline or a chatbot answer and get the questions from your lessons that matter most for it.",
+          "Paste a post, an ad, a headline or a chatbot answer and get the questions from your lessons that matter most for it.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -63,7 +63,7 @@ function LookScreen() {
     <PhoneFrame>
       <ScreenHeader
         title="Check something you saw"
-        description="Paste a post, an advert, a headline or a chatbot answer. You'll get the questions from your lessons that matter most for it. Whether it's true is your call."
+        description="Paste a post, an ad, a headline or a chatbot answer. You'll get the questions from your lessons that matter most for it. Whether it's true is your call."
         backTo="/"
       />
       <div className="px-5 pb-10">

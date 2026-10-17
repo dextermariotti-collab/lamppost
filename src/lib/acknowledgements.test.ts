@@ -15,21 +15,21 @@ describe("the acknowledgements", () => {
     expect(extra).toEqual([]);
   });
 
-  it("give each one a version and a licence", () => {
+  it("give each one a version and a license", () => {
     for (const p of PACKAGES) {
       expect(p.version, p.name).toMatch(/^\d/);
       expect(p.license, p.name).not.toMatch(/^(UNKNOWN|UNLICENSED|)$/);
     }
   });
 
-  it("are all under permissive licences, so nothing needs a lawyer's eye by surprise", () => {
+  it("are all under permissive licenses, so nothing needs a lawyer's eye by surprise", () => {
     const unusual = PACKAGES.filter((p) => !PERMISSIVE.has(p.license)).map(
       (p) => `${p.name}: ${p.license}`,
     );
     expect(unusual).toEqual([]);
   });
 
-  it("group cleanly by licence", () => {
+  it("group cleanly by license", () => {
     const groups = groupByLicence();
     expect(groups.reduce((n, g) => n + g.items.length, 0)).toBe(PACKAGES.length);
     expect(groups[0]!.items.length).toBeGreaterThanOrEqual(groups.at(-1)!.items.length);

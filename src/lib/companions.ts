@@ -22,9 +22,9 @@ export type CompanionPreset = {
 export type CompanionPalette = {
   id: string;
   name: string;
-  /** Main body colour. */
+  /** Main body color. */
   base: string;
-  /** Belly / muzzle / inner-ear colour. */
+  /** Belly / muzzle / inner-ear color. */
   soft: string;
   /** Accent used for accessories and details. */
   accent: string;

@@ -8,7 +8,7 @@ export type CompanionPose = "idle" | "happy" | "cheer" | "peek";
  *
  * The fox has bespoke art (snout, cheek fluff, curled tail) plus its own idle
  * life: breathing bob, periodic blink, tail sway and an ear twitch. `pose`
- * chooses the behaviour so screens never hardcode animation classes.
+ * chooses the behavior so screens never hardcode animation classes.
  */
 export function CompanionAvatar({
   companion,

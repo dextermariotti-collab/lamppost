@@ -33,14 +33,14 @@ export const REFUSAL_COPY: Record<ModerationCategory, string> = {
   sexual:
     "Lamppost doesn't create sexual or adult courses. Try a different topic and we'll get straight to work.",
   minors:
-    "Lamppost can't create this course. Requests that sexualise or endanger minors are never generated, and repeated attempts can close your account.",
+    "Lamppost can't create this course. Requests that sexualize or endanger minors are never generated, and repeated attempts can close your account.",
   violence:
     "Lamppost doesn't create courses that teach how to hurt people. If you want the history, ethics or prevention side of this subject, rephrase it that way.",
   "self-harm":
     "Lamppost can't build a course on this. If you're struggling, please talk to someone you trust or a local crisis line — you deserve real support, not a lesson plan.",
   illegal:
     "Lamppost doesn't create courses that teach how to commit crimes. A course on the law, history or investigation side of this is fine.",
-  hate: "Lamppost doesn't create courses that attack or dehumanise people. Try a topic that doesn't target a group.",
+  hate: "Lamppost doesn't create courses that attack or dehumanize people. Try a topic that doesn't target a group.",
   weapons:
     "Lamppost doesn't create courses about making weapons, explosives or other tools designed to cause harm.",
   "medical-risk":

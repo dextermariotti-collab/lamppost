@@ -164,7 +164,7 @@ describe("reward chests", () => {
     expect((await profile(CAROL)).gems_granted).toBe(15);
   });
 
-  it("honours a lower cap, such as one earned by little activity", async () => {
+  it("honors a lower cap, such as one earned by little activity", async () => {
     await chest(DAN, "2026-09-28", "gems", 5, 1);
     expect(await chest(DAN, "2026-09-28", "gems", 5, 1)).toMatchObject({
       ok: false,

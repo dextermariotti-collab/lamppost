@@ -8,13 +8,13 @@ import { APP_NAME } from "@/lib/legal-config";
 export const Route = createFileRoute("/legal/acknowledgements")({
   head: () => ({
     meta: [
-      { title: "Acknowledgements — Lamppost" },
+      { title: "Acknowledgments — Lamppost" },
       {
         name: "description",
         content:
-          "The open-source software and typefaces Lamppost is built with, and their licences.",
+          "The open-source software and typefaces Lamppost is built with, and their licenses.",
       },
-      { property: "og:title", content: "Acknowledgements — Lamppost" },
+      { property: "og:title", content: "Acknowledgments — Lamppost" },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "/legal/acknowledgements" }],
@@ -26,12 +26,12 @@ function Acknowledgements() {
   const groups = groupByLicence();
   return (
     <PhoneFrame>
-      <ScreenHeader title="Acknowledgements" backTo="/legal" />
+      <ScreenHeader title="Acknowledgments" backTo="/legal" />
       <div className="px-5 pb-6">
         <p className="text-sm leading-relaxed font-semibold text-foreground/85">
           {APP_NAME} stands on other people&apos;s work. These are the open-source packages and
-          typefaces it uses, with the licence each one is shared under. Each package&apos;s full
-          licence text and copyright notice is in its own repository, linked below.
+          typefaces it uses, with the license each one is shared under. Each package&apos;s full
+          license text and copyright notice is in its own repository, linked below.
         </p>
 
         <section className="mt-6" aria-labelledby="ack-fonts">
@@ -65,7 +65,7 @@ function Acknowledgements() {
           </h2>
           <p className="mt-1 text-sm leading-relaxed font-semibold text-foreground/80">
             The companions, badges and illustrations are drawn in code for {APP_NAME}. Interface
-            icons come from the Lucide icon set (ISC licence), which appears in the list below.
+            icons come from the Lucide icon set (ISC license), which appears in the list below.
           </p>
         </section>
 

@@ -82,7 +82,7 @@ export const BADGES: BadgeDef[] = [
   {
     code: "early_bird",
     name: "Early Bird",
-    description: "Days you practised before 9am",
+    description: "Days you practiced before 9am",
     icon: "sunrise",
     unit: "early days",
     tiers: [1, 5, 15],

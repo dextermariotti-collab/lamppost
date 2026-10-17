@@ -6,7 +6,7 @@ import { as, attempt, migratedDb } from "@/test/db";
 
 /**
  * The store of AI-written daily cases is the server's alone, holds one case per day, and its
- * documented rollback really removes it (and the migration can be applied again afterwards).
+ * documented rollback really removes it (and the migration can be applied again afterward).
  */
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 const ALICE = "00000000-0000-0000-0000-00000000000a";

@@ -13,7 +13,7 @@ export function NativeShell() {
 
   useEffect(() => {
     if (!isNativeApp()) return;
-    let cancelled = false;
+    let canceled = false;
     const removers: Array<() => Promise<void>> = [];
     void (async () => {
       const { App } = await import("@capacitor/app");
@@ -25,13 +25,13 @@ export function NativeShell() {
         else void App.exitApp();
       });
       removers.push(opened.remove, back.remove);
-      if (cancelled) removers.forEach((remove) => void remove());
+      if (canceled) removers.forEach((remove) => void remove());
       // A sign-in can also be what launched the app, if the system closed it meanwhile.
       const launch = await App.getLaunchUrl();
-      if (!cancelled && launch?.url) void completeNativeSignIn(launch.url);
+      if (!canceled && launch?.url) void completeNativeSignIn(launch.url);
     })();
     return () => {
-      cancelled = true;
+      canceled = true;
       removers.forEach((remove) => void remove());
     };
   }, []);

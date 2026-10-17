@@ -29,7 +29,7 @@ describe("activityToStore", () => {
     expect(days).toEqual(["2026-09-23", "2026-09-22", "2026-09-10", "2026-08-01"]);
   });
 
-  it("afterwards only accepts the recent days, so a streak can't be back-dated", () => {
+  it("afterward only accepts the recent days, so a streak can't be back-dated", () => {
     const days = activityToStore(history, { today, firstSync: false, now }).map(([d]) => d);
     expect(days).toEqual(["2026-09-23", "2026-09-22"]);
     expect(BACKFILL_DAYS).toBe(7);

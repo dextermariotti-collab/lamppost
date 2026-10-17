@@ -57,7 +57,7 @@ function LessonNotesScreen() {
               {...lessonLink}
               className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-primary-text"
             >
-              {done ? "Practise the lesson again" : "Start the lesson"}
+              {done ? "Practice the lesson again" : "Start the lesson"}
             </Link>
           </div>
         ) : (
@@ -70,7 +70,7 @@ function LessonNotesScreen() {
               {...lessonLink}
               className="mt-6 flex min-h-12 items-center justify-center rounded-sm border-2 border-edge text-sm font-bold"
             >
-              Practise the lesson again
+              Practice the lesson again
             </Link>
           </>
         )}

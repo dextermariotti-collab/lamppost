@@ -28,5 +28,5 @@ export function statedConfidence(answer: unknown): number | undefined {
   return typeof value === "number" ? value : undefined;
 }
 
-/** How many steps earn XP and count towards accuracy: everything but the text card. */
+/** How many steps earn XP and count toward accuracy: everything but the text card. */
 export const isGraded = (step: LessonStep) => step.kind !== "note";

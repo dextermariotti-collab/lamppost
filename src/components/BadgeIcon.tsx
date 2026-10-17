@@ -21,7 +21,7 @@ const ICONS: Record<string, LucideIcon> = {
   rotate: RotateCcw,
 };
 
-/** Tier colours: metal tones, readable in both themes. */
+/** Tier colors: metal tones, readable in both themes. */
 export const TIER_STYLE: Record<
   BadgeTier,
   { ring: string; fill: string; text: string; label: string }
@@ -46,7 +46,7 @@ export const TIER_STYLE: Record<
   },
 };
 
-/** A badge medallion: earned badges take their tier's metal, locked ones stay grey. */
+/** A badge medallion: earned badges take their tier's metal, locked ones stay gray. */
 export function BadgeIcon({
   icon,
   tier,

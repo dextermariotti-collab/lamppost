@@ -39,7 +39,7 @@ export const DOMAIN_SETS: Record<Motivation, string[]> = {
     "a viral social post",
     "a chart shared without context",
     "an AI chatbot answer",
-    "a product advert making a health claim",
+    "a product ad making a health claim",
     "a screenshot passed round with no source",
   ],
   work: [
@@ -59,7 +59,7 @@ export const DEFAULT_DOMAINS = [
   "a money decision",
   "a workplace meeting",
   "a school or study claim",
-  "an advert making a claim",
+  "an ad making a claim",
 ];
 
 export function domainsFor(motivation: Motivation | null | undefined): string[] {

@@ -1,6 +1,6 @@
 import { Flame, Sparkles, Star, Trophy, UserPlus, Zap, type LucideIcon } from "lucide-react";
 
-/** Icon lookup for the achievement catalogue stored in the database. */
+/** Icon lookup for the achievement catalog stored in the database. */
 const ICONS: Record<string, LucideIcon> = {
   sparkles: Sparkles,
   flame: Flame,

@@ -95,7 +95,7 @@ export function weekdayLetter(key: string): string {
   return WEEKDAY_LETTERS[weekdayOf(key)]!;
 }
 
-/** Seven days ending today: practised, covered by a freeze, or quiet. */
+/** Seven days ending today: practiced, covered by a freeze, or quiet. */
 export function weekStrip(
   state: { history: Record<string, number>; freezeLog: readonly string[] },
   today: string,
@@ -103,11 +103,11 @@ export function weekStrip(
   const frozen = new Set(state.freezeLog);
   return Array.from({ length: 7 }, (_, i) => {
     const key = shiftDay(today, i - 6);
-    const practised = (state.history[key] ?? 0) > 0;
+    const practiced = (state.history[key] ?? 0) > 0;
     return {
       key,
       letter: weekdayLetter(key),
-      status: practised ? "done" : frozen.has(key) ? "freeze" : "quiet",
+      status: practiced ? "done" : frozen.has(key) ? "freeze" : "quiet",
       isToday: key === today,
     };
   });

@@ -35,10 +35,10 @@ const SCENARIO_FIELD: Partial<Record<string, string>> = {
 /** Keys whose strings are structural, or index-linked, and must never be edited. */
 const UNTOUCHED = new Set(["kind", "tokens", "series", "unit", "direction"]);
 
-const capitalise = (s: string) => (s ? s[0]!.toUpperCase() + s.slice(1) : s);
+const capitalize = (s: string) => (s ? s[0]!.toUpperCase() + s.slice(1) : s);
 const article = (word: string, wasUpper: boolean) => {
   const a = /^[aeiou]/i.test(word) ? "an" : "a";
-  return wasUpper ? capitalise(a) : a;
+  return wasUpper ? capitalize(a) : a;
 };
 
 /** Removes every form of "hypothetical" from a sentence without breaking it. */
@@ -57,7 +57,7 @@ export function stripHypothetical(text: string): string {
   // "In this hypothetical, …" at the start of a sentence: drop the clause.
   out = out.replace(
     /(^|[.!?]\s+)(?:in|under|within|for|given)\s+(?:this|the|that|our)\s+hypothetical(?:\s+(?:scenario|case|situation|setup|example))?\s*,\s*(\S)/gi,
-    (_m, lead: string, next: string) => `${lead}${capitalise(next)}`,
+    (_m, lead: string, next: string) => `${lead}${capitalize(next)}`,
   );
   // Mid-sentence ", in this hypothetical," / trailing " in this hypothetical".
   out = out.replace(
@@ -89,7 +89,7 @@ export function stripHypothetical(text: string): string {
     .replace(/\s+([,.;:!?])/g, "$1")
     .replace(/,\s*,/g, ",")
     .trim();
-  return startedUpper ? capitalise(out) : out;
+  return startedUpper ? capitalize(out) : out;
 }
 
 /** How many times "hypothetical" appears in a drill's text, counting every field. */

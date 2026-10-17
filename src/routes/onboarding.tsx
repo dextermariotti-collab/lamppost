@@ -120,7 +120,7 @@ function IntroStep({ companion, onNext }: { companion: Companion; onNext: () => 
       <div className="mt-10">
         <GuideMark size={72} />
       </div>
-      <h1 className="mt-8 text-3xl leading-tight">Practise spotting weak arguments</h1>
+      <h1 className="mt-8 text-3xl leading-tight">Practice spotting weak arguments</h1>
       <p className="mt-3 text-base text-muted-foreground">
         Short interactive lessons. No account needed.
       </p>

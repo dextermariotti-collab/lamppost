@@ -243,7 +243,7 @@ const probability: Record<string, LessonScript> = {
       prompt:
         "Work out which option has the higher average payoff, and say whether that settles the choice.",
       passage:
-        "Sol can take a market stall job that pays £300 a week for certain, or sell his own crafts and earn £900 in a good week (a 1-in-4 chance) and nothing otherwise. He can afford a few weeks with no pay, but not many.",
+        "Sol can take a market stall job that pays $300 a week for certain, or sell his own crafts and earn $900 in a good week (a 1-in-4 chance) and nothing otherwise. He can afford a few weeks with no pay, but not many.",
       guidance:
         "Multiply each payoff by its chance, add them up, then consider whether Sol can repeat the choice.",
     },
@@ -253,16 +253,16 @@ const probability: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "Option A pays £50 for certain. Option B gives a 1-in-10 chance of £400 and nothing otherwise. Which is worth more on average?",
+          "Option A pays $50 for certain. Option B gives a 1-in-10 chance of $400 and nothing otherwise. Which is worth more on average?",
         options: [
-          { text: "A, worth £50 on average." },
+          { text: "A, worth $50 on average." },
           {
-            text: "B, worth £400 when it pays out.",
-            whyNot: "Multiply the prize by its chance: £400 × 1/10 = £40, less than A's £50.",
+            text: "B, worth $400 when it pays out.",
+            whyNot: "Multiply the prize by its chance: $400 × 1/10 = $40, less than A's $50.",
           },
           {
             text: "They are worth the same.",
-            whyNot: "A is worth £50 and B only £40 on average, so they are not equal.",
+            whyNot: "A is worth $50 and B only $40 on average, so they are not equal.",
           },
         ],
         correct: 0,
@@ -282,27 +282,27 @@ const probability: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Pay £2 for a 1-in-4 chance of £10.",
+            text: "Pay $2 for a 1-in-4 chance of $10.",
             bucket: "plus",
-            why: "The average prize is £2.50, a little more than the £2 price.",
+            why: "The average prize is $2.50, a little more than the $2 price.",
           },
           {
             id: "2",
-            text: "Pay £5 for a 1-in-10 chance of £30.",
+            text: "Pay $5 for a 1-in-10 chance of $30.",
             bucket: "minus",
-            why: "The average prize is £3, so you lose £2 on average.",
+            why: "The average prize is $3, so you lose $2 on average.",
           },
           {
             id: "3",
-            text: "Pay £4 for a 1-in-5 chance of £20.",
+            text: "Pay $4 for a 1-in-5 chance of $20.",
             bucket: "even",
-            why: "The average prize is £4, exactly the price.",
+            why: "The average prize is $4, exactly the price.",
           },
           {
             id: "4",
-            text: "Pay £10 for a 1-in-100 chance of £500.",
+            text: "Pay $10 for a 1-in-100 chance of $500.",
             bucket: "minus",
-            why: "The average prize is £5, so you lose £5 on average.",
+            why: "The average prize is $5, so you lose $5 on average.",
           },
         ],
         hint: "Prize × chance = average prize. Compare it with the price.",
@@ -312,9 +312,9 @@ const probability: Record<string, LessonScript> = {
         id: "ticket",
         kind: "stronger",
         noun: "Reasoning",
-        prompt: "The prize is £1 million. Which reasoning about a £2 ticket is better?",
-        a: "Buy it. The jackpot is £1 million and someone has to win.",
-        b: "The chance is about 1 in 30 million, so the ticket is worth about 3p on average, far below £2.",
+        prompt: "The prize is $1 million. Which reasoning about a $2 ticket is better?",
+        a: "Buy it. The jackpot is $1 million and someone has to win.",
+        b: "The chance is about 1 in 30 million, so the ticket is worth about 3 cents on average, far below $2.",
         stronger: "b",
         factor: "It weighs the prize by its chance",
         weakerWhy:
@@ -329,12 +329,12 @@ const probability: Record<string, LessonScript> = {
         prompt: "Tap the step where Priya compares only the best case.",
         passage: [
           {
-            text: "Job A pays £30,000 for certain.",
+            text: "Job A pays $30,000 for certain.",
             tappable: true,
             whyNot: "That is a plain description of Job A.",
           },
           {
-            text: "Job B pays £60,000 with a 40% chance, and £0 otherwise.",
+            text: "Job B pays $60,000 with a 40% chance, and $0 otherwise.",
             tappable: true,
             whyNot: "That is also a fair description. Stating it isn't the mistake.",
           },
@@ -342,7 +342,7 @@ const probability: Record<string, LessonScript> = {
         ],
         fallacy: "Judging by the best case",
         hint: "What does B pay on average, once the 40% is counted?",
-        why: "B pays £60,000 × 0.4 = £24,000 on average, less than A's £30,000. The best case looks bigger, but it isn't the typical outcome.",
+        why: "B pays $60,000 × 0.4 = $24,000 on average, less than A's $30,000. The best case looks bigger, but it isn't the typical outcome.",
       },
       {
         id: "case",
@@ -358,7 +358,7 @@ const probability: Record<string, LessonScript> = {
           { id: "pp", text: "Its average pay is higher than Job B's.", role: "premise" },
           {
             id: "pe",
-            text: "B pays £60,000 × 40% = £24,000 on average, against A's £30,000.",
+            text: "B pays $60,000 × 40% = $24,000 on average, against A's $30,000.",
             role: "evidence",
           },
           {
@@ -397,21 +397,21 @@ const probability: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "What is a ticket worth on average?",
         stimulus:
-          "A raffle sells 500 tickets at £2 each. There is one prize of £400, and each ticket has an equal chance.",
+          "A raffle sells 500 tickets at $2 each. There is one prize of $400, and each ticket has an equal chance.",
         options: [
-          { text: "80p, so you lose £1.20 on average." },
+          { text: "80 cents, so you lose $1.20 on average." },
           {
-            text: "£400, which is the size of the prize.",
+            text: "$400, which is the size of the prize.",
             whyNot: "That is the prize. Multiply it by a ticket's 1-in-500 chance.",
           },
           {
-            text: "£2, which is what you paid for it.",
+            text: "$2, which is what you paid for it.",
             whyNot: "That is the price. The average return is the prize times the chance.",
           },
         ],
         correct: 0,
         hint: "Divide the prize by the number of tickets.",
-        why: "£400 ÷ 500 tickets is 80p per ticket. Paying £2 for it loses £1.20 on average, whatever the prize sounds like.",
+        why: "$400 ÷ 500 tickets is 80 cents per ticket. Paying $2 for it loses $1.20 on average, whatever the prize sounds like.",
       },
       {
         id: "together",
@@ -420,12 +420,12 @@ const probability: Record<string, LessonScript> = {
         prompt:
           "Zara is offered phone insurance. What does the expected value say, and what else matters?",
         stimulus:
-          "A shop offers Zara a £60 plan for her £400 phone, covering one replacement over two years. She reckons there's a 10% chance she'll break or lose it in that time. She has £500 in savings.",
+          "A shop offers Zara a $60 plan for her $400 phone, covering one replacement over two years. She reckons there's a 10% chance she'll break or lose it in that time. She has $500 in savings.",
         options: [
           {
-            text: "Buy it: losing or breaking a £400 phone would be a disaster for her.",
+            text: "Buy it: losing or breaking a $400 phone would be a disaster for her.",
             whyNot:
-              "That looks only at the worst case. Its chance matters too: 10% of £400 is £40.",
+              "That looks only at the worst case. Its chance matters too: 10% of $400 is $40.",
           },
           {
             text: "Skip it: insurance plans like this are always a waste of money.",
@@ -433,17 +433,17 @@ const probability: Record<string, LessonScript> = {
               "“Always” is too strong. When a loss would be ruinous, paying above the average can be sensible.",
           },
           {
-            text: "Buy it: £60 is far less than the £400 the phone cost her.",
+            text: "Buy it: $60 is far less than the $400 the phone cost her.",
             whyNot:
-              "Comparing the price with the whole phone ignores the 10% chance. On average the cover is worth £40.",
+              "Comparing the price with the whole phone ignores the 10% chance. On average the cover is worth $40.",
           },
           {
-            text: "On average it's worth £40, less than £60, and she can afford a loss.",
+            text: "On average it's worth $40, less than $60, and she can afford a loss.",
           },
         ],
         correct: 3,
         hint: "Multiply the payout by its chance. Then ask whether a loss would actually hurt her badly.",
-        why: "10% × £400 = £40 on average, below the £60 price. With £500 saved, a loss wouldn't be ruinous, so the average is a fair guide here. Someone with no savings might reasonably choose otherwise.",
+        why: "10% × $400 = $40 on average, below the $60 price. With $500 saved, a loss wouldn't be ruinous, so the average is a fair guide here. Someone with no savings might reasonably choose otherwise.",
       },
     ],
   },
@@ -488,7 +488,7 @@ const probability: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "Tessa studied the route, packed water and set off. She got a flat tyre.",
+            text: "Tessa studied the route, packed water and set off. She got a flat tire.",
             bucket: "good",
             why: "She prepared well. A puncture is bad luck, not bad planning.",
           },
@@ -649,13 +649,13 @@ const probability: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A fundraiser lost money. How should the trustees judge the decision?",
         stimulus:
-          "A small charity spent £5,000 on a fundraising dinner after checking that similar dinners had raised £8,000 to £12,000. A storm on the night kept half the guests away, and it raised only £3,000. The trustees say: “That was a bad decision. No more dinners.”",
+          "A small charity spent $5,000 on a fundraising dinner after checking that similar dinners had raised $8,000 to $12,000. A storm on the night kept half the guests away, and it raised only $3,000. The trustees say: “That was a bad decision. No more dinners.”",
         options: [
           {
             text: "Sound but unlucky: the evidence was good and the storm unforeseeable.",
           },
           {
-            text: "Bad, because the charity lost £2,000, and that's what counts.",
+            text: "Bad, because the charity lost $2,000, and that's what counts.",
             whyNot:
               "The loss is real, but judging only by the result ignores what was known when they decided.",
           },
@@ -679,7 +679,7 @@ const probability: Record<string, LessonScript> = {
     written: {
       prompt: "Say how much the new evidence should move your confidence, and why not further.",
       passage:
-        "Lina was 70% sure that a new swimming goggle brand doesn't leak. Two reviewers say it leaked during their test. A third says hers stayed dry for a month. The brand's own page says “Never leaks”.",
+        "Lina was 70% sure that a new swimming goggle brand doesn't leak. Two reviewers say it leaked during their test. A third says hers stayed dry for a month. The brand's own page says “Never leaks.”",
       guidance: "Weigh each piece of evidence by how hard it would be to fake.",
     },
     steps: [
@@ -693,9 +693,9 @@ const probability: Record<string, LessonScript> = {
         cards: [
           {
             id: "a",
-            text: "It had queues on its first three days.",
+            text: "It had long lines on its first three days.",
             shift: 5,
-            note: "New places draw curious crowds, so early queues say little.",
+            note: "New places draw curious crowds, so early lines say little.",
           },
           {
             id: "b",
@@ -711,7 +711,7 @@ const probability: Record<string, LessonScript> = {
           },
           {
             id: "d",
-            text: "The owner's cousin says it will be “huge”.",
+            text: "The owner's cousin says it will be “huge.”",
             shift: 0,
             note: "A relative's enthusiasm isn't new information about the shop.",
           },
@@ -774,7 +774,7 @@ const probability: Record<string, LessonScript> = {
           },
           {
             id: "2",
-            text: "A neighbour says it was wet last Tuesday.",
+            text: "A neighbor says it was wet last Tuesday.",
             bucket: "little",
             why: "One wet day says little about every winter.",
           },
@@ -859,7 +859,7 @@ const probability: Record<string, LessonScript> = {
               "People who recover anyway, or who feel better from hope, give the same testimonials.",
           },
           {
-            text: "A poster that says “clinically proven”.",
+            text: "A poster that says “clinically proven.”",
             whyNot: "A slogan with no trial behind it is not evidence.",
           },
         ],
@@ -873,7 +873,7 @@ const probability: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A blind test disagrees with you. How should your confidence change?",
         stimulus:
-          "You're 80% sure the Harbour Café makes the best coffee in town. Then the local paper runs a blind taste test, with 200 tasters and the cafés unnamed, and Harbour comes seventh of ten.",
+          "You're 80% sure the Harbor Café makes the best coffee in town. Then the local paper runs a blind taste test, with 200 tasters and the cafés unnamed, and Harbor comes seventh of ten.",
         options: [
           {
             text: "Not at all: you know what you like, whatever any test says about it.",
@@ -881,17 +881,17 @@ const probability: Record<string, LessonScript> = {
               "A blind test with 200 tasters is strong evidence. Ignoring it isn't confidence; it's refusing to update.",
           },
           {
-            text: "All the way down: Harbour clearly serves some of the worst coffee around.",
+            text: "All the way down: Harbor clearly serves some of the worst coffee around.",
             whyNot:
               "Seventh of ten in one test doesn't make it bad, and your own taste still counts for something.",
           },
           {
-            text: "Down a lot: a large blind test is hard to explain if Harbour is best.",
+            text: "Down a lot: a large blind test is hard to explain if Harbor is best.",
           },
         ],
         correct: 2,
-        hint: "How likely is a seventh place in a large blind test if Harbour really is the best?",
-        why: "If Harbour were the best, it would rarely come seventh in a large blind test, so the result is strong evidence. Move a long way, but not all the way: taste varies and one test isn't final.",
+        hint: "How likely is a seventh place in a large blind test if Harbor really is the best?",
+        why: "If Harbor were the best, it would rarely come seventh in a large blind test, so the result is strong evidence. Move a long way, but not all the way: taste varies and one test isn't final.",
       },
     ],
   },
@@ -903,7 +903,7 @@ const probability: Record<string, LessonScript> = {
       prompt:
         "Trace the effects: what the rule does first, how people respond, and what that leads to.",
       passage:
-        "The council of Alder Vale limits parking on its high street to one hour, so that spaces turn over faster. Café owners say their customers need longer. The retail park outside town offers free parking all day.",
+        "The council of Alder Vale limits parking on its main street to one hour, so that spaces turn over faster. Café owners say their customers need longer. The retail park outside town offers free parking all day.",
       guidance:
         "Follow the chain at least two steps, and say what you would check to see it happening.",
     },
@@ -917,7 +917,7 @@ const probability: Record<string, LessonScript> = {
         options: [
           { text: "Some shoppers go to the retail park, where parking is free." },
           {
-            text: "Spaces free up, so the high street becomes busier.",
+            text: "Spaces free up, so the main street becomes busier.",
             whyNot: "That is the intended first effect, not a knock-on nobody planned.",
           },
           {
@@ -1057,7 +1057,7 @@ const probability: Record<string, LessonScript> = {
         cards: [
           {
             id: "a",
-            text: "Traffic on the high street falls by 15%.",
+            text: "Traffic on the main street falls by 15%.",
             shift: 10,
             note: "It is the intended benefit, and it is visible.",
           },
@@ -1069,7 +1069,7 @@ const probability: Record<string, LessonScript> = {
           },
           {
             id: "c",
-            text: "Visitors say the high street feels calmer.",
+            text: "Visitors say the main street feels calmer.",
             shift: 10,
             note: "A smaller, softer benefit, but a real one.",
           },
@@ -1089,25 +1089,25 @@ const probability: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Think a step further. What's the most likely knock-on effect?",
         stimulus:
-          "To cut litter, Kelby council doubles the fine for dropping litter and, to save on emptying costs, removes half the bins in the town centre.",
+          "To cut litter, Kelby council doubles the fine for dropping litter and, to save on emptying costs, removes half the trash cans in the town center.",
         options: [
           {
             text: "Litter falls sharply, because the fine is now twice as high.",
             whyNot:
-              "That's the first-order effect the council hopes for. It ignores how people respond to fewer bins.",
+              "That's the first-order effect the council hopes for. It ignores how people respond to fewer trash cans.",
           },
           {
-            text: "People carrying rubbish find no bin and drop it, so litter may rise.",
+            text: "People carrying trash find no trash can and drop it, so litter may rise.",
           },
           {
             text: "Nothing much changes, since most people never drop litter anyway.",
             whyNot:
-              "Possible, but it ignores the bins. Fewer bins changes what's convenient for everyone.",
+              "Possible, but it ignores the trash cans. Fewer trash cans changes what's convenient for everyone.",
           },
         ],
         correct: 1,
-        hint: "Two changes happen at once. What will someone holding a wrapper do when the nearest bin has gone?",
-        why: "A higher fine pushes litter down, but fewer bins make dropping it more likely, and nobody can enforce fines everywhere. The response to the bins could outweigh the fine.",
+        hint: "Two changes happen at once. What will someone holding a wrapper do when the nearest trash can is gone?",
+        why: "A higher fine pushes litter down, but fewer trash cans make dropping it more likely, and nobody can enforce fines everywhere. The response to the trash cans could outweigh the fine.",
       },
     ],
   },

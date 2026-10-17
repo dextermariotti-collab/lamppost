@@ -166,7 +166,7 @@ function UnitCard({
         </button>
       </h2>
 
-      {/* The line: one bar in the unit's colour, lessons as stops, checks as interchanges */}
+      {/* The line: one bar in the unit's color, lessons as stops, checks as interchanges */}
       <ol
         id={panelId}
         hidden={!open}

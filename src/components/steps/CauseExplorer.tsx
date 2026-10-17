@@ -10,26 +10,25 @@ const W = 320;
 const H = 210;
 const PAD = { l: 40, r: 12, t: 12, b: 34 };
 
-/** Different SHAPES per group as well as different colours, so groups differ without colour. */
+/** Different SHAPES per group as well as different colors, so groups differ without color. */
 const SHAPES = ["circle", "square", "triangle"] as const;
-const COLOURS = ["var(--primary)", "var(--flame)", "var(--success)"];
+const COLORS = ["var(--primary)", "var(--flame)", "var(--success)"];
 
 function Mark({
   shape,
   x,
   y,
-  colour,
+  color,
 }: {
   shape: (typeof SHAPES)[number];
   x: number;
   y: number;
-  colour: string;
+  color: string;
 }) {
-  if (shape === "square")
-    return <rect x={x - 4.5} y={y - 4.5} width={9} height={9} fill={colour} />;
+  if (shape === "square") return <rect x={x - 4.5} y={y - 4.5} width={9} height={9} fill={color} />;
   if (shape === "triangle")
-    return <polygon points={`${x},${y - 5.5} ${x - 5},${y + 4} ${x + 5},${y + 4}`} fill={colour} />;
-  return <circle cx={x} cy={y} r={4.5} fill={colour} />;
+    return <polygon points={`${x},${y - 5.5} ${x - 5},${y + 4} ${x + 5},${y + 4}`} fill={color} />;
+  return <circle cx={x} cy={y} r={4.5} fill={color} />;
 }
 
 /**
@@ -146,7 +145,7 @@ export function CauseExplorer({
               <Mark
                 key={`${g.id}-${i}`}
                 shape={split ? SHAPES[gi % 3]! : "circle"}
-                colour={split ? COLOURS[gi % 3]! : "currentColor"}
+                color={split ? COLORS[gi % 3]! : "currentColor"}
                 x={scale.px(x)}
                 y={scale.py(y)}
               />
@@ -162,7 +161,7 @@ export function CauseExplorer({
                 <line
                   key={g.id}
                   {...line}
-                  stroke={COLOURS[gi % 3]!}
+                  stroke={COLORS[gi % 3]!}
                   strokeWidth={2}
                   strokeDasharray="6 4"
                 />
@@ -175,7 +174,7 @@ export function CauseExplorer({
             {step.groups.map((g, gi) => (
               <li key={g.id} className="flex items-center gap-1.5">
                 <svg width={12} height={12} viewBox="0 0 12 12" aria-hidden>
-                  <Mark shape={SHAPES[gi % 3]!} colour={COLOURS[gi % 3]!} x={6} y={6.5} />
+                  <Mark shape={SHAPES[gi % 3]!} color={COLORS[gi % 3]!} x={6} y={6.5} />
                 </svg>
                 {g.label}
               </li>

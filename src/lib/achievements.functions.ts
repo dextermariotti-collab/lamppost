@@ -5,7 +5,7 @@ import { TodayInput, resolveToday } from "./client-day";
 import type { Badge } from "./achievements";
 
 /**
- * Reads the badge catalogue and evaluates unlock criteria against the account's
+ * Reads the badge catalog and evaluates unlock criteria against the account's
  * live progress, so no background job is needed.
  */
 export const listAchievements = createServerFn({ method: "POST" })
@@ -16,7 +16,7 @@ export const listAchievements = createServerFn({ method: "POST" })
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const today = resolveToday(data);
 
-    const [{ data: catalogue, error: catError }, { data: profile }, { data: unlocked }] =
+    const [{ data: catalog, error: catError }, { data: profile }, { data: unlocked }] =
       await Promise.all([
         supabase
           .from("achievements")
@@ -57,7 +57,7 @@ export const listAchievements = createServerFn({ method: "POST" })
     };
 
     const already = new Map((unlocked ?? []).map((row) => [row.achievement_code, row.unlocked_at]));
-    const missing = (catalogue ?? [])
+    const missing = (catalog ?? [])
       .filter((row) => earned[row.code] && !already.has(row.code))
       .map((row) => row.code);
 
@@ -72,7 +72,7 @@ export const listAchievements = createServerFn({ method: "POST" })
     }
 
     return {
-      badges: (catalogue ?? []).map((row) => ({
+      badges: (catalog ?? []).map((row) => ({
         code: row.code,
         name: row.name,
         description: row.description,

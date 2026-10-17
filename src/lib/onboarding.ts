@@ -30,7 +30,7 @@ export const MOTIVATIONS: { id: Motivation; label: string; blurb: string; reacti
     id: "decisions",
     label: "Make better decisions",
     blurb: "Money, health, big life calls",
-    reaction: "Unit 6 is going to be your favourite.",
+    reaction: "Unit 6 is going to be your favorite.",
   },
   {
     id: "misinformation",
@@ -76,7 +76,7 @@ export const FIRST_QUESTION: Extract<LessonStep, { kind: "choice" }> = {
   label: "Try one",
   prompt: "Which sentence is the claim the others are there to support?",
   stimulus:
-    "Harbour Street should close to cars on Saturdays. Shoppers say the road is too loud, and two cafés say they would sell more with tables outside.",
+    "Harbor Street should close to cars on Saturdays. Shoppers say the road is too loud, and two cafés say they would sell more with tables outside.",
   options: [
     {
       text: "Shoppers say the road is too loud.",
@@ -86,7 +86,7 @@ export const FIRST_QUESTION: Extract<LessonStep, { kind: "choice" }> = {
       text: "Two cafés would sell more with tables outside.",
       whyNot: "That is another reason. It supports the claim rather than being it.",
     },
-    { text: "Harbour Street should close to cars on Saturdays." },
+    { text: "Harbor Street should close to cars on Saturdays." },
   ],
   correct: 2,
   why: "The claim is what everything else is there to support. Every lesson works like this: you try first, then see why.",

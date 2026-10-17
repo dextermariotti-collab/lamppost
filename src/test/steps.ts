@@ -74,13 +74,13 @@ export const sortSample: SortStep = {
   items: [
     {
       id: "1",
-      text: "The Harbour Bridge is 40 metres long.",
+      text: "The Harbor Bridge is 130 feet long.",
       bucket: "fact",
       why: "You could measure it.",
     },
     {
       id: "2",
-      text: "The Harbour Bridge is ugly.",
+      text: "The Harbor Bridge is ugly.",
       bucket: "opinion",
       why: "Ugly is a taste, not a measurement.",
     },
@@ -137,7 +137,7 @@ export const updaterSample: UpdaterStep = {
       id: "b",
       text: "The whole village lost power that night.",
       shift: -30,
-      note: "A power cut explains it without any bulb failing.",
+      note: "A power outage explains it without any bulb failing.",
     },
     {
       id: "c",

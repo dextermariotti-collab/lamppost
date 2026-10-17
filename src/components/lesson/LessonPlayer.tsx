@@ -25,9 +25,9 @@ export function LessonPlayer({
   steps: readonly LessonStep[];
   /** Shown above the first step only. */
   intro?: ReactNode;
-  /** The unit, so progress is drawn in its line colour. */
+  /** The unit, so progress is drawn in its line color. */
   unitId?: string;
-  /** For steps from different units (a daily case): each step's unit, for its stop's colour. */
+  /** For steps from different units (a daily case): each step's unit, for its stop's color. */
   stopUnits?: readonly string[];
   /** Called once per step, when the learner has finished it. */
   onStepResolved: (index: number, step: LessonStep, result: StepResult) => void;

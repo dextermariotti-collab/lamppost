@@ -40,9 +40,9 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "Tomas: “Let's trim the bus timetable slightly.” Lena: “So you want to scrap buses altogether?”",
+            text: "Tomas: “Let's trim the bus schedule slightly.” Lena: “So you want to scrap buses altogether?”",
             bucket: "distorts",
-            why: "Tomas said “trim slightly”. Lena swapped in “scrap altogether”, which is easy to attack.",
+            why: "Tomas said “trim slightly.” Lena swapped in “scrap altogether,” which is easy to attack.",
           },
           {
             id: "4",
@@ -86,7 +86,7 @@ const fallacies: Record<string, LessonScript> = {
         ],
         fallacy: "Strawman: an exaggerated version of the claim",
         hint: "Compare what Sam said with what Ola says Sam said.",
-        why: "Ten minutes isn't “half the school day”. Ola attacked a version nobody proposed, and left the real claim untouched.",
+        why: "Ten minutes isn't “half the school day.” Ola attacked a version nobody proposed, and left the real claim untouched.",
       },
       {
         id: "person",
@@ -120,8 +120,8 @@ const fallacies: Record<string, LessonScript> = {
         stronger: "b",
         factor: "It answers what was actually said",
         weakerWhy:
-          "Kofi said “lighter”, not “none”. The reply swaps in an extreme version that's easy to knock down.",
-        hint: "Which reply would Kofi recognise as answering him?",
+          "Kofi said “lighter,” not “none.” The reply swaps in an extreme version that's easy to knock down.",
+        hint: "Which reply would Kofi recognize as answering him?",
         why: "A good reply deals with the claim as stated. It can challenge it hard, but it starts from what was actually said.",
       },
       {
@@ -171,11 +171,11 @@ const fallacies: Record<string, LessonScript> = {
       {
         id: "fair",
         kind: "choice",
-        prompt: "Which reply fairly challenges: “We should trim the bus timetable slightly”?",
+        prompt: "Which reply fairly challenges: “We should trim the bus schedule slightly”?",
         options: [
           {
             text: "“Trimming buses is the first step to abandoning them, so no.”",
-            whyNot: "That treats “slightly” as the start of “scrap”, which Tomas never said.",
+            whyNot: "That treats “slightly” as the start of “scrap,” which Tomas never said.",
           },
           {
             text: "“You always cut things, so nobody should listen to your plans.”",
@@ -225,7 +225,7 @@ const fallacies: Record<string, LessonScript> = {
     written: {
       prompt: "Name the problem in the argument and suggest what a fairer version would say.",
       passage:
-        "Head teacher Alder: “Either we ban phones in class entirely, or exam results will collapse. There's no other way. And once one student is allowed to check a message, everyone will, and soon no lesson will happen at all.”",
+        "Principal Alder: “Either we ban phones in class entirely, or exam results will collapse. There's no other way. And once one student is allowed to check a message, everyone will, and soon no lesson will happen at all.”",
       guidance: "There are two problems here: one about options, one about a chain of events.",
     },
     steps: [
@@ -236,7 +236,7 @@ const fallacies: Record<string, LessonScript> = {
         prompt: "Tap the phrase that shuts out other options.",
         passage: [
           {
-            text: "Head teacher: “Either we ban phones in class entirely",
+            text: "Principal: “Either we ban phones in class entirely",
             tappable: true,
             whyNot: "That is one of the two options offered. The trouble is that only two are.",
           },
@@ -254,7 +254,7 @@ const fallacies: Record<string, LessonScript> = {
       {
         id: "third",
         kind: "choice",
-        prompt: "Which is a genuine third option the head teacher left out?",
+        prompt: "Which is a genuine third option the principal left out?",
         options: [
           {
             text: "Ban phones and also ban tablets and smartwatches.",
@@ -267,7 +267,7 @@ const fallacies: Record<string, LessonScript> = {
           { text: "Phones stay in bags during lessons and can be used at break." },
         ],
         correct: 2,
-        hint: "Look between “ban entirely” and “no limits”.",
+        hint: "Look between “ban entirely” and “no limits.”",
         why: "Most real choices have middle ground. A false dilemma presents two extremes as if nothing lay between them.",
       },
       {
@@ -301,7 +301,7 @@ const fallacies: Record<string, LessonScript> = {
             id: "4",
             text: "“Studies link late screen use to later sleep, and less sleep to lower test scores. So a screen habit at midnight will probably hurt scores.”",
             bucket: "supported",
-            why: "Each link is backed by evidence, and the conclusion says “probably”.",
+            why: "Each link is backed by evidence, and the conclusion says “probably.”",
           },
         ],
         hint: "Is there a reason for each step, or only a leap?",
@@ -337,7 +337,7 @@ const fallacies: Record<string, LessonScript> = {
         noun: "Chain",
         prompt:
           "Both argue a small change leads to a big one. Which chain of steps is better supported?",
-        a: "If pupils choose their seats, soon they'll choose their lessons, then their exams, and school will end.",
+        a: "If students choose their seats, soon they'll choose their lessons, then their exams, and school will end.",
         b: "If the council removes the crossing, more people will cross the busy road, and at similar crossings elsewhere injuries rose when this happened.",
         stronger: "b",
         factor: "Its steps rest on evidence",
@@ -373,24 +373,24 @@ const fallacies: Record<string, LessonScript> = {
         id: "rewrite",
         kind: "choice",
         prompt: "Which rewrite removes the false dilemma?",
-        stimulus: "“Either the council builds a car park, or the town centre dies.”",
+        stimulus: "“Either the council builds a parking lot, or the town center dies.”",
         options: [
           {
-            text: "The council must build a car park, because otherwise the town centre will surely die.",
-            whyNot: "Same two options, only reworded. The town centre could survive in other ways.",
+            text: "The council must build a parking lot, because otherwise the town center will surely die.",
+            whyNot: "Same two options, only reworded. The town center could survive in other ways.",
           },
           {
-            text: "A car park is one way to help; better buses or cheaper parking nearby might do it too.",
+            text: "A parking lot is one way to help; better buses or cheaper parking nearby might do it too.",
           },
           {
-            text: "Only a car park, and nothing else, can possibly save the town centre.",
+            text: "Only a parking lot, and nothing else, can possibly save the town center.",
             whyNot:
               "That makes the claim stronger, not fairer, and still shuts out the alternatives.",
           },
         ],
         correct: 1,
         hint: "Which version leaves room for other options?",
-        why: "A fair version says what a car park would do and admits there are other routes to the same goal.",
+        why: "A fair version says what a parking lot would do and admits there are other routes to the same goal.",
       },
       {
         id: "together",
@@ -427,7 +427,7 @@ const fallacies: Record<string, LessonScript> = {
     written: {
       prompt: "Say which appeals in the passage are good reasoning and which are not, and why.",
       passage:
-        "For the new playground surface, the council cites three things. (1) A structural engineers' institute reviewed the design and published its tests. (2) A famous footballer says he “loves it”. (3) “Everyone in town is talking about it, so it must be good.”",
+        "For the new playground surface, the council cites three things. (1) A structural engineers' institute reviewed the design and published its tests. (2) A famous athlete says he “loves it.” (3) “Everyone in town is talking about it, so it must be good.”",
       guidance: "Judge each of the three separately.",
     },
     steps: [
@@ -448,7 +448,7 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "2",
-            text: "A famous footballer says a brand of pills cures back pain.",
+            text: "A famous athlete says a brand of pills cures back pain.",
             bucket: "not",
             why: "Fame isn't expertise in medicine.",
           },
@@ -501,17 +501,17 @@ const fallacies: Record<string, LessonScript> = {
         id: "field",
         kind: "gap",
         prompt: "What has to be true for the expert's word to settle this?",
-        reason: "Dr Ines, a heart surgeon, says the new trainers are better for your knees.",
-        conclusion: "So the trainers are better for your knees.",
+        reason: "Dr. Ines, a heart surgeon, says the new sneakers are better for your knees.",
+        conclusion: "So the sneakers are better for your knees.",
         options: [
           { text: "Expertise in heart surgery carries over to knees and footwear." },
           {
             text: "Doctors are usually well paid for their long years of work.",
-            whyNot: "Pay has nothing to do with knowing about trainers.",
+            whyNot: "Pay has nothing to do with knowing about sneakers.",
           },
           {
             text: "Trainers are popular among surgeons in the local hospital.",
-            whyNot: "Popularity among surgeons doesn't show the trainers help knees.",
+            whyNot: "Popularity among surgeons doesn't show the sneakers help knees.",
           },
         ],
         correct: 0,
@@ -545,9 +545,9 @@ const fallacies: Record<string, LessonScript> = {
         kind: "stronger",
         label: "Which is the better reason?",
         noun: "Reason",
-        prompt: "Two reasons for believing a new tram is safe. Which is better?",
-        a: "The tram must be safe: thousands of people ride it every day.",
-        b: "The tram must be safe: it passed an independent inspection last month.",
+        prompt: "Two reasons for believing a new streetcar is safe. Which is better?",
+        a: "The streetcar must be safe: thousands of people ride it every day.",
+        b: "The streetcar must be safe: it passed an independent inspection last month.",
         stronger: "b",
         factor: "It shows someone checked",
         weakerWhy:
@@ -591,7 +591,7 @@ const fallacies: Record<string, LessonScript> = {
             whyNot: "That's the claim. The issue is what backs it.",
           },
           {
-            text: "The filter costs forty pounds.",
+            text: "The filter costs forty dollars.",
             tappable: true,
             whyNot: "A plain fact about the price.",
           },
@@ -607,12 +607,12 @@ const fallacies: Record<string, LessonScript> = {
         prompt:
           "Three reasons to buy a lawn feed. Which gives you the best grounds to believe it works?",
         stimulus:
-          "Verdance lawn feed is the country's bestselling lawn feed. TV gardener Ross Ellery says he uses it on his own lawn. And a trial by the independent Grassland Trials Centre found lawns treated with it grew thicker than untreated ones.",
+          "Verdance lawn feed is the country's bestselling lawn feed. TV gardener Ross Ellery says he uses it on his own lawn. And a trial by the independent Grassland Trials Center found lawns treated with it grew thicker than untreated ones.",
         options: [
           {
             text: "It's the bestselling lawn feed in the country by a long way.",
             whyNot:
-              "Sales show popularity. People buy for price, habit and adverts, not only for results.",
+              "Sales show popularity. People buy for price, habit and ads, not only for results.",
           },
           {
             text: "An independent trial found thicker growth than untreated lawns.",
@@ -695,7 +695,7 @@ const fallacies: Record<string, LessonScript> = {
         stronger: "b",
         factor: "It adds evidence",
         weakerWhy:
-          "“Effective” means “works”. The sentence says the same thing twice and adds no reason.",
+          "“Effective” means “works.” The sentence says the same thing twice and adds no reason.",
         hint: "Which one could be checked against anything?",
         why: "A good reason is something that could be true or false independently of the conclusion.",
       },
@@ -781,7 +781,7 @@ const fallacies: Record<string, LessonScript> = {
           { text: "The reason repeats the conclusion in different words." },
         ],
         correct: 2,
-        hint: "Compare “reliable” with “can be relied upon”.",
+        hint: "Compare “reliable” with “can be relied upon.”",
         why: "“Reliable” and “can be relied upon” mean the same. The argument goes in a circle and gives no separate reason.",
       },
       {
@@ -792,7 +792,7 @@ const fallacies: Record<string, LessonScript> = {
         options: [
           {
             text: "The captain is the best leader because she is the finest leader on the team.",
-            whyNot: "Still the same claim twice, with “finest” swapped for “best”.",
+            whyNot: "Still the same claim twice, with “finest” swapped for “best.”",
           },
           {
             text: "The captain is the best leader because nobody leads the team better than she does.",
@@ -857,14 +857,14 @@ const fallacies: Record<string, LessonScript> = {
           "Ines asked four people in one corridor. Three like the new canteen menu. What can she conclude?",
         options: [
           {
-            text: "Most pupils in the whole school like the new menu.",
+            text: "Most students in the whole school like the new menu.",
             whyNot:
               "Four people in one corridor is too few, and they may not represent the school.",
           },
           {
             text: "Nearly everyone at the school likes the new menu for sure.",
             whyNot:
-              "That goes further still. Four answers from one spot can't support “nearly everyone”.",
+              "That goes further still. Four answers from one spot can't support “nearly everyone.”",
           },
           { text: "Three of four liked it: too few to say much about the school." },
         ],
@@ -891,7 +891,7 @@ const fallacies: Record<string, LessonScript> = {
             whyNot: "That is the action they want. The problem is the step before it.",
           },
         ],
-        fallacy: "Hasty generalisation",
+        fallacy: "Hasty generalization",
         hint: "How many people does the evidence cover?",
         why: "One person's lateness can't tell you about a whole town. There could be many reasons, and none is about where she's from.",
       },
@@ -933,9 +933,9 @@ const fallacies: Record<string, LessonScript> = {
       {
         id: "sort",
         kind: "sort",
-        prompt: "Sort each conclusion: fair to generalise, or too hasty?",
+        prompt: "Sort each conclusion: fair to generalize, or too hasty?",
         buckets: [
-          { id: "fair", label: "Fair to generalise" },
+          { id: "fair", label: "Fair to generalize" },
           { id: "hasty", label: "Too hasty" },
         ],
         items: [
@@ -965,7 +965,7 @@ const fallacies: Record<string, LessonScript> = {
           },
         ],
         hint: "Enough cases, chosen fairly?",
-        why: "Generalising is fine when there are enough cases and they were chosen in a way that could have shown the rule false.",
+        why: "Generalizing is fine when there are enough cases and they were chosen in a way that could have shown the rule false.",
       },
       {
         id: "sure",
@@ -975,19 +975,19 @@ const fallacies: Record<string, LessonScript> = {
           "A random survey of 2,000 residents finds 61% support the new library hours. Is it hasty to say “most residents support them”?",
         options: [
           {
-            text: "Yes: you can't generalise from any sample, however big.",
+            text: "Yes: you can't generalize from any sample, however big.",
             whyNot:
-              "Generalising from a good sample is how surveys work. The fault is too few or unrepresentative cases.",
+              "Generalizing from a good sample is how surveys work. The fault is too few or unrepresentative cases.",
           },
           {
             text: "Yes: 61% is not the same as all of the residents.",
-            whyNot: "The claim was “most”, not “all”, and 61% supports “most”.",
+            whyNot: "The claim was “most,” not “all,” and 61% supports “most.”",
           },
           { text: "No: a large random sample supports “most” reasonably well." },
         ],
         correct: 2,
         hint: "Is the sample big, and is it random?",
-        why: "Not every generalisation is hasty. A large random sample is exactly what justifies one.",
+        why: "Not every generalization is hasty. A large random sample is exactly what justifies one.",
       },
       {
         id: "stall",
@@ -1017,15 +1017,15 @@ const fallacies: Record<string, LessonScript> = {
         label: "Which claim is safer?",
         noun: "Claim",
         prompt:
-          "After 30 test rides, a bike shop says something about its new tyres. Which claim is safer?",
-        a: "All of our new tyres are unbeatable in wet weather.",
-        b: "In 30 test rides in the wet, none of the tyres slipped, which is encouraging but a small test.",
+          "After 30 test rides, a bike shop says something about its new tires. Which claim is safer?",
+        a: "All of our new tires are unbeatable in wet weather.",
+        b: "In 30 test rides in the wet, none of the tires slipped, which is encouraging but a small test.",
         stronger: "b",
         factor: "It claims what the tests can support",
         weakerWhy:
           "“All” and “unbeatable” go far beyond 30 rides. The claim promises more than the test could show.",
         hint: "Which one stays within what was tested?",
-        why: "A careful claim matches its evidence. Thirty rides can suggest something; they can't back “all” and “unbeatable”.",
+        why: "A careful claim matches its evidence. Thirty rides can suggest something; they can't back “all” and “unbeatable.”",
       },
       {
         id: "together",
@@ -1034,7 +1034,7 @@ const fallacies: Record<string, LessonScript> = {
         prompt:
           "Two misses against a month of figures. What's the fairest conclusion about the app?",
         stimulus:
-          "After a fortnight with the new Wayfarer bus app, Dmitri posts: “This app is useless. Twice it showed my bus as two minutes away and it never came.” Wayfarer's own figures say its arrival times were within two minutes on 88% of trips across the city last month.",
+          "After two weeks with the new Wayfarer bus app, Dmitri posts: “This app is useless. Twice it showed my bus as two minutes away and it never came.” Wayfarer's own figures say its arrival times were within two minutes on 88% of trips across the city last month.",
         options: [
           {
             text: "It's usually accurate, though Dmitri's misses suggest checking his route.",

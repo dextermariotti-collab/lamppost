@@ -45,7 +45,7 @@ describe("pick-one drills (claim, flaw, assumption, steelman, predict, judge, re
 
   it("rejects a keyed option that alone carries its own justification", () => {
     const drill = sample("flaw");
-    drill.options[0] = "It generalises from friends, because a small circle is not the world";
+    drill.options[0] = "It generalizes from friends, because a small circle is not the world";
     expect(problems(drill)).toMatch(/only the keyed option carries its own justification/);
   });
 
@@ -59,7 +59,7 @@ describe("pick-one drills (claim, flaw, assumption, steelman, predict, judge, re
     const drill = sample("judge");
     drill.options = [
       "The person who is making the claim and who therefore has to supply the support for it",
-      "The sceptic",
+      "The skeptic",
       "Nobody",
     ];
     expect(problems(drill)).toMatch(/much longer than the others/);
@@ -67,7 +67,7 @@ describe("pick-one drills (claim, flaw, assumption, steelman, predict, judge, re
 
   it("does not mind a keyed option that is a little longer", () => {
     const drill = sample("judge");
-    drill.options = ["The person making the claim", "The sceptic reading it", "Nobody at all"];
+    drill.options = ["The person making the claim", "The skeptic reading it", "Nobody at all"];
     expect(problems(drill)).toBe("");
   });
 
@@ -212,7 +212,7 @@ describe("slider", () => {
 });
 
 describe("chart", () => {
-  it("needs three to eight labelled, distinct, numeric points", () => {
+  it("needs three to eight labeled, distinct, numeric points", () => {
     const few = sample("chart");
     few.series = few.series.slice(0, 2);
     expect(problems(few)).toMatch(/needs 3-8 data points/);

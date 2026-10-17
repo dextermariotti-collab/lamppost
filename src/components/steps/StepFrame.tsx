@@ -20,8 +20,8 @@ const TONE = {
 
 /**
  * What the learner is told after acting, as a sign: green for right, red for wrong, a plain
- * panel for information. The verdict is a word and an icon as well as a colour, so it never
- * depends on colour alone. It is a polite live region, so a screen reader hears it as it appears.
+ * panel for information. The verdict is a word and an icon as well as a color, so it never
+ * depends on color alone. It is a polite live region, so a screen reader hears it as it appears.
  */
 export function FeedbackPanel({ message }: { message: Message | null }) {
   return (

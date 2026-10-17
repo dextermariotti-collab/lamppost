@@ -16,7 +16,7 @@ import { LegalFooter } from "./LegalFooter";
 afterEach(cleanup);
 
 describe("LegalFooter", () => {
-  it("offers Privacy, Terms, Acknowledgements and Support as one labelled navigation", () => {
+  it("offers Privacy, Terms, Acknowledgments and Support as one labeled navigation", () => {
     render(<LegalFooter />);
     const nav = screen.getByRole("navigation", { name: "Legal and support" });
     const links = Array.from(nav.querySelectorAll("a")).map((a) => [
@@ -26,7 +26,7 @@ describe("LegalFooter", () => {
     expect(links).toEqual([
       ["Privacy", "/legal/privacy"],
       ["Terms", "/legal/terms"],
-      ["Acknowledgements", "/legal/acknowledgements"],
+      ["Acknowledgments", "/legal/acknowledgements"],
       ["Support", "/support"],
     ]);
   });

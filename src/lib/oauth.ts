@@ -31,7 +31,7 @@ export async function startOAuth(provider: OAuthProvider): Promise<{ error: Erro
 
 /**
  * Finishes a sign-in the system browser handed back to the app. Returns false for any other
- * link, and for a sign-in that failed or was cancelled (the learner just stays on /auth).
+ * link, and for a sign-in that failed or was canceled (the learner just stays on /auth).
  */
 export async function completeNativeSignIn(url: string): Promise<boolean> {
   if (!url.startsWith(AUTH_CALLBACK)) return false;

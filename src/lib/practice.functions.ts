@@ -47,7 +47,7 @@ export type PracticeAccess = {
   freeAllowance: number;
   /** Sessions left before the upgrade card appears. */
   remaining: number;
-  canPractise: boolean;
+  canPractice: boolean;
 };
 
 export type PracticeReply =
@@ -77,7 +77,7 @@ type ModelReply = {
 
 /**
  * Gemini does not enforce response schemas, so parse its JSON loosely and
- * normalise the field names it actually emits (question vs reply, null close).
+ * normalize the field names it actually emits (question vs reply, null close).
  * Falls back to treating the raw text as a plain reply when it is not JSON.
  */
 function parseModelReply(text: string, forcedClose: boolean): ModelReply {
@@ -173,7 +173,7 @@ async function readAccess({ supabase: db, userId }: Ctx): Promise<PracticeAccess
     usedThisWeek,
     freeAllowance: FREE_WEEKLY_PRACTICE,
     remaining,
-    canPractise: subscribed || remaining > 0,
+    canPractice: subscribed || remaining > 0,
   };
 }
 
@@ -197,7 +197,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
     const opening = data.sessionId === null;
     const access = await readAccess(ctx);
-    if (opening && !access.canPractise) {
+    if (opening && !access.canPractice) {
       return {
         ok: false,
         upgrade: true,

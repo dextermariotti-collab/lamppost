@@ -84,7 +84,7 @@ describe("creating an account", () => {
     fillCredentials();
     expect(create().disabled).toBe(true);
     expect(googleButton().disabled).toBe(true);
-    expect(screen.getByText(/date of birth and tick the box/i)).toBeTruthy();
+    expect(screen.getByText(/date of birth and check the box/i)).toBeTruthy();
 
     fillBirth(yearsAgo(30));
     expect(create().disabled).toBe(true);

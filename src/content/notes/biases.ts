@@ -13,7 +13,7 @@ const biases: Record<string, LessonNotes> = {
       {
         term: "Confirmation bias",
         meaning:
-          "Favouring evidence that supports what you already believe, in how you search, read and remember.",
+          "Favoring evidence that supports what you already believe, in how you search, read and remember.",
       },
       {
         term: "Disconfirming evidence",
@@ -46,10 +46,10 @@ const biases: Record<string, LessonNotes> = {
 
   "biases-anchoring": {
     lessonId: "biases-anchoring",
-    hook: "The first number you hear on a subject sticks. It pulls every later estimate towards it, even when you know it means nothing.",
+    hook: "The first number you hear on a subject sticks. It pulls every later estimate toward it, even when you know it means nothing.",
     idea: [
       "In experiments, people who spin a wheel that lands on a high number go on to guess higher on an unrelated question than people whose wheel landed low. The number is obviously random, they know it is, and it still pulls. That pull is anchoring.",
-      "Anchors are everywhere: an asking price, a crossed-out “was £200”, a first offer in a negotiation, a forecast mentioned in passing. We adjust away from them, but not far enough. The defence is to form your own estimate from evidence before you hear anyone's number, then treat theirs as one more thing to weigh.",
+      "Anchors are everywhere: an asking price, a crossed-out “was $200,” a first offer in a negotiation, a forecast mentioned in passing. We adjust away from them, but not far enough. The defense is to form your own estimate from evidence before you hear anyone's number, then treat theirs as one more thing to weigh.",
     ],
     terms: [
       {
@@ -63,18 +63,18 @@ const biases: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A used car is listed at £9,500. After some haggling, Hana buys it for £8,200 and feels she got a great deal. Similar cars with the same mileage sold locally last month for between £7,000 and £7,800.",
+      case: "A used car is listed at $9,500. After some haggling, Hana buys it for $8,200 and feels she got a great deal. Similar cars with the same mileage sold locally last month for between $7,000 and $7,800.",
       moves: [
-        "Spot the anchor: £9,500. Every offer was judged against it, so £8,200 felt like a win.",
-        "Find the evidence about real value: recent local sales of similar cars, £7,000 to £7,800.",
-        "Against that, £8,200 is above the market, not a bargain.",
+        "Spot the anchor: $9,500. Every offer was judged against it, so $8,200 felt like a win.",
+        "Find the evidence about real value: recent local sales of similar cars, $7,000 to $7,800.",
+        "Against that, $8,200 is above the market, not a bargain.",
         "The better order: look up recent sales first, set a top price, then read the listing.",
       ],
     },
     subtleties: [
       {
         title: "Experts are anchored too",
-        body: "In one well-known study, estate agents valuing the same house gave higher values when shown a higher listing price, while insisting the price hadn't influenced them. Knowing about anchoring doesn't switch it off; changing the order you look at things does.",
+        body: "In one well-known study, real estate agents valuing the same house gave higher values when shown a higher listing price, while insisting the price hadn't influenced them. Knowing about anchoring doesn't switch it off; changing the order you look at things does.",
       },
       {
         title: "An anchor can be honest",
@@ -90,7 +90,7 @@ const biases: Record<string, LessonNotes> = {
     lessonId: "biases-availability",
     hook: "We judge how common something is by how easily examples come to mind. That works for everyday things and fails badly for anything vivid, rare or in the news.",
     idea: [
-      "Ease of recall stands in for frequency. Usually it's a decent guide: you remember rain more than snow because it rains more. But memory favours the vivid, the recent and the much-discussed, so dramatic events feel common and dull ones feel rare.",
+      "Ease of recall stands in for frequency. Usually it's a decent guide: you remember rain more than snow because it rains more. But memory favors the vivid, the recent and the much-discussed, so dramatic events feel common and dull ones feel rare.",
       "Plane crashes, shark attacks and break-ins on your street are easy to picture. Falls at home and slow illnesses are not, though they're far more common. When a risk feels big, ask for a rate: how many cases, out of how many people or trips, over what time? Then compare like with like.",
     ],
     terms: [
@@ -130,10 +130,10 @@ const biases: Record<string, LessonNotes> = {
 
   "biases-sunk-cost": {
     lessonId: "biases-sunk-cost",
-    hook: "Walking away from something you've put a lot into feels like waste. That feeling keeps people in bad projects, courses and queues long after they should leave.",
+    hook: "Walking away from something you've put a lot into feels like waste. That feeling keeps people in bad projects, classes and lines long after they should leave.",
     idea: [
       "A sunk cost is money, time or effort already spent that you can't get back, whatever you decide now. Because it's the same on every path, it can't make one path better than another. The only things that can are the costs and benefits still ahead.",
-      "The sunk cost fallacy is letting past spending decide: “we've spent £20,000 on this software, we can't stop now”. The useful question is the fresh-start one: if I were starting today, knowing what I now know, would I choose to spend what's still needed? If not, the past spending isn't a reason to carry on.",
+      "The sunk cost fallacy is letting past spending decide: “we've spent $20,000 on this software, we can't stop now.” The useful question is the fresh-start one: if I were starting today, knowing what I now know, would I choose to spend what's still needed? If not, the past spending isn't a reason to carry on.",
     ],
     terms: [
       {
@@ -166,7 +166,7 @@ const biases: Record<string, LessonNotes> = {
       },
       {
         title: "Quitting has costs too",
-        body: "Stopping can mean penalties, lost goodwill or a half-built thing that's useless. Those are future costs and they count. The rule isn't “quit more”; it's “weigh only what's still ahead”.",
+        body: "Stopping can mean penalties, lost goodwill or a half-built thing that's useless. Those are future costs and they count. The rule isn't “quit more”; it's “weigh only what's still ahead.”",
       },
     ],
     ask: "If I were starting fresh today, would I choose this?",
@@ -197,7 +197,7 @@ const biases: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Before a quiz night, Sam marks each of his 20 answers as either 50% or 90% sure, ten of each. Afterwards he checks: his 90% answers were right 6 times out of 10, and his 50% answers 5 times out of 10.",
+      case: "Before a quiz night, Sam marks each of his 20 answers as either 50% or 90% sure, ten of each. Afterward he checks: his 90% answers were right 6 times out of 10, and his 50% answers 5 times out of 10.",
       moves: [
         "Compare stated with actual: 90% stated, 60% actual. That band is overconfident.",
         "His 50% answers came out at 50%: well calibrated there.",

@@ -6,7 +6,7 @@ import { LEGAL_DOCS } from "./legal";
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 
 /**
- * Privacy, Terms, Acknowledgements and Support have to be reachable before someone has an
+ * Privacy, Terms, Acknowledgments and Support have to be reachable before someone has an
  * account, and from settings once they do. These checks keep a screen from quietly losing them.
  */
 describe("legal and support links", () => {

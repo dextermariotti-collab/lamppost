@@ -38,7 +38,7 @@ export function ThinkingGraph({
   const selected = edges.find((edge) => edge.key === selectedKey) ?? null;
   const currentUnitId = units.find((u) => u.state === "current")?.unit.id ?? units[0]?.unit.id;
 
-  // The skill practised most recently gets a soft glow, from real attempt times.
+  // The skill practiced most recently gets a soft glow, from real attempt times.
   const recentUnitId = useMemo(() => {
     let best: { unitId: string; at: number } | null = null;
     for (const [key, attempt] of Object.entries(readAttemptStore())) {

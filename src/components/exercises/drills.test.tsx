@@ -150,7 +150,7 @@ describe("highlight", () => {
     expect(screen.getByText(/0 of 2 found, 2 false alarms/)).toBeTruthy();
   });
 
-  it("says in words which words were the targets, not only in colour", () => {
+  it("says in words which words were the targets, not only in color", () => {
     check([1, 0]);
     expect(screen.getByRole("button", { name: /may.*one to tap, you got it/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /can.*one to tap, you missed it/ })).toBeTruthy();

@@ -97,7 +97,7 @@ export const PRIVACY: LegalDoc = {
       body: [
         `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, Check something you saw, and the extra practice drills used in reviews. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
         `We send it to Google's Gemini API, which runs a Google Gemini model. We don't send your email, name, handle, friends or account history. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
-        "The lessons themselves are written in advance and are not generated for you. AI-written replies are labelled in the app.",
+        "The lessons themselves are written in advance and are not generated for you. AI-written replies are labeled in the app.",
         "[CONFIRM: Google's terms for the Gemini API differ between unpaid use, where requests may be used to improve Google's products, and paid use, where they are not. Use a key from a billing-enabled project, check the current terms, and update this paragraph.]",
       ],
     },
@@ -207,15 +207,15 @@ export const TERMS: LegalDoc = {
     {
       heading: "What Lamppost is, and isn't",
       body: [
-        `${APP_NAME} is an educational app that helps you practise critical thinking. It is for learning and practice only.`,
+        `${APP_NAME} is an educational app that helps you practice critical thinking. It is for learning and practice only.`,
         "It is not professional advice of any kind: not medical, legal, financial, mental-health or safety advice. Don't rely on it for decisions like those.",
-        "We don't promise that using Lamppost will improve your grades, your job prospects or your judgement. What you get out of it depends on you.",
+        "We don't promise that using Lamppost will improve your grades, your job prospects or your judgment. What you get out of it depends on you.",
       ],
     },
     {
       heading: "AI-written content",
       body: [
-        "Some replies in Lamppost are written by an AI model, including the companion's questions, feedback on your writing, debates, and some practice drills. These are labelled. AI can be wrong, can sound sure when it isn't, and can miss things. The scores it gives are practice feedback, not an official assessment or qualification.",
+        "Some replies in Lamppost are written by an AI model, including the companion's questions, feedback on your writing, debates, and some practice drills. These are labeled. AI can be wrong, can sound sure when it isn't, and can miss things. The scores it gives are practice feedback, not an official assessment or qualification.",
         "The lessons are written in advance and checked by automated tests, but they can still contain mistakes. If you spot one, use the report button.",
         "Check anything important against a reliable source.",
       ],
@@ -229,7 +229,7 @@ export const TERMS: LegalDoc = {
             "harass, threaten, impersonate or target other people, including through names, handles or friend requests;",
             "try to get sexual, violent, hateful or dangerous content out of the AI features, or try to get around the safety rules;",
             "share other people's private information;",
-            "cheat the rewards system, use bots or scripts, or try to break, overload or gain unauthorised access to the service;",
+            "cheat the rewards system, use bots or scripts, or try to break, overload or gain unauthorized access to the service;",
             "copy the service or its content to resell it;",
             "use Lamppost in a way that breaks the law.",
           ],
@@ -241,7 +241,7 @@ export const TERMS: LegalDoc = {
       heading: "Your content",
       review: true,
       body: [
-        "You own what you write. To run the service you give us a limited licence to store it, process it, send it to the AI service that responds to it, and show it to the people you chose to share it with (for example, your opponent in a debate).",
+        "You own what you write. To run the service you give us a limited license to store it, process it, send it to the AI service that responds to it, and show it to the people you chose to share it with (for example, your opponent in a debate).",
         "Don't write anything you don't have the right to share.",
       ],
     },
@@ -254,7 +254,7 @@ export const TERMS: LegalDoc = {
     {
       heading: "Streaks, XP and badges",
       body: [
-        "Streaks, streak freezes, XP and badges are a record of your practice. They have no cash value, can't be sold or transferred, and can't be bought with money. Earlier versions of the app had gems, reward chests, hint tokens and companion cosmetics; those have been retired, and every companion colour and accessory is now free.",
+        "Streaks, streak freezes, XP and badges are a record of your practice. They have no cash value, can't be sold or transferred, and can't be bought with money. Earlier versions of the app had gems, reward chests, hint tokens and companion cosmetics; those have been retired, and every companion color and accessory is now free.",
       ],
     },
     {
@@ -320,7 +320,7 @@ export const HEALTH: LegalDoc = {
       heading: "Educational use only",
       review: true,
       body: [
-        "Lessons, drills, examples and AI replies are there to help you practise thinking clearly. They are not medical, legal, financial, mental-health, or safety advice, and they are not tailored to your situation.",
+        "Lessons, drills, examples and AI replies are there to help you practice thinking clearly. They are not medical, legal, financial, mental-health, or safety advice, and they are not tailored to your situation.",
         "Examples use made-up people, companies and products. Any resemblance to real ones is accidental.",
       ],
     },
@@ -422,7 +422,7 @@ export const COMMUNITY: LegalDoc = {
   title: "Community Guidelines & Reporting",
   summary: "How to behave, and how to report or block someone.",
   updated: LEGAL_UPDATED,
-  intro: `${APP_NAME} is a place to practise thinking with friends. It works when people are kind. Friends can see your name and companion, nudge you, and take part in streaks, debates and the league, and that's all: there is no messaging, and no way for a stranger to contact you.`,
+  intro: `${APP_NAME} is a place to practice thinking with friends. It works when people are kind. Friends can see your name and companion, nudge you, and take part in streaks, debates and the league, and that's all: there is no messaging, and no way for a stranger to contact you.`,
   sections: [
     {
       heading: "Not allowed",
@@ -431,8 +431,8 @@ export const COMMUNITY: LegalDoc = {
           list: [
             "Harassing, bullying, threatening or impersonating anyone.",
             "Offensive display names or handles.",
-            "Sexual content, and anything that sexualises or endangers a minor.",
-            "Hateful content that attacks or dehumanises people.",
+            "Sexual content, and anything that sexualizes or endangers a minor.",
+            "Hateful content that attacks or dehumanizes people.",
             "Encouraging self-harm.",
             "Instructions for violence, weapons or crime.",
             "Trying to get the AI to produce any of the above.",
@@ -494,7 +494,7 @@ export const DMCA: LegalDoc = {
       heading: "What we do",
       review: true,
       body: [
-        "[LEGAL REVIEW: designated agent details, jurisdiction and safe-harbour language must be completed by a lawyer.] We look into valid notices, remove or restrict material where appropriate, and accept a reply from the person affected.",
+        "[LEGAL REVIEW: designated agent details, jurisdiction and safe-harbor language must be completed by a lawyer.] We look into valid notices, remove or restrict material where appropriate, and accept a reply from the person affected.",
       ],
     },
   ],

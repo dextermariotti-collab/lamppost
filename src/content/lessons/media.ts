@@ -53,14 +53,14 @@ const media: Record<string, LessonScript> = {
           },
         ],
         fallacy: "Headline goes past the finding",
-        hint: "Compare “60 students at one university” with “science proves”.",
+        hint: "Compare “60 students at one university” with “science proves.”",
         why: "A small study can suggest a link, not prove that sleep makes anyone smarter. The headline drops the size, the place and the caution.",
       },
       {
         id: "walking",
         kind: "sort",
         prompt:
-          "A small trial: 40 adults, six weeks. A walking group lost 2 kg more than a non-walking group. Sort each headline claim.",
+          "A small trial: 40 adults, six weeks. A walking group lost 4 pounds more than a non-walking group. Sort each headline claim.",
         buckets: [
           { id: "supported", label: "The study supports it" },
           { id: "beyond", label: "Goes beyond the study" },
@@ -203,7 +203,7 @@ const media: Record<string, LessonScript> = {
           },
         ],
         hint: "The evidence is what the study actually found.",
-        why: "Criticising a headline works like any argument. Say what it gets wrong, why that matters, and what the study shows.",
+        why: "Criticizing a headline works like any argument. Say what it gets wrong, why that matters, and what the study shows.",
       },
       {
         id: "cheese",
@@ -261,7 +261,7 @@ const media: Record<string, LessonScript> = {
     written: {
       prompt: "Say what is misleading about the chart and how you would redraw it.",
       passage:
-        "A chart from Brightfield Energy shows the average monthly bill falling steeply, with the caption “Bills are plummeting!” The vertical axis runs only from £118 to £122. The line starts in March, the month bills were highest, and ends in August.",
+        "A chart from Brightfield Energy shows the average monthly bill falling steeply, with the caption “Bills are plummeting!” The vertical axis runs only from $118 to $122. The line starts in March, the month bills were highest, and ends in August.",
       guidance: "Name the axis, the window, and what the change is in real terms.",
     },
     steps: [
@@ -298,7 +298,7 @@ const media: Record<string, LessonScript> = {
             whyNot: "The caption is punchy, but the trick is in how the chart is drawn.",
           },
           {
-            text: "The vertical axis runs only from £118 to £122.",
+            text: "The vertical axis runs only from $118 to $122.",
             tappable: true,
             flaw: true,
           },
@@ -310,7 +310,7 @@ const media: Record<string, LessonScript> = {
         ],
         fallacy: "Cut-off axis",
         hint: "How much range is the axis showing?",
-        why: "A drop from £122 to £118 is about 3%. Cutting the axis to that narrow range makes it look like a collapse.",
+        why: "A drop from $122 to $118 is about 3%. Cutting the axis to that narrow range makes it look like a collapse.",
       },
       {
         id: "points",
@@ -357,7 +357,7 @@ const media: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "Axes labelled in units, with dates and the source.",
+            text: "Axes labeled in units, with dates and the source.",
             bucket: "honest",
             why: "You can check what is shown and where it came from.",
           },
@@ -383,8 +383,8 @@ const media: Record<string, LessonScript> = {
         prompt:
           "A chart shows shops that spend more on ads sell more. Switch on the hidden variable, then say what is going on.",
         scenario: "Each dot is a shop in the Marlow Market group.",
-        xLabel: "Ad spend (£100s a month)",
-        yLabel: "Sales (£1,000s a month)",
+        xLabel: "Ad spend ($100s a month)",
+        yLabel: "Sales ($1,000s a month)",
         hiddenLabel: "Shop size",
         groups: [
           {
@@ -443,7 +443,7 @@ const media: Record<string, LessonScript> = {
           },
           { text: "Sales in that first month were typical of its usual level." },
           {
-            text: "The chart has a clear title and labelled axes.",
+            text: "The chart has a clear title and labeled axes.",
             whyNot: "A clear title doesn't tell you whether the start point is fair.",
           },
         ],
@@ -472,7 +472,7 @@ const media: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "The numbers are right. What's misleading about the chart?",
         stimulus:
-          "A council leaflet's line chart, titled “Crime falls!”, shows reported burglaries from March to August: 120 down to 85. Full-year figures show burglaries dip every summer, and last year's total was 1,100, the same as the year before.",
+          "A council flyer's line chart, titled “Crime falls!,” shows reported burglaries from March to August: 120 down to 85. Full-year figures show burglaries dip every summer, and last year's total was 1,100, the same as the year before.",
         options: [
           {
             text: "Nothing: burglaries really did fall from 120 to 85.",
@@ -507,7 +507,7 @@ const media: Record<string, LessonScript> = {
       prompt:
         "Point out where the message pressures you, and say what you would want to know before deciding.",
       passage:
-        "An email from Skyline Tickets reads: “Only 2 seats left! 47 people are looking at this flight right now! Book in the next 10 minutes or lose this price forever. Don't be the one who missed out.” Last week the same message arrived with “3 seats left”.",
+        "An email from Skyline Tickets reads: “Only 2 seats left! 47 people are looking at this flight right now! Book in the next 10 minutes or lose this price forever. Don't be the one who missed out.” Last week the same message arrived with “3 seats left.”",
       guidance: "Separate any real facts from the pressure, and say how you could check them.",
     },
     steps: [
@@ -541,7 +541,7 @@ const media: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "I'm heartbroken: our library closes on 1 March. The council vote was 5 to 4.",
+            text: "I'm heartbroken: our library closes on March 1. The council vote was 5 to 4.",
             bucket: "honest",
             why: "It shows strong feeling and states facts that can be checked.",
           },
@@ -586,7 +586,7 @@ const media: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "A message says: “Twelve children on Ash Ward have no winter coats. £20 buys one. Our full accounts are on our site.” What does it do?",
+          "A message says: “Twelve children on Ash Ward have no winter coats. $20 buys one. Our full accounts are on our site.” What does it do?",
         options: [
           { text: "Uses feeling, but gives facts you can check." },
           {
@@ -608,7 +608,7 @@ const media: Record<string, LessonScript> = {
         noun: "Message",
         prompt: "Which message respects the reader?",
         a: "Sign up now before it's too late! Everyone's doing it!",
-        b: "Registration closes 30 June because the hall holds 80 people. 61 places are taken.",
+        b: "Registration closes June 30 because the hall holds 80 people. 61 places are taken.",
         stronger: "b",
         factor: "It gives a real reason for the deadline",
         weakerWhy: "The deadline and the crowd are unexplained, so all they do is rush you.",
@@ -661,7 +661,7 @@ const media: Record<string, LessonScript> = {
             id: "px",
             text: "The email has a green button.",
             role: null,
-            note: "The colour of a button says nothing about the deadline.",
+            note: "The color of a button says nothing about the deadline.",
           },
         ],
         hint: "The evidence is a pattern you could look up.",
@@ -684,7 +684,7 @@ const media: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "What does the pressure hope you won't do?",
-        why: "Time to check is the best defence. Verify the claim, then decide.",
+        why: "Time to check is the best defense. Verify the claim, then decide.",
       },
       {
         id: "together",
@@ -692,10 +692,10 @@ const media: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Before deciding, what should you check first?",
         stimulus:
-          "An email: “Hi, it's Alex from Mapleway Gym! We've noticed you haven't visited in a while. Your rate of £25 a month is locked in, but only if you renew by midnight tonight. After that it rises to £39. 47 members renewed today!”",
+          "An email: “Hi, it's Alex from Mapleway Gym! We've noticed you haven't visited in a while. Your rate of $25 a month is locked in, but only if you renew by midnight tonight. After that it rises to $39. 47 members renewed today!”",
         options: [
           {
-            text: "Whether the £39 price and midnight deadline are in the terms.",
+            text: "Whether the $39 price and midnight deadline are in the terms.",
           },
           {
             text: "Whether 47 members really renewed today, by asking the gym.",
@@ -958,7 +958,7 @@ const media: Record<string, LessonScript> = {
     written: {
       prompt: "Say what you would check first about this source, and where you would look.",
       passage:
-        "A site called the Pinewood Health Council says a herbal supplement cures tiredness. Its About page calls it “independent and trusted”. The page has a clean design, several quotes from happy customers, and a shop link to the supplement.",
+        "A site called the Pinewood Health Council says a herbal supplement cures tiredness. Its About page calls it “independent and trusted.” The page has a clean design, several quotes from happy customers, and a shop link to the supplement.",
       guidance:
         "Plan your checks outside the page. What would you search, and what would you hope to learn?",
     },
@@ -999,7 +999,7 @@ const media: Record<string, LessonScript> = {
           },
           {
             id: "5",
-            text: "Read the banner that says “Trusted by millions”.",
+            text: "Read the banner that says “Trusted by millions.”",
             bucket: "own",
             why: "It is the site praising itself.",
           },
@@ -1040,7 +1040,7 @@ const media: Record<string, LessonScript> = {
             whyNot: "Wanting to check is the right start.",
           },
           {
-            text: "Its About page says it is “independent and trusted”, so she decides it is.",
+            text: "Its About page says it is “independent and trusted,” so she decides it is.",
             tappable: true,
             flaw: true,
           },
@@ -1143,7 +1143,7 @@ const media: Record<string, LessonScript> = {
           },
         ],
         hint: "The evidence is something you found outside the site.",
-        why: "A judgement about a source is strongest when it rests on independent evidence you can point to.",
+        why: "A judgment about a source is strongest when it rests on independent evidence you can point to.",
       },
       {
         id: "together",
@@ -1151,7 +1151,7 @@ const media: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A friend shares this article. What's the best first move to judge the source?",
         stimulus:
-          "The article is from “Parents for Safe Screens”, a site saying a popular new game harms children's sleep. The site looks professional, cites “recent research” without links, and its About page says it is “a grassroots group of concerned parents”.",
+          "The article is from “Parents for Safe Screens,” a site saying a popular new game harms children's sleep. The site looks professional, cites “recent research” without links, and its About page says it is “a grassroots group of concerned parents.”",
         options: [
           {
             text: "Read the whole article carefully to see if it sounds convincing.",

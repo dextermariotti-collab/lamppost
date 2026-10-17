@@ -48,7 +48,7 @@ describe("acceptableHistory", () => {
     expect(acceptableHistory(history, now)).toEqual([["2026-09-20", 2]]);
   });
 
-  it("returns newest first and honours the limit", () => {
+  it("returns newest first and honors the limit", () => {
     const history = { "2026-09-21": 1, "2026-09-23": 1, "2026-09-22": 1 };
     expect(acceptableHistory(history, now, 2).map(([day]) => day)).toEqual([
       "2026-09-23",

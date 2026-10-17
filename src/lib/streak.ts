@@ -21,7 +21,7 @@ export type StreakState = {
  * motivates while there's an escape valve. Every 7th day earns a freeze back.
  */
 export function advanceStreak(prev: StreakState, today: string) {
-  // Same day — or a clock that is behind the last active day (travelled west):
+  // Same day — or a clock that is behind the last active day (traveled west):
   // either way no new day has been earned.
   if (prev.lastActiveDay !== null && prev.lastActiveDay >= today) {
     return {

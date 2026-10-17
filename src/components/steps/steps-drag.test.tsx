@@ -52,7 +52,7 @@ describe("Sort it", () => {
 
   it("shows one card at a time with every bucket in reach, and no Check until all are filed", async () => {
     mount();
-    expect(card(/40 metres.*not sorted yet/)).toBeTruthy();
+    expect(card(/130 feet.*not sorted yet/)).toBeTruthy();
     expect(screen.getByText("Card 1 of 3")).toBeTruthy();
     expect(bucketButton("Fact")).toBeTruthy();
     expect(bucketButton("Opinion")).toBeTruthy();
@@ -63,7 +63,7 @@ describe("Sort it", () => {
   it("files the card with one tap on a bucket and brings the next", async () => {
     mount();
     putIn("Fact");
-    expect(inBucket("Fact", /40 metres/)).toBeTruthy();
+    expect(inBucket("Fact", /130 feet/)).toBeTruthy();
     expect(screen.getByText("Card 2 of 3")).toBeTruthy();
     expect(card(/ugly.*not sorted yet/)).toBeTruthy();
   });
@@ -92,28 +92,28 @@ describe("Sort it", () => {
 
   it("can be done entirely from the keyboard: Enter selects, Enter places, Escape puts it back", async () => {
     mount();
-    const first = card(/40 metres/);
+    const first = card(/130 feet/);
     first.focus();
     fireEvent.click(first); // Enter/Space on a button is a click
     expect(first.getAttribute("aria-pressed")).toBe("true");
-    expect(document.body.textContent).toContain("Selected: The Harbour Bridge is 40 metres long.");
+    expect(document.body.textContent).toContain("Selected: The Harbor Bridge is 130 feet long.");
     fireEvent.keyDown(first, { key: "Escape" });
-    expect(card(/40 metres/).getAttribute("aria-pressed")).toBe("false");
+    expect(card(/130 feet/).getAttribute("aria-pressed")).toBe("false");
     const put = bucketButton("Fact");
     put.focus();
     fireEvent.click(put);
-    expect(inBucket("Fact", /40 metres/)).toBeTruthy();
+    expect(inBucket("Fact", /130 feet/)).toBeTruthy();
   });
 
   it("sorts by dragging the card onto a bucket", async () => {
     mount();
-    await drag(card(/40 metres/), bucketButton("Opinion"));
-    expect(inBucket("Opinion", /40 metres/)).toBeTruthy();
+    await drag(card(/130 feet/), bucketButton("Opinion"));
+    expect(inBucket("Opinion", /130 feet/)).toBeTruthy();
   });
 
   it("leaves the card where it was when dropped on nothing", async () => {
     mount();
-    await drag(card(/40 metres/), document.body);
+    await drag(card(/130 feet/), document.body);
     expect(
       within(screen.getByRole("group", { name: "Card to sort" })).getByText("Card 1 of 3"),
     ).toBeTruthy();
@@ -123,29 +123,29 @@ describe("Sort it", () => {
   it("lets a filed card be moved by tapping it and then another bucket", async () => {
     mount();
     putIn("Fact");
-    fireEvent.click(inBucket("Fact", /40 metres/)!);
+    fireEvent.click(inBucket("Fact", /130 feet/)!);
     expect(screen.getByText("Moving this one")).toBeTruthy();
     putIn("Opinion");
-    expect(inBucket("Opinion", /40 metres/)).toBeTruthy();
-    expect(inBucket("Fact", /40 metres/)).toBeNull();
+    expect(inBucket("Opinion", /130 feet/)).toBeTruthy();
+    expect(inBucket("Fact", /130 feet/)).toBeNull();
     expect(card(/ugly.*not sorted yet/)).toBeTruthy();
   });
 
   it("lets a filed card be dragged to another bucket, or back to the card slot", async () => {
     mount();
     putIn("Fact");
-    await drag(inBucket("Fact", /40 metres/)!, bucketButton("Opinion"));
-    expect(inBucket("Opinion", /40 metres/)).toBeTruthy();
+    await drag(inBucket("Fact", /130 feet/)!, bucketButton("Opinion"));
+    expect(inBucket("Opinion", /130 feet/)).toBeTruthy();
     await drag(
-      inBucket("Opinion", /40 metres/)!,
+      inBucket("Opinion", /130 feet/)!,
       screen.getByRole("group", { name: "Card to sort" }),
     );
-    expect(card(/40 metres.*not sorted yet/)).toBeTruthy();
+    expect(card(/130 feet.*not sorted yet/)).toBeTruthy();
   });
 
   it("marks right and wrong with a tick, a cross and words, says why beside each miss, and keeps the right ones on retry", async () => {
     const onResolve = mount();
-    putIn("Fact"); // 40 metres: right
+    putIn("Fact"); // 130 feet: right
     putIn("Fact"); // ugly: wrong
     putIn("Fact"); // 1998: right
     click("Check my sorting");
@@ -155,11 +155,11 @@ describe("Sort it", () => {
     expect(document.getElementById(wrong.getAttribute("aria-describedby")!)!.textContent).toContain(
       "Ugly is a taste",
     );
-    expect(inBucket("Fact", /40 metres.*correct/)!.className).toMatch(/border-success/);
+    expect(inBucket("Fact", /130 feet.*correct/)!.className).toMatch(/border-success/);
     expect(onResolve).not.toHaveBeenCalled();
 
     click("Try again");
-    expect(inBucket("Fact", /40 metres/)).toBeTruthy();
+    expect(inBucket("Fact", /130 feet/)).toBeTruthy();
     expect(inBucket("Fact", /ugly/)).toBeNull();
     expect(card(/ugly.*not sorted yet/)).toBeTruthy();
     putIn("Opinion");
@@ -201,7 +201,7 @@ describe("Sort it", () => {
     click("Check my sorting");
     click("Show me");
     expect(onResolve.mock.calls[0]![0]).toMatchObject({ score: 0, revealed: true });
-    expect(inBucket("Fact", /40 metres/)).toBeTruthy();
+    expect(inBucket("Fact", /130 feet/)).toBeTruthy();
   });
 });
 
