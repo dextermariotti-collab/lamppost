@@ -21,7 +21,8 @@ API key of its own (`docs/deploy.md`).
   browser or a real value is committed.
 - **Architecture.** `docs/architecture.md` has the October 2026 review: what is solid, how to extend
   each part, and the roadmap in order. `src/architecture.test.ts` enforces the structural rules below.
-- **Migrations** live in `supabase/migrations/` only (`npm run db:push` applies them in order). Add
+- **Migrations** live in `supabase/migrations/` only. The Supabase workflow (`.github/workflows/supabase.yml`)
+  applies new ones in order when they are pushed, and `npm run db:push` does the same by hand. Add
   new SQL there with a later timestamp than the newest file. The four `20260920…` files are the
   former `drizzle/migrations`, folded in at the point Lovable used to apply them.
 

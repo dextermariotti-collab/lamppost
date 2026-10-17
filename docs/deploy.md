@@ -27,7 +27,15 @@ ignored by git: never commit it.
 
 1. Create a project at supabase.com. From **Project Settings → API** copy the URL, the publishable
    key and the secret (service role) key into `.env` (see `.env.example` for which goes where).
-2. Build the database. This applies every file in `supabase/migrations` in order:
+2. Build the database. The **Supabase** workflow (`.github/workflows/supabase.yml`) applies every
+   new file in `supabase/migrations`, in order, whenever one is pushed. It needs two repository
+   secrets under **GitHub → Settings → Secrets and variables → Actions**:
+   - `SUPABASE_ACCESS_TOKEN`: a personal access token from supabase.com → Account → Access Tokens.
+   - `SUPABASE_DB_PASSWORD`: the database password (Project Settings → Database; reset it there if
+     you don't have it).
+
+   The project it deploys to is set in the workflow (`SUPABASE_PROJECT_ID`). To run the same thing
+   from your own machine instead:
 
    ```sh
    npx supabase@2.118.0 login
