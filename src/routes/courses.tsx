@@ -170,10 +170,9 @@ function UnitCard({
       <ol
         id={panelId}
         hidden={!open}
-        className="relative mb-3 ml-0.5 pl-0"
+        className="relative mb-3 ml-0.5 pl-0 before:absolute before:top-5 before:bottom-5 before:left-[9px] before:w-1.5 before:bg-[var(--line)]"
         style={{ "--line": accent.color } as CSSProperties}
       >
-        <span aria-hidden className="absolute top-5 bottom-5 left-[9px] w-1.5 bg-[var(--line)]" />
         {checkFirst && <CheckStop unit={unit} checks={checks} />}
         {unit.lessons.map((lesson) => {
           const index = lessonIndexOf(lesson.id);

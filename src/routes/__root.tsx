@@ -5,73 +5,90 @@ import {
   createRootRouteWithContext,
   useRouter,
   HeadContent,
+  ScriptOnce,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AnswerFeedbackHost } from "../components/AnswerFeedback";
 import { ConsentGate } from "../components/ConsentGate";
 import { NativeShell } from "../components/NativeShell";
+import { PhoneFrame } from "../components/PhoneFrame";
 import { RewardHost } from "../components/RewardHost";
 import { UpkeepWatcher } from "../components/UpkeepWatcher";
-import { ThemeProvider } from "../lib/theme";
+import { Button } from "../components/ui/button";
+import { THEME_SCRIPT, ThemeProvider } from "../lib/theme";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <PhoneFrame>
+      <div className="px-5 pt-12 pb-10">
+        <p className="legend text-muted-foreground">404</p>
+        <h1 className="mt-2 text-3xl leading-tight">Page not found</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+        <Button asChild className="mt-6 h-11 w-full rounded-sm font-semibold">
+          <Link to="/">Go home</Link>
+        </Button>
       </div>
-    </div>
+    </PhoneFrame>
+  );
+}
+
+const subscribeOnline = (onChange: () => void) => {
+  window.addEventListener("online", onChange);
+  window.addEventListener("offline", onChange);
+  return () => {
+    window.removeEventListener("online", onChange);
+    window.removeEventListener("offline", onChange);
+  };
+};
+
+/** False only when the device says it has no connection; the server render assumes one. */
+function useOnline() {
+  return useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true,
   );
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
+  const online = useOnline();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <PhoneFrame>
+      <div className="px-5 pt-12 pb-10">
+        <h1 className="text-3xl leading-tight">
+          {online ? "This page didn't load" : "You're offline"}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {online
+            ? "Something went wrong on our end. You can try again or head back home."
+            : "This page needs a connection. Check your Wi-Fi or mobile data, then try again."}
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
+        <div className="mt-6 flex flex-col gap-2">
+          <Button
+            type="button"
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="h-11 w-full rounded-sm font-semibold"
           >
             Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
+          </Button>
+          <Button asChild variant="outline" className="h-11 w-full rounded-sm font-semibold">
+            <a href="/">Go home</a>
+          </Button>
         </div>
       </div>
-    </div>
+    </PhoneFrame>
   );
 }
 
@@ -109,9 +126,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    // The head script below sets the theme class on <html> before React hydrates it.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <ScriptOnce>{THEME_SCRIPT}</ScriptOnce>
       </head>
       <body>
         {children}

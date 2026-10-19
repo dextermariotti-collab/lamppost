@@ -97,6 +97,13 @@ describe("Friends league screen", () => {
     expect(screen.getByText(/you're in silver/i)).toBeTruthy();
   });
 
+  it("writes the week's date the American way", async () => {
+    h.getLeague.mockResolvedValue(view([member("a", 1300, 1), member("me", 120, 2)]));
+    await mount();
+    expect(await screen.findByText(/Week of Sep 28\./)).toBeTruthy();
+    expect(screen.getByText("1,300 XP")).toBeTruthy();
+  });
+
   it("tells a learner with no friends to add some, without a table of one", async () => {
     h.getLeague.mockResolvedValue(view([member("me", 0, null)]));
     await mount();

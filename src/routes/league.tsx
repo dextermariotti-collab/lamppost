@@ -39,7 +39,7 @@ export const Route = createFileRoute("/league")({
 });
 
 const weekLabel = (weekStart: string) =>
-  new Date(`${weekStart}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  new Date(`${weekStart}T12:00:00`).toLocaleDateString("en-US", { day: "numeric", month: "short" });
 
 function LeagueScreen() {
   const { userId, ready } = useSessionUser();
@@ -203,7 +203,7 @@ function Row({ member }: { member: LeagueMember }) {
         <span className="block text-xs text-muted-foreground">{tierName(member.tier)}</span>
       </span>
       <span className="shrink-0 text-sm font-bold text-foreground">
-        {member.weeklyXp.toLocaleString("en-GB")} XP
+        {member.weeklyXp.toLocaleString("en-US")} XP
       </span>
     </li>
   );
@@ -224,7 +224,7 @@ function LastWeek({ result }: { result: LeagueLastWeek }) {
       <p className="text-sm font-bold text-foreground">{headline}</p>
       <p className="mt-1 text-[13px] text-muted-foreground">
         {result.reason} Week of {weekLabel(result.weekStart)},{" "}
-        {result.weeklyXp.toLocaleString("en-GB")} XP.
+        {result.weeklyXp.toLocaleString("en-US")} XP.
       </p>
     </section>
   );

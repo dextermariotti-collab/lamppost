@@ -7,12 +7,19 @@ import type { FriendRow, FriendsSnapshot } from "@/lib/friends.functions";
 
 const h = vi.hoisted(() => ({
   friends: null as unknown,
+  friendsError: false,
+  refetch: vi.fn(),
   refresh: vi.fn(),
 }));
 
 vi.mock("@/lib/account", () => ({
   useAccount: () => ({ signedIn: true, sessionReady: true }),
-  useFriends: () => ({ data: h.friends, isLoading: false }),
+  useFriends: () => ({
+    data: h.friends,
+    isLoading: false,
+    isError: h.friendsError,
+    refetch: h.refetch,
+  }),
   useIncomingNudges: () => ({ data: [] }),
   useRefreshAccount: () => h.refresh,
 }));
@@ -96,6 +103,8 @@ const mount = () =>
 
 beforeEach(() => {
   h.friends = snapshot();
+  h.friendsError = false;
+  h.refetch.mockReset();
 });
 afterEach(cleanup);
 
@@ -133,6 +142,49 @@ describe("Friends screen", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show QR code" }));
     expect(document.querySelector("img[src*='qrserver']")).not.toBeNull();
     expect(screen.getByText(/third-party QR service/i)).toBeTruthy();
+  });
+
+  it("says the list couldn't load, with a retry, instead of claiming there are no friends", () => {
+    h.friends = undefined;
+    h.friendsError = true;
+    mount();
+    expect(screen.getByRole("alert").textContent).toMatch(/couldn.t load/i);
+    expect(screen.queryByText(/add friends to keep/i)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(h.refetch).toHaveBeenCalled();
+  });
+
+  it("gives every button a 44px target", () => {
+    h.friends = snapshot({
+      friends: [
+        friend("open", true),
+        {
+          ...friend("streaky", true),
+          sharedStreak: {
+            id: "s1",
+            status: "active",
+            count: 3,
+            proposedByMe: false,
+            extendedToday: false,
+          },
+        },
+      ],
+      outgoing: [
+        {
+          id: "waiting",
+          displayName: "Waiting",
+          handle: "waiting",
+          currentStreak: null,
+          sharesProgress: false,
+          companion,
+          friendshipId: "f-out",
+        },
+      ],
+    });
+    mount();
+    for (const button of screen.getAllByRole("button")) {
+      expect(button.className, button.textContent ?? "").toMatch(/\b(min-h-11|h-11)\b/);
+    }
   });
 
   it("doesn't show anything about a searched stranger beyond name and handle", () => {

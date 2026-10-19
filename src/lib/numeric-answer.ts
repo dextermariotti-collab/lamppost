@@ -21,7 +21,7 @@ const PREFIX_UNITS = new Set(["£", "$", "€"]);
 
 /** "100 people", "10%", "£1,200": a value with its unit in the natural place. */
 export function formatWithUnit(value: number, unit = ""): string {
-  const shown = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(value);
+  const shown = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value);
   const u = unit.trim();
   if (!u) return shown;
   if (PREFIX_UNITS.has(u)) return `${u}${shown}`;

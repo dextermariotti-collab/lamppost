@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 export type Theme = "light" | "dark";
 
-const STORAGE_KEY = "lamppost-theme";
+export const THEME_KEY = "lamppost-theme";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -16,24 +16,45 @@ function applyTheme(theme: Theme) {
   document.documentElement.style.colorScheme = theme;
 }
 
+/** The saved choice, else the device's preference. Storage can be blocked (private mode). */
+function initialTheme(): Theme {
+  let stored: string | null = null;
+  try {
+    stored = window.localStorage.getItem(THEME_KEY);
+  } catch {
+    /* fall through to the device's preference */
+  }
+  if (stored === "light" || stored === "dark") return stored;
+  return typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+/**
+ * Runs in the page's head before anything is painted, so a dark page never flashes light
+ * while the app loads. It makes the same choice as `initialTheme`.
+ */
+export const THEME_SCRIPT = `(function(){var t=null;try{t=localStorage.getItem(${JSON.stringify(
+  THEME_KEY,
+)})}catch(e){}if(t!=="light"&&t!=="dark"){try{t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){t="light"}}var d=document.documentElement;d.classList.toggle("dark",t==="dark");d.style.colorScheme=t})()`;
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const initial =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+    const initial = initialTheme();
     setThemeState(initial);
     applyTheme(initial);
   }, []);
 
   const setTheme = (nextTheme: Theme) => {
     setThemeState(nextTheme);
-    window.localStorage.setItem(STORAGE_KEY, nextTheme);
+    try {
+      window.localStorage.setItem(THEME_KEY, nextTheme);
+    } catch {
+      /* the choice still applies to this visit */
+    }
     applyTheme(nextTheme);
   };
 

@@ -31,12 +31,6 @@ export function ProgressRing({
           strokeWidth={stroke}
           className="stroke-muted"
         />
-        <defs>
-          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--primary-glow)" />
-            <stop offset="100%" stopColor="var(--primary)" />
-          </linearGradient>
-        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -44,7 +38,7 @@ export function ProgressRing({
           fill="none"
           strokeWidth={stroke}
           strokeLinecap="round"
-          stroke="url(#ringGrad)"
+          className="stroke-primary"
           strokeDasharray={c}
           strokeDashoffset={c - (c * clamped) / 100}
           style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1)" }}

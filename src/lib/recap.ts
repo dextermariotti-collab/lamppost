@@ -50,9 +50,9 @@ export function recapHeadline(recap: WeeklyRecap): string {
 /** The small facts under it, each one true and countable. */
 export function recapFacts(recap: WeeklyRecap): string[] {
   const facts: string[] = [];
-  if (recap.xp !== null) facts.push(`${recap.xp.toLocaleString("en-GB")} XP earned`);
+  if (recap.xp !== null) facts.push(`${recap.xp.toLocaleString("en-US")} XP earned`);
   if (recap.bestDay) {
-    const weekday = new Date(`${recap.bestDay.day}T12:00:00Z`).toLocaleDateString("en-GB", {
+    const weekday = new Date(`${recap.bestDay.day}T12:00:00Z`).toLocaleDateString("en-US", {
       weekday: "long",
       timeZone: "UTC",
     });

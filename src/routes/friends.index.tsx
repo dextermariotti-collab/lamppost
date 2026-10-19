@@ -61,7 +61,7 @@ export const Route = createFileRoute("/friends/")({
 
 function FriendsScreen() {
   const { signedIn, sessionReady } = useAccount();
-  const { data, isLoading } = useFriends();
+  const { data, isLoading, isError, refetch } = useFriends();
   const { data: nudges } = useIncomingNudges();
   const refresh = useRefreshAccount();
   const navigate = useNavigate();
@@ -136,7 +136,7 @@ function FriendsScreen() {
             </p>
             <button
               onClick={() => void run("nudges", () => markNudgesRead())}
-              className="text-xs text-muted-foreground underline"
+              className="-my-3 min-h-11 min-w-11 text-xs text-muted-foreground underline"
             >
               Dismiss
             </button>
@@ -156,7 +156,11 @@ function FriendsScreen() {
           {searching ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : null}
         </div>
 
-        {error ? <p className="mt-2 text-xs text-flame">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="mt-2 text-xs font-semibold text-destructive">
+            {error}
+          </p>
+        ) : null}
 
         {results.length > 0 ? (
           <ul className="mt-3">
@@ -176,7 +180,7 @@ function FriendsScreen() {
                     void run(person.id, () => sendFriendRequest({ data: { userId: person.id } }))
                   }
                   disabled={busy === person.id}
-                  className="rounded-sm bg-hero-gradient px-4 py-2 text-xs font-bold text-primary-foreground shadow-card disabled:opacity-60"
+                  className="min-h-11 rounded-sm bg-hero-gradient px-4 text-xs font-bold text-primary-foreground shadow-card disabled:opacity-60"
                 >
                   Add
                 </button>
@@ -242,7 +246,7 @@ function FriendsScreen() {
                 setCopied(true);
                 window.setTimeout(() => setCopied(false), 1600);
               }}
-              className="flex items-center gap-1 rounded-sm bg-muted px-3 py-1.5 text-xs font-bold"
+              className="flex min-h-11 items-center gap-1 rounded-sm bg-muted px-3 text-xs font-bold"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "Copied" : "Share"}
@@ -361,7 +365,7 @@ function FriendsScreen() {
                         removeFriend({ data: { friendshipId: person.friendshipId } }),
                       )
                     }
-                    className="text-xs text-muted-foreground underline"
+                    className="min-h-11 min-w-11 text-xs text-muted-foreground underline"
                   >
                     Cancel
                   </button>
@@ -377,6 +381,19 @@ function FriendsScreen() {
           {isLoading ? (
             <div className="flex justify-center py-10">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : isError && !data ? (
+            <div className="mt-3 rounded-3xl bg-card p-5 text-center shadow-soft">
+              <p role="alert" className="text-sm font-bold">
+                Your friends couldn&apos;t load just now.
+              </p>
+              <button
+                type="button"
+                onClick={() => void refetch()}
+                className="mt-3 min-h-11 w-full rounded-sm bg-muted px-4 text-sm font-bold"
+              >
+                Try again
+              </button>
             </div>
           ) : (data?.friends.length ?? 0) === 0 ? (
             <div className="mt-3 rounded-3xl bg-card p-5 text-center shadow-soft">
@@ -439,7 +456,7 @@ function FriendsScreen() {
                             )
                           }
                           disabled={busy === key || atCap}
-                          className="rounded-sm bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
+                          className="min-h-11 rounded-sm bg-muted px-3 text-xs font-bold disabled:opacity-50"
                         >
                           {atCap
                             ? `Max ${MAX_SHARED_STREAKS} shared streaks`
@@ -460,7 +477,7 @@ function FriendsScreen() {
                                   }),
                                 )
                               }
-                              className="rounded-sm bg-hero-gradient px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-card"
+                              className="min-h-11 rounded-sm bg-hero-gradient px-3 text-xs font-bold text-primary-foreground shadow-card"
                             >
                               Accept shared streak
                             </button>
@@ -472,7 +489,7 @@ function FriendsScreen() {
                                   }),
                                 )
                               }
-                              className="text-xs text-muted-foreground underline"
+                              className="min-h-11 min-w-11 text-xs text-muted-foreground underline"
                             >
                               Decline
                             </button>
@@ -499,7 +516,7 @@ function FriendsScreen() {
                                 )
                               }
                               disabled={friend.nudgedToday || busy === key}
-                              className="rounded-sm bg-muted px-3 py-1.5 text-xs font-bold disabled:opacity-50"
+                              className="min-h-11 rounded-sm bg-muted px-3 text-xs font-bold disabled:opacity-50"
                             >
                               {friend.nudgedToday ? "Nudged today" : "Nudge"}
                             </button>

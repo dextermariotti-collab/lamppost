@@ -42,7 +42,13 @@ function LookScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LookResult | null>(null);
-  const ready = lookInputProblem(text) === null;
+  const length = text.trim().length;
+  const problem = lookInputProblem(text);
+  const ready = problem === null;
+  const hint =
+    length < LOOK_TEXT.min
+      ? `At least ${LOOK_TEXT.min} characters. For a short headline, add the line under it or where you saw it.`
+      : problem;
 
   const submit = async () => {
     if (!ready || busy) return;
@@ -113,13 +119,19 @@ function LookScreen() {
               onChange={(event) => setText(event.target.value)}
               readOnly={busy}
               rows={7}
-              maxLength={LOOK_TEXT.max}
+              aria-describedby="look-text-count"
               placeholder="Paste it here, or type out the part that caught your eye."
               className="mt-2 w-full resize-none rounded-sm border-2 border-edge bg-card px-4 py-3 text-[15px] leading-relaxed text-foreground outline-none focus-visible:border-foreground"
             />
-            <p className="mt-1 text-right font-mono text-xs text-muted-foreground">
-              {text.trim().length} / {LOOK_TEXT.max}
-            </p>
+            <div
+              id="look-text-count"
+              className="mt-1 flex items-start justify-between gap-3 text-xs text-muted-foreground"
+            >
+              <p aria-live="polite">{hint}</p>
+              <p className="shrink-0 font-mono">
+                {length} / {LOOK_TEXT.max}
+              </p>
+            </div>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
               What you paste is sent to an AI service to write the questions, and isn't saved. Don't
               paste anything private.
