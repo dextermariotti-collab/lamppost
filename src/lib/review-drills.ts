@@ -87,15 +87,16 @@ export function trackDrillResult(
   const shaky = score < 1;
 
   if (!shaky && !unsure) {
-    if (!existing) return;
-    // Solid answer on a queued item: push it out one box.
+    // A solid answer counts as the review only once the item is due; before that, a replayed
+    // lesson would keep pushing it further out.
+    if (!existing || daysUntil(existing.due, today) > 0) return;
     const box = Math.min(existing.box + 1, DRILL_INTERVALS.length - 1);
     writeStore({
       ...store,
       [key]: {
         ...existing,
         box,
-        reason: "practice",
+        reason: existing.reason === "keep" ? "keep" : "practice",
         due: shiftDay(today, DRILL_INTERVALS[box]!),
         at: Date.now(),
       },
@@ -151,19 +152,68 @@ export function upkeepEntries(
   return added;
 }
 
-/** Puts every finished unit's lessons on the upkeep schedule, once. */
-export function enrolFinishedUnits(done: ReadonlySet<number>) {
+/**
+ * Puts every finished unit's lessons on the upkeep schedule, once. `placed` are the lessons the
+ * placement check marked as known without them being studied; they have nothing to keep up.
+ */
+export function enrolFinishedUnits(
+  done: ReadonlySet<number>,
+  placed: ReadonlySet<string> = new Set(),
+) {
   const store = readStore();
   let added: Store = {};
   for (const unit of unitProgress(done)) {
     if (unit.state !== "complete") continue;
+    const studied = unit.lessons.filter((lesson) => !placed.has(lesson.id));
     const spread = Object.keys(added).length;
     added = {
       ...added,
-      ...upkeepEntries({ ...store, ...added }, unit.lessons, dayKey(), Date.now(), spread),
+      ...upkeepEntries({ ...store, ...added }, studied, dayKey(), Date.now(), spread),
     };
   }
   if (Object.keys(added).length > 0) writeStore({ ...store, ...added });
+}
+
+/**
+ * Makes sure a lesson comes back on rung `box` at the latest: its queued drill is pulled closer
+ * (and down to that rung) if it was further off, or one is queued if it had none. A review that
+ * was already sooner keeps its place.
+ */
+export function reviewLessonWithin(lessonId: string, box: number, today = dayKey()) {
+  const store = readStore();
+  const due = shiftDay(today, DRILL_INTERVALS[box]!);
+  const [queued] = Object.entries(store)
+    .filter(([, item]) => item.lessonId === lessonId)
+    .sort(([, a], [, b]) => daysBetween(b.due, a.due));
+  if (queued) {
+    const [key, item] = queued;
+    if (daysBetween(item.due, due) >= 0 && item.box <= box) return;
+    writeStore({
+      ...store,
+      [key]: {
+        ...item,
+        box: Math.min(item.box, box),
+        due: daysBetween(item.due, due) >= 0 ? item.due : due,
+        reason: item.reason === "missed" ? "missed" : "unsure",
+        at: Date.now(),
+      },
+    });
+    return;
+  }
+  const kind = LESSONS.find((lesson) => lesson.id === lessonId)?.drills[0];
+  if (!kind) return;
+  writeStore({
+    ...store,
+    [drillKey(lessonId, kind)]: {
+      lessonId,
+      kind,
+      box,
+      due,
+      seen: [],
+      reason: "unsure",
+      at: Date.now(),
+    },
+  });
 }
 
 /** Records the outcome of a review/challenge answer against the schedule. */
@@ -274,7 +324,9 @@ export function useDueDrills(limit = 8) {
     (key: string, correct: boolean, variant?: number) => gradeDrillReview(key, correct, variant),
     [],
   );
-  return { items: items.slice(0, limit), total: items.length, hydrated, grade };
+  // The queue is ordered by skill, so the oldest review isn't necessarily the first one.
+  const maxOverdue = due.reduce((most, item) => Math.max(most, item.overdueDays), 0);
+  return { items: items.slice(0, limit), total: items.length, maxOverdue, hydrated, grade };
 }
 
 export function reviewUrgencyFor(due: number, maxOverdue: number) {

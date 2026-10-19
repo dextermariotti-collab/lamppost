@@ -45,6 +45,15 @@ describe("checkAvailability", () => {
     expect(checkAvailability("before", half, undefined)).toBe("too-late");
   });
 
+  it("keeps the before-check open when placement, not study, marked lessons as known", () => {
+    expect(checkAvailability("before", { completed: 4, total: 5, placed: 4 }, undefined)).toBe(
+      "open",
+    );
+    expect(checkAvailability("before", { completed: 5, total: 5, placed: 4 }, undefined)).toBe(
+      "too-late",
+    );
+  });
+
   it("opens the after-check once every lesson in the unit is done", () => {
     expect(checkAvailability("after", half, undefined)).toBe("not-yet");
     expect(checkAvailability("after", done, undefined)).toBe("open");
@@ -117,6 +126,16 @@ describe("what the results say", () => {
         evidence: { before: r(2), after: r(2) },
         fallacies: { before: r(0) },
       }),
-    ).toEqual({ units: 2, before: 3, after: 5, total: 6 });
+    ).toMatchObject({ units: 2, before: 3, after: 5, total: 6 });
+  });
+
+  it("totals the before-checks by their own length, not the after-checks'", () => {
+    const r = (right: number, total: number) => ({ right, total, day: "d" });
+    expect(
+      overallChange({
+        claims: { before: r(1, 2), after: r(3, 3) },
+        evidence: { before: r(2, 3), after: r(2, 4) },
+      }),
+    ).toEqual({ units: 2, before: 3, beforeTotal: 5, after: 5, afterTotal: 7, total: 7 });
   });
 });

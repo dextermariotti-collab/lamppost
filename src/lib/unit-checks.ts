@@ -78,17 +78,18 @@ export type CheckAvailability = "open" | "taken" | "not-yet" | "too-late";
 
 /**
  * Whether a check can be taken now. The before-check only means something before the unit is
- * studied, so it closes once any of its lessons is done; the after-check opens when all are, and
- * the later one 90 days after the after-check.
+ * studied, so it closes once any of its lessons is done (`placed` counts the finished lessons the
+ * placement check marked as known without study, which don't close it); the after-check opens
+ * when all are, and the later one 90 days after the after-check.
  */
 export function checkAvailability(
   phase: CheckPhase,
-  unit: { completed: number; total: number },
+  unit: { completed: number; total: number; placed?: number },
   results: UnitCheckResults | undefined,
   today = dayKey(),
 ): CheckAvailability {
   if (results?.[phase]) return "taken";
-  if (phase === "before") return unit.completed === 0 ? "open" : "too-late";
+  if (phase === "before") return unit.completed - (unit.placed ?? 0) > 0 ? "too-late" : "open";
   if (phase === "later") {
     const after = results?.after;
     return after && daysBetween(after.day, today) >= LATER_CHECK_DAYS ? "open" : "not-yet";
@@ -116,13 +117,19 @@ export function checkLine(results: UnitCheckResults | undefined): string | null 
   return null;
 }
 
-/** Totals across the units checked both before and after. */
+/**
+ * Totals across the units checked both before and after. Each side is out of its own questions;
+ * `total` is the after-checks' count, kept for screens that show one total.
+ */
 export function overallChange(store: CheckStore) {
   const paired = Object.values(store).filter((r) => r.before && r.after);
+  const afterTotal = paired.reduce((n, r) => n + r.after!.total, 0);
   return {
     units: paired.length,
     before: paired.reduce((n, r) => n + r.before!.right, 0),
+    beforeTotal: paired.reduce((n, r) => n + r.before!.total, 0),
     after: paired.reduce((n, r) => n + r.after!.right, 0),
-    total: paired.reduce((n, r) => n + r.after!.total, 0),
+    afterTotal,
+    total: afterTotal,
   };
 }

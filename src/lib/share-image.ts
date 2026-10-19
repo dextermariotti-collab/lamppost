@@ -1,3 +1,5 @@
+import { isNativeApp } from "./platform";
+
 /**
  * Draws a share card for a completed unit on a canvas and hands it to the OS
  * share sheet, falling back to a download. Everything on the card is a real
@@ -82,17 +84,47 @@ export async function renderShareImage(card: ShareCard): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png"));
 }
 
+const base64Of = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).replace(/^data:[^,]*,/, ""));
+    reader.onerror = () => reject(reader.error ?? new Error("Couldn't read the image"));
+    reader.readAsDataURL(blob);
+  });
+
+/**
+ * The app's web view has no file share sheet or downloads, so the card is written to the app's
+ * cache and handed to the native share sheet. Closing the sheet is not an error.
+ */
+async function shareInApp(blob: Blob, name: string, text: string) {
+  const [{ Directory, Filesystem }, { Share }] = await Promise.all([
+    import("@capacitor/filesystem"),
+    import("@capacitor/share"),
+  ]);
+  const { uri } = await Filesystem.writeFile({
+    path: name,
+    data: await base64Of(blob),
+    directory: Directory.Cache,
+  });
+  try {
+    await Share.share({ title: "Lamppost", text, files: [uri] });
+  } catch (error) {
+    if (!/cancel/i.test(error instanceof Error ? error.message : String(error))) throw error;
+  }
+}
+
 /** Shares the rendered card, or downloads it when sharing files isn't supported. */
 export async function shareUnitCard(card: ShareCard) {
   const blob = await renderShareImage(card);
   if (!blob) return;
-  const file = new File(
-    [blob],
-    `lamppost-${card.unitTitle.toLowerCase().replace(/\W+/g, "-")}.png`,
-    {
-      type: "image/png",
-    },
-  );
+  const name = `lamppost-${card.unitTitle.toLowerCase().replace(/\W+/g, "-")}.png`;
+  if (isNativeApp()) {
+    await shareInApp(blob, name, `${card.unitTitle} — unit complete.`);
+    return;
+  }
+  const file = new File([blob], name, {
+    type: "image/png",
+  });
   const nav = navigator as Navigator & {
     canShare?: (data: { files?: File[] }) => boolean;
   };

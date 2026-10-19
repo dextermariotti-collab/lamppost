@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { LESSONS } from "./curriculum";
+import { CURRICULUM_SLUG, LESSONS } from "./curriculum";
 import { readAttemptStore } from "./exercise-store";
 import { writtenTrend } from "./mastery";
 import { dayKey } from "./days";
-import type { ProgressState } from "./progress-core";
+import { doneLessonIndexes, type ProgressState } from "./progress-core";
 
 /**
  * Tiered achievements, computed entirely from what the learner actually did.
@@ -119,7 +119,7 @@ export function computeBadges(state: ProgressState): BadgeState[] {
   const store = readAttemptStore();
   const entries = Object.entries(store);
 
-  // Per-lesson perfect runs: at least three drills answered, none missed.
+  // Per-lesson perfect runs: a finished lesson with at least three drills answered, none missed.
   const byLesson = new Map<string, { total: number; right: number }>();
   let fallacyDrills = 0;
   let calibrated = 0;
@@ -145,8 +145,12 @@ export function computeBadges(state: ProgressState): BadgeState[] {
     if (at.getHours() < 9) earlyDays.add(dayKey(at));
   }
 
-  const flawless = [...byLesson.values()].filter(
-    (row) => row.total >= 3 && row.right === row.total,
+  const finished = new Set([
+    ...(state.doneLessonIds ?? []),
+    ...doneLessonIndexes(state, CURRICULUM_SLUG).flatMap((i) => LESSONS[i]?.id ?? []),
+  ]);
+  const flawless = [...byLesson.entries()].filter(
+    ([lessonId, row]) => finished.has(lessonId) && row.total >= 3 && row.right === row.total,
   ).length;
 
   const steelman = writtenTrend().points.filter((point) => point.pct >= 90).length;

@@ -99,6 +99,45 @@ describe("how a week moves a learner", () => {
     expect(outcome).toEqual(["promoted", "promoted", "stayed", "demoted"]);
   });
 
+  it("moves nobody when everyone finished level", () => {
+    const ranked = rankStandings([row("a", 200), row("b", 200), row("c", 200), row("d", 200)]);
+    expect(ranked.map((r) => r.tied)).toEqual([4, 4, 4, 4]);
+    for (const r of ranked) {
+      const result = leagueMove({
+        tier: 2,
+        weeklyXp: r.weeklyXp,
+        rank: r.rank,
+        taking: 4,
+        tied: r.tied,
+      });
+      expect(result).toMatchObject({ tier: 2, change: "stayed" });
+      expect(result.reason).toMatch(/level/);
+    }
+  });
+
+  it("doesn't promote a tie that runs down into the bottom third", () => {
+    // Six took part; zone = 2. Five share second place, reaching the last place.
+    const ranked = rankStandings([
+      row("a", 300),
+      ...["b", "c", "d", "e", "f"].map((id) => row(id, 200)),
+    ]);
+    const outcome = ranked.map(
+      (r) =>
+        leagueMove({ tier: 1, weeklyXp: r.weeklyXp, rank: r.rank, taking: 6, tied: r.tied }).change,
+    );
+    expect(outcome).toEqual(["promoted", "stayed", "stayed", "stayed", "stayed", "stayed"]);
+  });
+
+  it("counts who shares a rank, and nobody for those not ranked", () => {
+    const ranked = rankStandings([row("a", 300), row("b", 200), row("c", 200), row("d", 0)]);
+    expect(ranked.map((r) => [r.id, r.tied])).toEqual([
+      ["a", 1],
+      ["b", 2],
+      ["c", 2],
+      ["d", 0],
+    ]);
+  });
+
   it("clamps a tier that is out of range", () => {
     expect(move(99, 3, 3).tier).toBeLessThanOrEqual(MAX_TIER);
     expect(move(-5, 1, 3).tier).toBeGreaterThanOrEqual(0);

@@ -22,21 +22,23 @@ export type Standing = { id: string; weeklyXp: number };
 
 /**
  * Ranks the people who took part this week. Ties share a rank (1, 2, 2, 4), and
- * anyone under the XP minimum is listed but not ranked (rank null).
+ * anyone under the XP minimum is listed but not ranked (rank null). `tied` is how
+ * many share that rank, the row included (0 when unranked).
  */
 export function rankStandings<T extends Standing>(
   rows: readonly T[],
-): (T & { rank: number | null })[] {
+): (T & { rank: number | null; tied: number })[] {
   const taking = rows.filter((row) => row.weeklyXp >= LEAGUE_MIN_XP);
   return [...rows]
     .sort((a, b) => b.weeklyXp - a.weeklyXp)
-    .map((row) => ({
-      ...row,
-      rank:
-        row.weeklyXp >= LEAGUE_MIN_XP
-          ? 1 + taking.filter((other) => other.weeklyXp > row.weeklyXp).length
-          : null,
-    }));
+    .map((row) => {
+      const ranked = row.weeklyXp >= LEAGUE_MIN_XP;
+      return {
+        ...row,
+        rank: ranked ? 1 + taking.filter((other) => other.weeklyXp > row.weeklyXp).length : null,
+        tied: ranked ? taking.filter((other) => other.weeklyXp === row.weeklyXp).length : 0,
+      };
+    });
 }
 
 export type LeagueMove = {
@@ -49,13 +51,17 @@ export type LeagueMove = {
 /**
  * How one learner's week moves them. The top third of those taking part move up,
  * the bottom third move down, everyone else stays. A learner who didn't reach the
- * XP minimum stays put: a week off is not a mark against anyone.
+ * XP minimum stays put: a week off is not a mark against anyone. A tie shares its
+ * best place's outcome, unless it also reaches the bottom third (everyone level,
+ * say): then nobody in it moves.
  */
 export function leagueMove(input: {
   tier: number;
   weeklyXp: number;
   rank: number | null;
   taking: number;
+  /** How many share this rank, the learner included (`rankStandings`). */
+  tied?: number | undefined;
 }): LeagueMove {
   const tier = Math.min(Math.max(Math.trunc(input.tier) || 0, 0), MAX_TIER);
   const stay = (reason: string): LeagueMove => ({ tier, change: "stayed", reason });
@@ -67,6 +73,14 @@ export function leagueMove(input: {
     return stay(`It takes ${LEAGUE_MIN_GROUP} of you to compare a week. Nobody moves this time.`);
   }
   const zone = Math.floor(input.taking / 3);
+  const lowestPlace = input.rank + Math.max(1, input.tied ?? 1) - 1;
+  if (input.rank <= zone && lowestPlace > input.taking - zone) {
+    return stay(
+      lowestPlace - input.rank + 1 >= input.taking
+        ? "Everyone finished level, so nobody moves."
+        : "You finished level with friends from the top third to the bottom, so you stay.",
+    );
+  }
   if (input.rank <= zone) {
     return tier < MAX_TIER
       ? { tier: tier + 1, change: "promoted", reason: "You finished in the top third." }

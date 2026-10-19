@@ -41,20 +41,12 @@ const at = (q: Quad, t: number): Point => {
 
 /** The part of a quadratic curve between t0 and t1 (de Casteljau). */
 function slice(q: Quad, t0: number, t1: number): Quad {
-  const lerp = (p: Point, r: Point, t: number): Point => ({
-    x: p.x + (r.x - p.x) * t,
-    y: p.y + (r.y - p.y) * t,
-  });
-  const sub = (from: number, to: number, curve: Quad): Quad => {
-    const start = at(curve, from);
-    const end = at(curve, to);
-    // Control point of the sub-curve: the curve's tangent lines meet there.
-    const mid = at(curve, (from + to) / 2);
-    const c = { x: 2 * mid.x - (start.x + end.x) / 2, y: 2 * mid.y - (start.y + end.y) / 2 };
-    return { a: start, c, b: end };
-  };
-  void lerp;
-  return sub(t0, t1, q);
+  const start = at(q, t0);
+  const end = at(q, t1);
+  // Control point of the sub-curve: the curve's tangent lines meet there.
+  const mid = at(q, (t0 + t1) / 2);
+  const c = { x: 2 * mid.x - (start.x + end.x) / 2, y: 2 * mid.y - (start.y + end.y) / 2 };
+  return { a: start, c, b: end };
 }
 
 const SAMPLES = 48;
