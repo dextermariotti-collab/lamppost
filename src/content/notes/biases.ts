@@ -105,12 +105,12 @@ const biases: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "After two local news stories about e-scooter crashes, Rowanford's council debates banning e-scooters. Hospital records show 4 scooter injuries last year, against 61 cycling injuries and 140 injuries from falls on icy pavements.",
+      case: "After two local news stories about e-scooter crashes, Rowanford's city council debates banning e-scooters. Hospital records show 4 scooter injuries last year, against 61 cycling injuries and 140 injuries from falls on icy sidewalks.",
       moves: [
         "Notice why scooters feel dangerous: two vivid stories, recent and widely shared.",
-        "Ask for the counts: 4 scooter injuries, against 61 for cycling and 140 from icy pavements.",
+        "Ask for the counts: 4 scooter injuries, against 61 for cycling and 140 from icy sidewalks.",
         "Ask for rates too: how many scooter trips were there? Few trips with 4 injuries could still be risky per trip.",
-        "Decide on rates, and notice that gritting pavements might prevent far more harm than a ban.",
+        "Decide on rates, and notice that salting sidewalks might prevent far more harm than a ban.",
       ],
     },
     subtleties: [
@@ -197,7 +197,7 @@ const biases: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Before a quiz night, Sam marks each of his 20 answers as either 50% or 90% sure, ten of each. Afterward he checks: his 90% answers were right 6 times out of 10, and his 50% answers 5 times out of 10.",
+      case: "At a trivia night, Sam marks each of his 20 answers as either 50% or 90% sure, ten of each, before the answers are read out. Afterward he checks: his 90% answers were right 6 times out of 10, and his 50% answers 5 times out of 10.",
       moves: [
         "Compare stated with actual: 90% stated, 60% actual. That band is overconfident.",
         "His 50% answers came out at 50%: well calibrated there.",

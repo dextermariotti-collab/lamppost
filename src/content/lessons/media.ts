@@ -11,7 +11,7 @@ const media: Record<string, LessonScript> = {
     written: {
       prompt: "Compare the headline with the findings, and write a more accurate one.",
       passage:
-        "Headline: “New snack doubles your risk of heart problems.” The study followed 4,000 adults for a year. Heart problems affected 2 in 1,000 people who ate the snack daily, and 1 in 1,000 people who didn't. The researchers say the difference could be down to chance.",
+        "Headline: “New snack doubles your risk of heart problems.” The study followed 4,000 adults for a year. Heart problems affected 2 in 1,000 people who ate the snack daily, and 1 in 1,000 people who didn't. The researchers say the difference could be due to chance.",
       guidance: "Say what the headline leaves out, then write a headline that fits the study.",
     },
     steps: [
@@ -76,13 +76,13 @@ const media: Record<string, LessonScript> = {
             id: "2",
             text: "Walking cures obesity.",
             bucket: "beyond",
-            why: "Two kilograms in six weeks is far from a cure.",
+            why: "Four pounds in six weeks is far from a cure.",
           },
           {
             id: "3",
-            text: "Walking helped 40 adults in a small trial.",
+            text: "In a small trial of 40 adults, the walkers lost a little more weight.",
             bucket: "supported",
-            why: "It reports the group and size honestly.",
+            why: "It gives the size of the trial and keeps the result modest.",
           },
           {
             id: "4",
@@ -214,7 +214,7 @@ const media: Record<string, LessonScript> = {
         options: [
           { text: "Cheese, not something else about cheese eaters, explains it." },
           {
-            text: "Cheese is cheap and widely available in most shops and cafés.",
+            text: "Cheese is cheap and widely available in most stores and cafes.",
             whyNot: "Availability doesn't link eating cheese to living longer.",
           },
           {
@@ -250,7 +250,7 @@ const media: Record<string, LessonScript> = {
         ],
         correct: 2,
         hint: "Who was studied, how big was the absolute change, and what kind of study was it?",
-        why: "It's a survey of over-65s in one region, and the absolute change is 1.25 strokes per 100. A link, not proof of prevention. A faithful headline keeps the group, the size and the caution.",
+        why: "It's a survey of adults over 65 in one region, and the absolute change is 1.25 strokes per 100. A link, not proof of prevention. A faithful headline keeps the group, the size and the caution.",
       },
     ],
   },
@@ -270,16 +270,16 @@ const media: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "What is the honest reading of the difference?",
         stimulus:
-          "A chart shows customers rating two shops satisfied: Shop A 95, Shop B 97. The vertical axis starts at 94, so B's bar looks three times taller than A's.",
+          "A chart shows the share of customers satisfied with two stores: A 95%, B 97%. The vertical axis starts at 94%, so B's bar looks three times taller than A's.",
         options: [
           {
             text: "B is three times as good as A, judging by the bars.",
-            whyNot: "It only looks that way because the axis is cut off at 94.",
+            whyNot: "It only looks that way because the axis is cut off at 94%.",
           },
           { text: "B is about 2 points higher, a small difference." },
           {
-            text: "The chart shows that A is a bad shop overall.",
-            whyNot: "95 is a high score, and the chart shows nothing bad about A.",
+            text: "The chart shows that A is a bad store overall.",
+            whyNot: "95% satisfied is high, and the chart shows nothing bad about A.",
           },
         ],
         correct: 1,
@@ -303,9 +303,9 @@ const media: Record<string, LessonScript> = {
             flaw: true,
           },
           {
-            text: "The line has one point for each month of the year.",
+            text: "The line has one point for each month.",
             tappable: true,
-            whyNot: "One point a month is a reasonable way to draw a year.",
+            whyNot: "One point a month is a reasonable way to draw a monthly bill.",
           },
         ],
         fallacy: "Cut-off axis",
@@ -317,15 +317,15 @@ const media: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "A shop's share of the market went from 2% to 4%. Which statement is accurate and clear?",
+          "A store's share of the market went from 2% to 4%. Which statement is accurate and clear?",
         options: [
           {
-            text: "The shop's sales grew by 2%, a small rise overall.",
+            text: "The store's sales grew by 2%, a small rise overall.",
             whyNot: "Its share rose by 2 percentage points, which is a doubling, not a 2% change.",
           },
           { text: "Its share rose 2 points, from 2% to 4%, doubling." },
           {
-            text: "The shop's sales grew by 4%, a fairly modest rise.",
+            text: "The store's sales grew by 4%, a fairly modest rise.",
             whyNot: "4% is where the share ended up, not how much it rose.",
           },
         ],
@@ -381,15 +381,15 @@ const media: Record<string, LessonScript> = {
         id: "ads",
         kind: "cause",
         prompt:
-          "A chart shows shops that spend more on ads sell more. Switch on the hidden variable, then say what is going on.",
-        scenario: "Each dot is a shop in the Marlow Market group.",
+          "A chart shows stores that spend more on ads sell more. Switch on the hidden variable, then say what is going on.",
+        scenario: "Each dot is a store in the Marlow Market group.",
         xLabel: "Ad spend ($100s a month)",
         yLabel: "Sales ($1,000s a month)",
-        hiddenLabel: "Shop size",
+        hiddenLabel: "Store size",
         groups: [
           {
             id: "small",
-            label: "Small shops",
+            label: "Small stores",
             points: [
               [1, 10],
               [2, 13],
@@ -401,7 +401,7 @@ const media: Record<string, LessonScript> = {
           },
           {
             id: "large",
-            label: "Large shops",
+            label: "Large stores",
             points: [
               [7, 46],
               [8, 50],
@@ -417,27 +417,27 @@ const media: Record<string, LessonScript> = {
           {
             text: "Ads raise sales by a large amount.",
             whyNot:
-              "Inside each size of shop, more ads don't bring more sales, so ads aren't the reason.",
+              "Inside each size of store, more ads don't bring more sales, so ads aren't the reason.",
           },
           {
             text: "Sales are high because the ads are well designed.",
             whyNot: "Design would matter within each group too, and the chart shows no such link.",
           },
-          { text: "Larger shops both spend more on ads and sell more." },
+          { text: "Larger stores both spend more on ads and sell more." },
         ],
         correct: 2,
-        hint: "What sort of shop can afford both?",
-        why: "Shop size is a hidden third factor. Big shops spend more on ads and sell more, so the two appear linked across the whole chart.",
+        hint: "What sort of store can afford both?",
+        why: "Store size is a hidden third factor. Big stores spend more on ads and sell more, so the two appear linked across the whole chart.",
       },
       {
         id: "window",
         kind: "gap",
         prompt: "What must be true for this to follow?",
-        reason: "The chart starts in the month the shop reopened after a fire.",
-        conclusion: "So the shop's sales are growing fast.",
+        reason: "The chart starts in the month the store reopened after a fire.",
+        conclusion: "So the store's sales are growing fast.",
         options: [
           {
-            text: "Fires make shops more popular with the people nearby.",
+            text: "Fires make stores more popular with the people nearby.",
             whyNot:
               "Nothing here says so, and it isn't the link between the start point and growth.",
           },
@@ -472,7 +472,7 @@ const media: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "The numbers are right. What's misleading about the chart?",
         stimulus:
-          "A council flyer's line chart, titled “Crime falls!,” shows reported burglaries from March to August: 120 down to 85. Full-year figures show burglaries dip every summer, and last year's total was 1,100, the same as the year before.",
+          "A city council flyer has a line chart titled “Crime falls!” It shows reported burglaries from March to August: 120 down to 85. Full-year figures show burglaries dip every summer, and last year's total was 1,100, the same as the year before.",
         options: [
           {
             text: "Nothing: burglaries really did fall from 120 to 85.",
@@ -488,7 +488,7 @@ const media: Record<string, LessonScript> = {
               "Rates can help, but the population barely changes in six months. The window is the real problem here.",
           },
           {
-            text: "The source: councils can never be trusted on crime.",
+            text: "The source: city councils can never be trusted on crime.",
             whyNot:
               "That dismisses the source instead of reading the chart. The figures may be right; the framing isn't.",
           },
@@ -541,7 +541,7 @@ const media: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "I'm heartbroken: our library closes on March 1. The council vote was 5 to 4.",
+            text: "I'm heartbroken: our library closes on March 1. The city council vote was 5 to 4.",
             bucket: "honest",
             why: "It shows strong feeling and states facts that can be checked.",
           },
@@ -586,7 +586,7 @@ const media: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "A message says: “Twelve children on Ash Ward have no winter coats. $20 buys one. Our full accounts are on our site.” What does it do?",
+          "A message says: “Twelve children at Ash Street Elementary have no winter coats. $20 buys one. Our full accounts are on our site.” What does it do?",
         options: [
           { text: "Uses feeling, but gives facts you can check." },
           {
@@ -608,7 +608,7 @@ const media: Record<string, LessonScript> = {
         noun: "Message",
         prompt: "Which message respects the reader?",
         a: "Sign up now before it's too late! Everyone's doing it!",
-        b: "Registration closes June 30 because the hall holds 80 people. 61 places are taken.",
+        b: "Registration closes June 30 because the hall holds 80 people. 61 spots are taken.",
         stronger: "b",
         factor: "It gives a real reason for the deadline",
         weakerWhy: "The deadline and the crowd are unexplained, so all they do is rush you.",
@@ -790,7 +790,7 @@ const media: Record<string, LessonScript> = {
             id: "5",
             text: "A plain explanation of how a concept works.",
             bucket: "fine",
-            why: "It gives you ideas to check elsewhere and makes no factual claim on its own.",
+            why: "Its claims are general and easy to confirm elsewhere, so it works as a start.",
           },
         ],
         hint: "Could this part be invented without you noticing?",
@@ -861,21 +861,21 @@ const media: Record<string, LessonScript> = {
         cards: [
           {
             id: "a",
-            text: "The figure appears in the report the AI named.",
+            text: "A water-utility survey, independent of the AI, gives a similar silt figure.",
             shift: 35,
-            note: "A named source that says the same thing is strong support.",
+            note: "An independent source that finds something similar is strong support.",
           },
           {
             id: "b",
-            text: "You cannot find any report with that title or author.",
+            text: "You cannot find the report the AI named, by its title or its author.",
             shift: -30,
-            note: "If the source doesn't exist, the claim has nothing behind it.",
+            note: "The AI may have invented its source, and the exact figure along with it.",
           },
           {
             id: "c",
             text: "The AI gives the same figure when you ask again.",
-            shift: 5,
-            note: "Repeating itself isn't checking. It adds only a little.",
+            shift: 0,
+            note: "The same tool agreeing with itself isn't an independent check, so it changes nothing.",
           },
           {
             id: "d",
@@ -885,7 +885,7 @@ const media: Record<string, LessonScript> = {
           },
         ],
         hint: "Which facts come from outside the AI's answer?",
-        why: "Evidence from outside the answer moves you most. Repetition and tone come from the same source and move you little or not at all.",
+        why: "Evidence from outside the answer is what moves you. Repetition and tone come from the same source, so they don't move you at all.",
       },
       {
         id: "search",
@@ -958,7 +958,7 @@ const media: Record<string, LessonScript> = {
     written: {
       prompt: "Say what you would check first about this source, and where you would look.",
       passage:
-        "A site called the Pinewood Health Council says a herbal supplement cures tiredness. Its About page calls it “independent and trusted.” The page has a clean design, several quotes from happy customers, and a shop link to the supplement.",
+        "A site called the Pinewood Health Council says a herbal supplement cures tiredness. Its About page calls it “independent and trusted.” The page has a clean design, several quotes from happy customers, and a link to buy the supplement.",
       guidance:
         "Plan your checks outside the page. What would you search, and what would you hope to learn?",
     },

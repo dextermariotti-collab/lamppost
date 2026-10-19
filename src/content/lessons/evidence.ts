@@ -53,15 +53,15 @@ const evidence: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "The transport board's press release says “faster journeys.”",
+            text: "The transit agency's press release says “faster trips.”",
             bucket: "weak",
             why: "A claim from the people who built the route, with no data shown.",
           },
           {
             id: "4",
-            text: "The board timed 2,000 journeys the month before and the month after the change.",
+            text: "The agency timed 2,000 trips the month before and the month after the change.",
             bucket: "strong",
-            why: "Many timed journeys, with a comparison.",
+            why: "Many timed trips, with a comparison.",
           },
           {
             id: "5",
@@ -146,7 +146,7 @@ const evidence: Record<string, LessonScript> = {
         prompt:
           "The claim: “Screens late at night shorten teenagers' sleep.” Which evidence is stronger?",
         a: "A professor of sleep science says late screens are ruining teenagers' sleep.",
-        b: "A study followed 3,000 teenagers for two years. Those on screens after 10 pm slept 40 minutes less on average.",
+        b: "A study followed 3,000 teenagers for two years. Those on screens after 10 p.m. slept 40 minutes less on average.",
         stronger: "b",
         factor: "Measured results over opinion",
         weakerWhy:
@@ -190,7 +190,7 @@ const evidence: Record<string, LessonScript> = {
           {
             text: "The ward that chose it, because it measured real infections over time.",
             whyNot:
-              "Real measurements help, but that ward chose the reminder. Keen staff or a quieter season could explain the change.",
+              "Real measurements help, but that ward chose the reminder. Motivated staff or a quieter season could explain the change.",
           },
           {
             text: "The nurses' opinions, because they see infections every single day.",
@@ -211,7 +211,7 @@ const evidence: Record<string, LessonScript> = {
     written: {
       prompt: "Explain what the story shows and what it can't show.",
       passage:
-        "Kofi's grandfather drove for sixty years without a seatbelt and never had a crash. “Seatbelts are a waste of time,” Kofi says. “Grandpa is proof.” Studies of millions of journeys find that crashes are far less likely to be fatal for people wearing seatbelts.",
+        "Kofi's grandfather drove for sixty years without a seatbelt and never had a crash. “Seatbelts are a waste of time,” Kofi says. “Grandpa is proof.” Studies of millions of trips find that crashes are far less likely to be fatal for people wearing seatbelts.",
       guidance: "Say what the story proves, and what would be needed to prove Kofi's claim.",
     },
     steps: [
@@ -219,7 +219,7 @@ const evidence: Record<string, LessonScript> = {
         id: "belt",
         kind: "choice",
         prompt:
-          "Dev's grandfather drove for 60 years without a seatbelt and never crashed. Does that show seatbelts aren't needed?",
+          "Kofi's grandfather drove for 60 years without a seatbelt and never crashed. Does that show seatbelts aren't needed?",
         options: [
           {
             text: "Yes: one safe lifetime shows they aren't needed.",
@@ -243,14 +243,14 @@ const evidence: Record<string, LessonScript> = {
         label: "Which should count for more?",
         noun: "Evidence",
         prompt:
-          "A town is asking whether its new crossing is safer. Which evidence should count for more?",
-        a: "A shopkeeper's dramatic account of a near miss last Tuesday.",
-        b: "Records: three accidents in five years at the old crossing, none in two years at the new one.",
+          "A town is asking whether its new crosswalk is safer. Which evidence should count for more?",
+        a: "A store owner's dramatic account of a near miss last Tuesday.",
+        b: "Records: three accidents in five years at the old crosswalk, none in two years at the new one.",
         stronger: "b",
         factor: "It covers many cases",
         weakerWhy:
           "A near miss is one case. It's vivid, but it doesn't tell you how often such things happen.",
-        hint: "Which one counts all the crossings, not just the memorable one?",
+        hint: "Which one counts every case, not just the memorable one?",
         why: "Stories grab our attention. Data covers all the cases, including the quiet ones nobody tells stories about.",
       },
       {
@@ -337,7 +337,7 @@ const evidence: Record<string, LessonScript> = {
         ],
         correct: 2,
         hint: "Who chooses which quotes appear on a website?",
-        why: "Quotes on a shop's own site are picked by the shop. The argument only works if they represent everyone, which nothing shows.",
+        why: "Quotes on a store's own site are picked by the store. The argument only works if they represent everyone, which nothing shows.",
       },
       {
         id: "library",
@@ -373,7 +373,7 @@ const evidence: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A vivid story and a set of records. What can they tell you together?",
         stimulus:
-          "A local paper's front page tells the story of Maeve, 34, who fell ill after eating at the new street food market. The same week, council records show the market's stalls passed all 22 inspections this year, and reports of food poisoning in town are no higher than usual.",
+          "A local paper's front page tells the story of Maeve, 34, who got sick after eating at the new street food market. The same week, city records show the market's stands passed all 22 inspections this year, and reports of food poisoning in town are no higher than usual.",
         options: [
           {
             text: "The market is dangerous, because Maeve's story is detailed and recent.",
@@ -383,7 +383,7 @@ const evidence: Record<string, LessonScript> = {
           {
             text: "Maeve's story must be false, because the inspections were all passed.",
             whyNot:
-              "Passing inspections doesn't mean nobody can ever fall ill. The records don't contradict her story.",
+              "Passing inspections doesn't mean nobody can ever get sick. The records don't contradict her story.",
           },
           {
             text: "Nothing at all, because one story and a set of records cancel out.",
@@ -491,7 +491,7 @@ const evidence: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "Two things can be true at once: she knows the subject, and she is paid.",
-        why: "Credentials answer “does she know?” but not “does she gain?.” A paid expert needs independent confirmation.",
+        why: "Credentials answer “does she know?” but not “does she gain?” A paid expert needs independent confirmation.",
       },
       {
         id: "stake",
@@ -523,7 +523,7 @@ const evidence: Record<string, LessonScript> = {
         id: "track",
         kind: "choice",
         prompt:
-          "Two forecasters warn about this year's floods. One called last year's floods correctly; the other missed them. Whom do you weigh more?",
+          "Two forecasters warn about this year's floods. Over the last ten years, one called the floods right eight times; the other, three times. Whom do you weigh more?",
         options: [
           {
             text: "The one who is more confident and dramatic.",
@@ -535,10 +535,10 @@ const evidence: Record<string, LessonScript> = {
             whyNot:
               "A record of being right or wrong is information, so treating them equally throws it away.",
           },
-          { text: "The one who got last year's floods right." },
+          { text: "The one who was right eight times out of ten." },
         ],
         correct: 2,
-        hint: "What has each one actually got right before?",
+        hint: "What has each one actually gotten right before?",
         why: "A track record is evidence about future reliability. It's not a guarantee, but it beats confidence.",
       },
       {
@@ -570,7 +570,7 @@ const evidence: Record<string, LessonScript> = {
         noun: "Source",
         prompt: "You want to know if a local bridge is safe. Which source should you lean on more?",
         a: "A neighbor who is sure it's fine because he drives over it daily.",
-        b: "The council's structural inspection, carried out by a licensed engineer and open to public view.",
+        b: "The city's structural inspection, carried out by a licensed engineer and open to public view.",
         stronger: "b",
         factor: "Expertise and accountability",
         weakerWhy:
@@ -613,7 +613,7 @@ const evidence: Record<string, LessonScript> = {
     written: {
       prompt: "Name the specific rival explanation that applies, and say why it fits.",
       passage:
-        "In Coral Bay, weeks with higher ice cream sales also have more cases of sunburn. A columnist writes: “The data are clear. Ice cream leads to sunburn, so the council should ban stalls near the beach.”",
+        "In Coral Bay, weeks with higher ice cream sales also have more cases of sunburn. A columnist writes: “The data are clear. Ice cream leads to sunburn, so the city council should ban ice cream stands near the beach.”",
       guidance: "Don't just say “correlation isn't causation.” Name the alternative.",
     },
     steps: [
@@ -681,19 +681,19 @@ const evidence: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Fit people join gyms, so gym-goers being fit isn't down to the gym.",
+            text: "Fit people join gyms, so gym-goers being fit isn't because of the gym.",
             bucket: "reverse",
-            why: "Being fit may lead to joining, not the other way round.",
+            why: "Being fit may lead to joining, not the other way around.",
           },
           {
             id: "2",
-            text: "Ice cream sales and drownings both rise in summer because more people swim.",
+            text: "Ice cream sales and drownings both rise in hot weather, when more people buy ice cream and swim.",
             bucket: "common",
-            why: "Summer weather drives both.",
+            why: "Hot weather drives both.",
           },
           {
             id: "3",
-            text: "The number of pirates fell as global temperatures rose, in a handful of years.",
+            text: "Over the last 200 years, the number of pirates fell as global temperatures rose.",
             bucket: "chance",
             why: "Two trends can line up by accident, with nothing linking them.",
           },
@@ -719,7 +719,7 @@ const evidence: Record<string, LessonScript> = {
             whyNot: "That doesn't connect library use to grades.",
           },
           {
-            text: "Books are cheaper to borrow than to buy in the shops.",
+            text: "Books are cheaper to borrow than to buy at a store.",
             whyNot: "True, but it doesn't say which way the link runs.",
           },
           { text: "Students don't use the library more because they already do well." },
@@ -798,10 +798,11 @@ const evidence: Record<string, LessonScript> = {
         options: [
           {
             text: "Compare grades of students who chose to attend with those who didn't.",
-            whyNot: "Keen students choose to attend, so any gap could just reflect who they are.",
+            whyNot:
+              "Motivated students choose to attend, so any gap could just reflect who they are.",
           },
           {
-            text: "Randomly invite half of the eligible students and compare grades a term later.",
+            text: "Randomly invite half the eligible students, then compare grades next semester.",
           },
           {
             text: "Ask attendees whether they think it helped.",
@@ -823,7 +824,7 @@ const evidence: Record<string, LessonScript> = {
           "A study of 2,000 office workers finds that those with standing desks take fewer sick days. A furniture company's ad says: “Standing desks keep you healthy.” In the study, standing desks went mostly to staff in newer offices, who were also younger on average.",
         options: [
           {
-            text: "Reverse causation: being off sick makes people choose sitting desks.",
+            text: "Reverse causation: being out sick makes people choose sitting desks.",
             whyNot:
               "Possible in principle, but the study says who got the desks: staff in newer offices. That points at a different rival.",
           },
@@ -833,7 +834,7 @@ const evidence: Record<string, LessonScript> = {
               "With 2,000 people a chance link is less likely, and the study names a better candidate: age and office.",
           },
           {
-            text: "A common cause: younger staff in newer offices may get ill less anyway.",
+            text: "A common cause: younger staff in newer offices may get sick less anyway.",
           },
         ],
         correct: 2,
@@ -868,14 +869,14 @@ const evidence: Record<string, LessonScript> = {
         weakerWhy:
           "People who bother to review are often the ones with strong feelings, so the reviews tilt away from the typical user, even though the number is more flattering.",
         hint: "Who decided to be included?",
-        why: "A sample that picks itself tilts toward keen people. A random one gives everyone the same chance, even if the result is less flattering.",
+        why: "A sample that picks itself tilts toward eager people. A random one gives everyone the same chance, even if the result is less flattering.",
       },
       {
         id: "small",
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "A café flips a coin 10 times and gets 8 heads. Another flips 1,000 times and gets 520 heads. Which result says more about whether the coin is fair?",
+          "You flip a coin 10 times and get 8 heads. A friend flips the same coin 1,000 times and gets 520 heads. Which result says more about whether the coin is fair?",
         options: [
           {
             text: "The 10 flips: 80% heads is a strong signal that the coin is biased.",
@@ -899,7 +900,7 @@ const evidence: Record<string, LessonScript> = {
         prompt: "Tap the phrase where the sample leaves out the people who could disagree.",
         passage: [
           {
-            text: "Every founder we interviewed at the Alder Valley start-up fair (which only invited companies still trading)",
+            text: "Every founder we interviewed at the Alder Valley startup fair (which only invited companies still in business)",
             tappable: true,
             flaw: true,
           },
@@ -910,13 +911,13 @@ const evidence: Record<string, LessonScript> = {
             whyNot: "That's their conclusion. The trouble is who was asked.",
           },
           {
-            text: "We recommend that everyone takes big risks.",
+            text: "We recommend that everyone take big risks.",
             tappable: true,
             whyNot: "That's the advice. The flaw comes earlier, in who was asked.",
           },
         ],
         fallacy: "Survivorship: only the survivors were asked",
-        hint: "Who isn't at a fair for companies still trading?",
+        hint: "Who isn't at a fair for companies still in business?",
         why: "Every founder who took big risks and failed isn't there to say so. Asking only survivors makes risk look like the reason they survived.",
       },
       {
@@ -930,15 +931,15 @@ const evidence: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "“Sales rose in 3 of our 9 shops.” (The other six are not mentioned.)",
+            text: "“Sales rose at our Elm Street, Mill Road and Harbor Point stores.” (The chain has nine.)",
             bucket: "picked",
-            why: "The three good shops were chosen; six others were left out.",
+            why: "Three good stores were chosen; the other six were left out.",
           },
           {
             id: "2",
-            text: "“Across all 9 shops, sales rose 4% on average; 5 rose and 4 fell.”",
+            text: "“Across all 9 stores, sales rose 4% on average; 5 rose and 4 fell.”",
             bucket: "fair",
-            why: "It covers every shop and shows both directions.",
+            why: "It covers every store and shows both directions.",
           },
           {
             id: "3",
@@ -975,19 +976,19 @@ const evidence: Record<string, LessonScript> = {
         ],
         correct: 2,
         hint: "Who is missing from the figure?",
-        why: "Only keen members who stuck it out are counted. The conclusion needs them to represent everyone, and nothing suggests they do.",
+        why: "Only motivated members who stuck it out are counted. The conclusion needs them to represent everyone, and nothing suggests they do.",
       },
       {
         id: "worse",
         kind: "choice",
         prompt:
-          "Which is the better sample for “how satisfied are our customers?,” even though it looks worse?",
+          "Which is the better sample for “how satisfied are our customers?” even though it looks worse?",
         options: [
           {
             text: "200 customers picked at random from all who bought this year: 64% satisfied.",
           },
           {
-            text: "3,000 customers who filled in the optional form at the till: 91% satisfied.",
+            text: "3,000 customers who filled out the optional form at the register: 91% satisfied.",
             whyNot:
               "It's bigger, but customers chose themselves, so it's tilted toward those with something to say.",
           },
@@ -1006,15 +1007,15 @@ const evidence: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Read the small print. What's the biggest problem with “9 out of 10 customers”?",
         stimulus:
-          "A coffee chain's advert: “9 out of 10 customers prefer our new blend!” The small print: 50 customers at the flagship café were offered a free taste of each blend; 30 agreed, and 27 of those chose the new one.",
+          "A coffee chain's ad: “9 out of 10 customers prefer our new blend!” The small print: 50 customers at the flagship cafe were offered a free taste of each blend; 30 agreed, and 27 of those chose the new one.",
         options: [
           {
-            text: "It counts only 30 volunteers at one café, not customers in general.",
+            text: "It counts only 30 volunteers at one cafe, not customers in general.",
           },
           {
             text: "27 out of 30 is exactly 90%, so the figure is actually fine.",
             whyNot:
-              "The arithmetic is right. The problem is who those 30 were: volunteers at one café.",
+              "The arithmetic is right. The problem is who those 30 were: volunteers at one cafe.",
           },
           {
             text: "Taste tests can never tell you anything useful about coffee.",
@@ -1028,7 +1029,7 @@ const evidence: Record<string, LessonScript> = {
         ],
         correct: 0,
         hint: "Who was counted? How did they get into the sample, and where?",
-        why: "The figure comes from 30 people who chose to take part at one café. They may differ from customers elsewhere, so “9 out of 10 customers” claims far more than the sample shows.",
+        why: "The figure comes from 30 people who chose to take part at one cafe. They may differ from customers elsewhere, so “9 out of 10 customers” claims far more than the sample shows.",
       },
     ],
   },

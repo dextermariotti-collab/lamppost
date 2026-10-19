@@ -26,7 +26,7 @@ const fallacies: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Mei proposes that Hollins Library open an hour later on weekdays to pay for Sunday opening. Owen replies: “So you want to lock out everyone who works early? Typical of someone who's never had a nine-to-five.” Asha replies: “Who uses the 9 am hour? If it's mostly older readers, Sunday won't help them.”",
+      case: "Mei proposes that Hollins Library open an hour later on weekdays to pay for Sunday opening. Owen replies: “So you want to lock out everyone who works early? Typical of someone who's never had a nine-to-five.” Asha replies: “Who uses the 9 a.m. hour? If it's mostly older readers, Sunday won't help them.”",
       moves: [
         "Owen's first sentence swaps “open an hour later” for “lock out everyone”: a strawman.",
         "His second sentence is about Mei's working life, which has no bearing on opening hours: ad hominem.",
@@ -54,7 +54,7 @@ const fallacies: Record<string, LessonNotes> = {
     hook: "Two framings make a weak case feel urgent: “it's this or disaster” and “one step leads to the next.” Both can be true, and both are often just asserted.",
     idea: [
       "A false dilemma offers two options as if they were the only ones: either we ban phones in school or we accept that students can't concentrate. Real choices usually have middle ground, mixtures and options nobody mentioned. The test is simple: try to name a third option.",
-      "A slippery slope claims one step will set off a chain ending somewhere bad: allow one food stall and the park will be covered in fast-food chains. Chains like that do sometimes happen. The fault is asserting the links without supporting them. Check each link: is there a reason or a comparison showing this step leads to the next?",
+      "A slippery slope claims one step will set off a chain ending somewhere bad: allow one food stand and the park will be covered in fast-food chains. Chains like that do sometimes happen. The fault is asserting the links without supporting them. Check each link: is there a reason or a comparison showing this step leads to the next?",
     ],
     terms: [
       {
@@ -69,9 +69,9 @@ const fallacies: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A letter to the Westmoor Gazette: “If we let the council charge $1 for the lake parking lot, next it will be $5, then they'll charge for the footpaths, and soon only the rich will see the lake. Either the parking lot stays free or we lose the lake for good.”",
+      case: "A letter to the Westmoor Gazette: “If we let the city council charge $1 for the lake parking lot, next it will be $5, then they'll charge for the trails, and soon only the rich will see the lake. Either the parking lot stays free or we lose the lake for good.”",
       moves: [
-        "Find the chain: $1, then $5, then footpath charges, then only the rich. Is any link supported by a plan, a budget or another council that did this? None is given.",
+        "Find the chain: $1, then $5, then trail charges, then only the rich. Is any link supported by a plan, a budget or another city that did this? None is given.",
         "Find the either/or: a free parking lot or losing the lake. Left out: a charge with a free first hour, residents' passes, a capped fee.",
         "Rewrite it fairly: “A $1 charge may put some visitors off. Could it be capped, or residents exempted?”",
       ],
@@ -79,7 +79,7 @@ const fallacies: Record<string, LessonNotes> = {
     subtleties: [
       {
         title: "Some slopes are real",
-        body: "If a council has raised a charge every year for a decade, warning that a new charge will rise is backed by evidence. Judge a chain by its links, not by how alarming its end is.",
+        body: "If a city council has raised a charge every year for a decade, warning that a new charge will rise is backed by evidence. Judge a chain by its links, not by how alarming its end is.",
       },
       {
         title: "Some choices really are binary",
@@ -115,7 +115,7 @@ const fallacies: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "An ad for Summit Joint Gel: “Recommended by Olympic champion Lara Voss. Over 2 million tubes sold. Clinically tested.”",
+      case: "An ad for Summit Joint Gel: “Recommended by Olympic marathon champion Lara Voss. Over 2 million tubes sold. Clinically tested.”",
       moves: [
         "Lara Voss is an expert at running, not at medicine. Her recommendation tells you she likes it, or was paid to say so.",
         "Two million tubes shows the gel is popular. It doesn't show it works better than another gel, or than nothing.",

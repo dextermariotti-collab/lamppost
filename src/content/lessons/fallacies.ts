@@ -11,7 +11,7 @@ const fallacies: Record<string, LessonScript> = {
       prompt:
         "Say whether the reply is a fair rebuttal, an attack on the person, or a strawman, and why.",
       passage:
-        "Sam: “I think we should try starting school ten minutes later for a term, then look at the attendance figures.” Ola: “So you want the whole school to sleep through half the morning? That's ridiculous. And of course you'd say that; you're never on time yourself.”",
+        "Sam: “I think we should try starting school ten minutes later for a semester, then look at the attendance figures.” Ola: “So you want the whole school to sleep through half the morning? That's ridiculous. And of course you'd say that; you're never on time yourself.”",
       guidance: "There may be more than one problem in the reply.",
     },
     steps: [
@@ -28,7 +28,7 @@ const fallacies: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "“Your plan cuts two bus stops, so riders will walk further. What's your evidence they won't mind?”",
+            text: "“Your plan cuts two bus stops, so riders will walk farther. What's your evidence they won't mind?”",
             bucket: "fair",
             why: "It addresses what the plan actually does and asks for evidence.",
           },
@@ -46,7 +46,7 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "“That's a blunt way to put it, but your figures are wrong: buses are 90% full at peak.”",
+            text: "“I'll be blunt: your figures are wrong. Buses are 90% full at peak.”",
             bucket: "fair",
             why: "Blunt, yes, but it goes at the claim and gives a reason.",
           },
@@ -78,7 +78,7 @@ const fallacies: Record<string, LessonScript> = {
             flaw: true,
           },
           {
-            text: "Ola then asks the council to say no.",
+            text: "Ola then asks the school board to say no.",
             tappable: true,
             whyNot:
               "That's the outcome. The distortion is earlier, in how the claim was described.",
@@ -92,13 +92,13 @@ const fallacies: Record<string, LessonScript> = {
         id: "person",
         kind: "choice",
         prompt:
-          "Priya argues the library should open later. Which reply attacks the person, not the argument?",
+          "Priya argues the library should stay open later. Which reply attacks the person, not the argument?",
         options: [
           {
             text: "“Evening staff would cost more than the extra visitors would repay.”",
             whyNot: "That answers her argument with a cost claim, which is a fair rebuttal.",
           },
-          { text: "“Priya only wants late opening because she never finishes her work on time.”" },
+          { text: "“Priya only wants longer hours because she never finishes her work on time.”" },
           {
             text: "“Your estimate of evening visitors looks high. Where did you get it from?”",
             whyNot: "That is a fair challenge to her evidence.",
@@ -106,7 +106,7 @@ const fallacies: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "Which reply would still be the same if a different person had made the argument?",
-        why: "The reply talks about Priya, not about opening hours. Whether she is punctual has no bearing on whether the library should open later.",
+        why: "The reply talks about Priya, not about opening hours. Whether she is punctual has no bearing on whether the library should stay open later.",
       },
       {
         id: "engage",
@@ -114,7 +114,7 @@ const fallacies: Record<string, LessonScript> = {
         label: "Which reply engages the claim?",
         noun: "Reply",
         prompt:
-          "Kofi says: “Let's trial a lighter homework load for one month.” Which reply engages with what he said?",
+          "Kofi says: “Let's try a lighter homework load for one month.” Which reply engages with what he said?",
         a: "“So you want kids to do no homework and learn nothing?”",
         b: "“A month is short. How would we tell in that time whether grades were affected?”",
         stronger: "b",
@@ -150,7 +150,7 @@ const fallacies: Record<string, LessonScript> = {
       {
         id: "answer",
         kind: "gap",
-        prompt: "What must be true for Lena's reply to count as an answer?",
+        prompt: "What links the reason to the conclusion?",
         reason: "Lena replied to a version of Tomas's claim that he never made.",
         conclusion: "So Lena hasn't answered Tomas's argument.",
         options: [
@@ -193,17 +193,17 @@ const fallacies: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Four replies to the same post. Which one is a fair rebuttal?",
         stimulus:
-          "The post: “Our town should trial closing Market Street to cars on Saturdays, for three months, and count shoppers before and after.”",
+          "The post: “Our town should try closing Market Street to cars on Saturdays for three months this summer, and count shoppers before and after.”",
         options: [
           {
-            text: "“Typical of someone who doesn't run a shop to want this.”",
+            text: "“Typical of someone who doesn't run a store to want this.”",
             whyNot: "That's about the poster, not the proposal: an ad hominem.",
           },
           {
             text: "“A summer trial will flatter the count. Compare with the same weeks last year.”",
           },
           {
-            text: "“So you want to ban cars from town for good? Shops will close.”",
+            text: "“So you want to ban cars from town for good? Stores will close.”",
             whyNot:
               "A strawman: the post proposed a three-month Saturday trial, not a permanent ban.",
           },
@@ -214,7 +214,7 @@ const fallacies: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "Hold each reply up against the post. Which one deals with the trial as it was actually proposed?",
-        why: "It's blunt, but it engages the actual proposal: a three-month trial with a count. The others swap in the poster's job or a bigger, easier claim. Politeness doesn't make a strawman fair.",
+        why: "It engages the actual proposal: a three-month summer trial with a count. The others swap in the poster's job or a bigger, easier claim. Politeness doesn't make a strawman fair.",
       },
     ],
   },
@@ -225,7 +225,7 @@ const fallacies: Record<string, LessonScript> = {
     written: {
       prompt: "Name the problem in the argument and suggest what a fairer version would say.",
       passage:
-        "Principal Alder: “Either we ban phones in class entirely, or exam results will collapse. There's no other way. And once one student is allowed to check a message, everyone will, and soon no lesson will happen at all.”",
+        "Principal Alder: “Either we ban phones in class entirely, or exam results will collapse. There's no other way. And once one student is allowed to check a message, everyone will, and soon no class will get any work done.”",
       guidance: "There are two problems here: one about options, one about a chain of events.",
     },
     steps: [
@@ -249,7 +249,7 @@ const fallacies: Record<string, LessonScript> = {
         ],
         fallacy: "False dilemma: a hidden third option",
         hint: "Which phrase claims the list is complete?",
-        why: "Claiming there's no other way hides everything in between. Phones in bags during lessons, for instance, is neither of the two options.",
+        why: "Claiming there's no other way hides everything in between. Phones in bags during class, for instance, is neither of the two options.",
       },
       {
         id: "third",
@@ -264,7 +264,7 @@ const fallacies: Record<string, LessonScript> = {
             text: "Let students use their phones whenever they like all day.",
             whyNot: "That is the opposite extreme, not a middle path.",
           },
-          { text: "Phones stay in bags during lessons and can be used at break." },
+          { text: "Phones stay in bags during class and can be used at lunch." },
         ],
         correct: 2,
         hint: "Look between “ban entirely” and “no limits.”",
@@ -281,25 +281,25 @@ const fallacies: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "“Allow one late homework and soon nobody will hand in anything.”",
+            text: "“Allow one late assignment and soon nobody will hand in anything.”",
             bucket: "asserted",
             why: "Nothing shows why one exception leads to the next, or to the end.",
           },
           {
             id: "2",
-            text: "“The river rises 20 cm a day. That reaches the wall on Friday and the road on Saturday.”",
+            text: "“The river rises 8 inches a day. That reaches the wall on Friday and the road on Saturday.”",
             bucket: "supported",
             why: "Each step follows from a measurement anyone can check.",
           },
           {
             id: "3",
-            text: "“One extra cake stall means the fair will turn into a supermarket.”",
+            text: "“One extra cake stand means the fair will turn into a supermarket.”",
             bucket: "asserted",
             why: "It jumps to an extreme with no link between the stages.",
           },
           {
             id: "4",
-            text: "“Studies link late screen use to later sleep, and less sleep to lower test scores. So a screen habit at midnight will probably hurt scores.”",
+            text: "“Studies link late screen use to less sleep, and less sleep to lower test scores. So a screen habit at midnight will probably hurt scores.”",
             bucket: "supported",
             why: "Each link is backed by evidence, and the conclusion says “probably.”",
           },
@@ -312,7 +312,7 @@ const fallacies: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "“The dam crack widens by 1 mm a week, per the engineers' measurements. Left alone, it will fail within a year.” Is this a fallacious slippery slope?",
+          "“The dam crack is 1 inch wide and widens by 1/16 of an inch a week, per the engineers' measurements. They say it fails at 4 inches. Left alone, it will fail within a year.” Is this a fallacious slippery slope?",
         options: [
           {
             text: "Yes: it predicts a disaster after a small start.",
@@ -337,8 +337,8 @@ const fallacies: Record<string, LessonScript> = {
         noun: "Chain",
         prompt:
           "Both argue a small change leads to a big one. Which chain of steps is better supported?",
-        a: "If students choose their seats, soon they'll choose their lessons, then their exams, and school will end.",
-        b: "If the council removes the crossing, more people will cross the busy road, and at similar crossings elsewhere injuries rose when this happened.",
+        a: "If students choose their seats, soon they'll choose their classes, then their exams, and school will end.",
+        b: "If the city council removes the crosswalk, people will still cross the busy road without one, and where other towns removed similar crosswalks, injuries rose.",
         stronger: "b",
         factor: "Its steps rest on evidence",
         weakerWhy:
@@ -373,10 +373,10 @@ const fallacies: Record<string, LessonScript> = {
         id: "rewrite",
         kind: "choice",
         prompt: "Which rewrite removes the false dilemma?",
-        stimulus: "“Either the council builds a parking lot, or the town center dies.”",
+        stimulus: "“Either the city council builds a parking lot, or the town center dies.”",
         options: [
           {
-            text: "The council must build a parking lot, because otherwise the town center will surely die.",
+            text: "The city council must build a parking lot, because otherwise the town center will surely die.",
             whyNot: "Same two options, only reworded. The town center could survive in other ways.",
           },
           {
@@ -398,7 +398,7 @@ const fallacies: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "This message uses a chain and an either/or. What would a fair reply say?",
         stimulus:
-          "From the Riverside Tenants' Association: “If we accept the landlord's plan to fit smart meters, next they'll monitor our water use, then they'll fine us for long showers, and before long we'll have no privacy at all. Either we refuse the meters or we give up our privacy for good.”",
+          "From the Riverside Tenants' Association: “If we accept the landlord's plan to install smart meters, next they'll monitor our water use, then they'll fine us for long showers, and before long we'll have no privacy at all. Either we refuse the meters or we give up our privacy for good.”",
         options: [
           {
             text: "The message is right: one change always leads to the next, so refuse.",
@@ -427,7 +427,7 @@ const fallacies: Record<string, LessonScript> = {
     written: {
       prompt: "Say which appeals in the passage are good reasoning and which are not, and why.",
       passage:
-        "For the new playground surface, the council cites three things. (1) A structural engineers' institute reviewed the design and published its tests. (2) A famous athlete says he “loves it.” (3) “Everyone in town is talking about it, so it must be good.”",
+        "For the new playground surface, the city council cites three things. (1) A structural engineers' institute reviewed the design and published its tests. (2) A famous athlete says he “loves it.” (3) “Everyone in town is talking about it, so it must be good.”",
       guidance: "Judge each of the three separately.",
     },
     steps: [
@@ -466,7 +466,7 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "5",
-            text: "Our chief executive is very confident this is safe.",
+            text: "Our CEO is very confident this is safe.",
             bucket: "not",
             why: "Confidence and a job title aren't evidence.",
           },
@@ -510,7 +510,7 @@ const fallacies: Record<string, LessonScript> = {
             whyNot: "Pay has nothing to do with knowing about sneakers.",
           },
           {
-            text: "Trainers are popular among surgeons in the local hospital.",
+            text: "Sneakers are popular among surgeons at the local hospital.",
             whyNot: "Popularity among surgeons doesn't show the sneakers help knees.",
           },
         ],
@@ -605,12 +605,12 @@ const fallacies: Record<string, LessonScript> = {
         label: "Putting it together",
         kind: "choice",
         prompt:
-          "Three reasons to buy a lawn feed. Which gives you the best grounds to believe it works?",
+          "Three reasons to buy a lawn fertilizer. Which gives you the best grounds to believe it works?",
         stimulus:
-          "Verdance lawn feed is the country's bestselling lawn feed. TV gardener Ross Ellery says he uses it on his own lawn. And a trial by the independent Grassland Trials Center found lawns treated with it grew thicker than untreated ones.",
+          "Verdance is the country's bestselling lawn fertilizer. TV gardener Ross Ellery says he uses it on his own lawn. And a trial by the independent Grassland Trials Center found lawns treated with it grew thicker than untreated ones.",
         options: [
           {
-            text: "It's the bestselling lawn feed in the country by a long way.",
+            text: "It's the bestselling lawn fertilizer in the country by a long way.",
             whyNot:
               "Sales show popularity. People buy for price, habit and ads, not only for results.",
           },
@@ -648,12 +648,12 @@ const fallacies: Record<string, LessonScript> = {
         prompt: "Tap the step that only repeats the conclusion.",
         passage: [
           {
-            text: "The Book of Alder is always right,",
+            text: "The Almanac of Fenwick is always right,",
             tappable: true,
-            whyNot: "That's the conclusion. It's the reason that goes round in a circle.",
+            whyNot: "That's the conclusion. It's the reason that goes around in a circle.",
           },
           { text: "because" },
-          { text: "the Book of Alder says it is always right.", tappable: true, flaw: true },
+          { text: "the Almanac of Fenwick says it is always right.", tappable: true, flaw: true },
           {
             text: "So you can trust everything in it.",
             tappable: true,
@@ -722,9 +722,9 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "“This news channel is trustworthy because it never reports anything untrue.”",
+            text: "“This news channel is trustworthy because you can always believe what it reports.”",
             bucket: "circular",
-            why: "“Never reports anything untrue” is just “trustworthy” again.",
+            why: "“You can always believe it” is just “trustworthy” in other words.",
           },
           {
             id: "4",
@@ -747,10 +747,14 @@ const fallacies: Record<string, LessonScript> = {
         ],
         pieces: [
           { id: "pc", text: "The corner cafe is hygienic.", role: "conclusion" },
-          { id: "pp", text: "It is inspected by the council twice a year.", role: "premise" },
+          {
+            id: "pp",
+            text: "The city health department inspects it twice a year.",
+            role: "premise",
+          },
           {
             id: "pe",
-            text: "Its last three inspection scores were all 5 out of 5.",
+            text: "It got an A on each of its last three health inspections.",
             role: "evidence",
           },
           {
@@ -761,7 +765,7 @@ const fallacies: Record<string, LessonScript> = {
           },
         ],
         hint: "Which piece could be true or false without the conclusion?",
-        why: "The inspection scores are separate facts. “Clean and hygienic” only says the conclusion again.",
+        why: "The inspection grades are separate facts. “Clean and hygienic” only says the conclusion again.",
       },
       {
         id: "sure",
@@ -846,7 +850,7 @@ const fallacies: Record<string, LessonScript> = {
     written: {
       prompt: "Explain what is too hasty about the conclusion, and what evidence would justify it.",
       passage:
-        "On her first day at Hartley Station, Noor was served by two rude waiters. “Hartley people are all rude,” she told her friends. The next week, she asked three of them; two agreed. “See?” she said. “It's confirmed.”",
+        "On her first day at Hartley Station, Noor was served by two rude waiters. “Hartley people are all rude,” she told her friends. The next week, she asked three friends who had visited; two agreed. “See?” she said. “It's confirmed.”",
       guidance: "Think about how many cases there are and how they were picked.",
     },
     steps: [
@@ -854,12 +858,11 @@ const fallacies: Record<string, LessonScript> = {
         id: "corridor",
         kind: "choice",
         prompt:
-          "Ines asked four people in one corridor. Three like the new canteen menu. What can she conclude?",
+          "Ines asked four people in one hallway. Three like the new cafeteria menu. What can she conclude?",
         options: [
           {
             text: "Most students in the whole school like the new menu.",
-            whyNot:
-              "Four people in one corridor is too few, and they may not represent the school.",
+            whyNot: "Four people in one hallway is too few, and they may not represent the school.",
           },
           {
             text: "Nearly everyone at the school likes the new menu for sure.",
@@ -870,7 +873,7 @@ const fallacies: Record<string, LessonScript> = {
         ],
         correct: 2,
         hint: "How many cases, and how were they picked?",
-        why: "Four people from one corridor are a handful, not a sample of the school. They can't support a claim about everyone.",
+        why: "Four people from one hallway are a handful, not a sample of the school. They can't support a claim about everyone.",
       },
       {
         id: "late",
@@ -904,9 +907,9 @@ const fallacies: Record<string, LessonScript> = {
         cards: [
           {
             id: "a",
-            text: "Five friends of the survey's author say they prefer online classes.",
-            shift: 3,
-            note: "It nudges the claim a little, but five friends of the author are a tiny, hand-picked group.",
+            text: "Five friends of the person making the claim say they prefer online classes.",
+            shift: 0,
+            note: "Five friends of the person making the claim are a tiny, hand-picked group. It's no real reason to change your view.",
           },
           {
             id: "b",
@@ -922,7 +925,7 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "d",
-            text: "The students' union runs its own random survey of 600 students: 41% prefer online.",
+            text: "The student government runs its own random survey of 600 students: 41% prefer online.",
             shift: -15,
             note: "A second large random sample points the other way, so the first result is less certain than it looked.",
           },
@@ -959,7 +962,7 @@ const fallacies: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "One customer complained, so customers hate the new till.",
+            text: "One customer complained, so customers hate the new register.",
             bucket: "hasty",
             why: "One complaint isn't a pattern.",
           },
@@ -993,7 +996,7 @@ const fallacies: Record<string, LessonScript> = {
         id: "stall",
         kind: "gap",
         prompt: "What has to be true for this to follow?",
-        reason: "The first three customers at the new stall bought lemonade.",
+        reason: "The first three customers at the new stand bought lemonade.",
         conclusion: "So most customers will buy lemonade.",
         options: [
           {
@@ -1002,7 +1005,7 @@ const fallacies: Record<string, LessonScript> = {
               "It might be, but that's about lemonade, not about whether these three are typical.",
           },
           {
-            text: "The stall will be open for many days in a row.",
+            text: "The stand will be open for many days in a row.",
             whyNot: "How long it stays open doesn't make three early customers representative.",
           },
           { text: "The first three customers are typical of all the customers." },
@@ -1019,7 +1022,7 @@ const fallacies: Record<string, LessonScript> = {
         prompt:
           "After 30 test rides, a bike shop says something about its new tires. Which claim is safer?",
         a: "All of our new tires are unbeatable in wet weather.",
-        b: "In 30 test rides in the wet, none of the tires slipped, which is encouraging but a small test.",
+        b: "In 30 test rides on wet roads, none of the tires slipped, which is encouraging but a small test.",
         stronger: "b",
         factor: "It claims what the tests can support",
         weakerWhy:
@@ -1051,7 +1054,7 @@ const fallacies: Record<string, LessonScript> = {
           },
         ],
         correct: 0,
-        hint: "How many cases is each side going on? And could the misses support a narrower claim?",
+        hint: "How many cases is each side relying on? And could the misses support a narrower claim?",
         why: "Two misses can't show the app is useless across the city. But they're still data: if they cluster on one route, that's a narrower claim worth checking. The company's figure deserves a check too.",
       },
     ],

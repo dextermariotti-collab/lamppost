@@ -11,7 +11,7 @@ const biases: Record<string, LessonScript> = {
       prompt:
         "Write the strongest case for the view you disagree with, so that its supporters would nod.",
       passage:
-        "Oakfield's old library building is much loved but expensive to heat and hard to reach without stairs. Some residents want it kept and repaired. Others want a new, cheaper, step-free building on the same site. Pick the side you lean away from.",
+        "Oakfield's old library building is much loved but expensive to heat and hard to reach without stairs. Some residents want it kept and repaired. Others want a new, cheaper, wheelchair-accessible building on the same site. Pick the side you lean away from.",
       guidance: "Use the best reasons that side has, not the weakest.",
     },
     steps: [
@@ -139,7 +139,7 @@ const biases: Record<string, LessonScript> = {
         factor: "She looks for what could prove her wrong",
         weakerWhy:
           "Kofi only counts the bad nights that fit. He never checks bad nights at other times, or full moons with good sleep.",
-        hint: "Which investigator could end up disagreeing with her own idea?",
+        hint: "Whose test could end up showing the idea is wrong?",
         why: "A fair test looks at all the cases, including the ones that would count against the idea.",
       },
       {
@@ -234,7 +234,7 @@ const biases: Record<string, LessonScript> = {
       prompt:
         "Point out where an anchor is at work, and say how you would judge the price without it.",
       passage:
-        "At the Alder Street furniture shop, a sofa is tagged “Was $1,400, now $790.” The salesman adds: “Most of our customers spend around $1,200 on a sofa like this.” A similar sofa in another shop costs $650 with no “was” price.",
+        "At the Alder Street furniture store, a sofa is tagged “Was $1,400, now $790.” The salesman adds: “Most of our customers spend around $1,200 on a sofa like this.” A similar sofa in another store costs $650 with no “was” price.",
       guidance: "Say which numbers are doing the pulling, and what evidence you'd use instead.",
     },
     steps: [
@@ -243,7 +243,7 @@ const biases: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose the best explanation, then say how sure you are.",
         question:
-          "Two groups saw a random number on a spinner, then guessed the height of a tree. The group that saw 80 guessed higher on average than the group that saw 20. Why?",
+          "People were split at random into two groups. Each saw a random number on a spinner, then guessed the height of a tree. The group that saw 80 guessed higher on average than the group that saw 20. Why?",
         options: [
           {
             text: "Group 80 happened to include people who are better at guessing heights.",
@@ -311,7 +311,7 @@ const biases: Record<string, LessonScript> = {
         prompt: "Tap the phrase that plants a number to make another look small.",
         passage: [
           {
-            text: "The real estate agent mentioned that a house nearby sold for $900,000.",
+            text: "The real estate agent mentioned that a much bigger house nearby sold for $900,000.",
             tappable: true,
             flaw: true,
           },
@@ -395,25 +395,25 @@ const biases: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A number arrives before Jess has said hers. What should she do with it?",
         stimulus:
-          "Jess is negotiating her salary for a new job. Before she names a figure, the employer says: “Candidates for this role usually ask for around $24,000.” Jess has researched similar roles nearby, which pay $27,000 to $30,000.",
+          "Jess is negotiating her salary for a new job. Before she names a figure, the employer says: “Candidates for this role usually ask for around $42,000.” Jess has researched similar roles nearby, which pay $47,000 to $52,000.",
         options: [
           {
-            text: "Ask for a little more than $24,000, to show she's being reasonable.",
+            text: "Ask for a little more than $42,000, to show she's being reasonable.",
             whyNot:
               "That lets the anchor set the range. Her research says the going rate is well above it.",
           },
           {
-            text: "Start from her research and ask within $27,000 to $30,000.",
+            text: "Start from her research and ask within $47,000 to $52,000.",
           },
           {
-            text: "Ignore all numbers and ask for whatever feels fair on the day.",
+            text: "Ignore all numbers and ask for whatever feels fair in the moment.",
             whyNot:
               "“Feels fair” is exactly where the anchor pulls hardest. Her research is the defense.",
           },
         ],
         correct: 1,
         hint: "Which number came from evidence, and which simply arrived first?",
-        why: "$24,000 arrived first and will drag her estimate down if she lets it. Her research on similar roles is evidence about real value, so it should set the range she negotiates in.",
+        why: "$42,000 arrived first and will drag her estimate down if she lets it. Her research on similar roles is evidence about real value, so it should set the range she negotiates in.",
       },
     ],
   },
@@ -424,7 +424,7 @@ const biases: Record<string, LessonScript> = {
     written: {
       prompt: "Explain why the fear may not match the risk, and what numbers you'd want to see.",
       passage:
-        "After a widely reported news story about a boat capsizing at Marlow Lake, attendance at the lake's boat hire fell by half. That summer, the lake recorded one capsizing among 9,000 hires. The same weekend, an unreported tally showed 41 minor injuries from cycling on the towpath beside it.",
+        "After a widely reported news story about a boat capsizing at Marlow Lake, bookings at the lake's boat rental fell by half. That summer, the lake recorded one capsizing among 9,000 rentals. That same summer, an unreported tally showed 41 minor injuries from cycling on the lakeside path.",
       guidance: "Compare how vivid each risk is with how often it happens.",
     },
     steps: [
@@ -459,30 +459,30 @@ const biases: Record<string, LessonScript> = {
           {
             id: "a",
             text: "A dramatic news story about one capsized boat last week.",
-            shift: -10,
-            note: "One case, however vivid, sits against thousands of safe trips. It shouldn't make you more worried.",
+            shift: 0,
+            note: "One real case, however vivid, sits against thousands of safe trips. It shouldn't move you much.",
           },
           {
             id: "b",
-            text: "Records: one capsizing in 9,000 hires this summer.",
+            text: "Records: one capsizing in 9,000 rentals this summer.",
             shift: -30,
             note: "The actual rate is very low, which lowers the claim a lot.",
           },
           {
             id: "c",
-            text: "Serious injuries on the lake happened in only 1 hire in 20,000 over five years.",
+            text: "Serious injuries on the lake happened in only 1 rental in 20,000 over five years.",
             shift: -15,
             note: "A longer record points the same way: trips are rarely dangerous.",
           },
           {
             id: "d",
-            text: "The hire company briefly stopped renting boats when the wind picked up.",
+            text: "The boat rental briefly closed when the wind picked up.",
             shift: 0,
             note: "Closing in high wind is normal caution, and it says nothing about the usual risk.",
           },
           {
             id: "e",
-            text: "An inspection found faulty life jackets on three of the ten hire boats.",
+            text: "An inspection found faulty life jackets on three of the ten rental boats.",
             shift: 20,
             note: "A documented safety fault is real evidence of risk, which a vivid story is not.",
           },
@@ -586,7 +586,7 @@ const biases: Record<string, LessonScript> = {
         stronger: "b",
         factor: "It compares rates, not headlines",
         weakerWhy:
-          "News covers what's unusual. Drives go wrong more often but rarely get a story, so the headlines point the wrong way.",
+          "News covers what's unusual, not what's common. Headlines can't tell you whether drives or boat trips go wrong more often; only a count of trips can.",
         hint: "Which one counts trips as well as accidents?",
         why: "Comparing per-trip rates fixes the effect of coverage. Headlines can show which events are dramatic, not which are common.",
       },
@@ -639,7 +639,7 @@ const biases: Record<string, LessonScript> = {
         id: "concert",
         kind: "choice",
         prompt:
-          "Ines paid $40 for concert tickets, then feels ill on the day. Which reasoning is sound?",
+          "Ines paid $40 for concert tickets, then feels sick the day of the show. Which reasoning is sound?",
         options: [
           {
             text: "I paid $40, so I have to go or the money is wasted.",
@@ -707,21 +707,21 @@ const biases: Record<string, LessonScript> = {
         prompt: "Tap the step that lets past effort decide the future.",
         passage: [
           {
-            text: "Lena has spent three years on a course she no longer enjoys.",
+            text: "Lena has spent three years on a major she no longer enjoys.",
             tappable: true,
             whyNot: "That's her situation. It isn't a mistake in reasoning.",
           },
           { text: "“I've put in three years," },
           { text: "so I can't quit now,”", tappable: true, flaw: true },
           {
-            text: "she says, and enrols for another term.",
+            text: "she says, and signs up for another semester.",
             tappable: true,
             whyNot: "That's the result of the reasoning, not the flaw itself.",
           },
         ],
         fallacy: "Sunk cost: past effort steering the next choice",
         hint: "Would quitting bring the three years back?",
-        why: "The three years are gone either way. What should decide it is what another term would cost and bring her.",
+        why: "The three years are gone either way. What should decide it is what another semester would cost and bring her.",
       },
       {
         id: "roof",
@@ -729,7 +729,7 @@ const biases: Record<string, LessonScript> = {
         label: "Which decision is sounder?",
         noun: "Reasoning",
         prompt:
-          "A home owner has already spent $50,000 on a roof repair that keeps failing. Whose reasoning is sounder?",
+          "A homeowner has already spent $50,000 on a roof repair that keeps failing. Whose reasoning is sounder?",
         a: "“We've spent $50,000 on this, so we must spend another $20,000 to see it through.”",
         b: "“Ignoring what's spent, is another $20,000 worth what a working roof would give us?”",
         stronger: "b",
@@ -799,7 +799,7 @@ const biases: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A theater group has spent a lot already. Which reasoning is sound?",
         stimulus:
-          "A theater group has spent $6,000 and four months rehearsing a play. Two weeks before opening, ticket sales suggest they'll take $1,500, and the venue hire still to pay is $3,000. A cheaper venue has offered them a slot next spring.",
+          "A theater group has spent $6,000 and four months rehearsing a play. Two weeks before opening, ticket sales suggest they'll bring in $1,500, and the venue rental still to pay is $3,000. A cheaper venue has offered them a slot next spring.",
         options: [
           {
             text: "Go ahead: $6,000 and four months are too much to waste now.",
@@ -812,12 +812,12 @@ const biases: Record<string, LessonScript> = {
               "Past spending doesn't prove anything either way. The decision rests on what's still ahead.",
           },
           {
-            text: "Compare what's ahead: $3,000 to take $1,500, or the spring slot.",
+            text: "Compare what's ahead: $3,000 to bring in $1,500, or the spring slot.",
           },
         ],
         correct: 2,
         hint: "Cross out everything already spent. What's left to compare?",
-        why: "The $6,000 and the rehearsals are gone on every path. What can still change is ahead: paying $3,000 to take about $1,500 now, against the cheaper spring slot.",
+        why: "The $6,000 and the rehearsals are gone on every path. What can still change is ahead: paying $3,000 to bring in about $1,500 now, against the cheaper spring slot.",
       },
     ],
   },

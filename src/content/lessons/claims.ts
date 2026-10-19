@@ -19,18 +19,18 @@ const claims: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Read the paragraph. Which sentence is the claim the others are there to support?",
         stimulus:
-          "Oakridge Library should stay open until 9 pm. Students at Oakridge often study late into the evening, the evening bus runs until 9:30, and the reading room is nearly empty by 5.",
+          "Oakridge Library should stay open until 9 p.m. Students at Oakridge often study late into the evening, the evening bus runs until 9:30, and the reading room is still full when it closes at 5.",
         options: [
           {
             text: "Students at Oakridge often study late into the evening.",
             whyNot: "That's a reason offered for the claim, not the claim itself.",
           },
           {
-            text: "The reading room is nearly empty by 5.",
+            text: "The reading room is still full when it closes at 5.",
             whyNot:
               "That's evidence about the present. It supports the claim, but it isn't what the writer wants you to accept.",
           },
-          { text: "Oakridge Library should stay open until 9 pm." },
+          { text: "Oakridge Library should stay open until 9 p.m." },
         ],
         correct: 2,
         hint: "Ask: what is the writer trying to get me to agree with?",
@@ -68,14 +68,14 @@ const claims: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Nobody states the conclusion here. What claim is the writer really making?",
         stimulus:
-          "The new bus lane took two parking spaces from Elm Street. Since then, shops there report fewer customers than last winter. Nobody asked the shop owners.",
+          "The new bus lane took two parking spaces from Elm Street. Since then, stores there report fewer customers than last winter. Nobody asked the store owners.",
         options: [
           {
-            text: "Every shop on Elm Street is about to close.",
+            text: "Every store on Elm Street is about to close.",
             whyNot:
               "The passage says fewer customers, not closing. That claim goes further than the writer does.",
           },
-          { text: "The Elm Street bus lane has hurt local shops." },
+          { text: "The Elm Street bus lane has hurt local stores." },
           {
             text: "Buses are bad for business everywhere.",
             whyNot: "Too broad. The passage is about one lane on one street.",
@@ -90,7 +90,7 @@ const claims: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "This one is loud. Which sentence is the claim?",
         stimulus:
-          "Marlow Swimming Club's fees rose 30% in two years. Members are furious that the club let this happen! It is a disgrace to treat loyal members this way. The club should hold fees steady next year.",
+          "Marlow Swim Club's fees rose 30% in two years. Members are furious that the club let this happen! It is a disgrace to treat loyal members this way. The club should hold fees steady next year.",
         options: [
           { text: "The club should hold fees steady next year." },
           {
@@ -136,7 +136,7 @@ const claims: Record<string, LessonScript> = {
         prompt:
           "A writer argues that Riverside's new tower blocks the hill view and wasn't put to a public vote. Which restatement of their claim is more precise?",
         a: "The tower is bad.",
-        b: "The council should not have approved the Riverside tower without a public vote.",
+        b: "The city council should not have approved the Riverside tower without a public vote.",
         stronger: "b",
         factor: "It says exactly what should change",
         weakerWhy:
@@ -168,7 +168,7 @@ const claims: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "People who sit down stay longer and spend more at the gate café.",
+            text: "People who sit down stay longer and spend more at the cafe by the gate.",
             bucket: "reason",
             why: "Another reason, this time about who benefits.",
           },
@@ -195,7 +195,7 @@ const claims: Record<string, LessonScript> = {
         prompt:
           "A longer one, with a claim inside a claim. Which sentence states the writer's main claim?",
         stimulus:
-          "“The Westfield footbridge has been closed for repairs twice this year, and the engineers' report calls its supports ‘worn beyond economic repair.’ Patching it again would cost nearly as much as a new bridge. So the bridge is no longer worth fixing. The council should put the money toward a replacement instead.”",
+          "“The Westfield footbridge has been closed for repairs twice this year, and the engineers' report calls its supports ‘worn beyond economic repair.’ Patching it again would cost nearly as much as a new bridge. So the bridge is no longer worth fixing. The city council should put the money toward a replacement instead.”",
         options: [
           {
             text: "The footbridge has been closed for repairs twice this year.",
@@ -228,7 +228,7 @@ const claims: Record<string, LessonScript> = {
     written: {
       prompt: "Name one assumption this argument depends on, and say why it might not hold.",
       passage:
-        "Northfield School's new bell schedule ends lessons ten minutes earlier so students can catch their buses. Since September, the principal reports, fewer students have been late for buses. This proves the new schedule works, so it should stay.",
+        "Northfield School's new bell schedule ends the school day ten minutes earlier so students can catch their buses. Since September, the principal reports, fewer students have been late for buses. This proves the new schedule works, so it should stay.",
       guidance: "Ask what else might explain the change, or what the argument takes for granted.",
     },
     steps: [
@@ -261,7 +261,7 @@ const claims: Record<string, LessonScript> = {
         reason: "Every student who joined the chess club raised their math grade.",
         conclusion: "So the chess club raises math grades.",
         options: [
-          { text: "Nothing else explains the rise, such as keen students joining." },
+          { text: "Nothing else explains the rise, such as motivated students joining." },
           {
             text: "Chess is a popular game, played in many schools around the world.",
             whyNot: "Popularity doesn't connect joining the club to improving.",
@@ -273,7 +273,7 @@ const claims: Record<string, LessonScript> = {
         ],
         correct: 0,
         hint: "Could something else explain both joining and improving?",
-        why: "The argument needs the club to be the cause. If keen students both join and study harder, the club isn't doing the work.",
+        why: "The argument needs the club to be the cause. If motivated students both join and study harder, the club isn't doing the work.",
       },
       {
         id: "shop-lights",
@@ -305,14 +305,14 @@ const claims: Record<string, LessonScript> = {
         question:
           "“Dev arrived late three times this month, so Dev doesn't care about the job.” Which assumption is the argument relying on?",
         options: [
-          { text: "Lateness comes from not caring, not from transport or illness." },
+          { text: "Lateness comes from not caring, not from late buses or illness." },
           {
             text: "Dev is a bad person who is also unreliable.",
             whyNot:
               "The argument only goes as far as caring about the job. This assumption is bigger than it needs.",
           },
           {
-            text: "Other staff are never late, even when the weather is bad or the trains are disrupted.",
+            text: "Other staff are never late, even when the weather is bad or the trains are delayed.",
             whyNot: "It might be true, but the argument doesn't depend on it.",
           },
         ],
@@ -331,7 +331,7 @@ const claims: Record<string, LessonScript> = {
             whyNot: "The argument would survive without that.",
           },
           {
-            text: "People enjoy shopping in the town on Saturdays.",
+            text: "People enjoy shopping in town on Saturdays.",
             whyNot: "Probably true, but the argument doesn't rest on it.",
           },
           { text: "Closing it to cars would ease the crowding." },
@@ -346,12 +346,12 @@ const claims: Record<string, LessonScript> = {
         label: "Which assumption is easier to defend?",
         prompt:
           "Both arguments lean on a hidden assumption. Which one leans on the easier-to-defend assumption?",
-        a: "The bakery's loaves sold out by 9 am, so many people like them.",
-        b: "The bakery's loaves sold out by 9 am, so they must be the cheapest in town.",
+        a: "The bakery's loaves sold out by 9 a.m., so many people like them.",
+        b: "The bakery's loaves sold out by 9 a.m., so they must be the cheapest in town.",
         stronger: "a",
         factor: "The hidden assumption is reasonable",
         weakerWhy:
-          "It assumes cheapness is the only reason a loaf could sell out. Taste, a small batch or a good location fit the same fact.",
+          "It assumes cheapness is the only reason a loaf could sell out. Taste, freshness or a loyal following fit the same fact.",
         hint: "What has to be true for each conclusion to follow?",
         why: "Hidden assumptions can be reasonable or shaky. Spotting them lets you ask whether each one holds.",
       },
@@ -359,7 +359,7 @@ const claims: Record<string, LessonScript> = {
         id: "campus",
         kind: "gap",
         prompt: "One more missing link.",
-        reason: "Northfield College moved its exams online this year.",
+        reason: "Northfield School moved its exams online this year.",
         conclusion: "So students will find cheating easier.",
         options: [
           {
@@ -369,7 +369,7 @@ const claims: Record<string, LessonScript> = {
           {
             text: "Students own laptops that they can use at home.",
             whyNot:
-              "They need laptops to sit online exams, but that alone doesn't make cheating easier.",
+              "They need laptops to take online exams, but that alone doesn't make cheating easier.",
           },
           { text: "Online exams are less closely supervised than in-person ones." },
         ],
@@ -383,11 +383,11 @@ const claims: Record<string, LessonScript> = {
         kind: "gap",
         prompt: "A real-world one. What must be true for this argument to work?",
         reason:
-          "Since Harlow Street went one-way in May, its shops have taken 15% less money than in the same months last year.",
-        conclusion: "So the one-way system is hurting the shops, and it should be reversed.",
+          "Since Harlow Street went one-way in May, its stores' sales are down 15% from the same months last year.",
+        conclusion: "So the one-way traffic is hurting the stores, and it should be reversed.",
         options: [
           {
-            text: "Nothing besides the one-way system explains the fall in the shops' takings.",
+            text: "Nothing besides the one-way traffic explains the drop in the stores' sales.",
           },
           {
             text: "Some shoppers find one-way streets confusing to drive along.",
@@ -395,14 +395,14 @@ const claims: Record<string, LessonScript> = {
               "Plausible, but the argument doesn't need it. What it needs is that nothing else explains the drop.",
           },
           {
-            text: "The council brought in the one-way system without asking the shops.",
+            text: "The city council introduced the one-way traffic without asking the stores.",
             whyNot:
-              "That may be a fair complaint, but it isn't what links the drop in takings to the one-way system.",
+              "That may be a fair complaint, but it isn't what links the drop in sales to the one-way traffic.",
           },
         ],
         correct: 0,
         hint: "Imagine the 15% drop had another cause. Which statement rules that out?",
-        why: "The argument treats the one-way system as the cause of the drop. That only works if nothing else, such as roadworks or a slow year for every shop in town, explains it.",
+        why: "The argument treats the one-way traffic as the cause of the drop. That only works if nothing else, such as road work or a slow year for every store in town, explains it.",
       },
     ],
   },
@@ -414,7 +414,7 @@ const claims: Record<string, LessonScript> = {
       prompt:
         "Pick one sentence from the passage and say whether it is a fact, an opinion or a value claim, and why.",
       passage:
-        "The Harbor Line ferry is the fastest way to cross the bay: the trip takes 18 minutes, against 35 by road. It is also the nicest, with sea views the whole way. Because of that, the council should keep the ferry running even if it loses money.",
+        "The Harbor Line ferry is the fastest way to cross the bay: the trip takes 18 minutes, compared with 35 by car. It is also the nicest, with sea views the whole way. Because of that, the city council should keep the ferry running even if it loses money.",
       guidance: "Say how you could check it, or why you couldn't.",
     },
     steps: [
@@ -510,7 +510,7 @@ const claims: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Decide, then say how sure you are.",
         question:
-          "“The council's new bike lane cut cycling injuries by a third, so it was worth the cost.” Which part is a value judgment?",
+          "“The city council's new bike lane cut cycling injuries by a third, so it was worth the cost.” Which part is a value judgment?",
         options: [
           { text: "It was worth the cost." },
           {
@@ -531,13 +531,13 @@ const claims: Record<string, LessonScript> = {
         kind: "stronger",
         label: "Which keeps fact and opinion apart?",
         noun: "Review",
-        prompt: "Two reviewers describe the same film. Which one keeps fact and opinion apart?",
-        a: "It's a boring film: two hours long, with a dull ending.",
-        b: "The film runs two hours. I found the ending dull.",
+        prompt: "Two reviewers describe the same movie. Which one keeps fact and opinion apart?",
+        a: "It's a boring movie: two hours long, with a dull ending.",
+        b: "The movie runs two hours. I found the ending dull.",
         stronger: "b",
         factor: "It labels the opinion as an opinion",
         weakerWhy:
-          "“Boring” is presented as if it were a property of the film, and the length is offered as proof, though length alone doesn't make anything dull.",
+          "“Boring” is presented as if it were a property of the movie, and the length is offered as proof, though length alone doesn't make anything dull.",
         hint: "Which reviewer says who is doing the judging?",
         why: "Stating the fact and owning the opinion lets readers check one and decide about the other.",
       },
@@ -553,7 +553,7 @@ const claims: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Kestrel Labs has a bike shed.",
+            text: "Kestrel Labs has a bike rack.",
             bucket: "fact",
             why: "You could go and look.",
           },
@@ -583,15 +583,15 @@ const claims: Record<string, LessonScript> = {
         id: "rewrite",
         kind: "choice",
         prompt: "Which rewrite turns this opinion into a claim you could check?",
-        stimulus: "“The canteen food is terrible.”",
+        stimulus: "“The cafeteria food is terrible.”",
         options: [
           {
-            text: "The canteen food is honestly, truly and completely terrible, in my view.",
+            text: "The cafeteria food is honestly, truly and completely terrible, in my view.",
             whyNot: "Stronger words, but it's still an opinion. Nothing here could be checked.",
           },
           { text: "In a survey of 200 staff, 120 rated the food “poor” or worse." },
           {
-            text: "Everyone in the whole building hates the canteen food.",
+            text: "Everyone in the whole building hates the cafeteria food.",
             whyNot: "It sounds factual, but nobody counted, and “hates” is a feeling.",
           },
         ],
@@ -661,7 +661,7 @@ const claims: Record<string, LessonScript> = {
         label: "Find the flipped burden",
         prompt: "Tap the sentence that flips the burden of proof.",
         passage: [
-          { text: "Kofi says his herbal tea cures colds. When asked for evidence, he says," },
+          { text: "Kofi says his herbal tea prevents colds. When asked for evidence, he says," },
           { text: "“Nobody has ever shown that it doesn't work,”", tappable: true, flaw: true },
           {
             text: "and adds that his aunt swears by it.",
@@ -692,7 +692,7 @@ const claims: Record<string, LessonScript> = {
           },
           {
             text: "A new streetcar line will open on the main street next year.",
-            whyNot: "Plausible. A council notice or schedule would be enough.",
+            whyNot: "Plausible. A city announcement or a schedule would be enough.",
           },
         ],
         correct: 0,
@@ -725,7 +725,7 @@ const claims: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "Ola says the new ferry schedule won't save anyone time. Sam replies: “Prove it will save time.” Is Sam's reply fair?",
+          "Ola says the new ferry schedule won't save anyone time. Sam asks how she knows, and Ola replies: “Prove it will.” Is Ola's reply fair?",
         options: [
           { text: "No: Ola made the claim, so Ola owes the support." },
           {
@@ -741,7 +741,7 @@ const claims: Record<string, LessonScript> = {
         ],
         correct: 0,
         hint: "Did Ola say something that needs support?",
-        why: "A negative claim (“it won't save time”) is still a claim. Ola asserted it first, so the support is Ola's to give.",
+        why: "A negative claim (“it won't save time”) is still a claim. Ola asserted it, so the support is Ola's to give, not Sam's.",
       },
       {
         id: "burden",
@@ -772,7 +772,7 @@ const claims: Record<string, LessonScript> = {
           },
           {
             id: "4",
-            text: "“You say the water tastes odd. Have you compared it with another tap?”",
+            text: "“You say the water tastes odd. Have you compared it with another faucet?”",
             bucket: "fair",
             why: "A reasonable question about how the claim was tested.",
           },
@@ -808,20 +808,20 @@ const claims: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A real exchange. What's the fairest response to Colm?",
         stimulus:
-          "At a residents' meeting, Colm says the new phone mast is making people on Ash Close ill. Asked for evidence, he says: “Lots of us have had headaches since it went up. Until the phone company proves the mast is safe, it should be switched off.”",
+          "At a residents' meeting, Colm says the new cell tower is making people on Ash Court sick. Asked for evidence, he says: “Lots of us have had headaches since it went up. Until the phone company proves the tower is safe, it should be shut off.”",
         options: [
           {
-            text: "Colm must prove the mast causes harm before anyone takes his worry seriously.",
+            text: "Colm must prove the tower causes harm before anyone takes his worry seriously.",
             whyNot:
               "Too dismissive. His claim does owe support, but a worry can be taken seriously while evidence is gathered.",
           },
           {
-            text: "The phone company must prove the mast is completely safe, as Colm says.",
+            text: "The phone company must prove the tower is completely safe, as Colm says.",
             whyNot:
               "That accepts the shifted burden. Colm made the claim of harm, and “prove it's completely safe” asks for what nobody can show.",
           },
           {
-            text: "Colm's claim owes evidence: compare headaches with similar streets without a mast.",
+            text: "Colm's claim owes evidence: compare headaches with similar streets without a tower.",
           },
           {
             text: "Headaches are common, so Colm's claim is obviously false.",
@@ -831,7 +831,7 @@ const claims: Record<string, LessonScript> = {
         ],
         correct: 2,
         hint: "Who made the claim here? And what evidence would actually test it, rather than repeat the worry?",
-        why: "Colm made the claim of harm, so it owes support. Headaches since the mast went up is weak evidence, because headaches are common. A comparison with similar streets could test it either way.",
+        why: "Colm made the claim of harm, so it owes support. Headaches since the tower went up is weak evidence, because headaches are common. A comparison with similar streets could test it either way.",
       },
     ],
   },
@@ -918,17 +918,17 @@ const claims: Record<string, LessonScript> = {
       {
         id: "up-to",
         kind: "choice",
-        prompt: "The sign says “Up to 50% off everything!” What could you find in the shop?",
+        prompt: "The sign says “Up to 50% off everything!” What is the least it promises?",
         options: [
           {
-            text: "Everything in the shop at exactly 50% off, as advertised.",
-            whyNot: "“Up to” sets a ceiling, not a floor. Nothing has to be 50% off.",
+            text: "Everything in the store at exactly 50% off, just as the sign says.",
+            whyNot: "“Up to” sets a ceiling, not a floor. Most things don't have to be 50% off.",
           },
           {
             text: "Half of the items at half price, and the rest at full price.",
             whyNot: "“Up to” doesn't promise any share of the items.",
           },
-          { text: "One item at 50% off, the rest full price; the sign is still true." },
+          { text: "Very little: one item at 50% off and the rest at full price would fit." },
         ],
         correct: 2,
         hint: "What is the smallest thing that would make the sign true?",
@@ -1020,7 +1020,7 @@ const claims: Record<string, LessonScript> = {
         prompt:
           "A real-sounding promise. Which rewrite would let residents check, in a few years, whether it was kept?",
         stimulus:
-          "From Mayfield council's plan: “We will work toward cleaner air in the town center, aiming for significant improvements in the coming years through a range of measures.”",
+          "From the Mayfield City Council's plan: “We will work toward cleaner air in the town center, aiming for significant improvements in the coming years through a range of measures.”",
         options: [
           {
             text: "We are fully committed to making air in the town center dramatically cleaner, as a top priority.",

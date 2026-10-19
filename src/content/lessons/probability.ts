@@ -134,7 +134,7 @@ const probability: Record<string, LessonScript> = {
             text: "Scanners are cheap to keep running at airports.",
             whyNot: "Cost has no bearing on what a flag means.",
           },
-          { text: "Smuggling is fairly common among passengers." },
+          { text: "Roughly half the passengers are smuggling something." },
           {
             text: "Smugglers know how to avoid the scanners there.",
             whyNot: "That would lower the scanner's hits, but it isn't the missing link.",
@@ -142,7 +142,7 @@ const probability: Record<string, LessonScript> = {
         ],
         correct: 1,
         hint: "If almost no passengers smuggle, who would the flags mostly be?",
-        why: "A flag only means what its accuracy suggests if the thing being sought is common enough. Otherwise most flags are false alarms.",
+        why: "A 95% accurate scanner's flags are 95% right only if about half the passengers smuggle. The rarer smuggling is, the more flags are false alarms.",
       },
       {
         id: "updater",
@@ -243,7 +243,7 @@ const probability: Record<string, LessonScript> = {
       prompt:
         "Work out which option has the higher average payoff, and say whether that settles the choice.",
       passage:
-        "Sol can take a market stall job that pays $300 a week for certain, or sell his own crafts and earn $900 in a good week (a 1-in-4 chance) and nothing otherwise. He can afford a few weeks with no pay, but not many.",
+        "Sol can take a job at a market stand that pays $300 a week for certain, or sell his own crafts and earn $900 in a good week (a 1-in-4 chance) and nothing otherwise. He can afford a few weeks with no pay, but not many.",
       guidance:
         "Multiply each payoff by its chance, add them up, then consider whether Sol can repeat the choice.",
     },
@@ -420,7 +420,7 @@ const probability: Record<string, LessonScript> = {
         prompt:
           "Zara is offered phone insurance. What does the expected value say, and what else matters?",
         stimulus:
-          "A shop offers Zara a $60 plan for her $400 phone, covering one replacement over two years. She reckons there's a 10% chance she'll break or lose it in that time. She has $500 in savings.",
+          "A store offers Zara a $60 plan for her $400 phone, covering one replacement over two years. She thinks there's a 10% chance she'll break or lose it in that time. She has $2,000 in savings.",
         options: [
           {
             text: "Buy it: losing or breaking a $400 phone would be a disaster for her.",
@@ -435,7 +435,7 @@ const probability: Record<string, LessonScript> = {
           {
             text: "Buy it: $60 is far less than the $400 the phone cost her.",
             whyNot:
-              "Comparing the price with the whole phone ignores the 10% chance. On average the cover is worth $40.",
+              "Comparing the price with the whole phone ignores the 10% chance. On average the plan is worth $40.",
           },
           {
             text: "On average it's worth $40, less than $60, and she can afford a loss.",
@@ -443,7 +443,7 @@ const probability: Record<string, LessonScript> = {
         ],
         correct: 3,
         hint: "Multiply the payout by its chance. Then ask whether a loss would actually hurt her badly.",
-        why: "10% × $400 = $40 on average, below the $60 price. With $500 saved, a loss wouldn't be ruinous, so the average is a fair guide here. Someone with no savings might reasonably choose otherwise.",
+        why: "10% × $400 = $40 on average, below the $60 price. With $2,000 saved, a loss wouldn't be ruinous, so the average is a fair guide here. Someone with no savings might reasonably choose otherwise.",
       },
     ],
   },
@@ -470,7 +470,7 @@ const probability: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Dev checked three months of sales and expanded. A storm then closed the shop for a week.",
+            text: "Dev checked three months of sales and expanded. A storm then closed the store for a week.",
             bucket: "good",
             why: "He used the evidence he had. The storm was bad luck.",
           },
@@ -484,13 +484,13 @@ const probability: Record<string, LessonScript> = {
             id: "3",
             text: "Omar skipped a safety check to save time. Nothing went wrong.",
             bucket: "poor",
-            why: "Skipping the check was a poor choice even though it got away with it.",
+            why: "Skipping the check was a poor choice even though he got away with it.",
           },
           {
             id: "4",
             text: "Tessa studied the route, packed water and set off. She got a flat tire.",
             bucket: "good",
-            why: "She prepared well. A puncture is bad luck, not bad planning.",
+            why: "She prepared well. A flat tire is bad luck, not bad planning.",
           },
         ],
         hint: "Would you make the same choice knowing only what they knew?",
@@ -517,7 +517,7 @@ const probability: Record<string, LessonScript> = {
         prompt: "Tap the step where Marta judges the decision by how it turned out.",
         passage: [
           {
-            text: "Marta sold her shares on a hunch, without checking any prices.",
+            text: "Marta bought shares on a hunch, without checking anything about the company.",
             tappable: true,
             whyNot:
               "This describes what she did. Acting on a hunch is the process, not the conclusion.",
@@ -629,7 +629,7 @@ const probability: Record<string, LessonScript> = {
           },
           {
             id: "b",
-            text: "Four friends who copied it lost money in the same years.",
+            text: "Four friends who copied it last year all lost money.",
             shift: -20,
             note: "If the method were good, copies of it should have done well too.",
           },
@@ -637,7 +637,7 @@ const probability: Record<string, LessonScript> = {
             id: "c",
             text: "Over 20 years, in six different markets, it beat a plain fund in four years out of five.",
             shift: 30,
-            note: "A long record across changing conditions is hard to put down to luck.",
+            note: "A long record across changing conditions is hard to chalk up to luck.",
           },
         ],
         hint: "Which facts would be hard to get by luck alone?",
@@ -647,9 +647,9 @@ const probability: Record<string, LessonScript> = {
         id: "together",
         label: "Putting it together",
         kind: "choice",
-        prompt: "A fundraiser lost money. How should the trustees judge the decision?",
+        prompt: "A fundraiser lost money. How should the board judge the decision?",
         stimulus:
-          "A small charity spent $5,000 on a fundraising dinner after checking that similar dinners had raised $8,000 to $12,000. A storm on the night kept half the guests away, and it raised only $3,000. The trustees say: “That was a bad decision. No more dinners.”",
+          "A small charity spent $5,000 on a fundraising dinner after checking that similar dinners had raised $8,000 to $12,000. A storm that evening kept half the guests away, and it raised only $3,000. The board says: “That was a bad decision. No more dinners.”",
         options: [
           {
             text: "Sound but unlucky: the evidence was good and the storm unforeseeable.",
@@ -666,8 +666,8 @@ const probability: Record<string, LessonScript> = {
           },
         ],
         correct: 0,
-        hint: "Separate what they knew when they decided from what happened on the night.",
-        why: "They checked how similar dinners did, and the storm was luck they couldn't plan for. The decision was sound. A fair review might add cover for bad weather, not drop dinners altogether.",
+        hint: "Separate what they knew when they decided from what happened at the dinner.",
+        why: "They checked how similar dinners did, and the storm was luck they couldn't plan for. The decision was sound. A fair review might add a backup plan for bad weather, not drop dinners altogether.",
       },
     ],
   },
@@ -694,18 +694,18 @@ const probability: Record<string, LessonScript> = {
           {
             id: "a",
             text: "It had long lines on its first three days.",
-            shift: 5,
-            note: "New places draw curious crowds, so early lines say little.",
+            shift: 0,
+            note: "New places draw curious crowds, so early lines are no real evidence either way.",
           },
           {
             id: "b",
             text: "It is still busy after six months, mostly with regulars.",
             shift: 20,
-            note: "Steady repeat custom is much harder to fake than an opening rush.",
+            note: "Steady repeat business is much harder to fake than an opening rush.",
           },
           {
             id: "c",
-            text: "Its landlord has announced a large rent rise.",
+            text: "Its landlord has announced a large rent increase.",
             shift: -15,
             note: "A bigger cost makes closing more likely.",
           },
@@ -713,7 +713,7 @@ const probability: Record<string, LessonScript> = {
             id: "d",
             text: "The owner's cousin says it will be “huge.”",
             shift: 0,
-            note: "A relative's enthusiasm isn't new information about the shop.",
+            note: "A relative's enthusiasm isn't new information about the bakery.",
           },
         ],
         hint: "Which facts would be hard to get without the bakery really doing well?",
@@ -739,7 +739,7 @@ const probability: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "You are 70% sure a new café is good. One friend says she disliked it. How far should you move?",
+          "You are 70% sure a new cafe is good. One friend says she disliked it. How far should you move?",
         options: [
           {
             text: "Down to 0%, since it must be terrible.",
@@ -768,15 +768,15 @@ const probability: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Council records show it closed in 9 of the last 10 winters.",
+            text: "City records show it closed in 9 of the last 10 winters.",
             bucket: "lot",
             why: "A long, official record is strong and hard to fake.",
           },
           {
             id: "2",
-            text: "A neighbor says it was wet last Tuesday.",
+            text: "A neighbor says it flooded last Tuesday.",
             bucket: "little",
-            why: "One wet day says little about every winter.",
+            why: "One flooded day says little about every winter.",
           },
           {
             id: "3",
@@ -873,7 +873,7 @@ const probability: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A blind test disagrees with you. How should your confidence change?",
         stimulus:
-          "You're 80% sure the Harbor Café makes the best coffee in town. Then the local paper runs a blind taste test, with 200 tasters and the cafés unnamed, and Harbor comes seventh of ten.",
+          "You're 80% sure the Harbor Cafe makes the best coffee in town. Then the local paper runs a blind taste test, with 200 tasters and the cafes unnamed, and Harbor comes in seventh of ten.",
         options: [
           {
             text: "Not at all: you know what you like, whatever any test says about it.",
@@ -891,7 +891,7 @@ const probability: Record<string, LessonScript> = {
         ],
         correct: 2,
         hint: "How likely is a seventh place in a large blind test if Harbor really is the best?",
-        why: "If Harbor were the best, it would rarely come seventh in a large blind test, so the result is strong evidence. Move a long way, but not all the way: taste varies and one test isn't final.",
+        why: "If Harbor were the best, it would rarely come in seventh in a large blind test, so the result is strong evidence. Move a long way, but not all the way: taste varies and one test isn't final.",
       },
     ],
   },
@@ -903,7 +903,7 @@ const probability: Record<string, LessonScript> = {
       prompt:
         "Trace the effects: what the rule does first, how people respond, and what that leads to.",
       passage:
-        "The council of Alder Vale limits parking on its main street to one hour, so that spaces turn over faster. Café owners say their customers need longer. The retail park outside town offers free parking all day.",
+        "The Alder Vale city council limits parking on its main street to one hour, so that spaces turn over faster. Cafe owners say their customers need longer. The shopping center outside town offers free parking all day.",
       guidance:
         "Follow the chain at least two steps, and say what you would check to see it happening.",
     },
@@ -911,17 +911,17 @@ const probability: Record<string, LessonScript> = {
       {
         id: "parking",
         kind: "choice",
-        prompt: "Which is the most likely knock-on effect that nobody planned?",
+        prompt: "Which is the most likely ripple effect that nobody planned?",
         stimulus:
-          "Alder Vale limits high-street parking to one hour so more spaces come free. The retail park outside town has free parking all day.",
+          "Alder Vale limits main-street parking to one hour so more spaces come free. The shopping center outside town has free parking all day.",
         options: [
-          { text: "Some shoppers go to the retail park, where parking is free." },
+          { text: "Some shoppers go to the shopping center, where parking is free." },
           {
             text: "Spaces free up, so the main street becomes busier.",
-            whyNot: "That is the intended first effect, not a knock-on nobody planned.",
+            whyNot: "That is the intended first effect, not a ripple effect nobody planned.",
           },
           {
-            text: "The council collects more in parking fines each month.",
+            text: "The city council collects more in parking fines each month.",
             whyNot: "That is a direct result of the rule, not a change in what people do.",
           },
         ],
@@ -935,18 +935,18 @@ const probability: Record<string, LessonScript> = {
         prompt: "A gym raises the price of its off-peak pass by half. Sort each effect.",
         buckets: [
           { id: "direct", label: "Direct effect" },
-          { id: "knock", label: "Knock-on response" },
+          { id: "knock", label: "Ripple effect" },
         ],
         items: [
           {
             id: "1",
-            text: "Fewer people buy the off-peak pass.",
+            text: "Members who keep the off-peak pass now pay 50% more for it.",
             bucket: "direct",
             why: "It follows straight from the higher price.",
           },
           {
             id: "2",
-            text: "More people buy peak passes, so the gym is crowded at 6pm.",
+            text: "More people buy peak passes, so the gym is crowded at 6 p.m.",
             bucket: "knock",
             why: "People respond by changing what they buy.",
           },
@@ -964,7 +964,7 @@ const probability: Record<string, LessonScript> = {
           },
         ],
         hint: "Is it the price itself, or what people do because of it?",
-        why: "Direct effects come from the change itself. Knock-on effects come from people adjusting, and they're often larger.",
+        why: "Direct effects come from the change itself. Ripple effects come from people adjusting, and they're often larger.",
       },
       {
         id: "square",
@@ -972,7 +972,7 @@ const probability: Record<string, LessonScript> = {
         noun: "Prediction",
         prompt: "Which prediction thinks a step further?",
         a: "Banning cars from the square will cut traffic there.",
-        b: "Banning cars from the square will cut traffic there, but drivers may crowd the streets around it, and delivery shops may lose custom.",
+        b: "Banning cars from the square will cut traffic there, but drivers may crowd the streets around it, and stores there that rely on deliveries may lose business.",
         stronger: "b",
         factor: "It asks what people will do next",
         weakerWhy:
@@ -1039,7 +1039,7 @@ const probability: Record<string, LessonScript> = {
           },
           { text: "Ridership will stay about the same at the higher fare." },
           {
-            text: "Fares were last raised many years ago, under a different council.",
+            text: "Fares were last raised many years ago, under a different city council.",
             whyNot: "When they last rose doesn't show what riders will do now.",
           },
         ],
@@ -1053,19 +1053,19 @@ const probability: Record<string, LessonScript> = {
         prompt:
           "Does each fact make “the parking limit does more good than harm” more or less likely?",
         claim: "The one-hour parking limit does more good than harm.",
-        prior: 60,
+        prior: 50,
         cards: [
           {
             id: "a",
-            text: "Traffic on the main street falls by 15%.",
+            text: "Parking spaces turn over twice as fast.",
             shift: 10,
             note: "It is the intended benefit, and it is visible.",
           },
           {
             id: "b",
-            text: "Retail-park sales rise 20% while high-street shop sales fall 10%.",
+            text: "Shopping-center sales rise 20% while main-street store sales fall 10%.",
             shift: -25,
-            note: "Trade is leaving the street the rule was meant to help.",
+            note: "Business is leaving the street the rule was meant to help.",
           },
           {
             id: "c",
@@ -1075,39 +1075,39 @@ const probability: Record<string, LessonScript> = {
           },
           {
             id: "d",
-            text: "Wardens issue 300 more fines than last year.",
+            text: "Parking officers issue 300 more fines than last year.",
             shift: 0,
             note: "Fines show the rule is enforced, not that it is working.",
           },
         ],
         hint: "Which facts show what happened to the people the rule was meant to help?",
-        why: "A change has to be judged on its knock-on effects as well as its first one. Here the response outweighs the intended benefit.",
+        why: "A change has to be judged on its ripple effects as well as its first one. Here the response outweighs both benefits.",
       },
       {
         id: "together",
         label: "Putting it together",
         kind: "choice",
-        prompt: "Think a step further. What's the most likely knock-on effect?",
+        prompt: "Think a step further. What's the most likely ripple effect?",
         stimulus:
-          "To cut litter, Kelby council doubles the fine for dropping litter and, to save on emptying costs, removes half the trash cans in the town center.",
+          "To cut litter, the Kelby city council doubles the fine for dropping litter and, to save on emptying costs, removes half the trash cans downtown.",
         options: [
           {
             text: "Litter falls sharply, because the fine is now twice as high.",
             whyNot:
-              "That's the first-order effect the council hopes for. It ignores how people respond to fewer trash cans.",
+              "That's the first-order effect the city council hopes for. It ignores how people respond when the cans are gone.",
           },
           {
-            text: "People carrying trash find no trash can and drop it, so litter may rise.",
+            text: "People with a wrapper find no can nearby and drop it, so litter may rise.",
           },
           {
             text: "Nothing much changes, since most people never drop litter anyway.",
             whyNot:
-              "Possible, but it ignores the trash cans. Fewer trash cans changes what's convenient for everyone.",
+              "Possible, but it ignores the missing cans. Having fewer of them changes what's convenient for everyone.",
           },
         ],
         correct: 1,
         hint: "Two changes happen at once. What will someone holding a wrapper do when the nearest trash can is gone?",
-        why: "A higher fine pushes litter down, but fewer trash cans make dropping it more likely, and nobody can enforce fines everywhere. The response to the trash cans could outweigh the fine.",
+        why: "A higher fine pushes litter down, but fewer cans make dropping it more likely, and nobody can enforce fines everywhere. The response to the missing cans could outweigh the fine.",
       },
     ],
   },

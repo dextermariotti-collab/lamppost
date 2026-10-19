@@ -55,7 +55,7 @@ const claims: Record<string, LessonNotes> = {
     lessonId: "claims-hidden-assumptions",
     hook: "Arguments usually fail at a step nobody said out loud. Learn to find that step and you can test an argument that otherwise sounds airtight.",
     idea: [
-      "Reasons rarely lead straight to a conclusion. Between “the café has fewer customers” and “the new road hurt the café” sits an unstated belief: that nothing else changed. That unstated belief is an assumption, and the argument is only as strong as it is.",
+      "Reasons rarely lead straight to a conclusion. Between “the cafe has fewer customers” and “the new road hurt the cafe” sits an unstated belief: that nothing else changed. That unstated belief is an assumption, and the argument is only as strong as it is.",
       "To find one, ask what would have to be true for the reason to lead to the conclusion. Then test it by imagining it false. If the argument collapses, the assumption is load-bearing, and that is the place to look hardest.",
       "Assumptions aren't faults in themselves. Every argument has some, and many are safe. The skill is telling the safe ones from the shaky ones.",
     ],
@@ -75,7 +75,7 @@ const claims: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "“Since the Linden Street gym started opening at 5 am, more members say they're getting fitter. So the early opening is good for members' health.”",
+      case: "“Since the Linden Street gym started opening at 5 a.m., more members say they're getting fitter. So the early opening is good for members' health.”",
       moves: [
         "Find the gap: members say they're fitter, therefore the early opening improved their health.",
         "Name what bridges it. First, that saying you're fitter means you are. Second, that the early hours caused it rather than something else.",
@@ -103,7 +103,7 @@ const claims: Record<string, LessonNotes> = {
     hook: "Many disagreements are stuck because people are arguing about different kinds of thing. Some questions are settled by checking, and others by deciding what matters.",
     idea: [
       "A factual claim says how the world is, and could in principle be checked: the bus takes 40 minutes, the trial cut injuries by 9%. Facts can be wrong, but there is a way to find out.",
-      "An opinion reports a preference: the film was dull, coriander tastes awful. A value claim says what ought to matter or be done: the trial was worth the cost, the park should be protected. Values can be argued for with reasons, but data alone can't settle them, because the question is how to weigh things.",
+      "An opinion reports a preference: the movie was dull, cilantro tastes awful. A value claim says what ought to matter or be done: the trial was worth the cost, the park should be protected. Values can be argued for with reasons, but data alone can't settle them, because the question is how to weigh things.",
       "Real sentences mix all three. Split them before you argue: agree on the facts, then talk openly about the values.",
     ],
     terms: [
@@ -124,7 +124,7 @@ const claims: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "From the Brookfield community newsletter: “The new speed bumps on Mill Road have cut average speeds from 34 to 26 mph. They're ugly and noisy. The council was right to put them in, and should do the same on Station Road.”",
+      case: "From the Brookfield community newsletter: “The new speed bumps on Mill Road have cut average speeds from 34 to 26 mph. They're ugly and noisy. The city council was right to put them in, and should do the same on Station Road.”",
       moves: [
         "Split it. “Average speeds fell from 34 to 26 mph” is a factual claim: someone could check the measurements.",
         "“Ugly” is opinion. “Noisy” is partly checkable, with a sound meter.",
@@ -135,7 +135,7 @@ const claims: Record<string, LessonNotes> = {
     subtleties: [
       {
         title: "A value can hide inside a fact",
-        body: "“The council wasted $20,000” sounds factual, but “wasted” is a judgment. The $20,000 can be checked; whether it was wasted depends on what you think it should have bought. Watch for loaded verbs and adjectives.",
+        body: "“The city council wasted $20,000” sounds factual, but “wasted” is a judgment. The $20,000 can be checked; whether it was wasted depends on what you think it should have bought. Watch for loaded verbs and adjectives.",
       },
       {
         title: "Values still need reasons",
@@ -199,7 +199,7 @@ const claims: Record<string, LessonNotes> = {
     hook: "Some claims are built so that nothing could ever count against them. They sound informative and tell you almost nothing.",
     idea: [
       "A useful claim takes a risk: it is specific enough that a result could show it false. “This cream reduces wrinkles by a third in eight weeks” could fail a test. “This cream may help skin look younger” can't, because any result fits.",
-      "The escape is usually one or two words. May, can, up to, helps, supports, linked to and some people all loosen a claim until it promises nothing in particular. To test a claim, ask what result would count as failure. If the honest answer is none, the claim isn't telling you anything you can use.",
+      "The escape is usually one or two words. May, can, up to, helps, supports, linked to and some people are honest when they come with a size or a source. Without one, they're escape hatches that loosen a claim until it promises nothing in particular. To test a claim, ask what result would count as failure. If the honest answer is none, the claim isn't telling you anything you can use.",
     ],
     terms: [
       {
@@ -225,7 +225,7 @@ const claims: Record<string, LessonNotes> = {
     subtleties: [
       {
         title: "Caution isn't vagueness",
-        body: "A careful researcher who says “may” is often being honest about uncertainty, and then gives the numbers. The problem is “may” standing in for numbers. Check whether the soft word comes with a size and a comparison, or replaces them.",
+        body: "A careful researcher who says “may” is often being honest about uncertainty, and then gives the numbers. The problem is “may” standing in for numbers. Check whether the soft word comes with a size or a source, or replaces them.",
       },
       {
         title: "Stronger isn't testable",

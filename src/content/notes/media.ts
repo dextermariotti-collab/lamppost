@@ -7,7 +7,7 @@ const media: Record<string, LessonNotes> = {
     hook: "Most people read the headline and perhaps the first paragraph. Headlines are written to be read, not to be precise, and the gap is often large.",
     idea: [
       "Headlines overstate in predictable ways. They drop the conditions: a study in mice becomes “cure found,” a link in one survey becomes “causes.” And they report relative change where the absolute change would sound tiny: “risk doubles” when it went from 1 in 10,000 to 2 in 10,000.",
-      "Before trusting a headline about a study, find four things: who was studied, how many, what they were compared with, and how big the change was in absolute terms. Then check the verb. Linked to, associated with and may are honest about a correlation; causes, proves and cures claim far more.",
+      "Before trusting a headline about a study, find four things: who was studied, how many, what they were compared with, and how big the change was in absolute terms. Then check the verb. Linked to, associated with and may fit a correlation, and are honest when they come with a size or a source; without one, they're escape hatches. Causes, proves and cures claim far more.",
     ],
     terms: [
       {
@@ -20,10 +20,10 @@ const media: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Headline: “Night owls 30% more likely to get diabetes, study finds.” The study followed 4,000 adults in one city for ten years. Diabetes rose from 5 in 100 among early risers to 6.5 in 100 among night owls, who also exercised less.",
+      case: "Headline: “Night owls 30% more likely to get diabetes, study finds.” The study followed 4,000 adults in one city for ten years. By the end, 5 in 100 early risers had developed diabetes, against 6.5 in 100 night owls, who also exercised less.",
       moves: [
-        "Relative change: 5 to 6.5 is a 30% rise, so the headline's number is right.",
-        "Absolute change: 1.5 more cases per 100 people. Real, but less dramatic.",
+        "Relative difference: 6.5 in 100 is 30% higher than 5 in 100, so the headline's number is right.",
+        "Absolute difference: 1.5 more cases per 100 people. Real, but less dramatic.",
         "Cause: night owls exercised less, a possible common cause. “More likely to get” is fair; “causes” would not be.",
         "A faithful headline: “Night owls had slightly higher diabetes rates over ten years; less exercise may explain some of it.”",
       ],
@@ -66,7 +66,7 @@ const media: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A flyer from Elmstead Buses shows a bar chart headed “Punctuality soars!.” The bars go from 91% of buses on time last year to 94% this year, and the vertical axis runs from 90% to 95%.",
+      case: "A flyer from Elmstead Buses shows a bar chart headed “Punctuality soars!” The bars go from 91% of buses on time last year to 94% this year, and the vertical axis runs from 90% to 95%.",
       moves: [
         "Read the axis: it starts at 90%, so a 3-point difference fills most of the chart.",
         "Read the numbers: 91% to 94% on time. Late buses fell from 9 in 100 to 6 in 100, a real improvement.",
@@ -91,7 +91,7 @@ const media: Record<string, LessonNotes> = {
 
   "media-manipulation": {
     lessonId: "media-manipulation",
-    hook: "Some messages are built to make you act before you think. The techniques are few and recognisable, and noticing them is most of the defense.",
+    hook: "Some messages are built to make you act before you think. The techniques are few and recognizable, and noticing them is most of the defense.",
     idea: [
       "Manipulation works by pressure, not information. The common tools are urgency (“only today”), scarcity (“3 left!”), outrage, fear, flattery and social proof (“everyone's switching”). Each one shortens the time between feeling and acting, so you don't check.",
       "Strong feeling isn't the problem in itself. An honest appeal can be moving and still give figures you can check. The tell is pressure with nothing new to weigh: a deadline with no reason, a claim of scarcity you can't verify. When a message makes you feel rushed, that's the moment to slow down and ask what it isn't telling you.",
@@ -112,18 +112,18 @@ const media: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A text message: “Your Swiftlane Delivery package is on hold! Pay the $1.99 redelivery fee within 2 hours or your package will be returned. Tap here now.”",
+      case: "A text message: “Silverbrook Tollway: You have an unpaid toll of $4.35. Pay within 12 hours to avoid a $75 late fee. Tap here to pay now.”",
       moves: [
-        "Find the pressure: “on hold!,” “within 2 hours,” “tap here now.”",
-        "Ask what's new to weigh: no order number, no sender you can check, no reason for the deadline.",
+        "Find the pressure: “within 12 hours,” “a $75 late fee,” “tap here to pay now.”",
+        "Ask what's new to weigh: no license plate, no date or road, no reason for the deadline.",
         "Notice what it asks for: card details through a link, which is exactly what a scam would want.",
-        "The move: don't tap. Check any delivery through the company's own app or a website address you type yourself.",
+        "The move: don't tap. Check for unpaid tolls through the toll road's own app or a website address you type yourself.",
       ],
     },
     subtleties: [
       {
         title: "Honest persuasion uses feeling too",
-        body: "A flood appeal may show distressing pictures. If it also says what the money does and where its accounts are published, it's giving you something to check. Don't dismiss every emotional message as manipulation.",
+        body: "A flood relief fundraiser may show distressing pictures. If it also says what the money does and where its accounts are published, it's giving you something to check. Don't dismiss every emotional message as manipulation.",
       },
       {
         title: "Pressure works best when you're tired",
@@ -159,7 +159,7 @@ const media: Record<string, LessonNotes> = {
       moves: [
         "The general idea: sleep helps memory. Widely supported, so a reasonable starting point.",
         "The specific claim: the study, the year, the 40%. This is exactly what tools can invent. Search for the study itself.",
-        "The recommendation: easy to check against a health service's own published guidance.",
+        "The recommendation: easy to check against a public health agency's own published guidance.",
         "If the study can't be found, drop it, however precise it sounded.",
       ],
     },
@@ -180,7 +180,7 @@ const media: Record<string, LessonNotes> = {
 
   "media-lateral-reading": {
     lessonId: "media-lateral-reading",
-    hook: "Professional fact-checkers judge an unfamiliar website faster and better than most people, and not by reading it more carefully. They leave it almost straight away.",
+    hook: "Professional fact-checkers judge an unfamiliar website faster and better than most people, and not by reading it more carefully. They leave it almost right away.",
     idea: [
       "A website controls everything it says about itself: its design, its about page, its list of experts and its glowing quotes. Reading it harder only tells you more of its own story.",
       "Lateral reading means opening new tabs instead. Before reading closely, search for who runs the site and what independent sources say about them: who funds it, whether reputable outlets cite it, and what others say about the specific claim. A few minutes of this usually tells you more than half an hour on the page. Then go back and read, knowing who's talking.",
@@ -208,7 +208,7 @@ const media: Record<string, LessonNotes> = {
         "Don't judge by looks. A polished design and an official name cost little and prove nothing.",
         "Open a new tab and search for the institute's name with words like “funded by” or “who runs.”",
         "Suppose it turns out to be funded by a filter maker. That doesn't prove the claim false, but it's a reason to check independently.",
-        "Search the claim itself: what does your water supplier's published test report say?",
+        "Search the claim itself: what does your water utility's published test report say?",
       ],
     },
     subtleties: [

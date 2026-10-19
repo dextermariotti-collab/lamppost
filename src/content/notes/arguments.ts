@@ -26,7 +26,7 @@ const argumentsNotes: Record<string, LessonNotes> = {
     example: {
       case: "A staff email at Cobalt Print: “The printer on floor two broke three times this month, and each repair cost $180. A new one costs $900 and comes with a three-year warranty. Our office manager has worked here since 2015. Since repairs are adding up fast, we should replace it rather than keep fixing it.”",
       moves: [
-        "Conclusion: we should replace the printer rather than keep fixing it. “Should” and “since” point to it.",
+        "Conclusion: we should replace the printer rather than keep fixing it. “Should” marks it, and “since” marks the reason just before it.",
         "Premises: three breakdowns this month at $180 each, and a new printer costs $900 with a warranty.",
         "Background: the manager's start date supports nothing.",
         "Laid out: (1) repairs cost $540 this month; (2) a new printer costs $900 and would be repaired free for three years; so (3) replace it. Now you can ask whether (1) will continue.",
@@ -51,7 +51,7 @@ const argumentsNotes: Record<string, LessonNotes> = {
     lessonId: "arguments-strong-vs-weak",
     hook: "An argument can have true premises and still fail to support its conclusion. Two quick tests tell you whether the reasons actually do their job.",
     idea: [
-      "The first test is relevance: if the premise were true, would it bear on the conclusion at all? “The park café has lovely tiles” is true, and irrelevant to whether it should open in winter.",
+      "The first test is relevance: if the premise were true, would it bear on the conclusion at all? “The park cafe has lovely tiles” is true, and irrelevant to whether it should open in winter.",
       "The second is sufficiency: is there enough support, of the right kind, for a claim this size? Three friends liking a plan doesn't show a whole town wants it. A wider survey, a comparison or a number might.",
       "Notice what isn't on the list: whether you like the conclusion. A strong argument can point somewhere unwelcome, and a weak one can point where you hoped. Judge the support, not the destination.",
     ],
@@ -118,7 +118,7 @@ const argumentsNotes: Record<string, LessonNotes> = {
       moves: [
         "Notice what the weak version does: it swaps the reasons for a motive, and an unflattering one.",
         "Find the real reasons by asking supporters: lower running costs, keeping teachers, and longer days that suit some families' work patterns.",
-        "State them as they would: “A four-day week could save on transport and heating and help keep teachers, and some schools that tried it saw no drop in results.”",
+        "State them as they would: “A four-day week could save on busing and heating and help keep teachers, and some schools that tried it saw no drop in results.”",
         "Check: would a supporter nod? If so, argue with that version.",
       ],
     },
@@ -132,9 +132,9 @@ const argumentsNotes: Record<string, LessonNotes> = {
         body: "A steelman uses the best reasons supporters actually give, or would accept. Inventing a cleverer argument than anyone holds, then rebutting it, can still miss what people really think.",
       },
     ],
-    ask: "Would someone who holds this view say I've got it right?",
+    ask: "Would someone who holds this view say I've gotten it right?",
     tryIt:
-      "Pick a view you disagree with that a friend or relative holds. Write its best case in three sentences, then ask them whether you've got it right. Adjust until they say yes.",
+      "Pick a view you disagree with that a friend or relative holds. Write its best case in three sentences, then ask them whether you've gotten it right. Adjust until they say yes.",
   },
 
   "arguments-counterarguments": {
@@ -159,11 +159,11 @@ const argumentsNotes: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "The claim: Ashgrove Primary should close the road by its gate to cars at pick-up time. A parent objects: “Some of us work shifts and have ten minutes to get there. This would make us late every day.”",
+      case: "The claim: Ashgrove Elementary should close the road by its gate to cars at pick-up time. A parent objects: “Some of us work shifts and have ten minutes to get there. This would make us late every day.”",
       moves: [
         "Is this the strongest objection? It's specific, it affects real families, and supporters can't easily wave it away.",
         "A dodge would be: “Cars are bad for children's lungs.” That may be true, but it doesn't answer the time problem.",
-        "A real rebuttal answers on time: “A drop-off bay 200 yards away, with staff walking children in, adds about three minutes.”",
+        "A real rebuttal answers on time: “A pick-up spot 200 yards away, with staff walking children out to it, adds about three minutes.”",
         "A concession if that isn't enough: “Families with a shift-work permit could still drive to the gate.”",
       ],
     },
@@ -205,11 +205,11 @@ const argumentsNotes: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A café owner writes: “Loyalty cards make customers come back more. Since we started ours in March, our regulars visit 30% more often.”",
+      case: "A cafe owner writes: “Loyalty cards make customers come back more. Since we started ours in March, our regulars visit 30% more often.”",
       moves: [
-        "Who: regulars at one café, not customers in general.",
+        "Who: regulars at one cafe, not customers in general.",
         "How much: 30% more visits since March. Say so, rather than just “more.”",
-        "How sure: one café, no comparison, and spring and summer may bring more visits anyway. Something changed; the card may be part of why.",
+        "How sure: one cafe, no comparison, and spring and summer may bring more visits anyway. Something changed; the card may be part of why.",
         "Qualified: “Since we started loyalty cards in March, our regulars have visited about 30% more often. The cards may be part of the reason.”",
       ],
     },

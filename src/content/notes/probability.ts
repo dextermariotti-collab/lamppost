@@ -89,14 +89,14 @@ const probability: Record<string, LessonNotes> = {
     ],
     ask: "What is each option worth on average, and what does the average leave out?",
     tryIt:
-      "Next time you're tempted by a prize draw, an extended warranty or a raffle, work out its expected value: the prize times the chance, minus the cost. Then decide whether anything else justifies it.",
+      "Next time you're tempted by a sweepstakes, an extended warranty or a raffle, work out its expected value: the prize times the chance, minus the cost. Then decide whether anything else justifies it.",
   },
 
   "probability-thinking-in-bets": {
     lessonId: "probability-thinking-in-bets",
     hook: "A good decision can turn out badly, and a reckless one can turn out well. If you judge only by results, you'll learn the wrong lesson from both.",
     idea: [
-      "Outcomes mix two things: the quality of the decision and luck. A decision is good if it used the information available at the time sensibly, weighed the likely outcomes and their chances, and fitted the stakes. A single result tells you only a little about that.",
+      "Outcomes mix two things: the quality of the decision and luck. A decision is good if it used the information available at the time sensibly, weighed the likely outcomes and their chances, and fit the stakes. A single result tells you only a little about that.",
       "Judging decisions by outcomes is common enough to have a name: resulting. It leads people to copy lucky gamblers and abandon sound plans after one bad break. A better review asks four things: what did we know, what did we expect, what happened, and how much of the gap was luck?",
     ],
     terms: [
@@ -111,12 +111,12 @@ const probability: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Two drivers take the same back road to avoid a jam. Ines checked the traffic map first, which showed the road clear; a water main burst minutes later and she was late. Tomas just guessed, and arrived early.",
+      case: "Two drivers hit the same jam on the main road. Ines checked the traffic map, which showed a back road clear, and took it; a water main burst there minutes later and she was late. Tomas stayed on the main road without checking anything; the jam cleared, and he arrived early.",
       moves: [
         "Separate the decision from the result. Ines used the best information she had; Tomas checked nothing.",
         "Ask what was knowable: the water main burst after Ines checked. She couldn't have seen it coming.",
         "Judge the decisions: Ines's was sound and unlucky; Tomas's was careless and lucky.",
-        "The lessons: Ines should keep checking the map, and Tomas shouldn't count on guessing.",
+        "The lessons: Ines should keep checking the map, and Tomas shouldn't count on jams clearing.",
       ],
     },
     subtleties: [
@@ -158,12 +158,12 @@ const probability: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Ravi thinks his local swimming pool might be closing: maybe 30% likely. Then three things happen: he hears a rumor in the changing room, a council agenda lists “future of Ravenbrook Pool,” and the pool cancels all bookings after March.",
+      case: "Ravi thinks his local swimming pool might be closing: maybe 30% likely. Then three things happen: he hears a rumor in the locker room, a city council agenda lists “future of Ravenbrook Pool,” and the pool cancels all bookings after March.",
       moves: [
         "Start from his prior: about 30%.",
         "The rumor: rumors like this spread whether or not a pool is closing. A small nudge at most.",
-        "The agenda item: likelier if closure is being considered, but councils review pools for many reasons. A moderate move.",
-        "The canceled bookings: hard to explain unless something is ending. A big move, though a refit would fit too, so not all the way to certain.",
+        "The agenda item: likelier if closure is being considered, but city councils review pools for many reasons. A moderate move.",
+        "The canceled bookings: hard to explain unless something is ending. A big move, though a renovation would fit too, so not all the way to certain.",
       ],
     },
     subtleties: [
@@ -173,7 +173,7 @@ const probability: Record<string, LessonNotes> = {
       },
       {
         title: "Expected evidence moves you less",
-        body: "If you were already sure a shop was closing, a “closing down” sign adds little. Evidence moves you most when it's surprising given what you believed.",
+        body: "If you were already sure a store was closing, a “going out of business” sign adds little. Evidence moves you most when it's surprising given what you believed.",
       },
     ],
     ask: "How much more likely is this if the claim is true than if it's false?",
@@ -185,7 +185,7 @@ const probability: Record<string, LessonNotes> = {
     lessonId: "probability-second-order",
     hook: "Most plans are judged by what they do first. What people do in response often matters more, and it's the part nobody planned.",
     idea: [
-      "A first-order effect is the direct, intended result of a change: a parking charge reduces parking. A second-order effect is what follows as people respond: drivers park on side streets, shoppers go to the retail park instead, the main street gets quieter.",
+      "A first-order effect is the direct, intended result of a change: a parking charge reduces parking. A second-order effect is what follows as people respond: drivers park on side streets, shoppers go to the shopping center instead, the main street gets quieter.",
       "To find second-order effects, ask “and then what?” at least twice, and ask who will change what they do. People respond to prices, rules and rewards, and when a measure becomes a target they work on the measure. The response can be bigger than the change, cancel it out, or even reverse it.",
     ],
     terms: [
@@ -208,14 +208,14 @@ const probability: Record<string, LessonNotes> = {
       moves: [
         "First order: staff work to see patients faster. Good.",
         "Then what? Patients close to four hours get moved to a ward to stop the clock, whether or not that's best for them.",
-        "And then what? Wards fill up, and planned operations are canceled to make room.",
+        "And then what? Wards fill up, and scheduled surgeries are canceled to make room.",
         "So judge the target on all three, and also measure what it was meant to improve: how patients do.",
       ],
     },
     subtleties: [
       {
-        title: "Knock-on effects can be good",
-        body: "A new cycle lane may cut car trips, which makes the road quieter and draws more cyclists. Second-order thinking finds benefits too, and they can be the main reason a change is worth it.",
+        title: "Ripple effects can be good",
+        body: "A new bike lane may cut car trips, which makes the road quieter and draws more cyclists. Second-order thinking finds benefits too, and they can be the main reason a change is worth it.",
       },
       {
         title: "You can't foresee everything",

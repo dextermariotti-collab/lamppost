@@ -155,7 +155,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       title: "Vague language",
       objective: "Spot words loose enough to make a claim unfalsifiable.",
       keyIdea:
-        "Weasel words — up to, may, linked to, supports, helps — leave a claim with no result that could ever count as failure.",
+        "Weasel words — up to, may, linked to, supports, helps — used without a size or a source leave a claim with no result that could ever count as failure.",
       trap: "Learners sense the claim is slippery but cannot point at the word doing it, or accept a rewrite that is merely stronger rather than testable.",
       emoji: "🌫️",
     },
@@ -168,7 +168,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       title: "Types of evidence",
       objective: "Rank the main kinds of evidence by what each one can actually show.",
       keyIdea:
-        "Evidence strength is how well it rules out other explanations: randomized experiment beats cohort study, which beats survey, which beats expert opinion, which beats anecdote.",
+        "Evidence strength is how well it rules out other explanations: as a rule of thumb, randomized experiment beats cohort study, which beats survey, which beats expert opinion, which beats anecdote, though a large, careful study can outweigh a small, sloppy one of a stronger kind.",
       trap: "Learners rank by how convincing the wording sounds. Every item must be checkable evidence, never a restated claim.",
       emoji: "🧾",
     },
@@ -338,7 +338,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       title: "Premise to conclusion",
       objective: "Lay out any argument as explicit premises leading to a conclusion.",
       keyIdea:
-        "Mapping an argument means saying what supports what: premises first, each doing a job, conclusion last.",
+        "Mapping an argument means saying what supports what: find the conclusion wherever it sits, then the job each premise does for it.",
       trap: "Learners order by how the text reads rather than by what supports what. Include one card that is background, not support.",
       emoji: "🧩",
     },
@@ -395,7 +395,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       title: "Base rates",
       objective: "Start from how common something is before weighing specific signals.",
       keyIdea:
-        "With a rare condition, even an accurate test produces mostly false positives — the base rate does most of the work.",
+        "With a rare condition, even an accurate test can produce more false positives than true ones — the base rate does most of the work.",
       trap: "Learners answer with the test's accuracy. Use computable numbers and show the working.",
       emoji: "📊",
     },
@@ -439,8 +439,8 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       title: "Second-order effects",
       objective: "Trace what happens after the obvious first consequence.",
       keyIdea:
-        "Ask 'and then what?': people respond to the change, and the response is often bigger than the change.",
-      trap: "Learners stop at the intended effect. The keyed answer is the knock-on nobody planned.",
+        "Ask 'and then what?': people respond to the change, and the response can be bigger than the change, cancel it out or even reverse it.",
+      trap: "Learners stop at the intended effect. The keyed answer is the ripple effect nobody planned.",
       emoji: "🌊",
     },
   ],
@@ -472,7 +472,7 @@ const UNIT_LESSONS: Record<string, Draft[]> = {
       drills: ["highlight", "judge", "flaw", "rewrite"],
       written: "critique",
       title: "Spotting manipulation",
-      objective: "Recognize emotional framing, selective omission and manufactured urgency.",
+      objective: "Recognize emotional pressure, false scarcity and manufactured urgency.",
       keyIdea:
         "Urgency, outrage and false scarcity are used to stop you checking; the tell is pressure without new information.",
       trap: "Learners flag strong feeling itself. Some passages are emotive and honest.",
@@ -574,7 +574,7 @@ export const CROSS_LINKS: CurriculumLink[] = [
     to: "media-misleading-charts",
     concept: "Anchoring ↔ misleading charts",
     detail:
-      "A truncated axis or a hand-picked baseline works by anchoring you to a number before you reason about it.",
+      "A truncated axis misleads through the drawing: bar heights stop matching the values. A hand-picked start date works more like an anchor, setting the point every later number is judged against.",
   },
   {
     from: "biases-sunk-cost",
@@ -602,7 +602,7 @@ export const CROSS_LINKS: CurriculumLink[] = [
     to: "media-headlines-vs-findings",
     concept: "Vague language ↔ headlines",
     detail:
-      "Headlines survive fact-checking by staying vague: 'linked to', 'may', 'up to' all move the claim out of reach.",
+      "Words like 'linked to,' 'may' and 'up to' are honest when they come with a size or a source, and an escape hatch when they don't: then no finding could prove the headline wrong.",
   },
   {
     from: "biases-overconfidence",

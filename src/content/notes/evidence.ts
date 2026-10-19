@@ -30,7 +30,7 @@ const evidence: Record<string, LessonNotes> = {
     example: {
       case: "The claim: “Brightway's phonics app improves reading.” The evidence offered: a teacher's glowing review, a survey of 300 parents who bought it, and a trial in which 40 classes were randomly assigned either to use the app or to carry on as usual.",
       moves: [
-        "Ask what else could explain better reading: keen parents, good teachers, children who were improving anyway.",
+        "Ask what else could explain better reading: motivated parents, good teachers, children who were improving anyway.",
         "The review is one impression, from a teacher who may have chosen the app. It rules out almost nothing.",
         "The parents chose to buy it, so they may differ from other parents in many ways. The survey shows a link at best.",
         "Random assignment makes the two sets of classes alike apart from the app. If the app classes read better, the trial is what points at the app.",
@@ -55,8 +55,8 @@ const evidence: Record<string, LessonNotes> = {
     lessonId: "evidence-anecdote-vs-data",
     hook: "A single story can move us more than a page of numbers. That is useful when the story is typical, and misleading when it isn't.",
     idea: [
-      "An anecdote is one case: my uncle never wore a cycle helmet and was fine, my neighbor's car was stolen on our street. One case proves that something can happen. It can't tell you how often it happens, or what is typical, because you don't know how many cases went the other way.",
-      "Data counts all the cases, including the dull ones nobody tells stories about. The piece missing from most anecdotes is the denominator: out of how many? Three lottery winners from one shop sounds remarkable until you learn the shop sold two million tickets.",
+      "An anecdote is one case: my uncle never wore a bike helmet and was fine, my neighbor's car was stolen on our street. One case proves that something can happen. It can't tell you how often it happens, or what is typical, because you don't know how many cases went the other way.",
+      "Data counts all the cases, including the dull ones nobody tells stories about. The piece missing from most anecdotes is the denominator: out of how many? Three lottery winners from one store sounds remarkable until you learn the store sold two million tickets.",
       "Stories still have uses. They suggest what to look into, and show what an average means for a person.",
     ],
     terms: [
@@ -103,7 +103,7 @@ const evidence: Record<string, LessonNotes> = {
     lessonId: "evidence-source-reliability",
     hook: "You can't check everything yourself, so most of what you know comes from sources. The skill is deciding quickly and fairly which ones deserve your trust.",
     idea: [
-      "Four questions decide most cases. Does the source know this subject, through relevant training or direct access to what it describes? Who pays it, and does it gain if you believe it? What has it got right or wrong before? Does anyone independent agree?",
+      "Four questions decide most cases. Does the source know this subject, through relevant training or direct access to what it describes? Who pays it, and does it gain if you believe it? What has it gotten right or wrong before? Does anyone independent agree?",
       "No single answer settles it. A company's scientists may know the subject better than anyone and still have a stake in the result. A campaign group may be independent of sellers and still have a cause to promote. Weigh the four together, and treat a strong incentive as a reason to look for independent confirmation, not as proof the source is wrong.",
     ],
     terms: [
@@ -150,7 +150,7 @@ const evidence: Record<string, LessonNotes> = {
     hook: "Two things rising together is one of the most common reasons people give for one causing the other. It is also one of the easiest to get wrong.",
     idea: [
       "A correlation means two things tend to go together. A cause means changing one would change the other. Every correlation has rival explanations that have to be ruled out before you can call it a cause.",
-      "There are three to check. A common cause: something else drives both, as hot weather drives ice cream sales and sunburn. Reverse causation: the arrow runs the other way, as when people who already feel ill stop exercising. Coincidence: with enough data, some things line up by chance. The surest way past all three is an experiment where chance decides who gets the supposed cause.",
+      "There are three to check. A common cause: something else drives both, as hot weather drives ice cream sales and sunburn. Reverse causation: the arrow runs the other way, as when people who already feel sick stop exercising. Coincidence: with enough data, some things line up by chance. The surest way past all three is an experiment where chance decides who gets the supposed cause.",
     ],
     terms: [
       {
@@ -195,7 +195,7 @@ const evidence: Record<string, LessonNotes> = {
     lessonId: "evidence-sample-cherry-picking",
     hook: "Every number about people depends on which people were counted. Change who gets counted and the same question can give a very different answer.",
     idea: [
-      "A sample is the part you measure to learn about the whole. It misleads in three main ways. It can be too small, so chance swings the result: four coin flips easily give four heads. It can be self-selected, so the keen or angry answer and everyone else doesn't. Or it can hold only survivors, so the cases that failed are missing.",
+      "A sample is the part you measure to learn about the whole. It misleads in three main ways. It can be too small, so chance swings the result: four heads in four flips isn't rare (about 1 in 16). It can be self-selected, so the eager or angry answer and everyone else doesn't. Or it can hold only survivors, so the cases that failed are missing.",
       "Cherry-picking is choosing which results to show: the best weeks, the happiest reviews, the start date that flatters a trend. The check is the same for all of these: ask who was counted, who was left out, and how they were chosen.",
     ],
     terms: [
@@ -230,7 +230,7 @@ const evidence: Record<string, LessonNotes> = {
       },
       {
         title: "Small groups produce the extremes",
-        body: "In a league table, the smallest schools tend to have both the best and the worst results, just by chance. Before praising or blaming an extreme result, check whether it comes from a small group.",
+        body: "In school rankings, the smallest schools tend to have both the best and the worst results, just by chance. Before praising or blaming an extreme result, check whether it comes from a small group.",
       },
     ],
     ask: "Who was counted, and who was left out?",

@@ -12,7 +12,7 @@ const argumentsUnit: Record<string, LessonScript> = {
       prompt:
         "Set the argument out: the conclusion, the reasons that support it, and anything that is only background.",
       passage:
-        "Wrenfield's bus depot should keep the number 9 route. It is the only bus that reaches the hospital before 7am, and last month more than 600 staff and visitors used it. The depot was built in 1962 and its clock is famously slow.",
+        "Wrenfield's bus depot should keep the number 9 route. It is the only bus that reaches the hospital before 7 a.m., and last month more than 600 staff and visitors used it. The depot was built in 1962 and its clock is famously slow.",
       guidance: "Say which sentence is the point, and which sentences try to prove it.",
     },
     steps: [
@@ -27,16 +27,16 @@ const argumentsUnit: Record<string, LessonScript> = {
           { id: "e", role: "evidence", label: "Something you can check" },
         ],
         pieces: [
-          { id: "pc", text: "Harbor Café should close on Mondays.", role: "conclusion" },
+          { id: "pc", text: "Harbor Cafe should close on Mondays.", role: "conclusion" },
           { id: "pp", text: "Mondays bring in the fewest customers.", role: "premise" },
           {
             id: "pe",
-            text: "Last year Monday takings were $90, against $310 on Saturdays.",
+            text: "Last year, Mondays averaged $90 in sales, against $310 on Saturdays.",
             role: "evidence",
           },
           {
             id: "px",
-            text: "The owner has run the café for eleven years.",
+            text: "The owner has run the cafe for eleven years.",
             role: null,
             note: "True, but how long she has run it doesn't show why Mondays should be closed.",
           },
@@ -62,7 +62,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
           {
             id: "2",
-            text: "Many night-shift workers finish at 10pm, after the last boat.",
+            text: "Many night-shift workers finish at 10 p.m., after the last boat.",
             bucket: "reason",
             why: "It says why a later boat is needed.",
           },
@@ -93,7 +93,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Which sentence is the conclusion?",
         stimulus:
-          "Since the pool's roof leaks, and repairs would cost more than a new roof, the council should replace it.",
+          "Since the pool's roof leaks, and repairs would cost more than a new roof, the town should replace it.",
         options: [
           {
             text: "The pool's roof leaks.",
@@ -103,7 +103,7 @@ const argumentsUnit: Record<string, LessonScript> = {
             text: "Repairs cost more than a new roof.",
             whyNot: "Also a reason. It is offered in support of the last part.",
           },
-          { text: "The council should replace the roof." },
+          { text: "The town should replace the roof." },
         ],
         correct: 2,
         hint: "The word “since” introduces reasons. What are they reasons for?",
@@ -237,7 +237,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
           {
             id: "pe",
-            text: "Door-pass records show 40% of staff in on Fridays, against 85% midweek.",
+            text: "Keycard records show 40% of staff in on Fridays, against 85% midweek.",
             role: "evidence",
           },
           {
@@ -248,7 +248,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
         ],
         hint: "Find what the email wants first. Then ask which pieces give reasons, which gives a checkable figure, and which supports nothing.",
-        why: "The conclusion is the switch to four days. The reasons say Friday adds little and a day can be saved, and the door-pass figure backs the first. The company's history supports nothing.",
+        why: "The conclusion is the switch to four days. The reasons say Friday adds little and a day can be saved, and the keycard figure backs the first. The company's history supports nothing.",
       },
     ],
   },
@@ -289,15 +289,15 @@ const argumentsUnit: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Twenty parents say they cannot drive their children in.",
+            text: "Twenty parents say they can't drive their children to school.",
             bucket: "bears",
             why: "It shows a need that a walking bus would meet.",
           },
           {
             id: "2",
-            text: "Traffic at the school gate is heavy at 8:45.",
+            text: "Drop-off traffic outside the school is heavy at 8:45 a.m.",
             bucket: "bears",
-            why: "Fewer cars at the gate is a benefit of walking together.",
+            why: "Fewer cars at drop-off is a benefit of walking together.",
           },
           {
             id: "3",
@@ -318,22 +318,22 @@ const argumentsUnit: Record<string, LessonScript> = {
             why: "It gives a direct reason to favor walking.",
           },
         ],
-        hint: "Would the reason still matter if the claim were false?",
+        hint: "Ask of each one: would it make a walking bus more or less worth running?",
         why: "Relevance is the first test. A reason that has no link to the claim can't support it, however true it is.",
       },
       {
         id: "enough",
         kind: "choice",
         prompt: "Which addition would do most to make the conclusion follow?",
-        stimulus: "Three of Dana's friends loved the new café, so it is the best café in town.",
+        stimulus: "Three of Dana's friends loved the new cafe, so it is the best cafe in town.",
         options: [
           {
             text: "Dana's friends all have very good taste in coffee.",
-            whyNot: "Even if true, three opinions still leave out most of the town's cafés.",
+            whyNot: "Even if true, three opinions still leave out most of the town's cafes.",
           },
-          { text: "Hundreds of customers ranked it above every other café." },
+          { text: "Hundreds of customers ranked it above every other cafe." },
           {
-            text: "The café is on the main street, close to the station.",
+            text: "The cafe is on the main street, close to the station.",
             whyNot: "Where it is says nothing about how good it is.",
           },
         ],
@@ -395,10 +395,11 @@ const argumentsUnit: Record<string, LessonScript> = {
         reason: "The town's only bakery raised its bread prices by 10%.",
         conclusion: "So the bakery is now making more profit.",
         options: [
-          { text: "The bakery's costs did not rise by as much." },
+          { text: "Its costs and the amount it sells stayed about the same." },
           {
             text: "Bread is a very popular food in the town.",
-            whyNot: "Popularity doesn't show whether the price rise covered the bakery's costs.",
+            whyNot:
+              "Popularity doesn't show whether the price increase covered the bakery's costs.",
           },
           {
             text: "Other bakeries in the region raised prices last year.",
@@ -406,7 +407,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
         ],
         correct: 0,
-        hint: "Profit is what is left after costs. What could stop the price rise helping?",
+        hint: "Profit is what is left after costs. What could stop the price increase from helping?",
         why: "Higher prices only mean higher profit if costs and sales hold steady. That missing step is what makes the argument sufficient.",
       },
       {
@@ -436,7 +437,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
           {
             id: "d",
-            text: "A school survey finds 800 residents swim there at least once a month.",
+            text: "Entry records show 2,500 different residents swam there last summer.",
             shift: -25,
             note: "Many more people use it than a typical day suggests, which weakens the claim.",
           },
@@ -473,7 +474,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         ],
         correct: 0,
         hint: "Each reason is relevant. Now ask whether the strongest-looking one is enough for what it's used to show.",
-        why: "The grade link carries the argument, but club members chose chess, so keen or able students may join anyway. It's relevant but not enough to show mandatory chess would raise grades.",
+        why: "The grade link carries the argument, but club members chose chess, so motivated or able students may join anyway. It's relevant but not enough to show mandatory chess would raise grades.",
       },
     ],
   },
@@ -486,7 +487,7 @@ const argumentsUnit: Record<string, LessonScript> = {
       prompt:
         "Write the strongest honest version of the view you disagree with, in a few sentences.",
       passage:
-        "Some people at Larkin Primary want to cut homework to one hour a night. Others want the current amount kept, arguing that regular practice builds skills. Choose the view you lean away from.",
+        "Some people at Larkin Elementary want to cut homework to one hour a night. Others want the current amount kept, arguing that regular practice builds skills. Choose the view you lean away from.",
       guidance: "Use its best reasons. Its supporters should recognize their own case.",
     },
     steps: [
@@ -555,7 +556,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         prompt: "Tap the step where Ben swaps Cara's view for a weaker one.",
         passage: [
           {
-            text: "Cara says the school should trial a four-day week with longer days, to see if students are less tired.",
+            text: "Cara says the school should try a four-day week with longer days, to see if students are less tired.",
             tappable: true,
             whyNot: "That's Cara's actual view, in her own words.",
           },
@@ -674,7 +675,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "You disagree with this view. Which restatement is its strongest, fairest version?",
         stimulus:
-          "The view: the Linwood bypass should be built. Its supporters say trucks pass along the village main street every two minutes, the elementary school is on that street, and accidents there have doubled in five years.",
+          "The view: the Linwood bypass should be built. Its supporters say trucks pass along the town's main street every two minutes, the elementary school is on that street, and accidents there have doubled in five years.",
         options: [
           {
             text: "Some people want a big new road because they like driving fast.",
@@ -682,7 +683,7 @@ const argumentsUnit: Record<string, LessonScript> = {
               "That swaps the supporters' reasons for an unflattering motive. They'd never sign it.",
           },
           {
-            text: "Bypass supporters care deeply about the village and mean well.",
+            text: "Bypass supporters care deeply about the town and mean well.",
             whyNot: "Kind, but empty. It leaves out every reason they actually give.",
           },
           {
@@ -708,8 +709,8 @@ const argumentsUnit: Record<string, LessonScript> = {
       prompt:
         "Name the strongest objection to the plan, then answer it without changing the subject.",
       passage:
-        "Kestrel Bay wants to close its main street to cars on Saturdays. Supporters say it would make room for a market and cut noise. Shopkeepers worry that customers who drive from nearby villages will stay away.",
-      guidance: "Answer the objection itself, in terms the shopkeepers would accept.",
+        "Kestrel Bay wants to close its main street to cars on Saturdays. Supporters say it would make room for a market and cut noise. Store owners worry that customers who drive in from nearby towns will stay away.",
+      guidance: "Answer the objection itself, in terms the store owners would accept.",
     },
     steps: [
       {
@@ -783,7 +784,7 @@ const argumentsUnit: Record<string, LessonScript> = {
             whyNot: "That's the objection being answered. Making it isn't a flaw.",
           },
           {
-            text: "Mr. Carr replies that the new pool has lovely tiles from Portugal.",
+            text: "Mr. Carr replies that the new pool has lovely hand-painted tiles.",
             tappable: true,
             flaw: true,
           },
@@ -869,7 +870,8 @@ const argumentsUnit: Record<string, LessonScript> = {
       {
         id: "updater",
         kind: "updater",
-        prompt: "Does each fact make “Sunday opening is worth it” more or less likely?",
+        prompt:
+          "Does each fact make “Elmhurst Library should open on Sundays” more or less likely?",
         claim: "Elmhurst Library should open on Sundays.",
         prior: 50,
         cards: [
@@ -907,7 +909,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A proposal meets a hard objection. Which reply answers it on its own terms?",
         stimulus:
-          "Proposal: Brackley library should open until 9 pm on weekdays. The council's budget officer objects: “Extra staff hours would cost $45,000 a year, and evening visits at other libraries average eight people an hour.”",
+          "Proposal: Brackley Library should stay open until 9 p.m. on weekdays. The city's budget officer objects: “Extra staff hours would cost $45,000 a year, and evening visits at other libraries average eight people an hour.”",
         options: [
           {
             text: "“Libraries are the heart of a community, and that's worth defending.”",
@@ -940,7 +942,7 @@ const argumentsUnit: Record<string, LessonScript> = {
     written: {
       prompt: "Rewrite the claim so it fits the evidence: say who, how many and how sure.",
       passage:
-        "In a trial at one Fernbank office, 60 staff who drank a coffee at 9am finished 8% more tasks that morning than colleagues who did not. A newsletter reports: “Coffee makes everyone more productive.”",
+        "In a trial of 60 workers at one Fernbank office, those given a coffee at 9 a.m. finished 8% more tasks that morning than those who weren't. A newsletter reports: “Coffee makes everyone more productive.”",
       guidance: "Keep it testable. A claim that can't be wrong isn't a better claim.",
     },
     steps: [
@@ -968,7 +970,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
           {
             id: "3",
-            text: "In the Riverton trial, cyclists' journeys were 4 minutes shorter on average.",
+            text: "In the Riverton trial, cyclists' commutes were 4 minutes shorter on average.",
             bucket: "scoped",
             why: "It states what was found, where and how much.",
           },
@@ -1019,13 +1021,13 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Which is the best qualified version of the claim?",
         stimulus:
-          "Evidence: in a trial of 60 office workers, those who drank a coffee at 9am finished 8% more tasks that morning.",
+          "Evidence: in a trial of 60 office workers, those given a coffee at 9 a.m. finished 8% more tasks that morning than those who weren't.",
         options: [
           {
-            text: "Coffee makes everyone more productive, at any hour of the day.",
+            text: "Coffee makes every worker more productive, at any hour of the day.",
             whyNot: "It goes far beyond 60 office workers and one morning.",
           },
-          { text: "In one trial, 60 office workers got 8% more done after a morning coffee." },
+          { text: "In a trial of 60 office workers, those given a 9 a.m. coffee did 8% more." },
           {
             text: "Coffee may or may not do something helpful for some people.",
             whyNot: "That is hedged. It can't be wrong, so it tells us nothing.",
@@ -1040,7 +1042,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "The trial found an 8% gain in 60 office workers. Which level of confidence fits the evidence?",
+          "A trial of 60 office workers found an 8% gain for those given coffee. Which level of confidence fits the evidence?",
         options: [
           {
             text: "Certain that coffee always boosts everyone's work.",
@@ -1125,7 +1127,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "Which version fits the evidence, without hedging it into nothing?",
         stimulus:
-          "A study at one elementary school in Corley found that students who did ten minutes of exercise before lessons scored higher on that week's spelling test than students who didn't. The school newsletter's headline: “Morning exercise makes children better at spelling.”",
+          "A study at one elementary school in Corley found that students who did ten minutes of exercise before class scored higher on that week's spelling test than students who didn't. The school newsletter's headline: “Morning exercise makes children better at spelling.”",
         options: [
           {
             text: "“Exercise might possibly help some children with some school things, perhaps.”",
