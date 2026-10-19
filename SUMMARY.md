@@ -1,8 +1,9 @@
 # Revision pass: interactive lessons, legal and safety
 
 Branch `revamp/interactive-legal`, based on the head of PR #4 (so it carries the still-open PRs #2, #3 and #4).
-Nothing was pushed to `main` and no PR was opened. 19 commits, each built (`npm run build`) before it was made.
-Tests: 1,230 passing (`npm test`). Typecheck and lint are at the baseline in `CLAUDE.md`.
+Nothing was pushed to `main` and no PR was opened for this branch. CI (`.github/workflows/ci.yml`) runs the
+typecheck, lint, tests (`npm test`), the web build, the app build and `cap sync` on every pull request; the
+typecheck is at zero errors and lint passes on the whole project.
 
 ## What changed, by feature
 
@@ -18,7 +19,8 @@ Tests: 1,230 passing (`npm test`). Typecheck and lint are at the baseline in `CL
   and a border style, not colour alone. Motion respects `prefers-reduced-motion`.
 - **Lesson player:** progress bar, Continue locked until the step is answered, instant feedback with one or two
   sentences of "why", a specific reason for every wrong answer with retry, hints on the harder steps (costs half
-  the XP), "Show me" after two misses, a celebration at the end (mascot, XP, streak). Level-up and badge popups
+  the XP), "Show me" after two misses, an arrival board at the end (three numbers, today's goal, the next stop;
+  see the Wayfinding follow-up below). Level-up and badge popups
   wait until the lesson is over.
 - **Existing systems still fed:** mastery, calibration (the confidence steps), spaced-repetition review queue,
   skill rating, badges, XP and streak.
@@ -91,7 +93,8 @@ automatically).
    `user_blocks`, `user_reports`, `block_user()`, a trigger refusing requests between blocked people, stricter
    friend-read policies, and search, invite and league functions that respect blocks and visibility.
 
-`src/integrations/supabase/types.ts` was extended by hand for these; Lovable will regenerate it.
+`src/integrations/supabase/types.ts` was extended by hand for these; `npm run db:types` regenerates it from the
+real schema once the migrations are applied (`docs/deploy.md`).
 
 ## Dependencies
 
@@ -116,8 +119,11 @@ automatically).
 **For a parent or teen reader:** the teen sign-up copy and the "Children and teens" section of the policy.
 
 **Before you merge:**
-- [ ] Merge PRs #2, #3, #4 first (this branch sits on top of them), then apply the three migrations.
-- [ ] Check the fonts' licences on Google Fonts (all five are listed as SIL OFL 1.1; I could not verify from here).
+- [ ] Merge PRs #2, #3, #4 first (this branch sits on top of them, and they are still open), or retarget.
+      The migrations are applied by the Supabase workflow (`.github/workflows/supabase.yml`) or `npm run db:push`,
+      in order (`docs/deploy.md`).
+- [ ] Check the fonts' licenses on Google Fonts (Overpass and Overpass Mono, both listed as SIL OFL 1.1; I could
+      not verify from here).
 
 **Can't verify from here:**
 - [x] `src/assets/fox-mascot.png` and `src/assets/ai-bot.png` (unused, of unknown origin) were deleted, and
@@ -127,7 +133,7 @@ automatically).
       for facts and tone; the worked figures (base rates, expected value) were checked by hand.
 
 **Recommended follow-ups:**
-- [x] Self-host the fonts: done for the phone app (they're bundled, so nothing is fetched from Google).
+- [x] Self-host the fonts: done (they're bundled with the website and the apps, so nothing is fetched from Google).
 - [x] Delete `generateOutline` and `generateLessonChunk` (`course-ai.functions.ts`): done in the architecture
       review below.
 - [ ] A signed-out person can use every screen, including the AI features, without an age check (they are
@@ -471,7 +477,7 @@ Not legal advice; check against the live app before submitting.
 | User content: other user content | Yes (written arguments, tutor chat, debate answers) | Yes | App functionality (sent to an AI provider to reply) |
 | Usage data: product interaction | Yes (lessons, XP, streak, daily activity) | Yes | App functionality |
 | Other: age band (13-17 / 18+) | Yes | Yes | App functionality, legal compliance |
-| Diagnostics | No ([CONFIRM] Lovable's preview error capture) | n/a | n/a |
+| Diagnostics | No (Lovable's error reporting was removed with the move off Lovable) | n/a | n/a |
 | Purchases | No (payments not live) | n/a | n/a |
 | Location, contacts, health, financial, browsing or search history, sensitive info | No | n/a | n/a |
 
@@ -482,7 +488,10 @@ Not legal advice; check against the live app before submitting.
   feature is used), Google or Apple (only if the person signs in with them), api.qrserver.com (only if the
   person taps Show QR code). Fonts are bundled, so Google Fonts is no longer contacted.
 - **Google Play Data safety:** same answers; data is encrypted in transit (HTTPS); deletion is available in the
-  app and by contacting support.
+  app and by contacting support. Play also asks for a public web link where people can request deletion without
+  the app; that page doesn't exist yet (`docs/mobile.md`).
+- **iOS privacy manifest:** `ios/App/App/PrivacyInfo.xcprivacy` declares the same data types (no tracking) and
+  the required-reason APIs the plugins use. Keep it and these answers in step.
 
 ## Where to look
 

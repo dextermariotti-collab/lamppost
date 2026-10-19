@@ -34,8 +34,13 @@ ignored by git: never commit it.
    - `SUPABASE_DB_PASSWORD`: the database password (Project Settings → Database; reset it there if
      you don't have it).
 
-   The project it deploys to is set in the workflow (`SUPABASE_PROJECT_ID`). To run the same thing
-   from your own machine instead:
+   The project it deploys to is set in the workflow (`SUPABASE_PROJECT_ID`). For now it also runs
+   on pushes to the feature branch (`revamp/interactive-legal`), so the pending migrations reach the
+   new project before that branch is merged. Once they are applied, change the workflow to run from
+   `main` only, and put its job behind a GitHub environment with a required reviewer (**GitHub →
+   Settings → Environments**), so nobody changes the production database without a second look.
+
+   To run the same thing from your own machine instead:
 
    ```sh
    npx supabase@2.118.0 login
@@ -70,6 +75,13 @@ The models are named in `src/lib/ai-models.ts`. If Google renames or retires one
 To use another OpenAI-compatible service instead (OpenRouter, for example), set `AI_BASE_URL` and
 name that service's models in the same file.
 
+**Kill switch.** To stop every model call at once (a cost spike, a bad reply, a provider problem),
+remove `AI_API_KEY` (`npx wrangler secret delete AI_API_KEY --name lamppost`). Each AI feature
+checks for the key before it calls the model: the tutor chat, the written-argument grader, Check
+something you saw and the drill follow-ups say AI isn't available, a new debate can't be started
+and says why, and the daily case falls back to a written one. The authored lessons, drills already
+in the cache, streaks, sync and friends keep working. Put the key back to turn them on again.
+
 ## 4. Deploy to Cloudflare
 
 ```sh
@@ -80,6 +92,7 @@ npx wrangler secret put SUPABASE_PUBLISHABLE_KEY --name lamppost
 npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY --name lamppost
 npx wrangler secret put AI_API_KEY --name lamppost
 npx wrangler secret put WARM_TOKEN --name lamppost
+# Optional, the same way: RATE_LIMIT_SECRET, APP_ORIGINS (.env.example says what each does).
 # Build (with the VITE_ values in .env) and upload:
 npm run deploy
 ```

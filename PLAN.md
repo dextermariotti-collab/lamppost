@@ -1,5 +1,8 @@
 # PLAN — revamp/interactive-legal
 
+> This is the October 2026 revamp plan, kept for history. Parts of it (the Lovable AI Gateway,
+> the open PR chain) no longer describe the app: see `SUMMARY.md` and `docs/architecture.md`.
+
 Written before any code was changed. It says what exists, what I will change, and the calls I am
 making because the brief says nobody is available to ask. `SUMMARY.md` (written last) reports what
 actually happened and where it differs from this.

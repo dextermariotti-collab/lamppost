@@ -76,18 +76,18 @@ export const PRIVACY: LegalDoc = {
         "Only what the features need:",
         {
           list: [
-            "Account details: your email address, and whether you sign in with a password or with Google. If you use Google, we also receive the name on your Google account. We use these to create your account and keep you signed in.",
+            "Account details: your email address, and whether you sign in with a password, with Google or with Apple. If you use Google or Apple, we also receive the name on that account if it shares one (Apple lets you share a private relay address instead of your real email). We use these to create your account and keep you signed in.",
             "Your age band and permission: when you sign up we ask your date of birth to check that you are old enough. We do not keep the date. We keep only whether you are 13 to 17 or 18 and over, and, for 13 to 17, that you confirmed a parent or guardian allows it.",
             "Your agreement: the time you accepted our Terms and Privacy Policy, and which version. This is our record that you agreed.",
             "Profile: your display name, a handle, an invite code, your companion's look, your daily goal, your notification choices, and who can see your progress.",
             "Progress: XP, streak, streak freezes, badges, which lessons you have finished, and how much you did each day and each week. This runs the streak, the friends league and the weekly recap, and shows the same map on each of your devices. Earlier versions of the app also had gems, hint tokens, companion cosmetics and reward chests; those are no longer used, and anything recorded then stays with your account (and in your data download) until you delete it.",
             "Your writing: if you are signed in, the short arguments you write for grading and your explain-it-back conversations are saved to your account, with their scores, so you can look back at them. Guests' writing is graded but not saved to any account.",
             "Friends: friend requests, friendships, invite links you use, shared streaks, nudges, debates and friends-league results.",
-            "Safety records: reports you make about content or about other people, people you block, and a log of requests we had to refuse.",
+            "Safety records: reports you make about content or about other people, and people you block. If we refuse something you typed because it breaks our safety rules, we may keep the refused text (up to 300 characters) and the reason, linked to your account if you were signed in.",
             "Technical data: your network address and browser details are seen by our hosting when you connect. To limit abuse we count requests per person; for signed-out visitors that count is keyed to a scrambled (hashed) version of the network address, never the address itself.",
           ],
         },
-        "Answers to drills, your hint and review schedule, your before-and-after unit check results, and your local settings are kept on your device (in your browser's storage). They are not on our servers unless a feature above says so.",
+        "Answers to drills, your hint and review schedule, your before-and-after unit check results, and your local settings are kept on your device (in your browser's storage on the website, or in the app's own storage on iPhone and Android). They are not on our servers unless a feature above says so.",
         "We don't ask for your location, contacts, photos, health information, payment card or government ID.",
       ],
     },
@@ -95,7 +95,7 @@ export const PRIVACY: LegalDoc = {
       heading: "What is sent to AI",
       review: true,
       body: [
-        `Some ${APP_NAME} features are powered by an AI model: the companion's follow-up questions, the explain-it-back chat, feedback on your written arguments, debates, Check something you saw, and the extra practice drills used in reviews. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
+        `Some ${APP_NAME} features are powered by an AI model: follow-up questions after some practice drills, the explain-it-back chat, feedback on your written arguments, debates, Check something you saw, and the extra practice drills used in reviews. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
         `We send it to Google's Gemini API, which runs a Google Gemini model. We don't send your email, name, handle, friends or account history. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
         "The lessons themselves are written in advance and are not generated for you. AI-written replies are labeled in the app.",
         "[CONFIRM: Google's terms for the Gemini API differ between unpaid use, where requests may be used to improve Google's products, and paid use, where they are not. Use a key from a billing-enabled project, check the current terms, and update this paragraph.]",
@@ -122,7 +122,7 @@ export const PRIVACY: LegalDoc = {
     {
       heading: "Who can see what about you",
       body: [
-        "By default your profile is minimal: other people can see your display name and your companion, and nothing else.",
+        "By default your profile is minimal: other people can see your display name, your handle and your companion, and nothing else.",
         "If you turn on \"Share my progress with friends\" (in Settings or on the Friends screen), people you have accepted as friends can also see your streak, XP, badges and league tier, and you appear in your friends' weekly league. People you haven't accepted as friends never see them.",
         "When you start a shared streak with a friend, that friend sees the streak and whether you have done something today, even if you don't share your progress more widely.",
         "If someone blocks you, you can no longer find or add them, and you aren't told. If someone reports you, a person at [COMPANY NAME] reads the report; we don't tell you who sent it.",
@@ -148,7 +148,7 @@ export const PRIVACY: LegalDoc = {
             "Delete your account and data: Settings → Your data → Delete my account. It is permanent.",
             `Ask us to do either by email at ${CONTACT_EMAIL}.`,
             "Change who sees your progress, or block or report someone, in the app.",
-            "Sign out or clear your browser storage to remove what is kept on a device.",
+            "Remove what is kept on a device with Settings → Clear progress on this device, by clearing your browser's site data, or by deleting the app from your phone.",
           ],
         },
         "Depending on where you live, you may also have the right to correct your data, object to how we use it, or complain to a data-protection authority. Ask us and we will help.",
@@ -167,7 +167,7 @@ export const PRIVACY: LegalDoc = {
     {
       heading: "Security",
       body: [
-        "Each person's data is protected by database rules so one account can't read another's, and the parts that decide XP, gems and rewards can only be changed by our servers. No system is perfectly secure. If something goes wrong that affects you, we will tell you as the law requires.",
+        "Each person's data is protected by database rules so one account can't read another's, and the parts that decide your XP, streak and league results can only be changed by our servers. No system is perfectly secure. If something goes wrong that affects you, we will tell you as the law requires.",
       ],
     },
     {
@@ -215,7 +215,7 @@ export const TERMS: LegalDoc = {
     {
       heading: "AI-written content",
       body: [
-        "Some replies in Lamppost are written by an AI model, including the companion's questions, feedback on your writing, debates, and some practice drills. These are labeled. AI can be wrong, can sound sure when it isn't, and can miss things. The scores it gives are practice feedback, not an official assessment or qualification.",
+        "Some replies in Lamppost are written by an AI model, including follow-up questions after some drills, feedback on your writing, debates, Check something you saw, and some practice drills and daily cases. These are labeled. AI can be wrong, can sound sure when it isn't, and can miss things. The scores it gives are practice feedback, not an official assessment or qualification.",
         "The lessons are written in advance and checked by automated tests, but they can still contain mistakes. If you spot one, use the report button.",
         "Check anything important against a reliable source.",
       ],
@@ -229,7 +229,7 @@ export const TERMS: LegalDoc = {
             "harass, threaten, impersonate or target other people, including through names, handles or friend requests;",
             "try to get sexual, violent, hateful or dangerous content out of the AI features, or try to get around the safety rules;",
             "share other people's private information;",
-            "cheat the rewards system, use bots or scripts, or try to break, overload or gain unauthorized access to the service;",
+            "cheat on streaks, XP or the league, use bots or scripts, or try to break, overload or gain unauthorized access to the service;",
             "copy the service or its content to resell it;",
             "use Lamppost in a way that breaks the law.",
           ],
@@ -348,7 +348,7 @@ export const AI_CONTENT: LegalDoc = {
       body: [
         {
           list: [
-            "The companion's short follow-up questions and comments after a drill.",
+            "Short follow-up questions and comments after some practice drills.",
             "The explain-it-back chat after a lesson.",
             "Feedback and scores on the short arguments you write.",
             "Debate topics and the scoring of both sides.",
@@ -398,11 +398,11 @@ export const COOKIES: LegalDoc = {
         {
           list: [
             "Sign-in: keeps you signed in if you have an account. Needed for the app to work.",
-            "Your progress and settings: streak, XP, drill answers, the review schedule, your before-and-after unit check results, your companion and preferences, stored in your browser so the app works offline-first and without an account.",
+            "Your progress and settings: streak, XP, drill answers, the review schedule, your before-and-after unit check results, your companion and preferences, stored on your device (in your browser on the website, or in the app's own storage on iPhone and Android) so the app works offline-first and without an account.",
             "Small flags: for example that you have seen the welcome screens.",
           ],
         },
-        "Clearing your browser's site data removes these. If you weren't signed in, that also removes your progress.",
+        "Clearing your browser's site data, or deleting the app from your phone, removes these. If you weren't signed in, that also removes your progress.",
       ],
     },
     {
@@ -422,7 +422,7 @@ export const COMMUNITY: LegalDoc = {
   title: "Community Guidelines & Reporting",
   summary: "How to behave, and how to report or block someone.",
   updated: LEGAL_UPDATED,
-  intro: `${APP_NAME} is a place to practice thinking with friends. It works when people are kind. Friends can see your name and companion, nudge you, and take part in streaks, debates and the league, and that's all: there is no messaging, and no way for a stranger to contact you.`,
+  intro: `${APP_NAME} is a place to practice thinking with friends. It works when people are kind. Friends can see your name, handle and companion, nudge you, and take part in streaks, debates and the league, and that's all: there is no messaging. Strangers can't message you. Someone who knows your handle or invite code can send you a friend request, which you can ignore or block.`,
   sections: [
     {
       heading: "Not allowed",

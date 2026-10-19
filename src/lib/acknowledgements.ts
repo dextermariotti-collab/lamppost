@@ -2,7 +2,7 @@ import { PACKAGES, type PackageLicence } from "./acknowledgements.generated";
 
 export { PACKAGES, type PackageLicence };
 
-/** Typefaces the app loads from Google Fonts, all of which Google Fonts lists under the SIL OFL 1.1. */
+/** Typefaces bundled with the app (@fontsource), all of which Google Fonts lists under the SIL OFL 1.1. */
 export const FONTS = [
   {
     name: "Overpass",

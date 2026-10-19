@@ -61,17 +61,49 @@ Icons and the splash screen were generated from `assets/` with
 
 ## Before the first store submission
 
+- **Who holds the accounts.** Google requires the Play developer account holder to be 18 or over,
+  and Apple requires the age of majority where the holder lives. If the author is younger, a parent
+  or guardian opens both accounts in their own name and stays the account holder; the author can
+  be added as a team member.
 - **App Store Connect:**
   - **Privacy:** the privacy policy URL (`https://YOUR-DOMAIN/legal/privacy`) and the App Privacy
-    answers, using the suggestions in `SUMMARY.md`.
-  - **Listing:** an age rating (the app requires 13+), a support URL, screenshots, and a demo
-    account for the reviewer.
-- **Rules Apple checks that are already covered:** Sign in with Apple, and in-app account deletion
-  (Settings → Your data).
+    answers, using the suggestions in `SUMMARY.md`. They must agree with the privacy manifest
+    (`ios/App/App/PrivacyInfo.xcprivacy`: no tracking; email, name, user ID, written text, product
+    interaction and the age band, all linked to the person and used only to run the app; and the
+    file-date and settings APIs the Capacitor plugins use). Check it again whenever a plugin is added.
+  - **Age rating:** answer the questionnaire, then set the rating to 13+ by hand if the answers give
+    a lower one (accounts start at 13).
+  - **Export compliance:** declared in `Info.plist` (`ITSAppUsesNonExemptEncryption` is false: the
+    app only uses standard HTTPS), so builds don't stop at the encryption question.
+  - **iPad:** the project targets iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"` in
+    `project.pbxproj`), so Apple asks for iPad screenshots and reviews the app on an iPad. **Open
+    decision:** keep iPad (and check the phone frame there) or ship iPhone-only (`"1"`).
+  - **Listing:** a support URL, screenshots, and a demo account for the reviewer.
+- **Rules Apple checks:**
+  - Covered: Sign in with Apple, and in-app account deletion (Settings → Your data).
+  - **To do:** deleting an account doesn't yet revoke the person's Sign in with Apple tokens.
+    Apple expects it to (its REST API's `revoke` endpoint, with the Sign in with Apple key, called
+    from the server during deletion).
 - **Payments.** If the paid Practice plan is sold inside the iOS app, Apple requires its in-app
   purchase system for it. Payments aren't live yet, so plan this before turning them on.
-- **Google Play Console:** the Data safety form (same answers as the App Store), the content rating,
-  and Play App Signing. `android/variables.gradle` targets API 36.
+- **Google Play Console:**
+  - The Data safety form (same answers as the App Store), the content rating questionnaire, the
+    target audience (13 and over), and Play App Signing. `android/variables.gradle` targets API 36.
+  - **Account deletion link.** Play requires a public web page where people can ask for their account
+    and data to be deleted without the app. It can be a page on the website that explains the steps
+    (sign in on the website → Settings → Your data → Delete my account) and gives the contact email.
+  - **Closed test first.** A new personal developer account can't publish to production until a
+    closed test has run with at least 12 testers who stay opted in for 14 days in a row. Start it
+    early.
+- **Version numbers.** Every upload needs a higher build number. Bump them together:
+  `versionCode` and `versionName` in `android/app/build.gradle`, and `CURRENT_PROJECT_VERSION` and
+  `MARKETING_VERSION` (in both the Debug and Release settings of the App target) in
+  `ios/App/App.xcodeproj/project.pbxproj`.
+- **AI provider terms (open decision for the owner).** Google's Gemini API terms appear to require
+  users to be 18 or over and to bar apps directed at, or likely to be used by, people under 18.
+  Lamppost accounts start at 13. Check the current terms, and if they still say this, choose a
+  provider whose terms allow teen users (`AI_BASE_URL` and `src/lib/ai-models.ts` switch it; the
+  privacy policy names the provider). This is a decision, not a code change.
 
 ## Not done yet
 

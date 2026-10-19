@@ -6,6 +6,25 @@ chat. After the map there's a daily case and spaced reviews. It's an iOS and And
 website, from the same code) that works fully signed out; an account carries progress across devices
 and adds friends.
 
+## For judges
+
+- **What it is:** an app for teens (13+) that teaches critical thinking through short interactive
+  lessons on real-world texts: posts, ads, headlines, emails and chatbot answers.
+- **Run it** (Node 22):
+
+  ```sh
+  cp .env.example .env    # the placeholder values are enough to run it signed out
+  npm install
+  npm run dev             # http://localhost:8080
+  ```
+
+  No accounts or API keys are needed to try it: the lessons, their notes and the daily case work
+  signed out, and progress is kept in the browser. Sign-in, sync, friends and the AI features need
+  the real services described in `docs/deploy.md`, and won't work until they're set up.
+- **Run the tests:** `npm test` (CI also runs `npm run typecheck` and `npm run lint`).
+- **How it was built:** with AI coding tools, under the author's direction: Lovable for the first
+  prototype, then Claude Code.
+
 ## Run it
 
 ```sh
