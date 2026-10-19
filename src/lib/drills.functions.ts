@@ -27,6 +27,9 @@ const Input = z.object({
 
 /** Below this, a background top-up is kicked off after answering. */
 const POOL_TARGET = 8;
+/** The most pool rows one request reads: the newest of the kind asked for. */
+export const POOL_READ_LIMIT = 40;
+const POOL_COLUMNS = "variant, kind, content, difficulty, domain";
 
 export type DrillVariantResult =
   | {
@@ -52,14 +55,24 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       const { domainsFor } = await import("./domains");
       const { guardedGeneration, limiterForRequest } = await import("./rate-limit.server");
 
-      const readPool = async () =>
-        (
-          await supabaseAdmin
-            .from("drill_variants")
-            .select("variant, kind, content, difficulty, domain")
-            .eq("lesson_id", meta.id)
-            .order("variant", { ascending: true })
-        ).data ?? [];
+      // Only the kind asked for, newest first and capped; any kind only when it has none yet.
+      const readKind = async (kind: ExerciseKind | null) => {
+        const rows = supabaseAdmin
+          .from("drill_variants")
+          .select(POOL_COLUMNS)
+          .eq("lesson_id", meta.id);
+        return (
+          (
+            await (kind ? rows.eq("kind", kind) : rows)
+              .order("variant", { ascending: false })
+              .limit(POOL_READ_LIMIT)
+          ).data ?? []
+        );
+      };
+      const readPool = async () => {
+        const ofKind = await readKind(data.kind);
+        return ofKind.length > 0 ? ofKind : await readKind(null);
+      };
 
       let rows = await readPool();
 

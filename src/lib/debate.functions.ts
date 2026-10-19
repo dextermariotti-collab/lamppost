@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { AI_MODELS } from "./ai-models";
+import { AI_MODELS, aiOutput } from "./ai-models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
@@ -214,6 +214,7 @@ export const challengeToDebate = createServerFn({ method: "POST" })
       system: withGuardrails(MOTION_SYSTEM),
       prompt: "Write one fresh debate motion now.",
       maxRetries: 1,
+      ...aiOutput("debateMotion"),
     }).text;
 
     const screened = screenOutput(text);
@@ -345,6 +346,7 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
         attempt: 1,
       }),
       maxRetries: 1,
+      ...aiOutput("grading"),
     }).text;
 
     const parsed = parseGrade(graded, TASK.criteria);

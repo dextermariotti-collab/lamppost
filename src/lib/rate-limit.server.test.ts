@@ -4,6 +4,7 @@ import {
   guardedGeneration,
   hashingSecret,
   keyedHash,
+  networkKeyFor,
   type Limiter,
 } from "./rate-limit.server";
 
@@ -112,6 +113,30 @@ describe("network address hashing", () => {
     expect(derived).toMatch(/^[0-9a-f]{32}$/);
     expect(derived).not.toContain("service-key");
     await expect(hashingSecret({})).rejects.toThrow();
+  });
+});
+
+describe("networkKeyFor", () => {
+  const env = { RATE_LIMIT_SECRET: "secret" };
+  const from = (h: Record<string, string>) => new Headers(h);
+
+  it("gives every address in one IPv6 /64 the same key, and another /64 its own", async () => {
+    const one = await networkKeyFor(from({ "cf-connecting-ip": "2001:db8:1:2::1" }), env);
+    expect(await networkKeyFor(from({ "cf-connecting-ip": "2001:db8:1:2:ffff::9" }), env)).toBe(
+      one,
+    );
+    expect(await networkKeyFor(from({ "cf-connecting-ip": "2001:db8:1:3::1" }), env)).not.toBe(one);
+    expect(one).toMatch(/^ip:[0-9a-f]{32}$/);
+  });
+
+  it("ignores headers a caller can set, unless the host is configured to trust one", async () => {
+    const unknown = await networkKeyFor(from({}), env);
+    const forged = from({ "x-forwarded-for": "198.51.100.7", "x-real-ip": "198.51.100.8" });
+    expect(await networkKeyFor(forged, env)).toBe(unknown);
+    expect(await networkKeyFor(forged, { ...env, CLIENT_IP_HEADER: "x-real-ip" })).toBe(
+      await networkKeyFor(from({ "cf-connecting-ip": "198.51.100.8" }), env),
+    );
+    expect(await networkKeyFor(forged, { ...env, CLIENT_IP_HEADER: "" })).toBe(unknown);
   });
 });
 

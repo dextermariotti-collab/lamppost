@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { aiOutput } from "./ai-models";
 import {
   LOOK_SOURCES,
   LOOK_TEXT,
@@ -55,6 +56,7 @@ export const lookCloser = createServerFn({ method: "POST" })
         system: withGuardrails(LOOK_SYSTEM),
         prompt: lookPrompt(text, data.source),
         maxRetries: 1,
+        ...aiOutput("look"),
       }).text;
       if (!screenOutput(reply).allowed) return { ok: false, reason: COULD_NOT };
       const json = extractJson(reply);

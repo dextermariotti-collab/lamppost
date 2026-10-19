@@ -1,4 +1,4 @@
-import { AI_MODELS } from "./ai-models";
+import { AI_MODELS, aiOutput } from "./ai-models";
 import {
   REFUSAL_COPY,
   isModerationCategory,
@@ -115,6 +115,7 @@ export async function screenTopicText(
       model: gateway(AI_MODELS.screen),
       system: SCREEN_SYSTEM,
       prompt: `Requested topic: "${topic}"\nLearner notes: "${extraContext}"\nClassify now.`,
+      ...aiOutput("screen"),
     });
     return parseTopicVerdict(result.text ?? "") ?? unavailable();
   } catch (error) {

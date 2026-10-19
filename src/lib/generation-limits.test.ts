@@ -233,14 +233,17 @@ describe("getLessonPart", () => {
 
 /* ------------------------------ the drill pool ------------------------------ */
 
-const pool = vi.hoisted(() => ({ rows: [] as unknown[] }));
+const pool = vi.hoisted(() => ({ rows: [] as unknown[], reads: [] as string[][] }));
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     from: () => {
+      const read: string[] = [];
+      pool.reads.push(read);
       const chain = {
-        select: () => chain,
-        eq: () => chain,
-        order: async () => ({ data: pool.rows }),
+        select: (columns: string) => (read.push(`select ${columns}`), chain),
+        eq: (column: string, value: unknown) => (read.push(`${column}=${String(value)}`), chain),
+        order: () => chain,
+        limit: async (n: number) => (read.push(`limit ${n}`), { data: pool.rows }),
       };
       return chain;
     },
@@ -267,6 +270,22 @@ describe("getDrillVariant", () => {
     expect(result).toMatchObject({ ok: true });
     expect(limits.guardedGeneration).not.toHaveBeenCalled();
     expect(gen.generatePoolDrill).not.toHaveBeenCalled();
+  });
+
+  it("reads only the kind asked for, a bounded number of rows, and only the columns it uses", async () => {
+    pool.rows = Array.from({ length: 12 }, (_, i) => drill(i + 1));
+    pool.reads = [];
+    const { POOL_READ_LIMIT } = await import("./drills.functions");
+    await ask();
+    expect(pool.reads).toEqual([
+      [
+        "select variant, kind, content, difficulty, domain",
+        `lesson_id=${lesson.id}`,
+        `kind=${lesson.drills[0]}`,
+        `limit ${POOL_READ_LIMIT}`,
+      ],
+    ]);
+    expect(POOL_READ_LIMIT).toBeLessThanOrEqual(50);
   });
 
   it("an empty pool and an unusable cache generates only through the guard, and reports a limit", async () => {

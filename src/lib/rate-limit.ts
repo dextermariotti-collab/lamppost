@@ -145,6 +145,22 @@ export const POLICIES = {
     ip: [t("hour", 240)],
     global: [],
   },
+  /** Sending a friend request. Signed-in only. */
+  friendRequest: {
+    label: "friend requests",
+    guest: [],
+    user: [t("hour", 10), t("day", 30)],
+    ip: [],
+    global: [t("day", 5000)],
+  },
+  /** Searching for people by name or handle. Signed-in only. */
+  profileSearch: {
+    label: "people searches",
+    guest: [],
+    user: [t("hour", 60)],
+    ip: [],
+    global: [t("day", 20_000)],
+  },
 } as const satisfies Record<string, LimitPolicy>;
 
 export type PolicyName = keyof typeof POLICIES;
@@ -230,22 +246,66 @@ export function scopeOf(tier: string | null): LimitScope {
 const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
 const IPV6 = /^[0-9a-f:.]{2,45}$/i;
 
+/** Where Cloudflare puts the caller's address; it overwrites any copy a caller sends. */
+export const DEFAULT_IP_HEADER = "cf-connecting-ip";
+
 /**
- * The caller's network address. The platform's own header wins; a caller-set
- * X-Forwarded-For is only used when nothing better exists (on a host that
- * doesn't overwrite it, a caller could vary it — see the PR notes).
+ * The caller's network address, read only from the header the host sets (`CLIENT_IP_HEADER`,
+ * Cloudflare's by default). Headers a caller can type for themselves are never consulted: on a
+ * host that doesn't overwrite them, varying one would give a fresh guest bucket each time. Where
+ * a proxy appends to a list (X-Forwarded-For), the last entry is the one the proxy added.
  */
-export function clientIp(headers: { get(name: string): string | null }): string | null {
-  const candidates = [
-    headers.get("cf-connecting-ip"),
-    headers.get("x-real-ip"),
-    headers.get("x-forwarded-for")?.split(",")[0],
-  ];
-  for (const raw of candidates) {
-    const value = raw?.trim();
-    if (value && (IPV4.test(value) || (value.includes(":") && IPV6.test(value)))) return value;
+export function clientIp(
+  headers: { get(name: string): string | null },
+  header: string = DEFAULT_IP_HEADER,
+): string | null {
+  const value = headers
+    .get(header.trim() || DEFAULT_IP_HEADER)
+    ?.split(",")
+    .at(-1)
+    ?.trim();
+  if (!value) return null;
+  return IPV4.test(value) || (value.includes(":") && IPV6.test(value)) ? value : null;
+}
+
+/** An IPv6 address as its eight 16-bit groups, or null if it isn't one. */
+function ipv6Groups(address: string): number[] | null {
+  let text = address.toLowerCase();
+  const tail = /(\d{1,3}(?:\.\d{1,3}){3})$/.exec(text)?.[1];
+  if (tail) {
+    const [a = 0, b = 0, c = 0, d = 0] = tail.split(".").map(Number);
+    if ([a, b, c, d].some((byte) => byte > 255)) return null;
+    const hex = (hi: number, lo: number) => ((hi << 8) | lo).toString(16);
+    text = `${text.slice(0, -tail.length)}${hex(a, b)}:${hex(c, d)}`;
   }
-  return null;
+  const halves = text.split("::");
+  if (halves.length > 2) return null;
+  const parse = (part: string) => (part ? part.split(":") : []);
+  const head = parse(halves[0]!);
+  const rest = halves.length === 2 ? parse(halves[1]!) : [];
+  const missing = 8 - head.length - rest.length;
+  if (halves.length === 2 ? missing < 1 : missing !== 0) return null;
+  const groups = [...head, ...Array<string>(halves.length === 2 ? missing : 0).fill("0"), ...rest];
+  if (groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return null;
+  return groups.map((g) => parseInt(g, 16));
+}
+
+/**
+ * The network a caller is limited as. An IPv4 address is one network; an IPv6 address is keyed
+ * by its /64, because one connection is usually handed a whole /64 and could otherwise take a
+ * fresh guest bucket for every address in it. IPv4 written as IPv6 (::ffff:a.b.c.d) is IPv4.
+ */
+export function networkKey(address: string): string {
+  if (IPV4.test(address)) return address;
+  const groups = ipv6Groups(address);
+  if (!groups) return address.toLowerCase();
+  if (groups.slice(0, 5).every((g) => g === 0) && groups[5] === 0xffff) {
+    return [groups[6]! >> 8, groups[6]! & 255, groups[7]! >> 8, groups[7]! & 255].join(".");
+  }
+  return `${groups
+    .slice(0, 4)
+    .map((g) => g.toString(16))
+    .join(":")}::/64`;
 }
 
 export function formatWait(seconds: number): string {

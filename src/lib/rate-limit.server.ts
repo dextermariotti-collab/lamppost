@@ -3,6 +3,7 @@ import {
   checksFor,
   clientIp,
   limitMessage,
+  networkKey,
   scopeOf,
   type Identity,
   type LimitScope,
@@ -115,14 +116,26 @@ export function createLimiter(deps: { rpc: Rpc; identity: () => Promise<Identity
   };
 }
 
-/** Who is calling: the account (if signed in) and a keyed hash of their network address. */
+/**
+ * The network key for a request: a keyed hash of the caller's network (see `networkKey`), read
+ * from the header named by CLIENT_IP_HEADER (Cloudflare's own by default). Set it to the header
+ * your host overwrites when the app runs somewhere else, or callers could choose their own key.
+ */
+export async function networkKeyFor(
+  headers: { get(name: string): string | null },
+  env: Record<string, string | undefined>,
+): Promise<string> {
+  const ip = clientIp(headers, env["CLIENT_IP_HEADER"] || undefined);
+  const secret = await hashingSecret(env);
+  // Callers with no readable address share one strict bucket rather than escaping the limit.
+  return `ip:${await keyedHash(secret, ip ? networkKey(ip) : "unknown")}`;
+}
+
+/** Who is calling: the account (if signed in) and a keyed hash of their network. */
 async function requestIdentity(): Promise<Identity> {
   const { optionalUserId } = await import("./optional-auth.server");
   const userId = await optionalUserId();
-  const ip = clientIp(getRequest().headers);
-  const secret = await hashingSecret(process.env);
-  // Callers with no readable address share one strict bucket rather than escaping the limit.
-  const ipKey = `ip:${await keyedHash(secret, ip ?? "unknown")}`;
+  const ipKey = await networkKeyFor(getRequest().headers, process.env);
   return { userId, ipKey };
 }
 

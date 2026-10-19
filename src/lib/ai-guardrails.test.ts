@@ -59,4 +59,29 @@ describe("every model call carries the guardrails", () => {
     expect(calls).toBeGreaterThanOrEqual(10);
     expect(bare).toEqual([]);
   });
+
+  /** The options object a call is made with, from its opening brace to the matching close. */
+  const callBody = (source: string, start: number) => {
+    let depth = 0;
+    for (let i = source.indexOf("{", start); i < source.length; i++) {
+      if (source[i] === "{") depth += 1;
+      else if (source[i] === "}" && --depth === 0) return source.slice(start, i + 1);
+    }
+    return source.slice(start);
+  };
+
+  it("caps what every model call may write, the topic screen included", () => {
+    const uncapped: string[] = [];
+    let calls = 0;
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      for (const match of source.matchAll(/\b(streamText|generateText)\(\{/g)) {
+        calls += 1;
+        const body = callBody(source, match.index);
+        if (!/\.\.\.aiOutput\(|\bmaxOutputTokens:/.test(body)) uncapped.push(`${file}: ${body}`);
+      }
+    }
+    expect(calls).toBeGreaterThanOrEqual(11);
+    expect(uncapped).toEqual([]);
+  });
 });

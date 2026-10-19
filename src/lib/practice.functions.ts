@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { AI_MODELS } from "./ai-models";
+import { AI_MODELS, aiOutput } from "./ai-models";
+import { CURRICULUM_SLUG, LESSONS, type CurriculumLesson } from "./curriculum";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
@@ -21,25 +22,36 @@ function weekStartIso() {
 /** Longest reply a learner can send the tutor in one turn. */
 export const MAX_PRACTICE_ANSWER_CHARS = 1500;
 
+/**
+ * Which lesson the session is about: its id, or (from older apps) its title or its 1-based place
+ * in the course. Everything else older apps send (the topic, the lesson text, earlier lessons,
+ * a companion name and the transcript so far) is ignored: the server builds the lesson's context
+ * itself and reads the conversation from the stored session.
+ */
 const ContextSchema = z.object({
-  slug: z.string().min(1).max(120),
-  lessonIndex: z.number().int().min(0).max(200),
-  topic: z.string().min(1).max(200),
-  lessonTitle: z.string().min(1).max(200),
-  lessonText: z.string().max(6000),
-  earlierLessons: z.array(z.string().max(200)).max(40),
-  companionName: z.string().min(1).max(40),
+  lessonId: z.string().max(80).optional(),
+  slug: z.string().max(120).optional(),
+  lessonIndex: z.number().int().min(0).max(200).optional(),
+  lessonTitle: z.string().max(200).optional(),
 });
 
 export const TurnSchema = z.object({
-  context: ContextSchema,
-  transcript: z
-    .array(z.object({ role: z.enum(["tutor", "learner"]), text: z.string().max(2000) }))
-    .max(MAX_PRACTICE_TURNS * 2 + 2),
+  context: ContextSchema.default({}),
   /** Empty on the opening turn. */
   answer: z.string().max(MAX_PRACTICE_ANSWER_CHARS),
   sessionId: z.string().uuid().nullable(),
 });
+
+export function practiceLesson(
+  context: z.infer<typeof ContextSchema>,
+): CurriculumLesson | undefined {
+  if (context.lessonId) return LESSONS.find((lesson) => lesson.id === context.lessonId);
+  const title = context.lessonTitle?.trim();
+  const byTitle = title ? LESSONS.find((lesson) => lesson.title === title) : undefined;
+  if (byTitle) return byTitle;
+  const inCourse = (context.slug ?? CURRICULUM_SLUG) === CURRICULUM_SLUG;
+  return inCourse && context.lessonIndex ? LESSONS[context.lessonIndex - 1] : undefined;
+}
 
 export type PracticeAccess = {
   subscribed: boolean;
@@ -196,6 +208,8 @@ export const practiceTurn = createServerFn({ method: "POST" })
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
     const opening = data.sessionId === null;
+    const meta = practiceLesson(data.context);
+    if (!meta) return { ok: false, reason: "Practice couldn't start for this lesson." };
     const access = await readAccess(ctx);
     if (opening && !access.canPractice) {
       return {
@@ -213,6 +227,29 @@ export const practiceTurn = createServerFn({ method: "POST" })
       }
     }
 
+    const { PRACTICE_SYSTEM, openingPrompt, turnPrompt, lessonContext, storedTranscript } =
+      await import("./practice.server");
+
+    let sessionId = data.sessionId;
+    let history: PracticeTurn[] = [];
+    if (!opening) {
+      // A follow-up turn must belong to a real, unfinished session of this learner;
+      // otherwise a made-up id would get unlimited tutor turns without opening one. The
+      // conversation so far is the stored one, so the turn cap can't be reset by the browser.
+      const { data: existing } = await db
+        .from("practice_sessions")
+        .select("id, completed_at, transcript")
+        .eq("id", sessionId!)
+        .eq("user_id", userId)
+        .maybeSingle();
+      history = storedTranscript(existing?.transcript);
+      const used = history.filter((t) => t.role === "learner").length;
+      if (!existing || existing.completed_at || used >= MAX_PRACTICE_TURNS) {
+        return { ok: false, reason: "That practice session has ended. Start a new one." };
+      }
+    }
+    const lesson = await lessonContext(meta);
+
     // Counted before the session row exists, so a refused turn never uses up one of
     // the week's free sessions.
     const { limiter } = await import("./rate-limit.server");
@@ -223,29 +260,15 @@ export const practiceTurn = createServerFn({ method: "POST" })
     // can't create, edit or delete them; they are written here with the service role.
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
 
-    let sessionId = data.sessionId;
-    if (!opening) {
-      // A follow-up turn must belong to a real, unfinished session of this learner;
-      // otherwise a made-up id would get unlimited tutor turns without opening one.
-      const { data: existing } = await db
-        .from("practice_sessions")
-        .select("id, completed_at")
-        .eq("id", sessionId!)
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (!existing || existing.completed_at) {
-        return { ok: false, reason: "That practice session has ended. Start a new one." };
-      }
-    }
     if (opening) {
       const { data: row, error } = await admin
         .from("practice_sessions")
         .insert({
           user_id: userId,
-          course_slug: data.context.slug,
-          course_topic: data.context.topic,
-          lesson_index: data.context.lessonIndex,
-          lesson_title: data.context.lessonTitle,
+          course_slug: CURRICULUM_SLUG,
+          course_topic: lesson.topic,
+          lesson_index: LESSONS.indexOf(meta) + 1,
+          lesson_title: meta.title,
           transcript: [],
         })
         .select("id")
@@ -259,13 +282,12 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
     const transcript: PracticeTurn[] = opening
       ? []
-      : [...data.transcript, { role: "learner" as const, text: data.answer.trim() }];
+      : [...history, { role: "learner" as const, text: data.answer.trim() }];
     const learnerTurns = transcript.filter((t) => t.role === "learner").length;
 
     try {
       const { streamText } = await import("ai");
       const { createAiProvider } = await import("./ai-gateway.server");
-      const { PRACTICE_SYSTEM, openingPrompt, turnPrompt } = await import("./practice.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
       const gateway = createAiProvider(key);
@@ -273,11 +295,10 @@ export const practiceTurn = createServerFn({ method: "POST" })
       const forcedClose = learnerTurns >= MAX_PRACTICE_TURNS;
       const result = streamText({
         model: gateway(AI_MODELS.tutor),
-        system: withGuardrails(PRACTICE_SYSTEM(data.context)),
-        prompt: opening
-          ? openingPrompt(data.context)
-          : turnPrompt(data.context, transcript, learnerTurns),
+        system: withGuardrails(PRACTICE_SYSTEM(lesson)),
+        prompt: opening ? openingPrompt(lesson) : turnPrompt(lesson, transcript, learnerTurns),
         maxRetries: 1,
+        ...aiOutput("tutor"),
       });
       const text = await result.text;
       if (!text.trim()) throw new Error("Empty reply from the AI gateway");

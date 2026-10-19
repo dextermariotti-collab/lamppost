@@ -1,4 +1,5 @@
 import { LESSONS, type CurriculumLesson } from "./curriculum";
+import { aiOutput } from "./ai-models";
 import type { Lesson } from "./courses";
 import type { Exercise, WrittenPrompt } from "./exercises";
 import { exercisesMatchPlan } from "./drill-plan";
@@ -247,6 +248,7 @@ export async function livePartsDeps(): Promise<PartsDeps> {
       system: withGuardrails(system),
       prompt,
       maxRetries: 2,
+      ...aiOutput("lessonPart"),
     }).text;
   };
 

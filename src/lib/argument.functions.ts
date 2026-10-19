@@ -1,9 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { AI_MODELS } from "./ai-models";
+import { AI_MODELS, aiOutput } from "./ai-models";
 import { screenLocally } from "./moderation";
 import { LESSONS } from "./curriculum";
-import { WRITTEN_TASKS, type ArgumentGrade, type RubricCriterion } from "./exercises";
+import {
+  CRITERION_LABEL,
+  WRITTEN_TASKS,
+  type ArgumentGrade,
+  type RubricCriterion,
+} from "./exercises";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
 const MODEL = AI_MODELS.grading;
@@ -12,8 +17,10 @@ const MODEL = AI_MODELS.grading;
 export const MAX_ANSWER_CHARS = 3000;
 
 /**
- * Everything the grader is sent is bounded, and it can only be asked about a
- * lesson that exists — so it can't be used as a free general-purpose model.
+ * The grader can only be asked about a lesson that exists, and everything it is told about that
+ * lesson (title, skill, task type, passage, task) is read on the server from the lesson id — so it
+ * can't be used as a free general-purpose model. Older apps also send those fields; they are
+ * accepted and ignored, except the passage, which only picks between the lesson's own tasks.
  */
 export const GradeInput = z.object({
   lessonId: z
@@ -21,14 +28,10 @@ export const GradeInput = z.object({
     .min(1)
     .max(80)
     .refine((id) => LESSONS.some((lesson) => lesson.id === id), "Unknown lesson"),
-  lessonTitle: z.string().min(1).max(160),
-  objective: z.string().min(1).max(400),
-  taskType: z.enum(["restate", "case", "critique", "testable", "steelmanWrite"]),
-  passage: z.string().min(1).max(2000),
-  prompt: z.string().min(1).max(600),
+  passage: z.string().max(2000).optional(),
   answer: z.string().min(1).max(MAX_ANSWER_CHARS),
   attempt: z.number().int().min(1).max(2),
-  /** Rubric criterion this learner is weakest on, so feedback leans on it. */
+  /** The label of the rubric criterion this learner is weakest on, so feedback leans on it. */
   focus: z.string().max(40).nullish(),
 });
 
@@ -93,16 +96,14 @@ function describe(error: unknown): string {
 export const gradeArgument = createServerFn({ method: "POST" })
   .validator((input: unknown) => GradeInput.parse(input))
   .handler(async ({ data }): Promise<GradeResult> => {
+    const meta = LESSONS.find((lesson) => lesson.id === data.lessonId)!;
     const screened = screenLocally(data.answer);
     if (!screened.allowed) return { ok: false, reason: screened.message, blocked: true };
-    const task = WRITTEN_TASKS[data.taskType];
+    const taskType = meta.written;
+    const task = WRITTEN_TASKS[taskType];
     const words = data.answer.trim().split(/\s+/).length;
     const minWords =
-      data.taskType === "restate" || data.taskType === "testable"
-        ? 5
-        : data.taskType === "critique"
-          ? 15
-          : 25;
+      taskType === "restate" || taskType === "testable" ? 5 : taskType === "critique" ? 15 : 25;
     if (words < minWords) {
       return {
         ok: false,
@@ -113,6 +114,14 @@ export const gradeArgument = createServerFn({ method: "POST" })
     const key = process.env["AI_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
+    const { graderSystem, graderPrompt, writtenTaskFor } = await import("./argument.server");
+    const written = await writtenTaskFor(meta, data.passage);
+    if (!written)
+      return { ok: false, reason: "Grading couldn't run just now. Try again in a moment." };
+    const focus = task.criteria
+      .map((c) => CRITERION_LABEL[c])
+      .find((label) => label === data.focus);
+
     // Everything above is free. Only a request that would really call the model is counted.
     const { limiter } = await import("./rate-limit.server");
     const verdict = await limiter().enforce("grading");
@@ -121,16 +130,25 @@ export const gradeArgument = createServerFn({ method: "POST" })
     try {
       const { streamText } = await import("ai");
       const { createAiProvider } = await import("./ai-gateway.server");
-      const { graderSystem, graderPrompt } = await import("./argument.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
       const gateway = createAiProvider(key);
 
       const result = streamText({
         model: gateway(MODEL),
-        system: withGuardrails(graderSystem(data.taskType)),
-        prompt: graderPrompt(data),
+        system: withGuardrails(graderSystem(taskType)),
+        prompt: graderPrompt({
+          lessonTitle: meta.title,
+          objective: meta.objective,
+          taskType,
+          passage: written.passage,
+          prompt: written.prompt,
+          answer: data.answer,
+          attempt: data.attempt,
+          focus: focus ?? null,
+        }),
         maxRetries: 1,
+        ...aiOutput("grading"),
       });
       const text = await result.text;
       if (!screenOutput(text).allowed)
@@ -140,7 +158,7 @@ export const gradeArgument = createServerFn({ method: "POST" })
         };
       const parsed = parseGrade(text, task.criteria);
       if (!parsed) return { ok: false, reason: "The grader's reply couldn't be read. Try again." };
-      await storeAttempt(data, parsed.grade);
+      await storeAttempt(data, meta.title, parsed.grade);
       return { ok: true, ...parsed };
     } catch (error) {
       return { ok: false, reason: describe(error) };
@@ -155,6 +173,7 @@ export const gradeArgument = createServerFn({ method: "POST" })
  */
 async function storeAttempt(
   input: z.infer<typeof GradeInput>,
+  lessonTitle: string,
   grade: ArgumentGrade,
 ): Promise<void> {
   try {
@@ -165,7 +184,7 @@ async function storeAttempt(
     const { error } = await supabaseAdmin.from("argument_attempts").insert({
       user_id: userId,
       lesson_id: input.lessonId,
-      lesson_title: input.lessonTitle,
+      lesson_title: lessonTitle,
       attempt: input.attempt,
       answer: input.answer,
       scores: JSON.parse(JSON.stringify(grade.scores)),

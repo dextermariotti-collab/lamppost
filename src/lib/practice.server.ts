@@ -7,20 +7,65 @@
  * moat, so it is what the reward is tied to.
  */
 
+import { CURRICULUM_TITLE, LESSONS, type CurriculumLesson } from "./curriculum";
+import { notesText } from "./lesson-notes";
 import { MAX_PRACTICE_TURNS, type PracticeTurn } from "./practice";
 
 export type PracticeContext = {
   topic: string;
   lessonTitle: string;
   lessonText: string;
-  /** Titles of lessons the learner already finished in this course. */
+  /** Titles of the lessons before this one in the course. */
   earlierLessons: string[];
-  companionName: string;
 };
+
+/** The most lesson material the tutor is given. */
+export const MAX_LESSON_TEXT = 6000;
+
+/**
+ * What the tutor knows about a lesson, built here from the lesson's own content and never taken
+ * from the request: the takeaway, the notes and each step's explanation for an authored lesson,
+ * or the curriculum's objective and key idea when there is no authored script.
+ */
+export async function lessonContext(meta: CurriculumLesson): Promise<PracticeContext> {
+  const [{ loadLessonScript }, { loadLessonNotes }] = await Promise.all([
+    import("@/content/lessons"),
+    import("@/content/notes"),
+  ]);
+  const [script, notes] = await Promise.all([
+    loadLessonScript(meta.unitId, meta.id),
+    loadLessonNotes(meta.unitId, meta.id),
+  ]);
+  const material = script.ok
+    ? [
+        script.script.takeaway,
+        ...(notes ? [notesText(notes)] : []),
+        ...script.script.steps.map((step) => (step.kind === "note" ? step.prompt : step.why)),
+      ]
+    : [meta.objective, meta.keyIdea, ...(notes ? [notesText(notes)] : [])];
+  const index = LESSONS.findIndex((lesson) => lesson.id === meta.id);
+  return {
+    topic: CURRICULUM_TITLE,
+    lessonTitle: meta.title,
+    lessonText: material.join("\n\n").slice(0, MAX_LESSON_TEXT),
+    earlierLessons: LESSONS.slice(0, Math.max(0, index)).map((lesson) => lesson.title),
+  };
+}
+
+/** The turns stored with a session, read defensively: the stored row is the only history used. */
+export function storedTranscript(value: unknown): PracticeTurn[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((turn: unknown) => {
+    const t = turn as Partial<PracticeTurn> | null;
+    return t && (t.role === "tutor" || t.role === "learner") && typeof t.text === "string"
+      ? [{ role: t.role, text: t.text.slice(0, 2000) }]
+      : [];
+  });
+}
 
 export const PRACTICE_SYSTEM = (ctx: PracticeContext) =>
   [
-    `You are ${ctx.companionName}, a warm, sharp study companion inside a learning app called Lamppost.`,
+    "You are Lamppost's guide: a lamp that helps the learner see their own reasoning clearly, not a person or a character. You speak like a calm, plain-spoken coach.",
     `The learner has just finished the lesson "${ctx.lessonTitle}" in a course about ${ctx.topic}.`,
     "Your job is ACTIVE RECALL, not lecturing. The learner writes explanations in their own words; you respond to what they actually wrote.",
     "Rules:",

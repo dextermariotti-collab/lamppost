@@ -1,5 +1,5 @@
 import { LESSONS, UNITS, type CurriculumLesson } from "./curriculum";
-import { AI_MODELS } from "./ai-models";
+import { AI_MODELS, aiOutput, type AiJob } from "./ai-models";
 import type { Lesson } from "./courses";
 import type { Exercise, ExerciseKind } from "./exercises";
 import { exercisesMatchPlan } from "./drill-plan";
@@ -17,7 +17,7 @@ import { exercisesMatchPlan } from "./drill-plan";
 
 export const MODEL = AI_MODELS.lessons;
 /** Bumped when the generation pipeline changes; invalidates cached lessons. */
-export const CONTENT_VERSION = 7;
+export const CONTENT_VERSION = 8;
 /** Regeneration rounds allowed for drills that fail review. */
 const MAX_REPAIRS = 2;
 /** Whole-lesson attempts before giving up on this request. */
@@ -125,17 +125,18 @@ export async function ensureLessonContent(
 
   const gateway = createAiProvider(key);
   const system = exerciseSystemPrompt(meta.drills, meta.written);
-  const ask = async (systemPrompt: string, prompt: string) =>
+  const ask = async (systemPrompt: string, prompt: string, job: AiJob) =>
     await streamText({
       model: gateway(MODEL),
       system: withGuardrails(systemPrompt),
       prompt,
       maxRetries: 2,
+      ...aiOutput(job),
     }).text;
 
   for (let round = 0; round < MAX_ATTEMPTS; round++) {
     try {
-      const text = await ask(system, exerciseLessonPrompt(meta, { domains, difficulty }));
+      const text = await ask(system, exerciseLessonPrompt(meta, { domains, difficulty }), "lesson");
       const screened = screenOutput(text);
       if (!screened.allowed) continue;
 
@@ -158,6 +159,7 @@ export async function ensureLessonContent(
         const review = await ask(
           VALIDATION_SYSTEM,
           validationPrompt(meta, exercises, lesson.concept?.body),
+          "lessonReview",
         );
         const verdicts = parseVerdicts(review, exercises.length);
         if (!verdicts) break;
@@ -194,6 +196,7 @@ export async function ensureLessonContent(
             meta,
             failures.map((f) => ({ exercise: exercises[f.index]!, problem: f.problem })),
           ),
+          "lesson",
         );
         if (!screenOutput(repair).allowed) break;
         const root = extractJson(repair);
@@ -274,12 +277,13 @@ export async function generateValidatedDrill(
 
   const difficulty = opts.difficulty ?? 2;
   const gateway = createAiProvider(key);
-  const ask = async (system: string, prompt: string) =>
+  const ask = async (system: string, prompt: string, job: AiJob) =>
     await streamText({
       model: gateway(MODEL),
       system: withGuardrails(system),
       prompt,
       maxRetries: 2,
+      ...aiOutput(job),
     }).text;
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -290,6 +294,7 @@ export async function generateValidatedDrill(
         ...(opts.domain ? { domain: opts.domain } : {}),
         ...(opts.conceptBody ? { conceptBody: opts.conceptBody } : {}),
       }),
+      "lessonPart",
     );
     if (!screenOutput(text).allowed) continue;
     const root = extractJson(text);
@@ -301,6 +306,7 @@ export async function generateValidatedDrill(
     const review = await ask(
       VALIDATION_SYSTEM,
       validationPrompt(meta, [candidate], opts.conceptBody),
+      "lessonReview",
     );
     const verdict = parseVerdicts(review, 1)?.[0];
     if (!verdict) continue;

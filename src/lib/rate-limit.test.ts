@@ -5,6 +5,7 @@ import {
   clientIp,
   formatWait,
   limitMessage,
+  networkKey,
   scopeOf,
   type LimitPolicy,
   type PolicyName,
@@ -68,9 +69,28 @@ describe("policies protect the expensive paths", () => {
   });
 
   it("does not offer guests a policy for signed-in-only actions", () => {
-    for (const name of ["leagueView", "practiceTurn", "consent", "safety"] as const) {
+    for (const name of [
+      "leagueView",
+      "practiceTurn",
+      "consent",
+      "safety",
+      "friendRequest",
+      "profileSearch",
+    ] as const) {
       expect(POLICIES[name].guest, name).toEqual([]);
     }
+  });
+});
+
+describe("the social policies", () => {
+  it("limit friend requests and people searches per account, under a shared daily budget", () => {
+    expect(POLICIES.friendRequest.user).toEqual([
+      { name: "hour", seconds: 3600, max: 10 },
+      { name: "day", seconds: 86_400, max: 30 },
+    ]);
+    expect(POLICIES.friendRequest.global).toEqual([{ name: "day", seconds: 86_400, max: 5000 }]);
+    expect(POLICIES.profileSearch.user).toEqual([{ name: "hour", seconds: 3600, max: 60 }]);
+    expect(POLICIES.profileSearch.global).toEqual([{ name: "day", seconds: 86_400, max: 20_000 }]);
   });
 });
 
@@ -79,20 +99,57 @@ describe("clientIp", () => {
     get: (n: string) => h[n.toLowerCase()] ?? null,
   });
 
-  it("prefers the platform-set address over one a caller could type into a header", () => {
+  it("reads only the header the host sets, never one a caller could type", () => {
     expect(
       clientIp(
         headers({ "cf-connecting-ip": "203.0.113.9", "x-forwarded-for": "198.51.100.1, 10.0.0.1" }),
       ),
     ).toBe("203.0.113.9");
-    expect(clientIp(headers({ "x-real-ip": "203.0.113.10" }))).toBe("203.0.113.10");
-    expect(clientIp(headers({ "x-forwarded-for": "198.51.100.1, 10.0.0.1" }))).toBe("198.51.100.1");
+    expect(clientIp(headers({ "x-real-ip": "203.0.113.10" }))).toBeNull();
+    expect(clientIp(headers({ "x-forwarded-for": "198.51.100.1, 10.0.0.1" }))).toBeNull();
+  });
+
+  it("reads another header when the host is configured to, taking the entry the proxy added", () => {
+    const sent = headers({ "cf-connecting-ip": "203.0.113.9", "x-real-ip": "203.0.113.10" });
+    expect(clientIp(sent, "X-Real-IP")).toBe("203.0.113.10");
+    expect(
+      clientIp(headers({ "x-forwarded-for": "6.6.6.6, 198.51.100.1" }), "x-forwarded-for"),
+    ).toBe("198.51.100.1");
+    expect(clientIp(sent, " ")).toBe("203.0.113.9");
   });
 
   it("accepts IPv6 and rejects garbage", () => {
     expect(clientIp(headers({ "cf-connecting-ip": "2001:db8::1" }))).toBe("2001:db8::1");
     expect(clientIp(headers({ "cf-connecting-ip": "<script>alert(1)</script>" }))).toBeNull();
     expect(clientIp(headers({}))).toBeNull();
+  });
+});
+
+describe("networkKey", () => {
+  it("keys IPv6 by its /64, however the address is written", () => {
+    const key = networkKey("2001:db8:aaaa:bbbb::1");
+    expect(key).toBe("2001:db8:aaaa:bbbb::/64");
+    for (const same of [
+      "2001:db8:aaaa:bbbb:1234:5678:9abc:def0",
+      "2001:0DB8:AAAA:BBBB:ffff:ffff:ffff:ffff",
+      "2001:db8:aaaa:bbbb:0:0:0:2",
+    ]) {
+      expect(networkKey(same), same).toBe(key);
+    }
+    expect(networkKey("2001:db8:aaaa:bbbc::1")).not.toBe(key);
+    expect(networkKey("::1")).toBe("0:0:0:0::/64");
+    expect(networkKey("fe80::")).toBe("fe80:0:0:0::/64");
+  });
+
+  it("keeps IPv4 as it is, including IPv4 written as IPv6", () => {
+    expect(networkKey("203.0.113.9")).toBe("203.0.113.9");
+    expect(networkKey("::ffff:203.0.113.9")).toBe("203.0.113.9");
+    expect(networkKey("::ffff:cb00:7109")).toBe("203.0.113.9");
+  });
+
+  it("leaves an address it can't read as its own key", () => {
+    expect(networkKey("1:2:3:4:5:6:7:8:9")).toBe("1:2:3:4:5:6:7:8:9");
+    expect(networkKey("1::2::3")).toBe("1::2::3");
   });
 });
 

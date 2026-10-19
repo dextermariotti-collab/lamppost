@@ -1,5 +1,5 @@
 import { DAILY_CASES } from "@/content/cases";
-import { AI_MODELS } from "./ai-models";
+import { AI_MODELS, aiOutput } from "./ai-models";
 import {
   asReplyExample,
   casePlanForDay,
@@ -90,6 +90,7 @@ export async function writeCaseForDay(day: string, apiKey: string): Promise<Writ
         system: withGuardrails(CASE_WRITER_SYSTEM),
         prompt: casePrompt(plan),
         maxRetries: 1,
+        ...aiOutput("caseWriter"),
       }).text;
       if (!screenOutput(draft).allowed) continue;
       const read = readGeneratedCase(extractJson(draft), plan);
@@ -102,6 +103,7 @@ export async function writeCaseForDay(day: string, apiKey: string): Promise<Writ
         system: withGuardrails(CASE_REVIEW_SYSTEM),
         prompt: reviewPrompt(read.case),
         maxRetries: 1,
+        ...aiOutput("caseReview"),
       }).text;
       if (readCaseReview(extractJson(review)) === true) return { ok: true, case: read.case };
       console.warn(`[cases] ${day}: the reviewer failed the draft`);
