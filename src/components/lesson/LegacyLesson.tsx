@@ -31,6 +31,7 @@ import { recordWrittenScore, unitMastery } from "@/lib/mastery";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
 import { celebrateAnswer, comboBonus } from "@/components/AnswerFeedback";
+import { playCue } from "@/lib/feedback";
 import type { PracticeClose } from "@/lib/practice";
 
 /** Roughly one in three correct answers also gets a Socratic nudge. */
@@ -197,6 +198,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     setCombo(streakNow);
     const bonus = correct ? comboBonus(streakNow) : 0;
     if (fresh) recordExercise(score, bonus);
+    playCue(correct ? "correct" : "wrong");
     celebrateAnswer({
       correct,
       xp: Math.max(5, Math.round(25 * Math.min(Math.max(score, 0), 1))),
@@ -558,10 +560,10 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
               total={1}
               showCount={false}
               difficulty={1}
-              onAnswer={(score) => {
+              onAnswer={(score, _variant, _given, _exercise, _difficulty, xpScale) => {
                 if (easierDone) return;
                 setEasierDone(true);
-                recordExercise(score);
+                recordExercise(score * xpScale);
                 recordDrillOutcome(meta.id, { score, difficulty: 1 });
               }}
             />

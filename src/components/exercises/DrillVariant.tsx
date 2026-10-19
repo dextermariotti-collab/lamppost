@@ -16,16 +16,19 @@ import type { Exercise, ExerciseKind } from "@/lib/exercises";
  * scenario setting follows their goal, and variants they have already seen are
  * skipped until the pool runs out.
  *
- * A slow or failed fetch is retried quietly behind the loading state, because a
- * "couldn't generate" message is not the learner's problem. Two things end the
- * quiet retrying: the server saying a usage limit was reached (it says when to
- * come back, and asking again sooner cannot help), and about half a minute of
- * failures. Either way the learner gets a plain message and a button.
+ * A failed fetch is retried quietly a couple of times, so a blip never shows. After that the
+ * learner is told plainly what happened (the drill server couldn't be reached, or a usage limit
+ * was reached, in which case asking again sooner cannot help) and can try again or, when the
+ * screen offers it, move on without this drill.
  */
 
-const RETRY_MS = [700, 1200, 2000, 3500, 6000];
-const QUIET_RETRIES = 8;
-const TAKING_LONG = "This drill is taking longer than usual to get ready.";
+const RETRY_MS = [700, 1500];
+const QUIET_RETRIES = RETRY_MS.length;
+const UNREACHABLE = "Couldn't reach the drill server. Check your connection and try again.";
+const NOT_READY = "This drill isn't ready yet. Try again in a minute.";
+
+/** The server answered but had no drill to give: reachable, just not ready. */
+class NotReady extends Error {}
 
 export function DrillVariant({
   lessonId,
@@ -35,6 +38,7 @@ export function DrillVariant({
   total,
   showCount = true,
   difficulty,
+  skip,
   onAnswer,
 }: {
   lessonId: string;
@@ -45,12 +49,19 @@ export function DrillVariant({
   showCount?: boolean;
   /** Overrides the rating-derived band (used for the easier inserted drill). */
   difficulty?: 1 | 2 | 3;
+  /** A way past a drill that can't be fetched, e.g. "Skip this drill". */
+  skip?: { label: string; onSkip: () => void };
+  /**
+   * `score` is how the answer was marked (1 is right). `xpScale` is what the drill pays, as a
+   * share of the usual: a nudge halves the XP, never the verdict.
+   */
   onAnswer: (
     score: number,
     variant: number,
     answer: unknown,
     exercise: Exercise,
     difficulty: number,
+    xpScale: number,
   ) => void;
 }) {
   const [drill, setDrill] = useState<{
@@ -72,7 +83,9 @@ export function DrillVariant({
     setAnswer(undefined);
     setHint(false);
     setPause(null);
-    retries.current = 0;
+    // Quiet retries are for the first load only: once the learner has seen why and asked again,
+    // a failure is reported straight away.
+    retries.current = round === 0 ? 0 : QUIET_RETRIES;
     setOfferHint(needsHelp(lessonId));
 
     const band = difficulty ?? targetDifficulty(lessonId);
@@ -104,12 +117,12 @@ export function DrillVariant({
             setPause(result.reason);
             return;
           }
-          throw new Error(result.reason);
+          throw new NotReady(result.reason);
         })
-        .catch(() => {
+        .catch((error: unknown) => {
           if (canceled) return;
           if (retries.current >= QUIET_RETRIES) {
-            setPause(TAKING_LONG);
+            setPause(error instanceof NotReady ? NOT_READY : UNREACHABLE);
             return;
           }
           const wait = RETRY_MS[Math.min(retries.current, RETRY_MS.length - 1)]!;
@@ -132,13 +145,7 @@ export function DrillVariant({
       setAnswer(given);
       if (drill) {
         // A hinted drill pays half, so the hint stays a help and not a shortcut.
-        onAnswer(
-          hint ? score * 0.5 : score,
-          drill.variant,
-          given,
-          drill.exercise,
-          drill.difficulty,
-        );
+        onAnswer(score, drill.variant, given, drill.exercise, drill.difficulty, hint ? 0.5 : 1);
       }
     },
     [drill, hint, onAnswer],
@@ -146,7 +153,7 @@ export function DrillVariant({
 
   if (!drill && pause) {
     return (
-      <div className="mt-5 rounded-3xl bg-card p-5 shadow-soft" role="status">
+      <div className="sign mt-5 p-5" role="status">
         <p className="text-sm font-semibold text-foreground">{pause}</p>
         <Button
           type="button"
@@ -155,6 +162,16 @@ export function DrillVariant({
         >
           Try again
         </Button>
+        {skip && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={skip.onSkip}
+            className="mt-2 h-11 w-full rounded-sm"
+          >
+            {skip.label}
+          </Button>
+        )}
       </div>
     );
   }

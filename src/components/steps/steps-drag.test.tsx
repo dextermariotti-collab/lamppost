@@ -5,6 +5,7 @@ import type { StepResult } from "@/lib/steps/scoring";
 import { builderSample, sortSample } from "@/test/steps";
 import { ArgumentBuilder } from "./ArgumentBuilder";
 import { SortIt } from "./SortIt";
+import { TOUCH_HOLD_MS } from "./useDragDrop";
 
 afterEach(() => {
   cleanup();
@@ -19,8 +20,13 @@ function pointerOver(element: Element | null) {
   Object.defineProperty(document, "elementFromPoint", { value: () => element, configurable: true });
 }
 
-/** A full press-move-release by pointer on `from`, ending over `over`. */
-async function drag(from: Element, over: Element | null) {
+const rest = (ms: number) => act(async () => new Promise((resolve) => setTimeout(resolve, ms)));
+
+/**
+ * A full press-move-release by finger on `from`, ending over `over`. The finger rests first,
+ * as a drag on a phone does; `hold: false` is a swipe that starts moving straight away.
+ */
+async function drag(from: Element, over: Element | null, { hold = true } = {}) {
   pointerOver(over);
   fireEvent.pointerDown(from, {
     clientX: 10,
@@ -29,6 +35,7 @@ async function drag(from: Element, over: Element | null) {
     pointerType: "touch",
     button: 0,
   });
+  if (hold) await rest(TOUCH_HOLD_MS + 20);
   fireEvent.pointerMove(from, { clientX: 60, clientY: 80, pointerId: 1, pointerType: "touch" });
   fireEvent.pointerUp(from, { clientX: 60, clientY: 80, pointerId: 1, pointerType: "touch" });
   // The click a browser fires after a drag is ignored until the next tick; let it pass.
@@ -109,6 +116,43 @@ describe("Sort it", () => {
     mount();
     await drag(card(/130 feet/), bucketButton("Opinion"));
     expect(inBucket("Opinion", /130 feet/)).toBeTruthy();
+  });
+
+  it("lets the page scroll over a card: no touch-action none, and a quick swipe is not a drag", async () => {
+    mount();
+    const first = card(/130 feet/);
+    expect(first.style.touchAction).not.toBe("none");
+    await drag(first, bucketButton("Opinion"), { hold: false });
+    expect(card(/130 feet.*not sorted yet/)).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "Opinion bucket" })).toBeNull();
+  });
+
+  it("stops the page scrolling only while a held card is being moved", async () => {
+    mount();
+    const swipe = () => {
+      const move = new Event("touchmove", { bubbles: true, cancelable: true });
+      window.dispatchEvent(move);
+      return move.defaultPrevented;
+    };
+    const first = card(/130 feet/);
+    expect(swipe()).toBe(false);
+    fireEvent.pointerDown(first, { clientX: 10, clientY: 10, pointerId: 1, pointerType: "touch" });
+    expect(swipe()).toBe(false);
+    await rest(TOUCH_HOLD_MS + 20);
+    expect(swipe()).toBe(true);
+    fireEvent.pointerUp(first, { clientX: 10, clientY: 10, pointerId: 1, pointerType: "touch" });
+    expect(swipe()).toBe(false);
+  });
+
+  it("drags straight away with a mouse", async () => {
+    mount();
+    const first = card(/130 feet/);
+    pointerOver(bucketButton("Fact"));
+    fireEvent.pointerDown(first, { clientX: 10, clientY: 10, pointerId: 1, pointerType: "mouse" });
+    fireEvent.pointerMove(first, { clientX: 60, clientY: 80, pointerId: 1, pointerType: "mouse" });
+    fireEvent.pointerUp(first, { clientX: 60, clientY: 80, pointerId: 1, pointerType: "mouse" });
+    await rest(0);
+    expect(inBucket("Fact", /130 feet/)).toBeTruthy();
   });
 
   it("leaves the card where it was when dropped on nothing", async () => {

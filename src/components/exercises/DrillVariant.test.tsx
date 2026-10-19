@@ -16,7 +16,7 @@ const drill = {
   exercise: { kind: "flaw" },
 };
 
-const mount = () =>
+const mount = (skip?: { label: string; onSkip: () => void }) =>
   render(
     <DrillVariant
       lessonId="claims-the-actual-claim"
@@ -24,6 +24,7 @@ const mount = () =>
       seen={[]}
       index={0}
       total={4}
+      {...(skip ? { skip } : {})}
       onAnswer={() => undefined}
     />,
   );
@@ -62,16 +63,51 @@ describe("DrillVariant when the server can't give a drill", () => {
     expect(screen.getByText("the drill")).toBeTruthy();
   });
 
-  it("keeps quietly retrying an ordinary failure, then gives up politely", async () => {
+  it("retries an ordinary failure only twice, then says the drill isn't ready", async () => {
     mocks.getDrillVariant.mockResolvedValue({ ok: false, reason: "still being prepared" });
     mount();
     await settle();
     expect(screen.queryByRole("status")).toBeNull();
+    await act(async () => vi.advanceTimersByTimeAsync(2500));
+    expect(screen.getByRole("status").textContent).toMatch(/isn't ready yet/i);
+    expect(mocks.getDrillVariant).toHaveBeenCalledTimes(3);
     await act(async () => vi.advanceTimersByTimeAsync(120_000));
-    expect(screen.getByRole("status").textContent).toMatch(/taking longer than usual/i);
+    expect(mocks.getDrillVariant).toHaveBeenCalledTimes(3);
+  });
+
+  it("says plainly when the drill server can't be reached, within a few seconds", async () => {
+    mocks.getDrillVariant.mockRejectedValue(new TypeError("Failed to fetch"));
+    mount();
+    await act(async () => vi.advanceTimersByTimeAsync(2500));
+    expect(screen.getByRole("status").textContent).toMatch(/couldn't reach the drill server/i);
+    expect(screen.queryByText(/taking longer than usual/i)).toBeNull();
+  });
+
+  it("reports a failed Try again straight away, without another round of silent retries", async () => {
+    mocks.getDrillVariant.mockRejectedValue(new TypeError("Failed to fetch"));
+    mount();
+    await act(async () => vi.advanceTimersByTimeAsync(2500));
     const calls = mocks.getDrillVariant.mock.calls.length;
-    await act(async () => vi.advanceTimersByTimeAsync(120_000));
-    expect(mocks.getDrillVariant.mock.calls.length).toBe(calls);
+    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+    await settle();
+    expect(mocks.getDrillVariant).toHaveBeenCalledTimes(calls + 1);
+    expect(screen.getByRole("status").textContent).toMatch(/couldn't reach the drill server/i);
+  });
+
+  it("offers the screen's way past a drill it can't fetch", async () => {
+    mocks.getDrillVariant.mockRejectedValue(new TypeError("Failed to fetch"));
+    const onSkip = vi.fn();
+    mount({ label: "Skip this drill", onSkip });
+    await act(async () => vi.advanceTimersByTimeAsync(2500));
+    fireEvent.click(screen.getByRole("button", { name: "Skip this drill" }));
+    expect(onSkip).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers no skip when the screen has none", async () => {
+    mocks.getDrillVariant.mockRejectedValue(new TypeError("Failed to fetch"));
+    mount();
+    await act(async () => vi.advanceTimersByTimeAsync(2500));
+    expect(screen.getAllByRole("button")).toHaveLength(1);
   });
 
   it("recovers on its own from a blip without ever showing a message", async () => {

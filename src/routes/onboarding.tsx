@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { GuideMark } from "@/components/LineBullet";
 import { ArrowRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LegalFooter } from "@/components/LegalFooter";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
@@ -12,8 +12,10 @@ import { markOnboardingSeen } from "@/lib/companion-store";
 import { companionFromPreset, type Companion } from "@/lib/companions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS, UNITS } from "@/lib/curriculum";
 import type { ExerciseKind } from "@/lib/exercises";
+import { playCue } from "@/lib/feedback";
 import { FIRST_QUESTION, TIME_OPTIONS, saveIntent } from "@/lib/onboarding";
 import { useProgress } from "@/lib/progress";
+import { holdRewards } from "@/lib/reward-hold";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/onboarding")({
@@ -58,10 +60,14 @@ function Onboarding() {
     <PhoneFrame showNav={false}>
       <div className="flex min-h-full flex-col px-6 pb-4">
         <div className="flex items-center justify-between pt-4">
-          <div className="flex gap-1.5" aria-hidden>
+          <div className="flex gap-1.5">
+            <span className="sr-only">
+              Step {step + 1} of {STEPS.length}
+            </span>
             {STEPS.map((id, i) => (
               <span
                 key={id}
+                aria-hidden
                 className={cn(
                   "h-1.5 transition-all duration-300",
                   i === step ? "w-6 bg-primary" : "w-1.5 bg-border",
@@ -140,7 +146,14 @@ function QuestionStep({ onNext }: { onNext: () => void }) {
   const [answered, setAnswered] = useState(false);
   return (
     <div className="flex flex-1 animate-rise-in flex-col pt-4">
-      <StepView step={FIRST_QUESTION} onResolve={() => setAnswered(true)} />
+      <StepView
+        step={FIRST_QUESTION}
+        onResolve={(result) => {
+          if (answered) return;
+          setAnswered(true);
+          playCue(result.score >= 1 ? "correct" : "wrong");
+        }}
+      />
       {answered && (
         <Button
           type="button"
@@ -154,6 +167,30 @@ function QuestionStep({ onNext }: { onNext: () => void }) {
   );
 }
 
+/**
+ * The placement check: a ladder across all seven units, two easy drills to start, then one drill
+ * from each unit in order. It climbs while the learner keeps up and stops as soon as two in a row
+ * go wrong, so few people see every question.
+ */
+const PLACEMENT_LADDER = (() => {
+  const picks: { lessonId: string; kind: ExerciseKind; lessonIndex: number }[] = [];
+  const add = (lesson: (typeof LESSONS)[number] | undefined) => {
+    if (!lesson || !lesson.drills[0]) return;
+    picks.push({
+      lessonId: lesson.id,
+      kind: lesson.drills[0] as ExerciseKind,
+      lessonIndex: LESSONS.findIndex((l) => l.id === lesson.id) + 1,
+    });
+  };
+  add(LESSONS[0]);
+  add(LESSONS[2]);
+  for (const unit of UNITS) {
+    const inUnit = LESSONS.filter((lesson) => lesson.unitId === unit.id);
+    add(inUnit[1] ?? inUnit[0]);
+  }
+  return picks.slice(0, 10);
+})();
+
 const START_OPTIONS: { id: Start; label: string; blurb: string; tag?: string }[] = [
   {
     id: "beginning",
@@ -164,7 +201,7 @@ const START_OPTIONS: { id: Start; label: string; blurb: string; tag?: string }[]
   {
     id: "placement",
     label: "Skip what I already know",
-    blurb: "Five quick questions, no way to fail.",
+    blurb: `Up to ${PLACEMENT_LADDER.length} quick questions, no way to fail.`,
   },
   { id: "choose", label: "Choose a unit", blurb: "Every unit is open from day one." },
 ];
@@ -266,29 +303,7 @@ function PlacementStep({
   companion: Companion;
   onDone: (correct: number, total: number, skipped: boolean, unlocked: number) => void;
 }) {
-  /**
-   * A ladder across all seven units: two easy drills to start, then one drill
-   * from each unit in order. It climbs while the learner keeps up and stops as
-   * soon as two in a row go wrong, so nobody sits through ten drills.
-   */
-  const pairs = useMemo(() => {
-    const picks: { lessonId: string; kind: ExerciseKind; lessonIndex: number }[] = [];
-    const add = (lesson: (typeof LESSONS)[number] | undefined) => {
-      if (!lesson || !lesson.drills[0]) return;
-      picks.push({
-        lessonId: lesson.id,
-        kind: lesson.drills[0] as ExerciseKind,
-        lessonIndex: LESSONS.findIndex((l) => l.id === lesson.id) + 1,
-      });
-    };
-    add(LESSONS[0]);
-    add(LESSONS[2]);
-    for (const unit of UNITS) {
-      const inUnit = LESSONS.filter((lesson) => lesson.unitId === unit.id);
-      add(inUnit[1] ?? inUnit[0]);
-    }
-    return picks.slice(0, 10);
-  }, []);
+  const pairs = PLACEMENT_LADDER;
   const [step, setStep] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [answered, setAnswered] = useState(false);
@@ -296,6 +311,9 @@ function PlacementStep({
   /** Highest lesson number answered correctly — what gets marked as known. */
   const [reached, setReached] = useState(0);
   const seen = useMemo<number[]>(() => [], []);
+
+  // Badges and level-ups wait until the check is over.
+  useEffect(() => holdRewards(), []);
 
   // Two misses in a row and the check is over; there's nothing more to learn.
   const stopped = missRun >= 2;
@@ -339,9 +357,14 @@ function PlacementStep({
         index={step}
         total={pairs.length}
         showCount={false}
+        skip={{
+          label: "Start at lesson 1",
+          onSkip: () => onDone(correct, Math.max(asked, 1), true, 0),
+        }}
         onAnswer={(score) => {
           if (answered) return;
           setAnswered(true);
+          playCue(score >= 1 ? "correct" : "wrong");
           if (score >= 1) {
             setCorrect((n) => n + 1);
             setMissRun(0);

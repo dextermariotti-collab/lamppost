@@ -108,7 +108,8 @@
   /* The heavy rule round a sign. */
   --edge: #111418;
   --input: #7d838b;
-  --ring: #111418;
+  /* Keyboard focus: a hue no button is filled with, so the outline never merges into one. */
+  --ring: #2563d9;
   --lamp: #f2a900;
   --lamp-pool: none;
   /* Unit lines: a fill colour and the lettering that sits on it (>= 4.5:1), and >= 3:1
@@ -165,7 +166,7 @@
   --border: #2a3644;
   --edge: #3a4757;
   --input: #7a8797;
-  --ring: #ffb547;
+  --ring: #8ab4f8;
   --lamp: #ffb547;
   --lamp-pool: radial-gradient(120% 70% at 50% 8%, rgb(255 181 71 / 0.17), rgb(255 181 71 / 0.06) 48%, transparent 76%);
   --line-1: #f0665e;
@@ -249,13 +250,11 @@
 .knowledge-node-active {
   background-color: color-mix(in oklab, var(--primary) 13%, var(--background));
   border-color: color-mix(in oklab, var(--primary) 70%, var(--foreground));
-  box-shadow: 0 0 24px -15px var(--primary);
 }
 
 .knowledge-node-recent {
   background-color: color-mix(in oklab, var(--primary) 20%, var(--background));
   border-color: color-mix(in oklab, var(--primary) 70%, var(--foreground));
-  box-shadow: 0 0 34px -12px var(--primary);
 }
 
 /* Locked is shown by the dashed outline and the lock, never by faded text. */
@@ -265,13 +264,10 @@
   color: var(--graph-locked-text);
 }
 
+/* The unit just worked on: a second rule round the node, not a glow. */
 .knowledge-node-glow {
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 45%, transparent),
-    0 0 22px color-mix(in oklab, var(--primary) 35%, transparent);
-}
-
-.knowledge-progress-ring {
-  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--primary) 50%, transparent));
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 @keyframes connection-draw {
@@ -663,7 +659,7 @@
 @keyframes answer-banner-in {
   from {
     opacity: 0;
-    transform: translateY(-120%);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -671,46 +667,18 @@
   }
 }
 
+/* The answer strip is a `sign` whose rule says right or wrong. Unlayered, so it wins over the
+   sign's own edge. */
 .answer-banner {
-  animation: answer-banner-in 260ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+  animation: answer-banner-in 180ms ease-out both;
 }
 
-@keyframes answer-xp-fly {
-  0% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.85);
-  }
-  25% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-14px) scale(0.85);
-  }
+.answer-banner-right {
+  box-shadow: 0 0 0 2px var(--success);
 }
 
-.xp-fly {
-  animation: answer-xp-fly 1500ms cubic-bezier(0.4, 0, 0.5, 1) both;
-}
-
-@keyframes answer-spring {
-  0% {
-    transform: scale(0.4);
-  }
-  55% {
-    transform: scale(1.18);
-  }
-  75% {
-    transform: scale(0.94);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.answer-spring {
-  animation: answer-spring 460ms cubic-bezier(0.22, 1.4, 0.36, 1) both;
+.answer-banner-wrong {
+  box-shadow: 0 0 0 2px var(--destructive);
 }
 
 @keyframes answer-shake {
@@ -752,8 +720,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .answer-banner,
-  .xp-fly,
-  .answer-spring,
   .answer-shake,
   .answer-right-pulse {
     animation: none !important;

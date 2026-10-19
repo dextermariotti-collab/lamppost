@@ -4,7 +4,6 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { AnimatedBar } from "@/components/AnimatedBar";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { Button } from "@/components/ui/button";
 import { useProgress } from "@/lib/progress";
@@ -18,6 +17,9 @@ import {
 } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
 import { celebrateAnswer } from "@/components/AnswerFeedback";
+import { playCue } from "@/lib/feedback";
+import { REVIEW_XP } from "@/lib/progress-core";
+import { holdRewards } from "@/lib/reward-hold";
 
 export const Route = createFileRoute("/review")({
   head: () => ({
@@ -54,10 +56,16 @@ function ReviewQueue() {
   const [step, setStep] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [right, setRight] = useState(0);
+  const [skipped, setSkipped] = useState(0);
 
   const item = session?.[step];
   const done = session !== null && (session.length === 0 || step >= session.length);
 
+  // Badges and level-ups wait for the end of the review rather than landing on a drill.
+  const running = session !== null && !done;
+  useEffect(() => (running ? holdRewards() : undefined), [running]);
+
+  // The hint's half XP isn't passed on: recordReview pays a fixed REVIEW_XP either way.
   const handleAnswer = (
     score: number,
     variant: number,
@@ -71,8 +79,20 @@ function ReviewQueue() {
     if (correct) setRight((n) => n + 1);
     grade(item.key, correct, variant);
     recordReview(correct);
-    celebrateAnswer({ correct, xp: correct ? 15 : 5, note: EXERCISE_LABEL[item.kind] });
+    playCue(correct ? "correct" : "wrong");
+    celebrateAnswer({
+      correct,
+      xp: correct ? REVIEW_XP.correct : REVIEW_XP.wrong,
+      note: EXERCISE_LABEL[item.kind],
+    });
     recordDrillOutcome(item.lessonId, { score, difficulty });
+  };
+
+  // A drill that can't be fetched is left in the queue, ungraded, for next time.
+  const skipDrill = () => {
+    if (answered) return;
+    setSkipped((n) => n + 1);
+    setStep((s) => s + 1);
   };
 
   return (
@@ -88,7 +108,20 @@ function ReviewQueue() {
       <div className="px-5 pb-8">
         {!done && item && (
           <>
-            <AnimatedBar pct={(step / session!.length) * 100} className="mt-1" />
+            <div
+              role="progressbar"
+              aria-label="Review progress"
+              aria-valuemin={0}
+              aria-valuemax={session!.length}
+              aria-valuenow={step}
+              aria-valuetext={`${step} of ${session!.length} done`}
+              className="mt-1 h-2 overflow-hidden bg-muted"
+            >
+              <div
+                className="h-full bg-primary transition-[width] duration-300 ease-out"
+                style={{ width: `${(step / session!.length) * 100}%` }}
+              />
+            </div>
             <p className="mt-2 text-[11px] font-bold text-muted-foreground">
               {step + 1} of {session!.length} · {item.unitTitle}
             </p>
@@ -114,6 +147,7 @@ function ReviewQueue() {
               seen={item.seen}
               index={step}
               total={session!.length}
+              skip={{ label: "Skip this drill", onSkip: skipDrill }}
               onAnswer={handleAnswer}
             />
 
@@ -155,6 +189,8 @@ function ReviewQueue() {
             <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">
               {right} of {session!.length} handled. The ones you missed return tomorrow with new
               material.
+              {skipped > 0 &&
+                ` ${skipped === 1 ? "The one you skipped is" : `The ${skipped} you skipped are`} still in your queue.`}
             </p>
             <Button asChild className="mt-6 h-12 rounded-sm px-6 text-sm font-semibold">
               <Link to="/">Back to home</Link>

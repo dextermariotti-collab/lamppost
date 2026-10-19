@@ -73,7 +73,7 @@ describe("DrillVariant hints", () => {
     expect(button.className).toMatch(/\bh-11\b/);
   });
 
-  it("shows the guiding question and halves what the drill pays", async () => {
+  it("shows the guiding question and halves what the drill pays, not whether it was right", async () => {
     mocks.struggling = true;
     const onAnswer = mount();
     await settle();
@@ -82,6 +82,14 @@ describe("DrillVariant hints", () => {
     expect(screen.getByText(/half xp/i)).toBeTruthy();
 
     await answer(1);
-    expect(onAnswer).toHaveBeenCalledWith(0.5, 4, "choice", drill.exercise, 2);
+    expect(onAnswer).toHaveBeenCalledWith(1, 4, "choice", drill.exercise, 2, 0.5);
+  });
+
+  it("pays in full without the nudge", async () => {
+    mocks.struggling = true;
+    const onAnswer = mount();
+    await settle();
+    await answer(1);
+    expect(onAnswer).toHaveBeenCalledWith(1, 4, "choice", drill.exercise, 2, 1);
   });
 });

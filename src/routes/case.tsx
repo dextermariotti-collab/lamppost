@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, X } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AiLabel } from "@/components/AiLabel";
 import { LessonPlayer } from "@/components/lesson/LessonPlayer";
 import { LineBullet } from "@/components/LineBullet";
@@ -23,6 +23,7 @@ import { playCue } from "@/lib/feedback";
 import { useProgress } from "@/lib/progress";
 import { recordDrillOutcome } from "@/lib/rating";
 import { trackDrillResult } from "@/lib/review-drills";
+import { holdRewards } from "@/lib/reward-hold";
 import { reviewKindFor, statedConfidence } from "@/lib/steps/attempts";
 import type { StepResult } from "@/lib/steps/scoring";
 import type { LessonStep } from "@/lib/steps/types";
@@ -133,6 +134,9 @@ function CasePlayer({
   );
   const answered = useRef(new Set<number>());
 
+  // Badges and level-ups wait until the case is over rather than landing on a question.
+  useEffect(() => holdRewards(), []);
+
   const onStepResolved = (index: number, _step: LessonStep, result: StepResult) => {
     if (answered.current.has(index)) return;
     answered.current.add(index);
@@ -140,7 +144,9 @@ function CasePlayer({
     const meta = LESSONS.find((l) => l.id === lessonId);
     playCue(result.score >= 1 ? "correct" : "wrong");
     const confidence = statedConfidence(result.answer);
-    const kind = meta ? reviewKindFor(meta.drills, index) : null;
+    // A case question isn't one of its lesson's steps, so its place in the case says nothing about
+    // which drill it is: a miss always comes back as the lesson's first planned drill.
+    const kind = meta ? reviewKindFor(meta.drills, 0) : null;
     if (kind) trackDrillResult(lessonId, kind, result.score, confidence);
     recordDrillOutcome(lessonId, {
       score: result.score,

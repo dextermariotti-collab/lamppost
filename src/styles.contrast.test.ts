@@ -62,6 +62,13 @@ describe.each(themes)("$name theme", ({ name, tokens }) => {
     }
   });
 
+  it("draws keyboard focus in its own color, visible on every surface and beside a filled button", () => {
+    expect(parseColor(tokens["ring"]!)).not.toEqual(parseColor(tokens["primary"]!));
+    for (const bg of ["background", "card", "muted"]) {
+      expect(ratio(tokens, "ring", bg), `ring on ${bg}`).toBeGreaterThanOrEqual(GRAPHIC);
+    }
+  });
+
   it("keeps the XP icon visible as a graphic", () => {
     expect(ratio(tokens, "xp", "background")).toBeGreaterThanOrEqual(GRAPHIC);
   });

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckQuestion } from "@/components/CheckQuestion";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { UNIT_CHECKS } from "@/content/unit-checks";
 import { CURRICULUM_SLUG, unitEntryIndex, unitProgress } from "@/lib/curriculum";
 import { dayKey, daysBetween } from "@/lib/days";
+import { playCue } from "@/lib/feedback";
 import { useProgress } from "@/lib/progress";
+import { holdRewards } from "@/lib/reward-hold";
 import {
   LATER_CHECK_DAYS,
   checkAvailability,
@@ -63,6 +65,10 @@ function UnitCheckScreen() {
   const results = checks[unitId];
   const availability = checkAvailability(phase, unit, results);
   const firstLesson = unitEntryIndex(unit.index, doneLessons) + 1;
+
+  // Badges and level-ups wait while the questions are open.
+  const asking = hydrated && checksReady && !finished && availability === "open";
+  useEffect(() => (asking ? holdRewards() : undefined), [asking]);
 
   if (!hydrated || !checksReady) {
     return (
@@ -169,6 +175,7 @@ function UnitCheckScreen() {
           total={items.length}
           onAnswered={(correct) => {
             setAnswered(true);
+            playCue(correct ? "correct" : "wrong");
             if (correct) setRight((n) => n + 1);
           }}
         />

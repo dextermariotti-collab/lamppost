@@ -9,7 +9,9 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { UNIT_CHECKS } from "@/content/unit-checks";
 import { TOTAL_LESSONS, UNITS, unitProgress } from "@/lib/curriculum";
+import { playCue } from "@/lib/feedback";
 import { useProgress } from "@/lib/progress";
+import { holdRewards } from "@/lib/reward-hold";
 import { checkAvailability, overallChange, recordCheck, useUnitChecks } from "@/lib/unit-checks";
 
 export const Route = createFileRoute("/final-check")({
@@ -55,6 +57,8 @@ function FinalCheckScreen() {
 
   const unitId = queue?.[unitAt];
   const running = queue !== null && unitId !== undefined;
+  // Badges and level-ups wait until the last check is done.
+  useEffect(() => (running ? holdRewards() : undefined), [running]);
 
   return (
     <PhoneFrame showNav={!running}>
@@ -78,6 +82,7 @@ function FinalCheckScreen() {
             answered={answered}
             onAnswered={(correct) => {
               setAnswered(true);
+              playCue(correct ? "correct" : "wrong");
               if (correct) setRight((n) => n + 1);
             }}
             onNext={() => {
