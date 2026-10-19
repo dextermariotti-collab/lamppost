@@ -72,7 +72,7 @@ export const DAILY_CASES: DailyCase[] = [
             "That's about the quote. The trial's gap is what it compares against.",
           ],
         ],
-        "With no comparison group, the 9 pounds could come from anything people do when they start a new routine, like eating less. Daily users are also the keenest ones.",
+        "With no comparison group, the 9 pounds could come from anything people do when they start a new routine, like eating less. Daily users are also the most motivated ones.",
       ),
       ask(
         "fallacies-authority-popularity",
@@ -115,7 +115,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-002",
     source: "post",
     title: "Since the skate park opened",
-    text: "Since the skate park opened in June, my car has been broken into, and so has my neighbor's. Three other people in this group have posted about break-ins too. It's obvious what's going on. The council should close the park before someone gets hurt. Anyone who disagrees clearly doesn't live around here.",
+    text: "Since the skate park opened in June, my car has been broken into, and so has my neighbor's. Three other people in this group have posted about break-ins too. It's obvious what's going on. The city council should close the park before someone gets hurt. Anyone who disagrees clearly doesn't live around here.",
     questions: [
       ask(
         "claims-hidden-assumptions",
@@ -128,7 +128,7 @@ export const DAILY_CASES: DailyCase[] = [
             "That's stated outright, not taken for granted.",
           ],
           [
-            "That the council is the one that runs the park",
+            "That the city council is the one that runs the park",
             "It's implied, but nothing in the argument hangs on it.",
           ],
         ],
@@ -176,7 +176,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-003",
     source: "article",
     title: "Coffee adds years to your life",
-    text: "HEADLINE: Coffee adds years to your life\n\nThe study behind it followed 12,000 adults for ten years. People who said they drank three or more cups a day were 8% less likely to die during that time than people who drank none. The researchers note that coffee drinkers in the study were also more likely to be in work and less likely to smoke, and say more research is needed.",
+    text: "HEADLINE: Coffee adds years to your life\n\nThe study behind it followed 12,000 adults for ten years. People who said they drank three or more cups a day were 8% less likely to die during that time than people who drank none. The researchers note that coffee drinkers in the study were also more likely to be working and less likely to smoke, and say more research is needed.",
     questions: [
       ask(
         "media-headlines-vs-findings",
@@ -198,7 +198,7 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "evidence-correlation-causation",
         "smoke",
-        "Coffee drinkers were more likely to be in work and less likely to smoke. Why does that matter?",
+        "Coffee drinkers were more likely to be working and less likely to smoke. Why does that matter?",
         [
           [
             "It means drinking coffee helped people to stop smoking",
@@ -236,7 +236,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-004",
     source: "chatbot",
     title: "The bridge at Harlow Vale",
-    text: "Q: When was the Old Mill Bridge in Harlow Vale built?\n\nA: The Old Mill Bridge in Harlow Vale was built in 1847 by the engineer Thomas Penrith, according to the Harlow Vale Historical Society's 1962 survey. It was the first iron bridge in the county and carried mail coaches until 1910. It remains one of the best-documented bridges in the region.",
+    text: "Q: When was the Old Mill Bridge in Harlow Vale built?\n\nA: The Old Mill Bridge in Harlow Vale was built in 1847 by the engineer Thomas Penrith, according to the Harlow Vale Historical Society's 1962 survey. It was the first iron bridge in the county and carried mail wagons until 1910. It remains one of the best-documented bridges in the region.",
     questions: [
       ask(
         "media-ai-answers",
@@ -268,7 +268,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Not at all: chatbots are never right about history",
             "Too far: they often are. The point is that detail alone can't tell you when.",
           ],
-          "Not much: detail makes it sound sure, not be right",
+          "Not much: sounding sure isn't the same as being right",
         ],
         "Dates and names feel convincing, but a chatbot adds them just as easily when it's wrong. Move a little, then check.",
       ),
@@ -296,7 +296,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-005",
     source: "email",
     title: "About next year's rent",
-    text: "Dear tenants,\nFrom April, rent for every apartment in Larch House will go up by 12%. Costs have risen across the board, and the building needs a new roof. Either we raise the rent or the building falls apart, so there really is no choice. Most tenants I've spoken to understand. If you're unhappy, you're welcome to look elsewhere.\nBest wishes,\nR. Okafor, Property Manager",
+    text: "Dear tenants,\nStarting in April, rent for every apartment in Larch House will go up by 12%. Costs have risen across the board, and the building needs a new roof. Either we raise the rent or the building falls apart, so there really is no choice. Most tenants I've spoken to understand. If you're unhappy, you're welcome to look elsewhere.\nBest wishes,\nR. Okafor, Property Manager",
     questions: [
       ask(
         "arguments-premise-conclusion",
@@ -345,9 +345,9 @@ export const DAILY_CASES: DailyCase[] = [
             "The rise is the fair thing to do",
             "That's a value judgment. People can agree on every fact and still disagree on what's fair.",
           ],
-          "The rent goes up by 12% from April",
+          "The rent goes up by 12% in April",
         ],
-        'The size and date of the rise can be checked against the letter and the lease. "No choice" and "fair" are judgments.',
+        'The size and date of the rise can be checked against the lease and the next rent bill. "No choice" and "fair" are judgments.',
       ),
     ],
     takeaway: "When you're told there's no choice, list the options that were left out.",
@@ -356,7 +356,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-006",
     source: "review",
     title: "One star for Marlow's",
-    text: "One star. Avoid! I had the fish curry at Marlow's on Saturday and was ill all of Sunday. My sister ate there last year and said the service was slow. The owner replied to another review saying the kitchen passed its last inspection, but of course he would say that. This whole street has gone downhill. Never again.",
+    text: "One star. Avoid! I had the fish curry at Marlow's on Saturday and was sick all of Sunday. My sister ate there last year and said the service was slow. The owner replied to another review saying the kitchen passed its last inspection, but of course he would say that. This whole street has gone downhill. Never again.",
     questions: [
       ask(
         "biases-availability",
@@ -366,7 +366,7 @@ export const DAILY_CASES: DailyCase[] = [
           "It's the most memorable thing they ate lately",
           [
             "Because restaurants cause most illness",
-            "Many things cause a day of illness: other food, a bug going round, a long week.",
+            "Many things cause a day of illness: other food, a bug going around, a long week.",
           ],
           [
             "Because the curry has been tested",
@@ -416,7 +416,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-007",
     source: "notice",
     title: "Changes to Westbrook Library",
-    text: "Westbrook Library will close on Saturdays from next month. Saturday visits have fallen by 30% over five years, and the council must save $40,000 this year. The money saved will keep the bookmobile running. Residents can still use the library online at any time, and the central library, a 25-minute bus ride away, stays open on Saturdays.",
+    text: "Westbrook Library will close on Saturdays starting next month. Saturday visits have fallen by 30% over five years, and the city council must save $40,000 this year. The money saved will keep the bookmobile running. Residents can still use the library online at any time, and the central library, a 25-minute bus ride away, stays open on Saturdays.",
     questions: [
       ask(
         "arguments-counterarguments",
@@ -428,7 +428,7 @@ export const DAILY_CASES: DailyCase[] = [
             "It states a value but doesn't engage with the reasons given.",
           ],
           [
-            "The council has probably just made the numbers up",
+            "The city council has probably just made the numbers up",
             "An accusation with nothing behind it. A strong objection works with the facts given.",
           ],
           "The 30% drop may hide who still needs Saturdays",
@@ -438,7 +438,7 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "probability-second-order",
         "knock-on",
-        "What's a knock-on effect the notice doesn't mention?",
+        "What's a ripple effect the notice doesn't mention?",
         [
           [
             "The library will spend less on Saturday staff",
@@ -460,7 +460,7 @@ export const DAILY_CASES: DailyCase[] = [
           ["That the library already has a website", "It says so directly. Nothing hidden there."],
           "That Saturday visitors can and will use it online",
           [
-            "That the council needs to save money this year",
+            "That the city council needs to save money this year",
             "That's stated outright, not assumed.",
           ],
         ],
@@ -512,7 +512,7 @@ export const DAILY_CASES: DailyCase[] = [
       sure(
         "probability-expected-value",
         "tenx",
-        'Early buyers "could see 10x returns". What do you need to judge that?',
+        'Early buyers "could see 10x returns." What do you need to judge that?',
         [
           [
             "How many people at the cousin's work are buying",
@@ -533,7 +533,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-009",
     source: "report",
     title: "The loyalty program",
-    text: "Q3 update from the sales team: our new loyalty program is a hit. Weekly sales in the six stores that trialed it rose from 41,000 to 44,000 units, as the chart on page 2 shows: this quarter's bar is twice the height of last quarter's. Customers love it. We recommend rolling the program out to all 90 stores.",
+    text: "Q3 update from the sales team: our new loyalty program is a hit. Weekly sales in the six stores that tested it rose from 41,000 to 44,000 units, as the chart on page 2 shows: this quarter's bar is twice the height of last quarter's. Customers love it. We recommend rolling the program out to all 90 stores.",
     questions: [
       ask(
         "media-misleading-charts",
@@ -550,7 +550,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           "The chart's axis doesn't start at zero",
         ],
-        "A 7% rise only looks like a doubling if the axis starts near 41,000. Cutting the axis makes small changes look huge.",
+        "A 7% rise only looks like a doubling if the axis starts at about 38,000. Cutting the axis makes small changes look huge.",
       ),
       ask(
         "evidence-sample-cherry-picking",
@@ -601,11 +601,8 @@ export const DAILY_CASES: DailyCase[] = [
         "Which phrase tells you least that you could check?",
         [
           "Just minutes from the station",
-          [
-            "Asking for offers over $425,000",
-            "That's a precise figure you can read straight off the listing.",
-          ],
-          ["A house with three bedrooms", "That's checkable: you can count them on a viewing."],
+          ["Asking $425,000", "That's a precise figure you can read straight off the listing."],
+          ["A house with three bedrooms", "That's checkable: you can count them at a showing."],
         ],
         '"Minutes" could be three or twenty-five. A distance or a timed walk would tell you something; "minutes" just sounds close.',
       ),
@@ -617,7 +614,7 @@ export const DAILY_CASES: DailyCase[] = [
           "To make $425,000 feel cheap by comparison",
           [
             "To show the house is worth exactly $500,000",
-            'It says "up to" and "similar". That\'s a ceiling for other houses, not a value for this one.',
+            'It says "up to" and "similar." That\'s a ceiling for other houses, not a value for this one.',
           ],
           [
             "To warn buyers that prices have been falling",
@@ -641,7 +638,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           "Little: an unnamed agent may gain from the sale",
         ],
-        "The quote is anonymous and may come from someone who benefits if the house sells. A survey or your own viewing tells you more.",
+        "The quote is anonymous and may come from someone who benefits if the house sells. An inspection, or seeing it yourself, tells you more.",
       ),
     ],
     takeaway:
@@ -654,7 +651,7 @@ export const DAILY_CASES: DailyCase[] = [
     text: 'Hillcrest Academy banned phones during the school day last September. This summer, the share of its students passing math rose from 61% to 70%. "The ban has transformed our results," said the principal. Three other schools in the county are now considering bans. Across the county as a whole, math pass rates rose from 63% to 69% over the same year.',
     questions: [
       sure(
-        "probability-base-rates",
+        "evidence-correlation-causation",
         "county",
         "Pass rates rose across the whole county too. What does that suggest?",
         [
@@ -710,13 +707,13 @@ export const DAILY_CASES: DailyCase[] = [
   {
     id: "case-012",
     source: "post",
-    title: "My grandad smoked",
-    text: "People keep telling me to stop smoking. My grandad smoked 20 a day from the age of 15 and lived to 94, sharp as a tack. So no, I'm not worried. If smoking were really that bad, he'd have been dead at 50. These health campaigns just want to tell us how to live, and the scientists behind them are paid to scare us.",
+    title: "My grandpa smoked",
+    text: "People keep telling me to stop smoking. My grandpa smoked a pack a day from the age of 15 and lived to 94, sharp as a tack. So no, I'm not worried. If smoking were really that bad, he'd have been dead at 50. These health campaigns just want to tell us how to live, and the scientists behind them are paid to scare us.",
     questions: [
       ask(
         "evidence-anecdote-vs-data",
         "grandad",
-        "What does the grandad's long life show about the risks of smoking?",
+        "What does the grandpa's long life show about the risks of smoking?",
         [
           [
             "That the risks of smoking have been exaggerated",
@@ -753,7 +750,7 @@ export const DAILY_CASES: DailyCase[] = [
         "Which habit would the writer most need to watch for?",
         [
           [
-            "Trusting their grandad's memory of his own habits",
+            "Trusting their grandpa's memory of his own habits",
             "It could matter a little, but the bigger risk is which evidence gets noticed at all.",
           ],
           [
@@ -771,7 +768,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-013",
     source: "leaflet",
     title: "Is your tap water safe?",
-    text: "Is your tap water safe? The PureSpring jug removes up to 99% of impurities. Tests by the PureSpring lab found our filter beat three leading brands. Thousands of families trust PureSpring. Ask yourself: can you really afford to risk your children's health for the price of a coffee a week?",
+    text: "Is your tap water safe? The PureSpring pitcher removes up to 99% of impurities. Tests by the PureSpring lab found our filter beat three leading brands. Thousands of families trust PureSpring. Ask yourself: can you really afford to risk your children's health for the price of a coffee a week?",
     questions: [
       ask(
         "evidence-source-reliability",
@@ -805,7 +802,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           "It lets almost any result below 99% count",
         ],
-        '"Up to 99%" is true even if the jug usually removes far less, and "impurities" isn\'t defined. It sounds precise without committing to anything.',
+        '"Up to 99%" is true even if the pitcher usually removes far less, and "impurities" isn\'t defined. It sounds precise without committing to anything.',
       ),
       ask(
         "media-manipulation",
@@ -831,7 +828,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-014",
     source: "email",
     title: "Back to the office",
-    text: "Team,\nFrom next month everyone is back in the office four days a week. When we were all in the office we were more productive, and the best ideas came from chats by the coffee machine. Some people will say they work better at home, but they would say that, wouldn't they? If we let one team work from home, soon nobody will come in at all.\nThanks,\nJo (Head of Operations)",
+    text: "Team,\nStarting next month, everyone is back in the office four days a week. When we were all in the office we were more productive, and the best ideas came from chats by the coffee machine. Some people will say they work better at home, but they would say that, wouldn't they? If we let one team work from home, soon nobody will come in at all.\nThanks,\nJo (Head of Operations)",
     questions: [
       ask(
         "fallacies-dilemma-slippery-slope",
@@ -900,11 +897,11 @@ export const DAILY_CASES: DailyCase[] = [
         [
           [
             "About 485, since the test is 95% accurate",
-            "95% accurate doesn't mean 95% of flags are right. With a rare condition, most flags are false alarms.",
+            "95% accurate doesn't mean 95% of flags are right. With a condition this rare, most flags are false alarms.",
           ],
           [
             "All 510, since that's what flagged means",
-            'A flag means "possibly". Here the false alarms far outnumber the real cases.',
+            'A flag means "possibly." Here the false alarms far outnumber the real cases.',
           ],
           "About 10, since only 1 in 1,000 has it",
         ],
@@ -913,7 +910,7 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "media-headlines-vs-findings",
         "found",
-        'The headline says the test "finds hidden liver disease in 500 people". Is that fair?',
+        'The headline says the test "finds hidden liver disease in 500 people." Is that fair?',
         [
           [
             "Yes: the test did flag about 500 people",
@@ -922,7 +919,7 @@ export const DAILY_CASES: DailyCase[] = [
           "No: most of the 500 flags are false alarms",
           [
             "No: the real number found was much higher",
-            "It's the other way round. Only about 10 had the condition.",
+            "It's the other way around. Only about 10 had the condition.",
           ],
         ],
         "The study counts flags; the headline calls them disease found. With a rare condition, that turns about 10 real cases into 500.",
@@ -942,16 +939,17 @@ export const DAILY_CASES: DailyCase[] = [
             "Nothing suggests that. The bigger cost follows from the false alarms.",
           ],
         ],
-        "For every real case, about fifty healthy people would be told they might be ill, with worry and more tests to follow.",
+        "For every real case, about fifty healthy people would be told they might be sick, with worry and more tests to follow.",
       ),
     ],
-    takeaway: "With a rare condition, even a good test's flags are mostly false alarms.",
+    takeaway:
+      "When a condition is rare, even a good test can flag more false alarms than real cases.",
   },
   {
     id: "case-016",
     source: "post",
     title: "We're driving instead",
-    text: "After last week's news about the plane that skidded off the runway, I've canceled our flights to Lisbon and we're driving instead. It's 1,100 miles each way, but at least we'll arrive alive. My partner says flying is safer, but she's just repeating airline ads. Honestly, ever since I saw that footage I can't stop thinking about it.",
+    text: "After last week's news about the plane that skidded off the runway, I've canceled our flights to Port Calder and we're driving instead. It's 1,100 miles each way, but at least we'll arrive alive. My partner says flying is safer, but she's just repeating airline ads. Honestly, ever since I saw that footage I can't stop thinking about it.",
     questions: [
       ask(
         "biases-availability",
@@ -971,7 +969,7 @@ export const DAILY_CASES: DailyCase[] = [
         "What comes to mind easily feels likely. Footage you can't stop picturing makes a rare event feel common.",
       ),
       sure(
-        "probability-thinking-in-bets",
+        "probability-base-rates",
         "compare",
         'Which comparison would actually settle "at least we\'ll arrive alive"?',
         [
@@ -981,7 +979,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Attention isn't risk. Lots of viewers doesn't make flying more dangerous.",
           ],
           [
-            "Whether it's nicer to arrive in Lisbon by car",
+            "Whether it's nicer to arrive in Port Calder by car",
             "That's about preference, not safety, which is the reason given.",
           ],
         ],
@@ -1008,7 +1006,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-017",
     source: "article",
     title: "The four-day week trial",
-    text: 'Forty companies tried a four-day week for six months. Afterward, 35 said they would keep it, and staff reported less stress. The companies chose to join the trial themselves, and most were small offices. A business group responded: "Shops and hospitals can\'t close on Fridays. This would be a disaster for the country."',
+    text: 'Forty companies tried a four-day week for six months. Afterward, 35 said they would keep it, and staff reported less stress. The companies chose to join the trial themselves, and most were small offices. A business group responded: "Stores and hospitals can\'t close on Fridays. This would be a disaster for the country."',
     questions: [
       ask(
         "evidence-sample-cherry-picking",
@@ -1028,13 +1026,13 @@ export const DAILY_CASES: DailyCase[] = [
         "Volunteers tend to be the companies best suited to the change. Their success may not carry over to firms that wouldn't sign up.",
       ),
       ask(
-        "arguments-counterarguments",
+        "fallacies-adhominem-strawman",
         "reply",
         "How strong is the business group's reply as a counterargument?",
         [
           "Weak: it answers a plan nobody proposed",
           [
-            "Strong: hospitals really can't shut on Fridays",
+            "Strong: hospitals really can't close on Fridays",
             "True, but no one suggested they should. A reply has to meet the actual proposal.",
           ],
           [
@@ -1042,7 +1040,7 @@ export const DAILY_CASES: DailyCase[] = [
             "That's a sweeping prediction with no reasons attached.",
           ],
         ],
-        "Nobody proposed closing shops and hospitals on Fridays. Replying to that instead of the trial misses the point that was made.",
+        "Nobody proposed closing stores and hospitals on Fridays. Replying to that instead of the trial misses the point that was made.",
       ),
       ask(
         "media-headlines-vs-findings",
@@ -1079,7 +1077,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Yes: 30% is low, so it can safely be ignored",
             "Three in ten isn't rare. Whether to plan depends on what rain would cost you.",
           ],
-          "No: 30% happens often, and planning costs little",
+          "No: three in ten isn't rare enough to ignore",
           [
             "No: a 30% forecast means it will definitely rain",
             "It means rain on about three days in ten like this one, not certain rain.",
@@ -1128,18 +1126,18 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-019",
     source: "notice",
     title: "Members' survey results",
-    text: 'Thank you to everyone who filled in our members\' survey! 92% of responses rated the gym "excellent" or "good". The survey was available on the reception desk for one week in June. Based on these results, we will be raising membership fees by $5 a month from September, to fund new equipment that members clearly value.',
+    text: 'Thank you to everyone who filled out our members\' survey! 92% of responses rated the gym "excellent" or "good." The survey was available at the front desk for one week in June. Based on these results, we will be raising membership fees by $5 a month starting in September, to fund new equipment that members clearly value.',
     questions: [
       ask(
         "evidence-sample-cherry-picking",
         "who",
-        "92% rated the gym well. Who probably filled in the survey?",
+        "92% rated the gym well. Who probably filled out the survey?",
         [
           [
             "A fair cross-section of all the gym's members",
             "A paper survey on the desk for a week reaches whoever came in and chose to stop.",
           ],
-          "Keen regulars who happened to come in that week",
+          "Regulars who happened to come in that week",
           [
             "Mostly the members who were unhappy with it",
             "Unhappy members who've stopped coming are the least likely to see it.",
@@ -1150,11 +1148,11 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "claims-hidden-assumptions",
         "value",
-        'The rise will "fund new equipment that members clearly value". What does that assume?',
+        'The rise will "fund new equipment that members clearly value." What does that assume?',
         [
-          ["That the gym has a reception desk", "It says so. Nothing hidden there."],
-          ["That fees also went up last year", "Nothing in the notice depends on that."],
-          "That liking the gym means wanting new kit",
+          ["That the gym has a front desk", "It says so. Nothing hidden there."],
+          ["That membership fees also went up last year", "Nothing in the notice depends on that."],
+          "That liking the gym means wanting new equipment",
         ],
         "The survey asked how good the gym is. Nothing shows members asked for equipment, let alone at $5 a month.",
       ),
@@ -1199,7 +1197,7 @@ export const DAILY_CASES: DailyCase[] = [
             "They can record them, if imperfectly. The issue is that buyers chose themselves.",
           ],
         ],
-        "People who buy a focus supplement may already be the keenest students, and may remember their scores kindly. Only a fair comparison could show an effect.",
+        "People who buy a focus supplement may already be the most motivated students, and may remember their scores kindly. Only a fair comparison could show an effect.",
       ),
       ask(
         "fallacies-authority-popularity",
@@ -1242,7 +1240,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-021",
     source: "report",
     title: "Membership is booming",
-    text: "Tennis club newsletter: membership is booming! The chart shows total members since 2019, and the line climbs every single year. (New this year: anyone who joins the café loyalty card is counted as a club member.) This proves our new coaching program, started in 2023, is working. Let's keep it going!",
+    text: "Tennis club newsletter: membership is booming! The chart shows total members since 2019, and the line climbs every single year. (New this year: anyone who joins the cafe loyalty card is counted as a club member.) This proves our new coaching program, started in 2023, is working. Let's keep it going!",
     questions: [
       ask(
         "media-misleading-charts",
@@ -1257,9 +1255,9 @@ export const DAILY_CASES: DailyCase[] = [
             "The years on the chart may be in the wrong order",
             "Nothing suggests that. The real issue is in the small print.",
           ],
-          'Counting café card holders changes what "member" means',
+          'Counting cafe card holders changes what "member" means',
         ],
-        "If café loyalty card holders now count as members, the line can rise with no new players at all. Changing a definition breaks a trend.",
+        "If cafe loyalty card holders now count as members, the line can rise with no new players at all. Changing a definition breaks a trend.",
       ),
       ask(
         "evidence-correlation-causation",
@@ -1287,7 +1285,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Our coaching has doubled interest in tennis",
             "Nothing measured interest in tennis, and the growth started before the program.",
           ],
-          "Our list has grown, partly because it counts café cards",
+          "Our list has grown, partly because it counts cafe cards",
           [
             "The club is about to close for lack of members",
             "That overcorrects: nothing suggests falling membership either.",
@@ -1302,7 +1300,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-022",
     source: "message",
     title: "The job offer",
-    text: "Big news! I've been offered a job at Corran Digital, at $6,000 more than I earn now. Their reviews from staff online are mostly one star, but my gut says it's a great place. Also, I've already spent three months on their interview process, so it would be mad to turn it down now. What do you think?",
+    text: "Big news! I've been offered a job at Corran Digital, at $6,000 more than I earn now. Their reviews from staff online are mostly one star, but my gut says it's a great place. Also, I've already spent three months on their interview process, so it would be crazy to turn it down now. What do you think?",
     questions: [
       ask(
         "biases-sunk-cost",
@@ -1319,7 +1317,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           "No: the time is spent whether they accept or not",
         ],
-        "The three months can't be got back either way. The question is whether the new job is better from here.",
+        "The three months can't be recovered either way. The question is whether the new job is better from here.",
       ),
       sure(
         "probability-updating-beliefs",
@@ -1349,11 +1347,11 @@ export const DAILY_CASES: DailyCase[] = [
             "A feeling, not a fact. It may be worth something, but it can't be checked.",
           ],
           [
-            "It would be mad to turn this offer down",
+            "It would be crazy to turn this offer down",
             "A judgment about what to do. It depends on facts and values together.",
           ],
         ],
-        'The salary can be checked against the offer letter. "Great place" and "mad to refuse" are a feeling and a judgment.',
+        'The salary can be checked against the offer letter. "Great place" and "crazy to turn it down" are a feeling and a judgment.',
       ),
     ],
     takeaway: "Spent time is spent. Weigh what's ahead, starting with what can be checked.",
@@ -1362,7 +1360,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-023",
     source: "post",
     title: "Share if you agree",
-    text: 'SHARE IF YOU AGREE! A screenshot is going round of a quote from "Professor Hannah Gale, Kellerby University": "Children who play video games are 70% more likely to fail at school." The post has 40,000 shares. There\'s no link to a study, and the account that posted it was created last month.',
+    text: 'SHARE IF YOU AGREE! A screenshot is going around of a quote from "Professor Hannah Gale, Kellerby University": "Children who play video games are 70% more likely to fail at school." The post has 40,000 shares. There\'s no link to a study, and the account that posted it was created last month.',
     questions: [
       ask(
         "media-lateral-reading",
@@ -1422,7 +1420,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-024",
     source: "article",
     title: "A parking lot for Ashby",
-    text: 'Council members in Ashby have approved a 400-space parking lot on the edge of the town center. "Shops are struggling because people can\'t park," said the planning lead. "More spaces means more shoppers." To help pay for it, the plan removes the free bus that runs from the station to the main street. Building starts in spring.',
+    text: 'City council members in Ashby have approved a 400-space parking lot on the edge of the town center. "Stores are struggling because people can\'t park," said the planning lead. "More spaces means more shoppers." To help pay for it, the plan removes the free bus that runs from the station to the main street. Building starts in spring.',
     questions: [
       ask(
         "probability-second-order",
@@ -1436,7 +1434,7 @@ export const DAILY_CASES: DailyCase[] = [
           "People who came by bus may stop coming at all",
           [
             "The building work will start in the spring",
-            "That's in the article. A knock-on effect follows from the change.",
+            "That's in the article. A ripple effect follows from the change.",
           ],
         ],
         "Removing the free bus could cost the main street the shoppers who don't drive, canceling out some of what the spaces add.",
@@ -1473,7 +1471,7 @@ export const DAILY_CASES: DailyCase[] = [
             "A guess about motives, not a reply to the argument.",
           ],
         ],
-        "The plan rests on one cause for the shops' struggle. The strongest reply tests that cause before the money is spent.",
+        "The plan rests on one cause for the stores' struggle. The strongest reply tests that cause before the money is spent.",
       ),
     ],
     takeaway: "Check the cause before the cure, and look at what the cure takes away.",
@@ -1482,7 +1480,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-025",
     source: "email",
     title: "Delivery attempt failed",
-    text: "Subject: Delivery attempt failed, action needed\n\nWe tried to deliver your package today but no one was home. To rebook, please pay the $1.99 redelivery fee within 24 hours, or your package will be returned to the sender. Pay now at package-redeliver-uk.co. Thousands of customers rebook this way every day.",
+    text: "Subject: Delivery attempt failed, action needed\n\nWe tried to deliver your package today but no one was home. To rebook, please pay the $1.99 redelivery fee within 24 hours, or your package will be returned to the sender. Pay now at package-redelivery-now.co. Thousands of customers rebook this way every day.",
     questions: [
       ask(
         "media-manipulation",
@@ -1495,7 +1493,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           [
             "Because packages are only kept for a day",
-            "Couriers normally keep packages much longer. The tight limit is there to rush you.",
+            "Delivery companies normally keep packages much longer. The tight limit is there to rush you.",
           ],
           "To stop you checking before you pay",
         ],
@@ -1510,7 +1508,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Click the link and see if the page looks official",
             "Fake pages are easy to make look official, and clicking is the risk.",
           ],
-          "Go to the courier's own website or app yourself",
+          "Go to the delivery company's own website yourself",
           [
             "Reply to the email and ask whether it's genuine",
             "The sender will say yes. You need a route the sender doesn't control.",
@@ -1529,7 +1527,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Most people are expecting a package at any time, which is exactly why scammers send these.",
           ],
           [
-            "No: real couriers never send emails at all",
+            "No: real delivery companies never send emails",
             "Many do. The point is that a match with your week isn't strong evidence.",
           ],
         ],
@@ -1542,7 +1540,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-026",
     source: "article",
     title: "Keep the uniform",
-    text: "Letter to the editor: Our school wants to scrap uniforms. That would be a mistake. Uniforms keep standards high, and we know standards are high because students wear uniforms. The head says students would feel more comfortable without them, but comfort is not what school is for. Next they'll be letting students set their own homework.",
+    text: "Letter to the editor: Our school wants to scrap uniforms. That would be a mistake. Uniforms keep standards high, and we know standards are high because students wear uniforms. The principal says students would feel more comfortable without them, but comfort is not what school is for. Next they'll be letting students assign their own homework.",
     questions: [
       ask(
         "fallacies-circular-reasoning",
@@ -1559,12 +1557,12 @@ export const DAILY_CASES: DailyCase[] = [
             "No evidence is mentioned. The claim just supports itself.",
           ],
         ],
-        "The proof that standards are high is that students wear uniforms, the very thing in question. The argument goes round in a circle.",
+        "The proof that standards are high is that students wear uniforms, the very thing in question. The argument goes around in a circle.",
       ),
       ask(
         "arguments-steelmanning",
         "head",
-        "What's the strongest version of the head's view?",
+        "What's the strongest version of the principal's view?",
         [
           [
             "Students like casual clothes, so let them wear them",
@@ -1574,9 +1572,9 @@ export const DAILY_CASES: DailyCase[] = [
             "Uniforms are pointless and every school should drop them",
             "Going bigger isn't going stronger. This version is easier to knock down.",
           ],
-          "Comfort and cost may affect learning, and that can be tested",
+          "Comfort may affect learning, and that can be tested",
         ],
-        "The best version of the head's view connects comfort and cost to learning, the thing the letter says school is for.",
+        "The best version of the principal's view connects comfort to learning, the thing the letter says school is for.",
       ),
       ask(
         "claims-facts-opinions-values",
@@ -1608,13 +1606,13 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "evidence-correlation-causation",
         "join",
-        "Club children read 5 books and others 2. Why might that not be down to the clubs?",
+        "Club children read 5 books and others 2. Why might that not be because of the clubs?",
         [
           [
             "The club's books were shorter than the other books",
             "Possible, but nothing suggests it. The bigger issue is who joined.",
           ],
-          "Keen readers were likelier to join in the first place",
+          "Eager readers were likelier to join in the first place",
           [
             "Five books isn't very many to read in a year",
             "That's a judgment about the number, not about whether the clubs caused it.",
@@ -1662,13 +1660,13 @@ export const DAILY_CASES: DailyCase[] = [
   {
     id: "case-028",
     source: "advert",
-    title: "Peace of Mind cover",
-    text: "You've chosen the Vireo X5 washing machine ($449). For just $89, add our three-year Peace of Mind cover. Repairs can cost up to $300! Over 60% of our customers choose cover. Fewer than 1 in 10 machines like this need a repair in their first three years.",
+    title: "Peace of Mind plan",
+    text: "You've chosen the Vireo X5 washing machine ($449). For just $89, add our three-year Peace of Mind protection plan. Repairs can cost up to $300! Over 60% of our customers choose the plan. Fewer than 1 in 10 machines like this need a repair in their first three years.",
     questions: [
       sure(
         "probability-expected-value",
         "deal",
-        "Is the cover a good deal on these numbers?",
+        "Is the plan a good deal on these numbers?",
         [
           [
             "Yes: one repair could cost $300, far more than $89",
@@ -1693,7 +1691,7 @@ export const DAILY_CASES: DailyCase[] = [
             '"Up to" is the most a repair costs, not the typical cost.',
           ],
           [
-            "Because the law requires it on every advert",
+            "Because the law requires it on every ad",
             "Nothing suggests that. It's there to set your sense of scale.",
           ],
         ],
@@ -1702,12 +1700,12 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "fallacies-authority-popularity",
         "sixty",
-        '"Over 60% of our customers choose cover." Is that a reason to buy it?',
+        '"Over 60% of our customers choose the plan." Is that a reason to buy it?',
         [
           "No: what most people buy isn't evidence of value",
           [
             "Yes: that many people can't all be wrong about it",
-            "They can, especially when they're asked at the till, in a hurry.",
+            "They can, especially when they're asked at the register, in a hurry.",
           ],
           [
             "Yes: it shows the machine must break down often",
