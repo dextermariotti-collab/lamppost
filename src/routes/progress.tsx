@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Target, TrendingUp } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgeShelf } from "@/components/BadgeShelf";
 import { BeforeAfterTable } from "@/components/BeforeAfterTable";
 import { DisclosureRow, LinkRow } from "@/components/DisclosureRow";
@@ -23,10 +23,11 @@ import { useBadges } from "@/lib/badges";
 import { useCompanion } from "@/lib/companion-store";
 import { CURRICULUM_SLUG, UNITS } from "@/lib/curriculum";
 import { useMasteryAnalytics } from "@/lib/mastery";
-import { dayKey, deriveInsights, useProgress, type Celebration } from "@/lib/progress";
-import { calibrationLine, calibrationSummary, weekStrip } from "@/lib/progress-view";
+import { deriveInsights, shiftDay, useProgress, type Celebration } from "@/lib/progress";
+import { calibrationLine, calibrationSummary, weekStrip, weekdayLetter } from "@/lib/progress-view";
 import { useDueDrills } from "@/lib/review-drills";
 import { checkLine, overallChange, useUnitChecks } from "@/lib/unit-checks";
+import { useToday } from "@/lib/use-today";
 
 export const Route = createFileRoute("/progress")({
   head: () => ({
@@ -46,8 +47,6 @@ export const Route = createFileRoute("/progress")({
   }),
   component: ProgressScreen,
 });
-
-const WEEK_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function ProgressScreen() {
   const { state, streak, hydrated, doneLessons, clearCelebration, clearFreezeSaved } =
@@ -69,7 +68,9 @@ function ProgressScreen() {
     }
   }, [state.celebration, clearCelebration]);
 
-  const insights = useMemo(() => deriveInsights(state), [state]);
+  // Read again at local midnight and on coming back, so "today" is never yesterday.
+  const today = useToday();
+  const insights = deriveInsights(state);
   const { total: dueTotal } = useDueDrills();
   const courses = Object.entries(state.courses);
   // One source of truth: the curriculum's own completed count, the same number
@@ -89,18 +90,17 @@ function ProgressScreen() {
   // Local-day labels are only known in the browser; render them after mount.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const today = new Date();
+  // Lessons only: a review or a case keeps the streak, but it isn't a lesson.
   const week = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
+    const key = shiftDay(today, i - 6);
     return {
-      key: dayKey(d),
-      label: mounted ? WEEK_LABELS[d.getDay()]! : "",
-      count: mounted ? (state.history[dayKey(d)] ?? 0) : 0,
+      key,
+      label: mounted ? weekdayLetter(key) : "",
+      count: mounted ? (state.lessonsByDay[key] ?? 0) : 0,
     };
   });
   const weekMax = Math.max(1, ...week.map((d) => d.count));
-  const strip = mounted ? weekStrip(state, dayKey()) : [];
+  const strip = mounted ? weekStrip(state, today) : [];
 
   const hasDrills = analytics?.units.some((unit) => unit.answered > 0) ?? false;
   const calibration = analytics ? calibrationSummary(analytics.calibration.bands) : null;
@@ -125,7 +125,7 @@ function ProgressScreen() {
         <h1 className="pt-4 text-3xl">Progress</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {insights.percentile !== null
-            ? `You've reviewed more this week than ${insights.percentile}% of your past weeks.`
+            ? `You've practiced more in the last 7 days than in ${insights.percentile}% of your past weeks.`
             : hasDrills
               ? "What you have learned, and how sure you were."
               : "It fills in as you practice."}
@@ -152,21 +152,16 @@ function ProgressScreen() {
 
         <SkillsCard units={analytics?.units ?? null} done={doneLessons} />
 
-        {/* Near-miss pull */}
+        {/* The last few stops of the map */}
         {nearMiss && (
-          <Link
-            to="/courses"
-            className="mt-4 flex w-full animate-rise-in items-center gap-3 rounded-3xl border-2 border-primary/30 bg-primary-soft p-4 text-left shadow-soft transition-transform hover:-translate-y-0.5"
-            style={{ animationDelay: "120ms" }}
-          >
-            <Target className="h-5 w-5 shrink-0 text-primary-text" />
+          <Link to="/courses" className="sign mt-4 flex w-full items-center gap-3 p-4 text-left">
+            <Target aria-hidden className="h-5 w-5 shrink-0 text-foreground" />
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-extrabold text-accent-foreground">
-                {nearMiss.left} more lesson{nearMiss.left === 1 ? "" : "s"} to master{" "}
-                {nearMiss.topic}
+              <span className="block text-sm font-bold text-foreground">
+                {nearMiss.left} lesson{nearMiss.left === 1 ? "" : "s"} left in {nearMiss.topic}
               </span>
-              <span className="block text-xs font-semibold text-muted-foreground">
-                You're at {nearMiss.pct}% — closer than it feels.
+              <span className="block text-xs text-muted-foreground">
+                {nearMiss.completed} of {nearMiss.total} done.
               </span>
             </span>
           </Link>
@@ -308,12 +303,12 @@ function ProgressScreen() {
             )}
           </DisclosureRow>
 
-          {/* Week */}
+          {/* The last seven days (a rolling window, not the Monday week of the recap and league) */}
           <DisclosureRow
-            title="This week"
+            title="Last 7 days"
             summary={
               hydrated
-                ? `${insights.thisWeek} lesson${insights.thisWeek === 1 ? "" : "s"} in the last seven days.`
+                ? `${insights.thisWeek} lesson${insights.thisWeek === 1 ? "" : "s"} finished.`
                 : ""
             }
           >

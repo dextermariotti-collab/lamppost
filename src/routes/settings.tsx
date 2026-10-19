@@ -11,7 +11,13 @@ import { displayNameFor, useAccount, useRefreshAccount } from "@/lib/account";
 import { updateMyProfile } from "@/lib/profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
-import { MOTIVATIONS, readIntent, saveIntent, type Motivation } from "@/lib/onboarding";
+import {
+  GOAL_OPTIONS,
+  MOTIVATIONS,
+  readIntent,
+  saveIntent,
+  type Motivation,
+} from "@/lib/onboarding";
 import { useTheme } from "@/lib/theme";
 import { useFeedbackPrefs } from "@/lib/feedback";
 import { Button } from "@/components/ui/button";
@@ -33,12 +39,12 @@ export const Route = createFileRoute("/settings")({
   component: SettingsScreen,
 });
 
-const GOALS = [1, 2, 3, 5, 8];
-
 function SettingsScreen() {
   const { data: account, isLoading, signedIn, sessionReady } = useAccount();
   const refresh = useRefreshAccount();
   const { state, setDailyGoal } = useProgress();
+  // The goals onboarding offers, plus one set before they changed, so it still shows as chosen.
+  const goals = [...new Set([...GOAL_OPTIONS, state.dailyGoal])].sort((a, b) => a - b);
   const [motivation, setMotivation] = useState<Motivation | null>(null);
   const [focusOpen, setFocusOpen] = useState(false);
   useEffect(() => setMotivation(readIntent().motivation), []);
@@ -90,7 +96,7 @@ function SettingsScreen() {
               <SegmentedRow
                 label="Daily goal"
                 sub="Lessons a day. Hitting it every day for a week earns the perfect week badge."
-                options={GOALS.map((goal) => ({ value: goal, label: String(goal) }))}
+                options={goals.map((goal) => ({ value: goal, label: String(goal) }))}
                 value={state.dailyGoal}
                 onChange={(goal) => {
                   setDailyGoal(goal);

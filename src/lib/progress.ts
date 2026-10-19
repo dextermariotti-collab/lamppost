@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS } from "./curriculum";
 import { dayKey, shiftDay } from "./days";
 import { migrateHistoryToLocalDays, readActivityTimes } from "./progress-migrate";
+import { useToday } from "./use-today";
 import { withWeeklyXp } from "./weekly-xp";
 import {
   DAY_KEY_VERSION,
@@ -23,6 +24,7 @@ import {
   loadLessons,
   mergeAccountProgress,
   saveLessons,
+  studiedLessonIndexes,
   type ProgressState,
 } from "./progress-core";
 
@@ -32,6 +34,7 @@ export {
   effectiveStreak,
   LEAGUES,
   MAX_FREEZES,
+  REVIEW_XP,
   TIERS,
   deriveInsights,
   leagueFor,
@@ -43,10 +46,48 @@ export {
 export { dayKey, shiftDay };
 
 const KEY = "lamppost-progress-v1";
+/** Where a save that couldn't be read is kept, so starting fresh over it loses nothing. */
+const UNREADABLE_KEY = "lamppost-progress-v1-unreadable";
 const PROGRESS_EVENT = "lamppost-progress-change";
 /** Today's lessons, so finished lessons saved by id map to where they sit now. */
 const LESSON_ORDER = LESSONS.map((lesson) => lesson.id);
 const COURSE = { slug: CURRICULUM_SLUG, topic: CURRICULUM_TITLE };
+
+/**
+ * True while the save can't be read and couldn't be copied aside either: until then nothing is
+ * written over it, and this page load works from memory.
+ */
+let keepSave = false;
+
+function parse(raw: string): ProgressState {
+  const parsed = JSON.parse(raw) as Partial<ProgressState>;
+  const loaded: ProgressState = {
+    ...DEFAULT_STATE,
+    ...parsed,
+    dayKeyVersion: typeof parsed.dayKeyVersion === "number" ? parsed.dayKeyVersion : 1,
+  };
+  if (loaded.dayKeyVersion >= DAY_KEY_VERSION) return loadLessons(loaded, LESSON_ORDER, COURSE);
+  const migrated = migrateHistoryToLocalDays(loaded, readActivityTimes(window.localStorage));
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(migrated));
+  } catch {
+    /* the in-memory copy is still correct */
+  }
+  return loadLessons(migrated, LESSON_ORDER, COURSE);
+}
+
+/** Keeps the first unreadable save aside. False when it couldn't be kept (or not even read). */
+function setAside(raw: string | null) {
+  if (raw === null) return false;
+  try {
+    if (window.localStorage.getItem(UNREADABLE_KEY) === null) {
+      window.localStorage.setItem(UNREADABLE_KEY, raw);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Loads the saved state. Progress written by older builds keyed days by their
@@ -54,25 +95,15 @@ const COURSE = { slug: CURRICULUM_SLUG, topic: CURRICULUM_TITLE };
  */
 function read(): ProgressState {
   if (typeof window === "undefined") return DEFAULT_STATE;
+  let raw: string | null = null;
   try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return DEFAULT_STATE;
-    const parsed = JSON.parse(raw) as Partial<ProgressState>;
-    const loaded: ProgressState = {
-      ...DEFAULT_STATE,
-      ...parsed,
-      dayKeyVersion: typeof parsed.dayKeyVersion === "number" ? parsed.dayKeyVersion : 1,
-    };
-    if (loaded.dayKeyVersion >= DAY_KEY_VERSION) return loadLessons(loaded, LESSON_ORDER, COURSE);
-    const migrated = migrateHistoryToLocalDays(loaded, readActivityTimes(window.localStorage));
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(migrated));
-    } catch {
-      /* the in-memory copy is still correct */
-    }
-    return loadLessons(migrated, LESSON_ORDER, COURSE);
+    raw = window.localStorage.getItem(KEY);
+    const state = raw ? parse(raw) : DEFAULT_STATE;
+    keepSave = false;
+    return state;
   } catch {
-    return DEFAULT_STATE;
+    keepSave = !setAside(raw);
+    return snapshot ?? DEFAULT_STATE;
   }
 }
 
@@ -92,6 +123,12 @@ function getServerSnapshot(): ProgressState {
 
 /** Accounts whose numbers were already folded in this page load (one pull, not one per screen). */
 const pulledAccounts = new Set<string>();
+
+/**
+ * Bumped when this device's data is cleared, so a reply to a request sent before then (an account
+ * pull or a sync) can't write the old numbers back.
+ */
+let generation = 0;
 
 const listeners = new Set<() => void>();
 
@@ -143,15 +180,85 @@ const signatureOf = (payload: ReturnType<typeof syncPayload>) =>
 
 function writeState(changed: ProgressState) {
   const next = saveLessons(changed, LESSON_ORDER, COURSE);
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    /* ignore */
+  if (!keepSave) {
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
   }
   snapshot = next;
   listeners.forEach((fn) => fn());
   // Also notify anything listening on the DOM event (other tabs, non-hook code).
   queueMicrotask(() => window.dispatchEvent(new Event(PROGRESS_EVENT)));
+}
+
+/**
+ * Applies a change and saves it; a change that changes nothing writes nothing. XP a transition
+ * earns is also counted toward the week it was earned in, unless `earned` is false (numbers
+ * folded in from the account were not earned just now).
+ */
+function update(fn: (prev: ProgressState) => ProgressState, opts: { earned?: boolean } = {}) {
+  const prev = getSnapshot();
+  const next = fn(prev);
+  if (next === prev) return;
+  writeState(opts.earned === false ? next : withWeeklyXp(prev, next, dayKey()));
+}
+
+// One sync for the whole page, not one per mounted hook: the server credits weekly XP from a
+// read and then a write, so two calls for the same change could count it twice.
+let syncedSignature = "";
+let syncing = false;
+let syncAgainFor: string | null = null;
+
+function requestSync(userId: string) {
+  if (syncing) {
+    syncAgainFor = userId;
+    return;
+  }
+  const payload = syncPayload(getSnapshot());
+  const signature = `${userId}:${signatureOf(payload)}`;
+  if (signature === syncedSignature) return;
+  syncedSignature = signature;
+  syncing = true;
+  const sentIn = generation;
+  void syncProgress({ data: payload })
+    // The account is the truth for what has been spent and granted, wherever that happened,
+    // and holds the lessons finished on other devices.
+    .then((account) => {
+      if (sentIn !== generation) return;
+      update(
+        (prev) =>
+          adoptLessons(
+            adoptWallet(prev, { spent: account.gemsSpent, granted: account.gemsGranted }),
+            account.doneLessons,
+          ),
+        { earned: false },
+      );
+    })
+    .catch(() => {
+      if (syncedSignature === signature) syncedSignature = "";
+    })
+    .finally(() => {
+      syncing = false;
+      const again = syncAgainFor;
+      syncAgainFor = null;
+      if (again && sentIn === generation) requestSync(again);
+    });
+}
+
+/**
+ * Forgets everything held in memory and reads the device again. Called after this device's data
+ * is cleared, so no screen still holding the old numbers can save them back.
+ */
+export function resetProgressStore() {
+  generation += 1;
+  pulledAccounts.clear();
+  syncedSignature = "";
+  syncAgainFor = null;
+  keepSave = false;
+  snapshot = null;
+  emit();
 }
 
 export function useProgress() {
@@ -163,59 +270,28 @@ export function useProgress() {
     () => true,
     () => false,
   );
+  const today = useToday();
   const { userId } = useSessionUser();
-  const lastSynced = useRef("");
-
-  /**
-   * Applies a change and saves it. XP a transition earns is also counted toward
-   * the week it was earned in, unless `earned` is false (numbers folded in from the
-   * account were not earned just now).
-   */
-  const update = useCallback(
-    (fn: (prev: ProgressState) => ProgressState, opts: { earned?: boolean } = {}) => {
-      const prev = getSnapshot();
-      const next = fn(prev);
-      writeState(opts.earned === false ? next : withWeeklyXp(prev, next, dayKey()));
-    },
-    [],
-  );
 
   // On sign-in, pull the account's numbers down so a new device isn't blank.
   // Once per account per page load, not once per screen that mounts this hook.
   useEffect(() => {
     if (!hydrated || !userId || pulledAccounts.has(userId)) return;
     pulledAccounts.add(userId);
+    const sentIn = generation;
     void getMyProfile()
       .then((profile) => {
-        if (profile) {
+        if (profile && sentIn === generation) {
           update((prev) => mergeAccountProgress(prev, profile, dayKey()), { earned: false });
         }
       })
       .catch(() => pulledAccounts.delete(userId));
-  }, [hydrated, userId, update]);
+  }, [hydrated, userId]);
 
   // Write-through sync: the account is the source of truth friends can see.
   useEffect(() => {
-    if (!hydrated || !userId) return;
-    const payload = syncPayload(state);
-    const signature = signatureOf(payload);
-    if (signature === lastSynced.current) return;
-    lastSynced.current = signature;
-    void syncProgress({ data: payload })
-      // The account is the truth for what has been spent and granted, wherever that happened,
-      // and holds the lessons finished on other devices.
-      .then((account) =>
-        update(
-          (prev) =>
-            adoptLessons(
-              adoptWallet(prev, { spent: account.gemsSpent, granted: account.gemsGranted }),
-              account.doneLessons,
-            ),
-          { earned: false },
-        ),
-      )
-      .catch(() => undefined);
-  }, [hydrated, userId, state, update]);
+    if (hydrated && userId) requestSync(userId);
+  }, [hydrated, userId, state]);
 
   const registerCourse = useCallback(
     (slug: string, topic: string, total: number) =>
@@ -224,7 +300,7 @@ export function useProgress() {
           ? prev
           : { ...prev, courses: { ...prev.courses, [slug]: { topic, completed: 0, total } } },
       ),
-    [update],
+    [],
   );
 
   /**
@@ -233,70 +309,97 @@ export function useProgress() {
    */
   const unlockLessons = useCallback(
     (slug: string, topic: string, count: number, total: number) =>
-      update((prev) => applyUnlockLessons(prev, slug, topic, count, total)),
-    [update],
+      update((prev) => applyUnlockLessons(prev, slug, topic, count, total, LESSON_ORDER)),
+    [],
   );
 
   const completeLesson = useCallback(
     (slug: string, topic: string, index: number, total: number) =>
-      update((prev) => applyLessonComplete(prev, { slug, topic, index, total }, dayKey())),
-    [update],
+      update((prev) =>
+        applyLessonComplete(
+          prev,
+          {
+            slug,
+            topic,
+            index,
+            total,
+            ...(LESSON_ORDER[index] ? { id: LESSON_ORDER[index] } : {}),
+          },
+          dayKey(),
+        ),
+      ),
+    [],
   );
 
   /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
   const recordReview = useCallback(
     (correct: boolean) => update((prev) => applyReview(prev, correct, dayKey())),
-    [update],
+    [],
   );
 
   /** A finished daily case: one activity for the day, paid by how many questions were right. */
   const completeCase = useCallback(
     (right: number) => update((prev) => applyCase(prev, right, dayKey())),
-    [update],
+    [],
   );
 
   const recordPractice = useCallback(
     (verdict: "solid" | "shaky" | "revisit", connectionMade: boolean) =>
       update((prev) => applyPractice(prev, verdict, connectionMade)),
-    [update],
+    [],
   );
 
   const recordExercise = useCallback(
     (score: number, bonus = 0) => update((prev) => applyExercise(prev, score, bonus)),
-    [update],
+    [],
   );
 
   const recordArgument = useCallback(
     (total: number, max: number) => update((prev) => applyArgument(prev, total, max)),
-    [update],
+    [],
   );
 
   const clearFreezeSaved = useCallback(
     () => update((prev) => (prev.freezeSaved ? { ...prev, freezeSaved: null } : prev)),
-    [update],
+    [],
   );
 
   const clearCelebration = useCallback(
     () => update((prev) => (prev.celebration ? { ...prev, celebration: null } : prev)),
-    [update],
+    [],
   );
 
   const setDailyGoal = useCallback(
-    (goal: number) => update((prev) => ({ ...prev, dailyGoal: Math.min(10, Math.max(1, goal)) })),
-    [update],
+    (goal: number) =>
+      update((prev) => {
+        const dailyGoal = Math.min(10, Math.max(1, goal));
+        return dailyGoal === prev.dailyGoal ? prev : { ...prev, dailyGoal };
+      }),
+    [],
   );
 
   /** The lessons finished, by 0-based index. Any lesson can be started; this is what is done. */
   const doneLessons = useMemo(() => new Set(doneLessonIndexes(state, CURRICULUM_SLUG)), [state]);
 
+  /** The finished lessons that were studied, leaving out any only placed out of at onboarding. */
+  const studiedLessons = useMemo(
+    () => new Set(studiedLessonIndexes(state, CURRICULUM_SLUG, LESSON_ORDER)),
+    [state],
+  );
+
   // The one streak number every screen shows (see effectiveStreak).
-  const streak = hydrated ? effectiveStreak(state, dayKey()) : 0;
+  const streak = hydrated ? effectiveStreak(state, today) : 0;
+
+  /** Lessons finished today: what the daily goal counts. Reviews and cases are not lessons. */
+  const doneToday = state.lessonsByDay[today] ?? 0;
 
   return {
     state,
     streak,
     hydrated,
     doneLessons,
+    studiedLessons,
+    doneToday,
     registerCourse,
     unlockLessons,
     completeLesson,

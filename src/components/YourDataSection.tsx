@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, Loader2, Mail, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
@@ -13,12 +12,20 @@ const button =
   "flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60";
 
 /**
+ * After this device's data is cleared, the app starts again from a full reload: screens still
+ * open hold the old numbers in memory, and a client-side navigation would let them save those
+ * numbers back.
+ */
+function startFresh() {
+  window.location.replace("/");
+}
+
+/**
  * "Your data" for someone with an account: download it, ask for it by email, or delete
  * the account and everything in it. Deleting asks for the word DELETE, then clears this
  * device and signs out.
  */
 export function YourDataSection() {
-  const navigate = useNavigate();
   const runExport = useServerFn(exportMyData);
   const runDelete = useServerFn(deleteMyAccount);
   const confirmId = useId();
@@ -51,7 +58,7 @@ export function YourDataSection() {
       await runDelete({ data: { confirm } });
       clearDeviceData();
       await supabase.auth.signOut();
-      void navigate({ to: "/", replace: true });
+      startFresh();
     } catch (err) {
       setProblem(err instanceof Error ? err.message : "That deletion didn't complete. Try again.");
       setBusy(null);
@@ -183,7 +190,7 @@ export function DeviceDataSection() {
       </p>
       {cleared ? (
         <p role="status" className="mt-3 rounded-2xl bg-card p-3 text-xs font-bold shadow-soft">
-          Cleared. Reload the page to start fresh.
+          Cleared. Starting fresh…
         </p>
       ) : confirming ? (
         <div className="mt-3 flex gap-2">
@@ -199,6 +206,7 @@ export function DeviceDataSection() {
             onClick={() => {
               clearDeviceData();
               setCleared(true);
+              startFresh();
             }}
             className={`${button} flex-1 bg-destructive text-destructive-foreground`}
           >

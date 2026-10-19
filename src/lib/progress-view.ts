@@ -1,3 +1,4 @@
+import { LESSONS, UNITS, lessonPlace, nextLessonIndex, unitEntryIndex } from "./curriculum";
 import { shiftDay } from "./days";
 
 /**
@@ -33,6 +34,28 @@ export function skillNotes(units: readonly UnitAccuracy[]): Record<string, Skill
     if (leaders.length === 1 && leader && top >= REVIEW_BELOW) notes[leader.unitId] = "strongest";
   }
   return notes;
+}
+
+// ---------- Up next ----------
+
+/**
+ * The lesson to suggest next. It follows the learner's own line rather than the suggested order:
+ * the next stop on the line of the lesson they finished last, or, once that line is done, the next
+ * line along (coming round to the first) that still has stops. With nothing finished yet, or only
+ * ids no longer in the curriculum, it is the suggested order's first unfinished lesson.
+ */
+export function upNextIndex(done: ReadonlySet<number>, doneIds: readonly string[] | null): number {
+  if (done.size >= LESSONS.length) return nextLessonIndex(done);
+  const position = new Map(LESSONS.map((lesson, i) => [lesson.id, i]));
+  const last = [...(doneIds ?? [])].reverse().find((id) => position.has(id));
+  if (last === undefined) return nextLessonIndex(done);
+  const from = lessonPlace(position.get(last)!).unitIndex;
+  for (let step = 0; step < UNITS.length; step++) {
+    const unitIndex = (from + step) % UNITS.length;
+    const entry = unitEntryIndex(unitIndex, done);
+    if (!done.has(entry)) return entry;
+  }
+  return nextLessonIndex(done);
 }
 
 // ---------- Calibration ----------

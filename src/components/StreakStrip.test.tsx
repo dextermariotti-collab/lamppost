@@ -68,6 +68,18 @@ describe("Streak strip", () => {
     expect(container.querySelectorAll('[aria-hidden="true"] > span').length).toBe(7);
   });
 
+  it("keeps the flame lit while the streak is alive, even late in a quiet day", () => {
+    const { container } = mount({ atRisk: true });
+    const flame = container.querySelector("svg.text-flame");
+    expect(flame?.getAttribute("fill")).toBe("currentColor");
+  });
+
+  it("is drawn as a sign, not a rounded card", () => {
+    const button = mount().container.querySelector("button")!;
+    expect(button.className).toMatch(/\bsign\b/);
+    expect(button.className).not.toMatch(/rounded-(2xl|3xl)|shadow-soft/);
+  });
+
   it("nudges gently when the streak is at risk, with no countdown", () => {
     const { container } = mount({ atRisk: true });
     expect(text(container)).toContain("A lesson today keeps the streak going.");

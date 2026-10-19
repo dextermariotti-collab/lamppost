@@ -34,10 +34,10 @@ export function StreakStrip({
       onClick={onOpen}
       aria-haspopup="dialog"
       aria-label={label}
-      className="mt-5 block w-full rounded-2xl border border-border bg-card p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      className="sign mt-5 block w-full p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
       <span className="flex items-center gap-2">
-        <StreakFlame streak={atRisk ? 0 : streak} size={22} />
+        <StreakFlame streak={streak} size={22} />
         <span className="text-[17px] font-bold">{hydrated ? streak : PENDING} day streak</span>
         <span className="flex-1" />
         <span className="text-[13px] font-semibold text-muted-foreground">

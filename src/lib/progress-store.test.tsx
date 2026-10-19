@@ -332,3 +332,171 @@ describe("syncing a signed-in learner", () => {
     expect(weeks[0]).toBe(screen.result.current.state.xp - 900);
   });
 });
+
+const LESSON = ["critical-thinking", "Critical thinking"] as const;
+
+describe("clearing this device", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    mocks.session.userId = null;
+    mocks.getMyProfile.mockReset();
+    mocks.syncProgress.mockReset();
+    mocks.syncProgress.mockResolvedValue({ ok: true });
+  });
+
+  it("is not undone by a screen that still holds the old numbers", async () => {
+    const { useProgress } = await loadStore();
+    const { clearDeviceData } = await import("./device-data");
+    const before = renderHook(() => useProgress());
+    act(() => before.result.current.completeLesson(...LESSON, 0, 35));
+    act(() => clearDeviceData());
+    expect(before.result.current.state.xp).toBe(0);
+
+    // Home mounts again and registers the course, as index.tsx does.
+    const home = renderHook(() => useProgress());
+    act(() => home.result.current.registerCourse(...LESSON, 35));
+    const saved = JSON.parse(window.localStorage.getItem(KEY) ?? "null");
+    expect(saved?.xp ?? 0).toBe(0);
+    expect(saved?.doneLessonIds ?? []).toEqual([]);
+    expect(home.result.current.doneLessons.size).toBe(0);
+  });
+
+  it("writes nothing when a change changes nothing", async () => {
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() => screen.result.current.registerCourse(...LESSON, 35));
+    const write = vi.spyOn(Storage.prototype, "setItem");
+    act(() => screen.result.current.registerCourse(...LESSON, 35));
+    act(() => screen.result.current.clearCelebration());
+    expect(write).not.toHaveBeenCalled();
+    write.mockRestore();
+  });
+});
+
+describe("one sync per change, however many screens are open", () => {
+  const reply = { ok: true, gemsSpent: 0, gemsGranted: 0, doneLessons: [] };
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    mocks.session.userId = "user-1";
+    mocks.getMyProfile.mockReset();
+    mocks.getMyProfile.mockResolvedValue(null);
+    mocks.syncProgress.mockReset();
+    mocks.syncProgress.mockResolvedValue(reply);
+  });
+  afterEach(() => {
+    mocks.session.userId = null;
+  });
+
+  it("sends one call for a lesson finished with three hooks mounted", async () => {
+    const { useProgress } = await loadStore();
+    const hooks = [1, 2, 3].map(() => renderHook(() => useProgress()));
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
+    expect(mocks.syncProgress).toHaveBeenCalledTimes(1);
+    mocks.syncProgress.mockClear();
+
+    act(() => hooks[0]!.result.current.completeLesson(...LESSON, 0, 35));
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalled());
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
+    expect(mocks.syncProgress).toHaveBeenCalledTimes(1);
+    expect(mocks.syncProgress.mock.calls[0]![0].data.totalXp).toBe(50);
+  });
+
+  it("waits for a sync in flight, then sends the latest numbers once", async () => {
+    const pending: ((value: typeof reply) => void)[] = [];
+    mocks.syncProgress.mockImplementation(
+      () => new Promise<typeof reply>((resolve) => pending.push(resolve)),
+    );
+    const { useProgress } = await loadStore();
+    const home = renderHook(() => useProgress());
+    renderHook(() => useProgress());
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalledTimes(1));
+
+    act(() => home.result.current.completeLesson(...LESSON, 0, 35));
+    act(() => home.result.current.completeLesson(...LESSON, 1, 35));
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
+    expect(mocks.syncProgress).toHaveBeenCalledTimes(1);
+
+    await act(async () => pending[0]!(reply));
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalledTimes(2));
+    expect(mocks.syncProgress.mock.calls[1]![0].data.totalXp).toBe(100);
+  });
+});
+
+describe("a save that can't be read", () => {
+  const BACKUP = "lamppost-progress-v1-unreadable";
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    mocks.session.userId = null;
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("is copied aside before a fresh one is written", async () => {
+    window.localStorage.setItem(KEY, "{not json");
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() => screen.result.current.completeLesson(...LESSON, 0, 35));
+    expect(window.localStorage.getItem(BACKUP)).toBe("{not json");
+    expect(JSON.parse(window.localStorage.getItem(KEY) ?? "{}").xp).toBe(50);
+  });
+
+  it("is left in place when it can't be copied aside, and the session still works", async () => {
+    window.localStorage.setItem(KEY, "{not json");
+    const setItem = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string,
+    ) {
+      if (key === BACKUP) throw new Error("full");
+      setItem.call(this, key, value);
+    });
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() => screen.result.current.completeLesson(...LESSON, 0, 35));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(window.localStorage.getItem(KEY)).toBe("{not json");
+    expect(screen.result.current.state.xp).toBe(50);
+  });
+});
+
+describe("lessons finished today", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    mocks.session.userId = null;
+  });
+
+  it("reads an older save, with no lesson count per day, as no lessons yet", async () => {
+    const { dayKey, useProgress } = await loadStore();
+    seed({ streak: 1, lastActiveDay: dayKey(), history: { [dayKey()]: 4 } });
+    const { result } = renderHook(() => useProgress());
+    expect(result.current.state.lessonsByDay).toEqual({});
+    expect(result.current.doneToday).toBe(0);
+    expect(result.current.state.history[dayKey()]).toBe(4);
+  });
+
+  it("counts lessons, not reviews or cases", async () => {
+    const { useProgress } = await loadStore();
+    const { result } = renderHook(() => useProgress());
+    act(() => result.current.completeLesson(...LESSON, 0, 35));
+    act(() => result.current.recordReview(true));
+    act(() => result.current.recordReview(false));
+    act(() => result.current.completeCase(3));
+    expect(result.current.doneToday).toBe(1);
+  });
+
+  it("knows which lessons were placed out of rather than studied", async () => {
+    const { useProgress } = await loadStore();
+    const { result } = renderHook(() => useProgress());
+    act(() => result.current.unlockLessons(...LESSON, 2, 35));
+    expect([...result.current.doneLessons]).toEqual([0, 1]);
+    expect([...result.current.studiedLessons]).toEqual([]);
+    act(() => result.current.completeLesson(...LESSON, 1, 35));
+    expect(result.current.state.xp).toBe(50);
+    expect([...result.current.studiedLessons]).toEqual([1]);
+  });
+});

@@ -4,9 +4,11 @@ import {
   calibrationLine,
   calibrationSummary,
   skillNotes,
+  upNextIndex,
   weekStrip,
   weekdayLetter,
 } from "./progress-view";
+import { LESSONS, UNITS } from "./curriculum";
 
 const unit = (unitId: string, accuracy: number, answered: number) => ({
   unitId,
@@ -123,5 +125,48 @@ describe("calendarRange", () => {
 
   it("names both years across New Year", () => {
     expect(calendarRange("2027-01-05")).toBe("December 2026 to January 2027");
+  });
+});
+
+describe("upNextIndex", () => {
+  const first = (unitIndex: number) =>
+    LESSONS.findIndex((lesson) => lesson.unitId === UNITS[unitIndex]!.id);
+  const unitIds = (unitIndex: number) =>
+    LESSONS.filter((lesson) => lesson.unitId === UNITS[unitIndex]!.id).map((l) => l.id);
+  const indexOf = (id: string) => LESSONS.findIndex((lesson) => lesson.id === id);
+  const done = (ids: string[]) => new Set(ids.map(indexOf));
+
+  it("suggests the first lesson to someone who hasn't started", () => {
+    expect(upNextIndex(new Set(), null)).toBe(0);
+    expect(upNextIndex(new Set(), [])).toBe(0);
+  });
+
+  it("stays on the line a learner chose instead of sending them back to lesson 1", () => {
+    const start = first(2);
+    const ids = [LESSONS[start]!.id];
+    expect(upNextIndex(done(ids), ids)).toBe(start + 1);
+  });
+
+  it("goes on to the next line once that one is finished, and comes round to the start", () => {
+    const third = unitIds(2);
+    expect(upNextIndex(done(third), third)).toBe(first(3));
+    const last = unitIds(UNITS.length - 1);
+    expect(upNextIndex(done(last), last)).toBe(0);
+  });
+
+  it("matches the suggested order for someone going in order", () => {
+    const ids = LESSONS.slice(0, 7).map((lesson) => lesson.id);
+    expect(upNextIndex(done(ids), ids)).toBe(7);
+  });
+
+  it("ignores ids of lessons no longer in the curriculum", () => {
+    const start = first(1);
+    const ids = [LESSONS[start]!.id, "retired-lesson"];
+    expect(upNextIndex(done(ids), ids)).toBe(start + 1);
+  });
+
+  it("points at the last lesson once every lesson is done", () => {
+    const ids = LESSONS.map((lesson) => lesson.id);
+    expect(upNextIndex(done(ids), ids)).toBe(LESSONS.length - 1);
   });
 });

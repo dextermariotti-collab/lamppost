@@ -1,6 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_STATE,
+  REVIEW_XP,
+  studiedLessonIndexes,
   adoptLessons,
   adoptWallet,
   applyLessonComplete,
@@ -17,11 +19,10 @@ import {
 } from "./progress-core";
 
 const lesson = { slug: "critical-thinking", topic: "Critical thinking", index: 0, total: 35 };
-const never = () => 0.99; // no bonus-XP roll
 
 describe("applyLessonComplete", () => {
   it("pays XP (and no gems, which are retired), records the day and starts the streak", () => {
-    const next = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1, never);
+    const next = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1);
     expect(next.xp).toBe(50);
     expect(next.gems).toBe(0);
     expect(next.streak).toBe(1);
@@ -31,14 +32,14 @@ describe("applyLessonComplete", () => {
   });
 
   it("pays nothing when the lesson was already completed", () => {
-    const once = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1, never);
-    expect(applyLessonComplete(once, lesson, "2026-09-23", 2, never)).toBe(once);
+    const once = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1);
+    expect(applyLessonComplete(once, lesson, "2026-09-23", 2)).toBe(once);
   });
 
   it("counts several lessons on one day once for the streak", () => {
     let state: ProgressState = DEFAULT_STATE;
     for (let index = 0; index < 3; index++) {
-      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1, never);
+      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1);
     }
     expect(state.history["2026-09-23"]).toBe(3);
     expect(state.streak).toBe(1);
@@ -49,13 +50,7 @@ describe("finishing lessons in any order", () => {
   const slug = lesson.slug;
 
   it("records the lesson that was done, not everything before it", () => {
-    const next = applyLessonComplete(
-      DEFAULT_STATE,
-      { ...lesson, index: 12 },
-      "2026-09-23",
-      1,
-      never,
-    );
+    const next = applyLessonComplete(DEFAULT_STATE, { ...lesson, index: 12 }, "2026-09-23", 1);
     expect(doneLessonIndexes(next, slug)).toEqual([12]);
     expect(next.courses[slug]?.completed).toBe(1);
     expect(next.xp).toBe(50);
@@ -64,21 +59,15 @@ describe("finishing lessons in any order", () => {
   it("keeps the count equal to the number of lessons done", () => {
     let state: ProgressState = DEFAULT_STATE;
     for (const index of [20, 0, 7, 20]) {
-      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1, never);
+      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1);
     }
     expect(doneLessonIndexes(state, slug)).toEqual([0, 7, 20]);
     expect(state.courses[slug]?.completed).toBe(3);
   });
 
   it("pays nothing for a lesson that was already done, even out of order", () => {
-    const once = applyLessonComplete(
-      DEFAULT_STATE,
-      { ...lesson, index: 9 },
-      "2026-09-23",
-      1,
-      never,
-    );
-    expect(applyLessonComplete(once, { ...lesson, index: 9 }, "2026-09-24", 2, never)).toBe(once);
+    const once = applyLessonComplete(DEFAULT_STATE, { ...lesson, index: 9 }, "2026-09-23", 1);
+    expect(applyLessonComplete(once, { ...lesson, index: 9 }, "2026-09-24", 2)).toBe(once);
   });
 
   it("reads a save from before lessons were tracked as the first lessons", () => {
@@ -87,7 +76,7 @@ describe("finishing lessons in any order", () => {
       courses: { [slug]: { topic: "Critical thinking", completed: 3, total: 35 } },
     };
     expect(doneLessonIndexes(legacy, slug)).toEqual([0, 1, 2]);
-    const next = applyLessonComplete(legacy, { ...lesson, index: 10 }, "2026-09-23", 1, never);
+    const next = applyLessonComplete(legacy, { ...lesson, index: 10 }, "2026-09-23", 1);
     expect(doneLessonIndexes(next, slug)).toEqual([0, 1, 2, 10]);
     expect(next.courses[slug]?.completed).toBe(4);
   });
@@ -95,7 +84,7 @@ describe("finishing lessons in any order", () => {
   it("still counts the next lesson in order the way it always did", () => {
     let state: ProgressState = DEFAULT_STATE;
     for (let index = 0; index < 3; index++) {
-      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1, never);
+      state = applyLessonComplete(state, { ...lesson, index }, "2026-09-23", 1);
     }
     expect(doneLessonIndexes(state, slug)).toEqual([0, 1, 2]);
     expect(state.courses[slug]?.completed).toBe(3);
@@ -114,13 +103,7 @@ describe("applyUnlockLessons", () => {
   });
 
   it("adds to lessons already done elsewhere instead of replacing them", () => {
-    const done = applyLessonComplete(
-      DEFAULT_STATE,
-      { ...lesson, index: 12 },
-      "2026-09-23",
-      1,
-      never,
-    );
+    const done = applyLessonComplete(DEFAULT_STATE, { ...lesson, index: 12 }, "2026-09-23", 1);
     const next = applyUnlockLessons(done, ...args, 2, 35);
     expect(doneLessonIndexes(next, args[0])).toEqual([0, 1, 12]);
     expect(next.courses[args[0]]?.completed).toBe(3);
@@ -167,8 +150,8 @@ describe("taking the account's wallet", () => {
 });
 
 describe("deriveInsights", () => {
-  it("reads today's count from the history for the given moment", () => {
-    const state = { ...DEFAULT_STATE, history: { "2026-09-23": 2, "2026-09-22": 1 } };
+  it("reads today's lessons for the given moment", () => {
+    const state = { ...DEFAULT_STATE, lessonsByDay: { "2026-09-23": 2, "2026-09-22": 1 } };
     const insights = deriveInsights(state, new Date(2026, 8, 23, 12, 0));
     expect(insights.doneToday).toBe(2);
     expect(insights.thisWeek).toBe(3);
@@ -326,7 +309,6 @@ describe("finished lessons are kept by id", () => {
       { slug: course.slug, topic: course.topic, index: 2, total: 3 },
       "2026-09-23",
       1,
-      never,
     );
     expect(saveLessons(next, v1, course).doneLessonIds).toEqual(["c"]);
   });
@@ -357,5 +339,145 @@ describe("finished lessons are kept by id", () => {
     const merged = mergeAccountProgress(fresh, account, "2026-09-23");
     expect(saveLessons(merged, v1, course).doneLessons).toEqual([1]);
     expect(mergeAccountProgress(merged, account, "2026-09-23")).toBe(merged);
+  });
+});
+
+describe("lessons are counted apart from other practice", () => {
+  const today = "2026-10-17";
+
+  it("counts a daily case and each review answer as activity, not as lessons", () => {
+    let state = applyLessonComplete(DEFAULT_STATE, lesson, today, 1);
+    state = applyCase(state, 2, today);
+    state = applyReview(state, true, today);
+    state = applyReview(state, false, today);
+    expect(state.lessonsByDay).toEqual({ [today]: 1 });
+    expect(state.history[today]).toBe(4);
+    const insights = deriveInsights(state, new Date(2026, 9, 17, 12));
+    expect(insights.doneToday).toBe(1);
+    expect(insights.thisWeek).toBe(1);
+  });
+
+  it("knows the streak is safe after a review, though no lesson was finished", () => {
+    const state = { ...DEFAULT_STATE, streak: 3, lastActiveDay: "2026-10-16" };
+    const reviewed = applyReview(state, true, today);
+    const evening = deriveInsights(reviewed, new Date(2026, 9, 17, 21));
+    expect(evening.doneToday).toBe(0);
+    expect(evening.atRisk).toBe(false);
+  });
+
+  it("pays a review what REVIEW_XP says", () => {
+    expect(applyReview(DEFAULT_STATE, true, today).xp).toBe(REVIEW_XP.correct);
+    expect(applyReview(DEFAULT_STATE, false, today).xp).toBe(REVIEW_XP.wrong);
+  });
+});
+
+describe("the last active day only moves forward", () => {
+  const ahead = { ...DEFAULT_STATE, streak: 3, lastActiveDay: "2026-09-24" };
+
+  it("keeps the later day when the clock is behind, so the next day isn't counted twice", () => {
+    const behind = applyReview(ahead, true, "2026-09-23");
+    expect(behind.lastActiveDay).toBe("2026-09-24");
+    expect(applyReview(behind, true, "2026-09-24").streak).toBe(3);
+
+    const studied = applyLessonComplete(ahead, lesson, "2026-09-23", 1);
+    expect(studied.lastActiveDay).toBe("2026-09-24");
+    expect(applyLessonComplete(studied, { ...lesson, index: 1 }, "2026-09-24", 2).streak).toBe(3);
+  });
+});
+
+describe("finishing a lesson pays a fixed amount and says so plainly", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("never adds a random bonus", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const next = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1);
+    expect(next.xp).toBe(50);
+    expect(next.celebration?.bonusXp).toBeUndefined();
+  });
+
+  it("uses calm copy for a lesson, a streak milestone and the last lesson", () => {
+    const plain = applyLessonComplete(DEFAULT_STATE, lesson, "2026-09-23", 1).celebration;
+    const streak = applyLessonComplete(
+      { ...DEFAULT_STATE, streak: 2, lastActiveDay: "2026-09-22" },
+      lesson,
+      "2026-09-23",
+      1,
+    ).celebration;
+    const last = applyLessonComplete(
+      DEFAULT_STATE,
+      { ...lesson, index: 0, total: 1 },
+      "2026-09-23",
+      1,
+    ).celebration;
+    expect([plain?.kind, streak?.kind, last?.kind]).toEqual(["lesson", "streak", "mastery"]);
+    expect(streak?.title).toBe("3-day streak");
+    for (const c of [plain, streak, last]) {
+      expect(`${c?.title} ${c?.detail}`).not.toMatch(/!|compounds|frontier|lucky|bonus|mastered/i);
+    }
+  });
+});
+
+describe("lessons placed out of at onboarding", () => {
+  const slug = lesson.slug;
+  const order = Array.from({ length: 35 }, (_, i) => `l${i}`);
+
+  it("are done on the map but remembered as placed, not studied", () => {
+    const placed = applyUnlockLessons(DEFAULT_STATE, slug, lesson.topic, 4, 35, order);
+    expect(doneLessonIndexes(placed, slug)).toEqual([0, 1, 2, 3]);
+    expect(placed.placedLessonIds).toEqual(["l0", "l1", "l2", "l3"]);
+    expect(studiedLessonIndexes(placed, slug, order)).toEqual([]);
+  });
+
+  it("count as a real lesson when one is played after all, once", () => {
+    const placed = applyUnlockLessons(DEFAULT_STATE, slug, lesson.topic, 4, 35, order);
+    const played = applyLessonComplete(placed, { ...lesson, index: 1, id: "l1" }, "2026-09-23", 1);
+    expect(played.xp).toBe(50);
+    expect(played.streak).toBe(1);
+    expect(played.lessonsByDay["2026-09-23"]).toBe(1);
+    expect(played.placedLessonIds).toEqual(["l0", "l2", "l3"]);
+    expect(doneLessonIndexes(played, slug)).toEqual([0, 1, 2, 3]);
+    expect(studiedLessonIndexes(played, slug, order)).toEqual([1]);
+    expect(applyLessonComplete(played, { ...lesson, index: 1, id: "l1" }, "2026-09-23", 2)).toBe(
+      played,
+    );
+  });
+
+  it("never marks a lesson already studied as placed", () => {
+    const studied = applyLessonComplete(DEFAULT_STATE, { ...lesson, id: "l0" }, "2026-09-23", 1);
+    const placed = applyUnlockLessons(studied, slug, lesson.topic, 2, 35, order);
+    expect(placed.placedLessonIds).toEqual(["l1"]);
+  });
+});
+
+describe("an account's active days", () => {
+  const account = {
+    totalXp: 0,
+    gems: 0,
+    gemsEarned: 0,
+    gemsGranted: 0,
+    gemsSpent: 0,
+    currentStreak: 3,
+    longestStreak: 3,
+    lastActiveDay: "2026-09-23",
+  };
+
+  it("come with its streak, so the calendar isn't empty beside it", () => {
+    const next = mergeAccountProgress(
+      DEFAULT_STATE,
+      { ...account, activeDays: ["2026-09-21", "2026-09-22", "2026-09-23"] },
+      "2026-09-23",
+    );
+    expect(next.streak).toBe(3);
+    expect(next.history).toEqual({ "2026-09-21": 1, "2026-09-22": 1, "2026-09-23": 1 });
+  });
+
+  it("keep the device's own counts, and skip days no clock could be on", () => {
+    const local = { ...DEFAULT_STATE, history: { "2026-09-23": 3 } };
+    const next = mergeAccountProgress(
+      local,
+      { ...account, activeDays: ["2026-09-23", "nonsense", "2026-12-01"] },
+      "2026-09-23",
+    );
+    expect(next.history).toEqual({ "2026-09-23": 3 });
   });
 });

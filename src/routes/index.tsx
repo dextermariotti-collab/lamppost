@@ -17,14 +17,14 @@ import {
   UNITS,
   lessonAt,
   lessonPlace,
-  nextLessonIndex,
   unitById,
   unitProgress,
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { CASE_SOURCES, caseUnits, isAiCase, useDailyCase, type CasePick } from "@/lib/daily-case";
 import { useAiCaseTopUp } from "@/lib/daily-case-ai";
-import { dayKey, useProgress } from "@/lib/progress";
+import { useProgress } from "@/lib/progress";
+import { upNextIndex } from "@/lib/progress-view";
 import {
   nextReviewLine,
   reviewUrgencyFor,
@@ -32,6 +32,7 @@ import {
   useDueDrills,
 } from "@/lib/review-drills";
 import { laterCheckDue, useUnitChecks } from "@/lib/unit-checks";
+import { useToday } from "@/lib/use-today";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,7 +59,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const navigate = useNavigate();
-  const { state, streak, doneLessons, registerCourse } = useProgress();
+  const { state, streak, doneLessons, doneToday, registerCourse } = useProgress();
+  // Re-renders Home at local midnight and on coming back, so the goal, reviews and case move on.
+  const today = useToday();
   // Makes sure the curriculum exists locally with its lesson titles.
   useCurriculumCourse();
 
@@ -78,7 +81,7 @@ function Home() {
   }, [registerCourse]);
 
   const lessonsDone = doneLessons.size;
-  const { items: dueItems, total: dueTotal } = useDueDrills();
+  const { total: dueTotal, maxOverdue } = useDueDrills();
   const { items: scheduled } = useDrillSchedule();
   const { pick: todaysCase, wantsNew } = useDailyCase(DAILY_CASES, doneLessons);
   const writingCase = useAiCaseTopUp(wantsNew);
@@ -86,12 +89,10 @@ function Home() {
   const laterDue = laterCheckDue(
     checks,
     UNITS.map((u) => u.id),
+    today,
   );
 
-  const maxOverdue = dueItems[0]?.overdueDays ?? 0;
   const urgency = reviewUrgencyFor(dueTotal, maxOverdue);
-
-  const doneToday = state.history[dayKey()] ?? 0;
   // The counters wait for the first lesson: before it they would only be zeros.
   const started = lessonsDone > 0 || state.xp > 0 || streak > 0;
 
@@ -102,7 +103,8 @@ function Home() {
     setRecommendation(top ? { reason: top.reason } : null);
   }, [doneLessons]);
 
-  const nextIndex = nextLessonIndex(doneLessons);
+  // Follows the line the learner is on (a unit chosen at onboarding included), not lesson 1.
+  const nextIndex = upNextIndex(doneLessons, state.doneLessonIds);
   const next = lessonAt(nextIndex);
   const finished = lessonsDone >= TOTAL_LESSONS;
   const unit = unitById(next?.unitId ?? "claims");
@@ -110,8 +112,7 @@ function Home() {
   const minutes = Math.max(5, (next?.drills.length ?? 4) * 2);
 
   const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
-  const here = units.find((u) => u.state === "current") ?? units.find((u) => u.state === "open");
-  const where = here ?? units[units.length - 1]!;
+  const where = units[place.unitIndex] ?? units[units.length - 1]!;
   // Once every lesson is done, Home is about keeping it sharp: the case, the checks, the reviews.
   const afterChecksLeft = UNITS.filter((u) => !checks[u.id]?.after).length;
 
@@ -197,7 +198,7 @@ function Home() {
                   Today's review · {dueTotal} due
                 </span>
                 <span className="block text-xs leading-relaxed text-muted-foreground">
-                  {urgency === "piling"
+                  {urgency === "piling" && maxOverdue >= 2
                     ? `Oldest is ${maxOverdue} days overdue.`
                     : "New scenarios, same skills."}
                 </span>

@@ -47,24 +47,25 @@ export const MOTIVATIONS: { id: Motivation; label: string; blurb: string; reacti
 ];
 
 /**
- * A full lesson (concept, drills and the written task) runs about 8-10 minutes,
- * so the labels promise what the time actually buys.
+ * A full lesson (the steps, the idea, the written task) runs about 8-10 minutes, so each choice
+ * promises only what its time buys: one lesson with room for a review, then two, then three.
  */
 export const TIME_OPTIONS: { minutes: number; goal: number; label: string; reaction: string }[] = [
   {
-    minutes: 5,
+    minutes: 15,
     goal: 1,
-    label: "About 5 minutes",
-    reaction: "Small and daily beats big and rare.",
+    label: "About 15 minutes",
+    reaction: "One lesson, with time left for a review.",
   },
-  { minutes: 15, goal: 2, label: "About 15 minutes", reaction: "That's a real habit. Nice." },
-  {
-    minutes: 25,
-    goal: 3,
-    label: "About 25 minutes",
-    reaction: "Ambitious. I'll hold you to it.",
-  },
+  { minutes: 20, goal: 2, label: "About 20 minutes", reaction: "Two lessons a day." },
+  { minutes: 30, goal: 3, label: "About 30 minutes", reaction: "Three lessons a day." },
 ];
+
+/** The time picked until the learner chooses another. */
+export const DEFAULT_MINUTES = TIME_OPTIONS[0]!.minutes;
+
+/** The daily goals on offer, in lessons: the same in onboarding and in Settings. */
+export const GOAL_OPTIONS = TIME_OPTIONS.map((option) => option.goal);
 
 /**
  * The one real question the first screen asks, with the same feedback every lesson gives. It is

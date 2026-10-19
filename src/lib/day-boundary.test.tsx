@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { StreakCalendar } from "@/components/StreakCalendar";
 import { EASTERN } from "@/test/time";
 import { dayKey } from "./days";
-import { DEFAULT_STATE, applyReview, deriveInsights } from "./progress-core";
+import { DEFAULT_STATE, applyLessonComplete, applyReview, deriveInsights } from "./progress-core";
 import { advanceStreak } from "./streak";
 
 vi.mock("./companion-store", () => ({ useSessionUser: () => ({ userId: null, ready: true }) }));
@@ -17,6 +17,7 @@ vi.mock("./profile.functions", () => ({ getMyProfile: vi.fn(), syncProgress: vi.
  */
 const PROGRESS = "lamppost-progress-v1";
 const LESSON = ["critical-thinking", "Critical thinking"] as const;
+const LESSON_REF = { slug: LESSON[0], topic: LESSON[1] };
 
 const at = (iso: string) => {
   vi.setSystemTime(new Date(iso));
@@ -103,7 +104,11 @@ describe("streaks and the daily goal", () => {
     expect(evening.hoursLeft).toBe(3);
     expect(evening.atRisk).toBe(true);
 
-    const done = applyReview(state, true, dayKey());
+    // A review keeps the streak safe; only a finished lesson counts toward the goal.
+    const reviewed = applyReview(state, true, dayKey());
+    expect(deriveInsights(reviewed, new Date()).atRisk).toBe(false);
+    expect(deriveInsights(reviewed, new Date()).doneToday).toBe(0);
+    const done = applyLessonComplete(reviewed, { ...LESSON_REF, index: 0, total: 35 }, dayKey());
     expect(deriveInsights(done, new Date()).doneToday).toBe(1);
     at(PAST_MIDNIGHT);
     expect(deriveInsights(done, new Date()).doneToday).toBe(0);

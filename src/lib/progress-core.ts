@@ -1,5 +1,5 @@
 import { argumentXpFor } from "./exercises";
-import { dayKey, shiftDay } from "./days";
+import { dayKey, isDayKey, shiftDay } from "./days";
 import { MAX_FREEZES, advanceStreak, effectiveStreak } from "./streak";
 import type { ChestRecord } from "./rewards";
 
@@ -46,10 +46,15 @@ export type ProgressState = {
   /** Monday-start week -> XP earned on this device that week. Kept for the last few weeks. */
   weeklyXp: Record<string, number>;
   xp: number;
-  /** YYYY-MM-DD of the last day a lesson was completed */
+  /** YYYY-MM-DD of the last day a lesson, review or case was completed */
   lastActiveDay: string | null;
-  /** YYYY-MM-DD -> lessons completed that day */
+  /**
+   * YYYY-MM-DD -> things practiced that day: lessons, review answers and cases. The streak, the
+   * calendar and the account's daily activity read this; it is not a count of lessons.
+   */
   history: Record<string, number>;
+  /** YYYY-MM-DD -> lessons finished that day. The daily goal and every "lessons" label read this. */
+  lessonsByDay: Record<string, number>;
   /** lessons the user aims to complete each day */
   dailyGoal: number;
   /** queued celebration, consumed by the progress screen */
@@ -71,6 +76,11 @@ export type ProgressState = {
    * these whenever the state is loaded or saved (`loadLessons`, `saveLessons`).
    */
   doneLessonIds: string[] | null;
+  /**
+   * Lessons the onboarding placement check marked done, by id, that haven't been played since.
+   * They count as done on the map, but nothing was studied: playing one still counts as a lesson.
+   */
+  placedLessonIds: string[];
   /** unused streak freezes held */
   freezes: number;
   /** YYYY-MM-DD days a freeze covered, so they're only spent once */
@@ -98,11 +108,13 @@ export const DEFAULT_STATE: ProgressState = {
   xp: 0,
   lastActiveDay: null,
   history: {},
+  lessonsByDay: {},
   dailyGoal: 3,
   celebration: null,
   courses: {},
   doneLessons: null,
   doneLessonIds: null,
+  placedLessonIds: [],
   freezes: 1,
   freezeLog: [],
   freezeSaved: null,
@@ -113,12 +125,11 @@ export { MAX_FREEZES, effectiveStreak };
 
 const STREAK_MILESTONES = [3, 7, 30, 100, 365];
 
-const SURPRISES = [
-  "Bonus XP — you showed up when it counted.",
-  "Momentum bonus unlocked.",
-  "Lucky drop: extra XP for a clean run.",
-  "Deep-focus bonus applied.",
-];
+/** XP for a finished lesson. */
+export const LESSON_XP = 50;
+
+/** XP for one graded review answer. */
+export const REVIEW_XP = { correct: 20, wrong: 5 } as const;
 
 export type Tier = { name: string; emoji: string; min: number };
 
@@ -145,26 +156,34 @@ export function leagueFor(xp: number) {
   return [...LEAGUES].reverse().find((l) => xp >= l.min) ?? LEAGUES[0]!;
 }
 
-/** Lessons done today, and how the week compares to previous weeks. */
+/**
+ * Lessons finished today and in the last seven days, and how the last seven days of practice
+ * compare with earlier ones. Lessons come from `lessonsByDay`; practice (and so whether the streak
+ * is at risk) from `history`, where a review or a case counts too.
+ */
 export function deriveInsights(state: ProgressState, now = new Date()) {
   const today = dayKey(now);
-  const doneToday = state.history[today] ?? 0;
-  const weekOf = (offset: number) =>
-    Array.from(
-      { length: 7 },
-      (_, i) => state.history[shiftDay(today, -(i + offset * 7))] ?? 0,
-    ).reduce((a, b) => a + b, 0);
-  const thisWeek = weekOf(0);
-  const past = [1, 2, 3, 4, 5, 6, 7, 8].map(weekOf).filter((v) => v > 0);
-  const beaten = past.filter((v) => thisWeek > v).length;
+  const doneToday = state.lessonsByDay[today] ?? 0;
+  const sevenDays = (counts: Record<string, number>, offset: number) =>
+    Array.from({ length: 7 }, (_, i) => counts[shiftDay(today, -(i + offset * 7))] ?? 0).reduce(
+      (a, b) => a + b,
+      0,
+    );
+  const thisWeek = sevenDays(state.lessonsByDay, 0);
+  const practiced = sevenDays(state.history, 0);
+  const past = [1, 2, 3, 4, 5, 6, 7, 8]
+    .map((offset) => sevenDays(state.history, offset))
+    .filter((v) => v > 0);
+  const beaten = past.filter((v) => practiced > v).length;
   const percentile = past.length >= 2 ? Math.round((beaten / past.length) * 100) : null;
   const hoursLeft = 24 - now.getHours();
+  const practicedToday = (state.history[today] ?? 0) > 0;
   return {
     doneToday,
     thisWeek,
     percentile,
     hoursLeft,
-    atRisk: doneToday === 0 && effectiveStreak(state, today) > 0 && hoursLeft <= 8,
+    atRisk: !practicedToday && effectiveStreak(state, today) > 0 && hoursLeft <= 8,
   };
 }
 
@@ -247,33 +266,51 @@ export function saveLessons(
  * Adds lessons the account has finished on another device. Returns `prev` when none are new.
  * The indexes follow when the state is saved (`saveLessons`).
  */
+/**
+ * Finished lessons that were studied rather than placed out of at onboarding, sorted. Units that
+ * schedule upkeep reviews or close a before-check should read these.
+ */
+export function studiedLessonIndexes(
+  state: Pick<ProgressState, "courses" | "doneLessons" | "placedLessonIds">,
+  slug: string,
+  order: readonly string[],
+): number[] {
+  const placed = new Set(state.placedLessonIds);
+  return doneLessonIndexes(state, slug).filter((i) => !placed.has(order[i] ?? ""));
+}
+
+/** The later of two day keys: a clock that is behind never moves the last active day back. */
+const laterDay = (day: string | null, today: string) => (day && day > today ? day : today);
+
 export function adoptLessons(prev: ProgressState, ids: readonly string[]): ProgressState {
   const have = new Set(prev.doneLessonIds ?? []);
   const added = [...new Set(ids)].filter((id) => !have.has(id));
   return added.length === 0 ? prev : { ...prev, doneLessonIds: [...have, ...added] };
 }
 
-/** Applies a finished lesson. Returns `prev` untouched when nothing new was earned. */
+/**
+ * Applies a finished lesson. Returns `prev` untouched when nothing new was earned. A lesson that
+ * was only placed out of (its `id` is in `placedLessonIds`) counts as finished now.
+ */
 export function applyLessonComplete(
   prev: ProgressState,
-  lesson: { slug: string; topic: string; index: number; total: number },
+  lesson: { slug: string; topic: string; index: number; total: number; id?: string },
   today: string,
   now = Date.now(),
-  random: () => number = Math.random,
 ): ProgressState {
-  const { slug, topic, index, total } = lesson;
-  const existing = prev.courses[slug] ?? { topic, completed: 0, total };
+  const { slug, topic, index, total, id } = lesson;
   const before = doneLessonIndexes(prev, slug);
-  if (before.includes(index)) return prev;
-  const doneLessons = [...before, index].sort((x, y) => x - y);
+  const placed = id !== undefined && prev.placedLessonIds.includes(id);
+  if (before.includes(index) && !placed) return prev;
+  const doneLessons = placed ? before : [...before, index].sort((x, y) => x - y);
   const completed = doneLessons.length;
 
   const history = { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 };
+  const lessonsByDay = { ...prev.lessonsByDay, [today]: (prev.lessonsByDay[today] ?? 0) + 1 };
   const advanced = advanceStreak(prev, today);
   const streak = advanced.streak;
   const longestStreak = Math.max(prev.longestStreak, streak);
 
-  const bonusXp = random() < 0.25 ? 25 + Math.floor(random() * 4) * 25 : undefined;
   const pct = Math.round((completed / total) * 100);
   const hitStreak =
     (prev.lastActiveDay === null || prev.lastActiveDay < today) &&
@@ -282,54 +319,54 @@ export function applyLessonComplete(
   const celebration: Celebration = hitStreak
     ? {
         kind: "streak",
-        title: `${streak}-day streak!`,
-        detail: `You've shown up ${streak} days in a row. That's how mastery compounds.`,
+        title: `${streak}-day streak`,
+        detail: `You've practiced ${streak} days in a row.`,
         emoji: "🔥",
         big: true,
-        bonusXp,
       }
     : pct === 100
       ? {
           kind: "mastery",
-          title: `${topic} mastered`,
-          detail: "Every lesson complete. Time to pick your next frontier.",
-          emoji: "👑",
+          title: "Every lesson done",
+          detail: `That's all of ${topic}. Reviews and the daily case keep it sharp.`,
+          emoji: "✅",
           big: true,
-          bonusXp,
         }
       : {
           kind: "lesson",
           title: "Lesson complete",
-          detail:
-            bonusXp !== undefined
-              ? SURPRISES[Math.floor(random() * SURPRISES.length)]!
-              : "+50 XP · one step closer.",
+          detail: `+${LESSON_XP} XP.`,
           emoji: "✅",
-          bonusXp,
         };
 
   return {
     ...prev,
-    xp: prev.xp + 50 + (bonusXp ?? 0),
+    xp: prev.xp + LESSON_XP,
     streak,
     longestStreak,
     freezes: advanced.freezes,
     freezeLog: advanced.freezeLog,
     freezeSaved: advanced.freezeSaved,
-    lastActiveDay: today,
+    lastActiveDay: laterDay(prev.lastActiveDay, today),
     history,
+    lessonsByDay,
     celebration,
     courses: {
       ...prev.courses,
       [slug]: { topic, completed, total, lastActivityAt: now },
     },
     doneLessons,
+    placedLessonIds: placed
+      ? prev.placedLessonIds.filter((placedId) => placedId !== id)
+      : prev.placedLessonIds,
   };
 }
 
 /**
  * Marks the first `count` lessons as already known (added to any already finished) — used by the optional
- * onboarding placement check. No XP, no streak: nothing was practiced.
+ * onboarding placement check. No XP, no streak: nothing was practiced. The ids of the lessons it
+ * marks (from `order`, today's lesson ids) are kept in `placedLessonIds`, so they aren't taken
+ * for lessons studied.
  */
 export function applyUnlockLessons(
   prev: ProgressState,
@@ -337,11 +374,18 @@ export function applyUnlockLessons(
   topic: string,
   count: number,
   total: number,
+  order: readonly string[] = [],
 ): ProgressState {
   const existing = prev.courses[slug] ?? { topic, completed: 0, total };
   const before = doneLessonIndexes(prev, slug);
   const known = new Set(before);
-  for (let i = 0; i < Math.min(count, total); i++) known.add(i);
+  const added: string[] = [];
+  for (let i = 0; i < Math.min(count, total); i++) {
+    if (known.has(i)) continue;
+    known.add(i);
+    const id = order[i];
+    if (id) added.push(id);
+  }
   if (known.size === before.length) return prev;
   const doneLessons = [...known].sort((x, y) => x - y);
   return {
@@ -351,12 +395,13 @@ export function applyUnlockLessons(
       [slug]: { ...existing, topic, total, completed: doneLessons.length },
     },
     doneLessons,
+    placedLessonIds: [...new Set([...prev.placedLessonIds, ...added])],
   };
 }
 
 /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
 export function applyReview(prev: ProgressState, correct: boolean, today: string): ProgressState {
-  return applyPracticed(prev, correct ? 20 : 5, today);
+  return applyPracticed(prev, correct ? REVIEW_XP.correct : REVIEW_XP.wrong, today);
 }
 
 /** XP for a daily case: something for reading it, more for each question right. */
@@ -378,7 +423,7 @@ function applyPracticed(prev: ProgressState, xp: number, today: string): Progres
     freezes: advanced.freezes,
     freezeLog: advanced.freezeLog,
     freezeSaved: advanced.freezeSaved,
-    lastActiveDay: today,
+    lastActiveDay: laterDay(prev.lastActiveDay, today),
     history: { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 },
   };
 }
@@ -463,7 +508,21 @@ export type AccountProgress = {
   lastActiveDay: string | null;
   /** Lessons finished on any of the account's devices, by id. */
   doneLessons?: readonly string[];
+  /** Recent days the account has activity on, so an adopted streak arrives with its days. */
+  activeDays?: readonly string[];
 };
+
+/** Marks the account's active days in `history` (once each), keeping the device's own counts. */
+function withActiveDays(
+  history: Record<string, number>,
+  days: readonly string[],
+  today: string,
+): Record<string, number> {
+  const latest = shiftDay(today, 1);
+  const missing = days.filter((day) => isDayKey(day) && day <= latest && !history[day]);
+  if (missing.length === 0) return history;
+  return { ...history, ...Object.fromEntries(missing.map((day) => [day, 1])) };
+}
 
 /**
  * Folds the signed-in account's numbers into this device's, so a new device
@@ -497,8 +556,10 @@ export function mergeAccountProgress(
   const granted = Math.max(prev.gemsGranted, account.gemsGranted);
 
   const withLessons = adoptLessons(prev, account.doneLessons ?? []);
+  const history = withActiveDays(prev.history, account.activeDays ?? [], today);
   const next: ProgressState = {
     ...withLessons,
+    history,
     xp: Math.max(prev.xp, account.totalXp),
     gems: Math.max(earned + granted - spent, 0),
     gemsSpent: spent,
@@ -516,6 +577,7 @@ export function mergeAccountProgress(
     next.longestStreak === prev.longestStreak &&
     next.streak === prev.streak &&
     next.lastActiveDay === prev.lastActiveDay &&
+    history === prev.history &&
     withLessons === prev;
   return unchanged ? prev : next;
 }

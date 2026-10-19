@@ -8,6 +8,7 @@ const h = vi.hoisted(() => ({
   signOut: vi.fn(),
   navigate: vi.fn(),
   contactHref: vi.fn(),
+  resetProgress: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-start", () => ({
@@ -19,6 +20,7 @@ vi.mock("@/lib/account-data.functions", () => ({
 }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut: h.signOut } } }));
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => h.navigate }));
+vi.mock("@/lib/progress", () => ({ resetProgressStore: h.resetProgress }));
 vi.mock("@/lib/legal-config", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/legal-config")>()),
   contactHref: h.contactHref,
@@ -26,7 +28,10 @@ vi.mock("@/lib/legal-config", async (importOriginal) => ({
 
 import { DeviceDataSection, YourDataSection } from "./YourDataSection";
 
+const replace = vi.fn();
+
 beforeEach(() => {
+  vi.stubGlobal("location", { ...window.location, replace });
   window.localStorage.clear();
   h.contactHref.mockReturnValue(null);
   h.deleteAccount.mockResolvedValue({ ok: true });
@@ -36,6 +41,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("Your data", () => {
@@ -123,7 +129,8 @@ describe("Your data", () => {
     expect(window.localStorage.getItem("lamppost-progress-v1")).toBeNull();
     expect(window.localStorage.getItem("someone-elses-key")).toBe("keep");
     expect(h.signOut).toHaveBeenCalledTimes(1);
-    expect(h.navigate).toHaveBeenCalledWith({ to: "/", replace: true });
+    // A full reload, so no screen's copy of the old numbers can be written back.
+    expect(replace).toHaveBeenCalledWith("/");
   });
 
   it("when deletion fails, says so, keeps everything on the device and does not sign out", async () => {
@@ -140,7 +147,7 @@ describe("Your data", () => {
     expect(screen.getByRole("alert").textContent).toMatch(/couldn't finish deleting/i);
     expect(window.localStorage.getItem("lamppost-progress-v1")).toBe("{}");
     expect(h.signOut).not.toHaveBeenCalled();
-    expect(h.navigate).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 });
 
@@ -157,5 +164,7 @@ describe("Data on this device (no account)", () => {
     expect(window.localStorage.getItem("lamppost-exercises-v1")).toBeNull();
     expect(window.localStorage.getItem("other-app")).toBe("keep");
     expect(screen.getByRole("status").textContent).toMatch(/Cleared/);
+    expect(h.resetProgress).toHaveBeenCalledTimes(1);
+    expect(replace).toHaveBeenCalledWith("/");
   });
 });
