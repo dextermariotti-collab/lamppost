@@ -16,7 +16,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What is this post trying to get you to accept?",
         stimulus:
-          "Our street needs a speed bump. Two cats were hit this year, children walk to school along here, and drivers use it as a shortcut to avoid the lights on Mill Road.",
+          "Our street needs a speed bump. Two cats were hit this year, children walk to school along here, and drivers use it as a shortcut to avoid the traffic light on Mill Road.",
         options: [
           {
             text: "Drivers use the street as a shortcut.",
@@ -143,16 +143,17 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "evidence-b1",
         kind: "choice",
         prompt: "What's the main problem with this as evidence?",
-        stimulus: "My uncle smoked a pack a day and lived to 94, so smoking can't be that bad.",
+        stimulus:
+          "My dad has gone to loud concerts without earplugs for 30 years and his hearing is fine, so loud music can't really hurt your ears.",
         options: [
           {
-            text: "The uncle may have got his age wrong.",
-            whyNot: "Even if he was exactly 94, one life still can't show the risk.",
+            text: "He may have been to fewer concerts than he says.",
+            whyNot: "Even if he went to every one, one person's ears still can't show the risk.",
           },
-          { text: "One person's life can't show the risk for most people." },
+          { text: "One person's story can't show the risk for most people." },
           {
-            text: "Smoking cost much less when he was young.",
-            whyNot: "Price has nothing to do with how harmful smoking is.",
+            text: "Concert tickets were much cheaper 30 years ago.",
+            whyNot: "Ticket prices have nothing to do with what loud music does to ears.",
           },
         ],
         correct: 1,
@@ -163,7 +164,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Why should you be careful with this recommendation?",
         stimulus:
-          'A website called SleepFacts says the Dreamcloud mattress is the best for back pain. In small print at the bottom: "SleepFacts is run by Dreamcloud Ltd."',
+          'A website called SleepFacts says the Dreamcloud mattress is the best for back pain. In small print at the bottom: "SleepFacts is run by Dreamcloud Inc."',
         options: [
           { text: "The site has a reason to favor what it recommends." },
           {
@@ -193,7 +194,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
             text: "It compares towns instead of whole countries.",
             whyNot: "The scale isn't the issue. The direction of cause is.",
           },
-          { text: "Richer towns may attract cafés, not the other way round." },
+          { text: "Richer towns may attract cafés, not the other way around." },
         ],
         correct: 2,
         why: "Two things rising together doesn't show which causes which. Here money probably brings the cafés.",
@@ -245,20 +246,20 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which other explanation does this newsletter ignore?",
         stimulus:
-          "Students who eat breakfast get better grades, so from next term the school will give every student breakfast to raise grades.",
+          "From the city newsletter: Blocks with a community garden have less litter, so next spring the city will plant a garden on every block to cut litter.",
         options: [
           {
-            text: "Breakfast is the most important meal of the day.",
-            whyNot: "That's a slogan, not another explanation for the link.",
+            text: "Gardens make a block look nicer.",
+            whyNot: "Maybe so, but that isn't another explanation for the link.",
           },
           {
-            text: "Teachers, not breakfasts, are the ones giving grades.",
+            text: "Street sweepers, not gardens, are the ones clearing litter.",
             whyNot: "True but beside the point. It doesn't explain why the two go together.",
           },
-          { text: "Homes that serve breakfast may also help in other ways." },
+          { text: "Neighbors who start a garden may also keep the block tidy." },
         ],
         correct: 2,
-        why: "Families who make sure children eat may also help with sleep and homework, which could explain the grades.",
+        why: "Blocks where neighbors already pitch in are likelier both to start a garden and to pick up litter. That could explain the link, not the garden itself.",
       },
     ],
   },
@@ -283,7 +284,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           { text: "Swaps her small proposal for an extreme one to attack." },
         ],
         correct: 2,
-        why: 'An hour less on Sundays became "shut our libraries". That\'s a straw man: easier to knock down than the real idea.',
+        why: 'An hour less on Sundays became "shut our libraries." That\'s a straw man: easier to knock down than the real idea.',
       },
       {
         id: "fallacies-b2",
@@ -330,28 +331,27 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "fallacies-a1",
         kind: "choice",
         prompt: "What's the flaw?",
-        stimulus:
-          "You can't trust Priya's report on the new bus schedule. She doesn't even own a car.",
+        stimulus: "Ignore Theo's review of the new climbing gym. He failed chemistry last year.",
         options: [
           {
-            text: "It assumes buses are better than cars.",
-            whyNot: "The argument doesn't compare buses and cars.",
+            text: "It complains that the gym is too new to judge fairly.",
+            whyNot: "Nothing is said about the gym's age. The target is Theo.",
           },
-          { text: "It dismisses the report for who wrote it, not what it says." },
+          { text: "It dismisses the review for who wrote it, not what it says." },
           {
-            text: "It doesn't say when the report was written.",
-            whyNot: "A date wouldn't fix the problem: the report is rejected for its author.",
+            text: "It doesn't say when the review was written.",
+            whyNot: "A date wouldn't fix the problem: the review is rejected for its author.",
           },
         ],
         correct: 1,
-        why: "Whether Priya drives says nothing about whether her report is accurate. That's an attack on the person.",
+        why: "A chemistry grade says nothing about whether Theo's review is accurate. That's an attack on the person.",
       },
       {
         id: "fallacies-a2",
         kind: "choice",
         prompt: "What kind of reasoning is this?",
         stimulus:
-          "If we let students use calculators in this test, next they'll want phones, then they'll copy everything, and soon nobody will be able to think.",
+          "If we let students use calculators on this test, next they'll want phones, then they'll copy everything, and soon nobody will be able to think.",
         options: [
           {
             text: "A fair warning backed by evidence from other schools.",
@@ -371,20 +371,20 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Why is this argument weak?",
         stimulus:
-          "The Harlow Times is the most trustworthy newspaper, because everything it prints is reliable.",
+          'A post in a soccer team\'s group chat: "Rhea is the best goalie in the league, because nobody else in the league is as good in goal."',
         options: [
           { text: "Its reason just restates the conclusion." },
           {
-            text: "It only names one newspaper.",
-            whyNot: "Talking about one paper is fine. The reason is the problem.",
+            text: "It only talks about one goalie.",
+            whyNot: "Talking about one player is fine. The reason is the problem.",
           },
           {
-            text: "It doesn't mention the paper's price.",
-            whyNot: "Price has nothing to do with trustworthiness.",
+            text: "It doesn't say how old Rhea is.",
+            whyNot: "Her age has nothing to do with whether the reason supports the claim.",
           },
         ],
         correct: 0,
-        why: '"Reliable" and "trustworthy" mean the same here, so the argument goes in a circle.',
+        why: '"Nobody else is as good" is just "the best" said again, so the argument goes in a circle.',
       },
     ],
   },
@@ -414,18 +414,18 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "biases-b2",
         kind: "choice",
-        prompt: "What most likely shaped Jo's sense of a good price?",
+        prompt: "What most likely shaped Ana's sense of a good price?",
         stimulus:
-          'A used car is listed at $15,000, "reduced to $11,000". Jo pays $11,000 and feels she got a bargain, though similar cars sell for $9,500.',
+          "A ticket resale site opens on front-row seats at $600. Ana then buys a $250 seat farther back and feels it's a steal, though seats like hers sold for $120 last week.",
         options: [
-          { text: "The high first price, which made $11,000 look low." },
+          { text: "The $600 seats, which made $250 look low." },
           {
-            text: "The color of the car she chose.",
-            whyNot: "Nothing suggests the color affected the price she accepted.",
+            text: "The time of day she was shopping.",
+            whyNot: "Nothing suggests the time of day changed what felt like a fair price.",
           },
           {
-            text: "A careful comparison with similar cars.",
-            whyNot: "If she had compared, she'd have known similar cars cost $9,500.",
+            text: "A careful check of last week's prices.",
+            whyNot: "If she had checked, she'd have known seats like hers sold for $120.",
           },
         ],
         correct: 0,
@@ -436,7 +436,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Why might Sam's judgment be off?",
         stimulus:
-          "After seeing three news stories about shark attacks, Sam decides swimming in the sea is more dangerous than driving to the beach.",
+          "After seeing three news stories about shark attacks, Sam decides swimming in the ocean is more dangerous than driving to the beach.",
         options: [
           {
             text: "Sam is not a strong enough swimmer.",
@@ -476,9 +476,9 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "biases-a2",
         kind: "choice",
-        prompt: "What should you take from the builder's track record?",
+        prompt: "What should you take from the contractor's track record?",
         stimulus:
-          'Asked how long a kitchen job will take, a builder says, "Three weeks, definitely." His last five jobs each took about twice as long as he said.',
+          'Asked how long a kitchen job will take, a contractor says, "Three weeks, definitely." His last five jobs each took about twice as long as he said.',
         options: [
           {
             text: "He sounds sure, so three weeks is right.",
@@ -498,7 +498,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What best explains the difference in donations?",
         stimulus:
-          'A charity tests two letters. One says "Many people give $50", the other "Many people give $10". People sent the first letter give more.',
+          'A charity tests two letters. One says "Many people give $50," the other "Many people give $10." People sent the first letter give more.',
         options: [
           {
             text: "People sent the $50 letter were richer.",
@@ -624,7 +624,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: 'What role does "Saturday stalls often sell out" play?',
         stimulus:
-          "Riverside Market should open on Sundays. Footfall counts show 40% of weekly visitors come at weekends, and Saturday stalls often sell out.",
+          "Riverside Market should open on Sundays. Foot traffic counts show 40% of weekly visitors come on weekends, and Saturday stalls often sell out.",
         options: [
           {
             text: "It is the main conclusion.",
@@ -647,23 +647,23 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "probability-b1",
         kind: "choice",
-        prompt: "What's the best way to think about Nia's result?",
+        prompt: "What's the best way to think about the app's answer?",
         stimulus:
-          "A test for a rare condition (1 in 1,000 people have it) is 99% accurate. Nia tests positive.",
+          "A bird-ID app almost never misses a real Ashwing warbler, but it also gives that name to about 1 common bird in 100. Only about 1 bird in 1,000 around here is an Ashwing. The app says your photo shows one.",
         options: [
           {
-            text: "She almost certainly has it: the test is 99% accurate.",
+            text: "It's almost certainly an Ashwing: the app rarely misses one.",
             whyNot:
-              "With a rare condition, false positives from the healthy 999 outnumber the true one.",
+              "With a bird this rare, wrong labels on the 999 common birds outnumber the one real Ashwing.",
           },
           {
-            text: "The result tells her nothing at all.",
+            text: "The app's answer tells you nothing at all.",
             whyNot: "It does raise the chance a lot. It just doesn't make it likely yet.",
           },
-          { text: "Most positives here are false; a second test is wise." },
+          { text: "Most such labels are wrong, so check it another way." },
         ],
         correct: 2,
-        why: "Out of 1,000 people about 10 healthy ones test positive, against 1 who has it. The base rate matters.",
+        why: "Out of 1,000 birds about 10 common ones get the rare name, against 1 real Ashwing. The base rate matters.",
       },
       {
         id: "probability-b2",
@@ -689,21 +689,21 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "How should you update?",
         stimulus:
-          "You think it's 50/50 whether the corner store opens on Labor Day. Its website hasn't been updated for a year, but a neighbor says she bought bread there this morning.",
+          "It's Labor Day. You think it's 50/50 whether the corner store is open today. Its website, last updated a year ago, says it closes on holidays. A neighbor says she bought bread there this morning.",
         options: [
           {
-            text: "Trust the website: it's more official.",
+            text: "Probably closed: trust the store's own website.",
             whyNot:
-              "A year-old page says little about today. A fresh first-hand report says a lot.",
+              "A page from a year ago says little about today. A report from this morning says a lot.",
           },
-          { text: "Lean toward open: a fresh report beats an old page." },
+          { text: "Very likely open: a report from today beats an old page." },
           {
-            text: "Stay at 50/50: the two cancel out.",
+            text: "Still 50/50: the two sources cancel each other out.",
             whyNot: "They aren't equally strong, so they don't cancel.",
           },
         ],
         correct: 1,
-        why: "Weigh evidence by how much it tells you. Today's first-hand report is far stronger than a stale website.",
+        why: "Weigh evidence by how much it tells you. A first-hand report from this morning is far stronger than a page a year out of date.",
       },
     ],
     after: [
@@ -742,7 +742,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
             text: "They pay the same on average.",
             whyNot: "Half of $120 is $60, which is more than $50.",
           },
-          { text: "B, because it averages $60 a go." },
+          { text: "B, because it averages $60 a try." },
         ],
         correct: 2,
         why: "Expected value is the payoff times its chance: $120 × 0.5 = $60, against a sure $50.",
@@ -750,8 +750,8 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "probability-a3",
         kind: "choice",
-        prompt: "Which knock-on effect should the town plan for?",
-        stimulus: "To bring more shoppers into the center, a town makes all its parking lots free.",
+        prompt: "Which ripple effect should the town plan for?",
+        stimulus: "To bring more shoppers downtown, a town makes all its parking lots free.",
         options: [
           {
             text: "Shops will sell more umbrellas on rainy days.",
@@ -784,7 +784,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           },
           {
             text: "There's no gap; the headline is a fair summary.",
-            whyNot: 'One small, short-term result is a long way from "makes you smarter".',
+            whyNot: 'One small, short-term result is a long way from "makes you smarter."',
           },
           { text: "It turns one small, short-term result into a sweeping claim." },
         ],
@@ -816,7 +816,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What's the quickest good check?",
         stimulus:
-          'You find a polished website, "Institute for Healthy Families", arguing against a new food label. You\'ve never heard of the organization.',
+          'You find a polished website, "Institute for Healthy Families," arguing against a new food label. You\'ve never heard of the organization.',
         options: [
           {
             text: "Read the whole site carefully to judge its tone.",
@@ -858,7 +858,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What is this page trying to do?",
         stimulus:
-          'An online shop shows: "Only 2 left! 14 people are looking at this now. Offer ends in 09:59." The timer starts again every time you reload the page.',
+          'An online store shows: "Only 2 left! 14 people are looking at this now. Offer ends in 09:59." The timer starts again every time you reload the page.',
         options: [
           { text: "Rush you into buying with pressure that isn't real." },
           {
@@ -866,7 +866,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
             whyNot: "A timer that resets isn't honest information.",
           },
           {
-            text: "Show how popular the shop is locally.",
+            text: "Show how popular the store is locally.",
             whyNot: "Nothing here is about the local area. It's about urgency.",
           },
         ],
@@ -888,10 +888,10 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
             text: "The post and the article say the same thing.",
             whyNot: "One says poisoned, the other says safe to drink.",
           },
-          { text: "The post exaggerates what its own source says." },
+          { text: "The post contradicts the article it links to." },
         ],
         correct: 2,
-        why: "Click through before sharing. Here the linked article says the water is safe.",
+        why: "Click through before sharing. The linked article says the water is safe to drink, the opposite of the post.",
       },
     ],
   },
