@@ -71,7 +71,8 @@ function storeLesson(index: number, lesson: Lesson) {
 }
 
 /**
- * Loads one curriculum lesson.
+ * Loads one curriculum lesson. `finished` is whether the learner has finished this lesson
+ * (`useProgress().doneLessons.has(index)`): lessons can be done in any order.
  *
  * A lesson the learner has already finished is served from their local copy so
  * their own drills and answers stay put. A lesson they have NOT finished always
@@ -83,7 +84,7 @@ function storeLesson(index: number, lesson: Lesson) {
  * in as each is written. `complete` says everything has arrived. Nothing is stored
  * locally until the lesson is complete.
  */
-export function useCurriculumLesson(index: number, completedLessons = 0) {
+export function useCurriculumLesson(index: number, finished = false) {
   const meta = lessonAt(index);
   const plan = meta?.drills ?? [];
   const [held, setHeld] = useState<{ index: number; state: LoaderState } | null>(null);
@@ -92,7 +93,6 @@ export function useCurriculumLesson(index: number, completedLessons = 0) {
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   /** The latest state of this lesson, so a retry picks up where the last run left off. */
   const latest = useRef<{ index: number; state: LoaderState } | null>(null);
-  const finished = index < completedLessons;
 
   useEffect(() => {
     if (!meta) return;

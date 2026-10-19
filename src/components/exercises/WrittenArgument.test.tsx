@@ -140,6 +140,10 @@ describe("WrittenArgument while the grader is working", () => {
     expect(screen.queryByText(/Reading your argument/)).toBeNull();
     expect(screen.getByText(/Try this: Add one sentence on the fix/)).toBeTruthy();
     expect(screen.getByText(/written by an AI, which can make mistakes/)).toBeTruthy();
+    // Each criterion's bar is read out as its score.
+    const bars = screen.getAllByRole("img", { name: /: \d out of 4$/ });
+    expect(bars.length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("img", { name: /3 out of 4/ }).length).toBeGreaterThan(0);
   });
 
   it("returns to an editable form with the error if grading fails", async () => {
@@ -151,7 +155,7 @@ describe("WrittenArgument while the grader is working", () => {
       fail(new Error("network"));
     });
     expect(screen.queryByRole("status")).toBeNull();
-    expect(screen.getByText(/Grading couldn't run just now/)).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toMatch(/Grading couldn't run just now/);
     expect((screen.getByLabelText("Your argument") as HTMLTextAreaElement).readOnly).toBe(false);
   });
 });

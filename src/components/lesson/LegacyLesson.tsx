@@ -27,7 +27,7 @@ import { EXERCISE_LABEL, describeExercise } from "@/lib/exercises";
 import { useLessonAttempts } from "@/lib/exercise-store";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { dayKey, useProgress } from "@/lib/progress";
-import { recordWrittenScore } from "@/lib/mastery";
+import { recordWrittenScore, unitMastery } from "@/lib/mastery";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
 import { celebrateAnswer, comboBonus } from "@/components/AnswerFeedback";
@@ -56,7 +56,6 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     recordExercise,
     recordArgument,
   } = useProgress();
-  const completedLessons = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
   const {
     lesson,
     drills: exercises,
@@ -69,7 +68,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     failed,
     retry,
     ready,
-  } = useCurriculumLesson(lessonNumber - 1, completedLessons);
+  } = useCurriculumLesson(lessonNumber - 1, doneLessons.has(lessonNumber - 1));
   const { companion } = useCompanion();
   const { userId } = useSessionUser();
   const { attempts, record } = useLessonAttempts(meta?.id ?? `lesson-${lessonNumber}`);
@@ -95,9 +94,24 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
   const xpAtStart = useRef<number | null>(null);
   const xpNow = useRef(state.xp);
   xpNow.current = state.xp;
+  /** Already finished before this run: a replay completes no line. */
+  const wasDone = useRef(false);
+  const doneNow = useRef(doneLessons);
+  doneNow.current = doneLessons;
   useEffect(() => {
-    if (hydrated) xpAtStart.current = xpNow.current;
-  }, [index, hydrated]);
+    if (!hydrated) return;
+    xpAtStart.current = xpNow.current;
+    wasDone.current = doneNow.current.has(lessonNumber - 1);
+  }, [index, hydrated, lessonNumber]);
+
+  // The lesson counts once the writing is graded or skipped (or the summary is reached), so
+  // leaving at the tutor card never loses it. Once per lesson.
+  const recorded = useRef(false);
+  const recordLesson = () => {
+    if (recorded.current) return;
+    recorded.current = true;
+    completeLesson(slug, course.topic, lessonNumber - 1, course.lessons.length);
+  };
 
   useEffect(() => {
     setPage(0);
@@ -109,6 +123,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     setEasier(false);
     setEasierDone(false);
     setCombo(0);
+    recorded.current = false;
   }, [index]);
 
   if (!ready || !lesson) {
@@ -212,7 +227,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
 
   const finishLesson = () => {
     if (completing || finished) return;
-    completeLesson(slug, course.topic, lessonNumber - 1, course.lessons.length);
+    recordLesson();
     setCompleting(true);
     window.setTimeout(() => {
       setCompleting(false);
@@ -275,13 +290,15 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
         ),
       ),
     );
-    const nextMeta = lessonAt(lessonNumber);
-    const unitDone = !nextMeta || nextMeta.unitId !== meta?.unitId;
     const unitTitle = unitById(meta?.unitId ?? "claims").title;
 
     const perfect = answeredCount > 0 && accuracy === 100;
     const accent = unitAccent(meta?.unitId ?? "claims");
     const unitLessonsDone = unitProgress(doneLessons).find((u) => u.unit.id === meta?.unitId);
+    const unitDone = !wasDone.current && unitLessonsDone?.state === "complete";
+    const unitAccuracy = Math.round(
+      (unitMastery().find((u) => u.unitId === meta?.unitId)?.accuracy ?? 0) * 100,
+    );
 
     return (
       <PhoneFrame showNav={false}>
@@ -311,7 +328,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
               <h2 className="mt-1 text-2xl leading-tight">{unitTitle}</h2>
               <div className="mt-4 grid grid-cols-3 divide-x divide-border/60">
                 {[
-                  { label: "accuracy", value: `${accuracy}%` },
+                  { label: "accuracy", value: `${unitAccuracy}%` },
                   { label: "day streak", value: `${streak}` },
                   { label: "lessons", value: `${unitLessonsDone?.completed ?? 0}` },
                 ].map((stat) => (
@@ -329,7 +346,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                     line: accent.line,
                     lineColor: accent.fixed,
                     lineOn: accent.fixedOn,
-                    accuracy,
+                    accuracy: unitAccuracy,
                     streak,
                     lessons: unitLessonsDone?.completed ?? 0,
                   })
@@ -561,7 +578,10 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             />
             <button
               type="button"
-              onClick={() => setSkippedWriting(true)}
+              onClick={() => {
+                setSkippedWriting(true);
+                recordLesson();
+              }}
               className="mt-3 h-11 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
             >
               Skip the writing this time
@@ -581,12 +601,16 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                 setArgumentGrade(total);
                 if (attempt === 1) recordArgument(total, max);
                 recordWrittenScore(meta?.id ?? `lesson-${lessonNumber}`, total, max, scores);
+                recordLesson();
               }}
             />
             {argumentGrade === null && !skippedWriting && (
               <button
                 type="button"
-                onClick={() => setSkippedWriting(true)}
+                onClick={() => {
+                  setSkippedWriting(true);
+                  recordLesson();
+                }}
                 className="mt-3 h-10 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
               >
                 Skip the writing this time
@@ -614,18 +638,24 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
               lessonTitle={lesson.title}
               lessonText={practiceText}
               earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
-              companion={companion}
               signedIn={!!userId}
+              returnTo={`/course/${slug}/lesson/${lessonNumber}`}
               onDone={handlePracticeDone}
             />
           </div>
         )}
 
-        <div className="sticky bottom-3 z-20 mt-6">
-          {/* Hidden until the drill is answered, so the card isn't cluttered. */}
-          {canContinue && (
+        {/* On the writing page the Submit button is the one pinned bar, so this one scrolls. */}
+        <div className={onWritten ? "mt-6" : "sticky-action mt-6"}>
+          {/* Hidden until the drill is answered, so the card isn't cluttered. Signed out, the
+              tutor card's own "Finish the lesson" is the way on from the summary. */}
+          {canContinue && !(onSummary && !userId) && (
             <Button
-              onClick={() => (onSummary ? finishLesson() : setPage((p) => p + 1))}
+              onClick={() => {
+                if (onSummary) return finishLesson();
+                if (page + 1 === summaryPage) recordLesson();
+                setPage((p) => p + 1);
+              }}
               disabled={completing}
               className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
             >

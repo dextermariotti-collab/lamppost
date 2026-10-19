@@ -10,16 +10,26 @@ import {
   UNITS,
   lessonAt,
   lessonPlace,
-  nextLessonIndex,
   unitById,
   unitProgress,
   type CurriculumLesson,
 } from "@/lib/curriculum";
+import { unitMastery } from "@/lib/mastery";
 import { dayKey, useProgress } from "@/lib/progress";
 import { shareUnitCard } from "@/lib/share-image";
 import { unitAccent } from "@/lib/unit-accent";
 import { useUnitChecks } from "@/lib/unit-checks";
 import { TryItCard } from "./NotesView";
+
+/**
+ * The next stop after this one: the first unfinished lesson further along the map, else the first
+ * unfinished one before it. Someone who chose a unit carries on from where they are.
+ */
+function nextStopAfter(index: number, done: ReadonlySet<number>): number | null {
+  for (let i = index + 1; i < TOTAL_LESSONS; i++) if (!done.has(i)) return i;
+  for (let i = 0; i < index; i++) if (!done.has(i)) return i;
+  return null;
+}
 
 /**
  * The end of a lesson, as an arrival board: where you are on the line, what this lesson earned,
@@ -39,6 +49,7 @@ export function LessonFinished({
   takeaway,
   tryIt,
   mapComplete = false,
+  replay = false,
 }: {
   meta: CurriculumLesson;
   lessonNumber: number;
@@ -54,6 +65,8 @@ export function LessonFinished({
   tryIt?: string | undefined;
   /** This lesson was the last of the 35 still to do. */
   mapComplete?: boolean;
+  /** The lesson was already done before this run, so nothing new was completed. */
+  replay?: boolean;
 }) {
   const navigate = useNavigate();
   const { state, streak, doneLessons } = useProgress();
@@ -62,10 +75,10 @@ export function LessonFinished({
   const unit = unitById(meta.unitId);
   const accent = unitAccent(meta.unitId);
   const unitLessons = unitProgress(doneLessons).find((u) => u.unit.id === meta.unitId);
-  const unitDone = unitLessons?.state === "complete";
+  const unitDone = !replay && unitLessons?.state === "complete";
   const perfect = answered > 0 && accuracy === 100;
-  const nextIndex = nextLessonIndex(doneLessons);
-  const nextMeta = doneLessons.size < TOTAL_LESSONS ? lessonAt(nextIndex) : undefined;
+  const nextIndex = nextStopAfter(lessonNumber - 1, doneLessons);
+  const nextMeta = nextIndex === null ? undefined : lessonAt(nextIndex);
   const place = lessonPlace(lessonNumber - 1);
   const { checks } = useUnitChecks();
   const checksLeft = UNITS.filter((u) => !checks[u.id]?.after).length;
@@ -160,7 +173,9 @@ export function LessonFinished({
                   line: accent.line,
                   lineColor: accent.fixed,
                   lineOn: accent.fixedOn,
-                  accuracy,
+                  accuracy: Math.round(
+                    (unitMastery().find((u) => u.unitId === meta.unitId)?.accuracy ?? 0) * 100,
+                  ),
                   streak,
                   lessons: unitLessons?.completed ?? 0,
                 })
@@ -206,7 +221,7 @@ export function LessonFinished({
         {tryIt && <TryItCard text={tryIt} className="mt-5" />}
 
         <div className="mt-6 flex flex-col gap-2">
-          {nextMeta && (
+          {nextMeta && nextIndex !== null && (
             <Button
               onClick={() =>
                 navigate({

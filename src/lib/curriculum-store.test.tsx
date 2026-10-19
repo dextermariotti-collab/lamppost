@@ -8,7 +8,8 @@ import { slotOf } from "./lesson-parts";
 const server = vi.hoisted(() => ({ getCurriculumLesson: vi.fn(), getLessonPart: vi.fn() }));
 vi.mock("./curriculum.functions", () => server);
 
-import { useCurriculumLesson } from "./curriculum-store";
+import { saveCourse } from "./course-store";
+import { ensureCurriculumCourse, useCurriculumLesson } from "./curriculum-store";
 
 const meta = LESSONS.find((lesson) => lesson.drills.length === 4)!;
 const index = LESSONS.indexOf(meta);
@@ -35,8 +36,8 @@ const partial = (have: number[], hasWritten = false) => ({
   written: hasWritten ? written : null,
 });
 
-function Probe({ done = 0 }: { done?: number }) {
-  const r = useCurriculumLesson(index, done);
+function Probe({ finished = false }: { finished?: boolean }) {
+  const r = useCurriculumLesson(index, finished);
   return (
     <div>
       <p data-testid="ready">{String(r.ready)}</p>
@@ -143,6 +144,32 @@ describe("useCurriculumLesson on a cold cache", () => {
     await act(async () => screen.getByText("retry").click());
     await waitFor(() => expect(text("complete")).toBe("true"));
     expect(text("error")).toBe("");
+  });
+
+  it("serves a finished lesson from the device by whether that lesson is done, not its position", async () => {
+    expect(index).toBeGreaterThan(0);
+    const stored = { ...whole, title: meta.title, concept: { title: "Idea", body: "My copy." } };
+    const course = ensureCurriculumCourse();
+    saveCourse({
+      ...course,
+      lessons: course.lessons.map((lesson, i) => (i === index ? stored : lesson)),
+    });
+    server.getCurriculumLesson.mockResolvedValue({
+      ok: true,
+      complete: true,
+      lesson: whole,
+      cached: true,
+    });
+
+    render(<Probe finished />);
+    await waitFor(() => expect(text("card")).toBe("My copy."));
+    expect(server.getCurriculumLesson).not.toHaveBeenCalled();
+    cleanup();
+
+    // Not finished (even though earlier lessons may be): the current shared version.
+    render(<Probe />);
+    await waitFor(() => expect(text("card")).toBe("The card."));
+    expect(server.getCurriculumLesson).toHaveBeenCalledTimes(1);
   });
 
   it("a retry keeps the drills that had already arrived", async () => {

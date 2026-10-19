@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_COMPANION } from "@/lib/companions";
@@ -9,6 +9,9 @@ const h = vi.hoisted(() => ({
   signUp: vi.fn(),
   signInWithPassword: vi.fn(),
   google: vi.fn(),
+  navigate: vi.fn(),
+  search: {} as { redirect?: string },
+  session: { userId: null as string | null, ready: true },
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -23,14 +26,15 @@ vi.mock("@/integrations/supabase/client", () => ({
 vi.mock("@/lib/companion-store", () => ({
   readDraft: () => null,
   syncDraftAfterSignIn: async () => undefined,
-  useSessionUser: () => ({ userId: null, ready: true }),
+  useSessionUser: () => h.session,
 }));
 vi.mock("@/components/PhoneFrame", () => ({
   PhoneFrame: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => h.navigate,
+  useSearch: () => h.search,
   Link: ({ to, children, ...rest }: { to: string; children?: ReactNode }) => (
     <a href={to} {...rest}>
       {children}
@@ -66,6 +70,9 @@ const pending = () => {
 
 beforeEach(() => {
   window.localStorage.clear();
+  window.sessionStorage.clear();
+  h.search = {};
+  h.session = { userId: null, ready: true };
   h.signUp.mockResolvedValue({ data: { session: null }, error: null });
   h.signInWithPassword.mockResolvedValue({ error: null });
   h.google.mockResolvedValue({
@@ -187,5 +194,49 @@ describe("signing in to an existing account", () => {
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Sign in" })));
     expect(h.signInWithPassword).toHaveBeenCalledTimes(1);
     expect(pending()).toBeNull();
+  });
+});
+
+describe("where signing in leads", () => {
+  const LESSON = "/course/critical-thinking/lesson/1?part=explain";
+  const signedIn = async (search: { redirect?: string }) => {
+    h.search = search;
+    h.session = { userId: "user-1", ready: true };
+    await load();
+    await waitFor(() => expect(h.navigate).toHaveBeenCalled());
+    return h.navigate.mock.calls[0]![0];
+  };
+
+  it("goes back to the lesson it was opened from", async () => {
+    expect(await signedIn({ redirect: LESSON })).toEqual({ href: LESSON, replace: true });
+  });
+
+  it("goes home with no redirect", async () => {
+    expect(await signedIn({})).toEqual({ to: "/", replace: true });
+  });
+
+  it.each([
+    "//evil.example/steal",
+    "/\\evil.example",
+    "https://evil.example",
+    "javascript:alert(1)",
+    "evil.example/path",
+    "/\t/evil.example",
+    "/\n/evil.example",
+    "",
+  ])("never leaves the site for %j", async (redirect) => {
+    expect(await signedIn({ redirect })).toEqual({ to: "/", replace: true });
+  });
+
+  it("keeps the redirect across the Google round trip, which drops the query", async () => {
+    h.search = { redirect: LESSON };
+    await load();
+    fireEvent.click(screen.getByRole("button", { name: /already have an account/i }));
+    await act(async () => fireEvent.click(googleButton()));
+    expect(h.google).toHaveBeenCalledTimes(1);
+    cleanup();
+
+    expect(await signedIn({})).toEqual({ href: LESSON, replace: true });
+    expect(window.sessionStorage.length).toBe(0);
   });
 });

@@ -183,7 +183,11 @@ export function WrittenArgument({
             </span>
             {attempt === 2 && <span>Revision</span>}
           </div>
-          {error && <p className="mt-2 text-[13px] font-semibold text-destructive">{error}</p>}
+          {error && (
+            <p role="alert" className="mt-2 text-[13px] font-semibold text-destructive">
+              {error}
+            </p>
+          )}
           {busy && <GradingProgress companion={companion} elapsed={elapsed} />}
           <Button
             type="button"
@@ -230,7 +234,11 @@ export function WrittenArgument({
                   <p className="text-[13px] font-bold text-foreground">
                     {CRITERION_LABEL[criterion]}
                   </p>
-                  <div className="flex gap-1" aria-label={`${row.score} out of 4`}>
+                  <div
+                    role="img"
+                    aria-label={`${CRITERION_LABEL[criterion]}: ${row.score} out of 4`}
+                    className="flex gap-1"
+                  >
                     {[1, 2, 3, 4].map((step) => (
                       <span
                         key={step}

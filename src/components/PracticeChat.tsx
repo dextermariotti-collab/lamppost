@@ -2,10 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { GuideMark } from "@/components/LineBullet";
 import { AiLabel } from "@/components/AiLabel";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Lock, RefreshCw, Send, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarClock, RefreshCw, Send, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { companionName, type Companion } from "@/lib/companions";
 import {
   FREE_WEEKLY_PRACTICE,
   MAX_PRACTICE_TURNS,
@@ -27,13 +26,34 @@ type Props = {
   lessonTitle: string;
   lessonText: string;
   earlierLessons: string[];
-  companion: Companion;
   signedIn: boolean;
+  /** Where signing in comes back to: this lesson's path on this site. */
+  returnTo: string;
   /** Called once the learner is done (finished or skipped). */
   onDone: (close: PracticeClose | null) => void;
 };
 
-type Phase = "intro" | "loading" | "chatting" | "closed" | "error" | "upgrade";
+type Phase = "intro" | "loading" | "chatting" | "closed" | "error" | "weekly-limit";
+
+/** The tutor is the app's guide, the lamp, whoever the learner's companion is. */
+const GUIDE = "the guide";
+
+/**
+ * When this week's sessions come back. The server counts them from Monday 00:00 UTC
+ * (`weekStartIso` in practice.functions.ts), which is Sunday evening across the US.
+ */
+function practiceReopensAt(now = new Date()): Date {
+  const daysToMonday = (8 - now.getUTCDay()) % 7 || 7;
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToMonday),
+  );
+}
+
+function reopensText(at: Date) {
+  const day = at.toLocaleDateString("en-US", { weekday: "long" });
+  const time = at.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return `${day} at ${time}`;
+}
 
 export function PracticeChat({
   slug,
@@ -42,32 +62,32 @@ export function PracticeChat({
   lessonTitle,
   lessonText,
   earlierLessons,
-  companion,
   signedIn,
+  returnTo,
   onDone,
 }: Props) {
   const takeTurn = useServerFn(practiceTurn);
   const [phase, setPhase] = useState<Phase>("intro");
+  /** Turns the server has answered. */
   const [transcript, setTranscript] = useState<PracticeTurn[]>([]);
+  /** The learner's reply on its way, or the one that failed and Retry sends again. */
+  const [unsent, setUnsent] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
   const [access, setAccess] = useState<PracticeAccess | null>(null);
   const [close, setClose] = useState<PracticeClose | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
-  const name = companionName(companion);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    endRef.current?.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
   }, [transcript, phase]);
 
   const send = useCallback(
     async (answer: string, id: string | null) => {
       setPhase("loading");
       setError("");
-      const pending: PracticeTurn[] =
-        answer.length > 0 ? [...transcript, { role: "learner", text: answer }] : transcript;
-      if (answer.length > 0) setTranscript(pending);
+      setUnsent(answer.length > 0 ? answer : null);
 
       const result = await takeTurn({
         data: {
@@ -78,7 +98,7 @@ export function PracticeChat({
             lessonTitle,
             lessonText: lessonText.slice(0, 6000),
             earlierLessons,
-            companionName: name,
+            companionName: GUIDE,
           },
           transcript,
           answer,
@@ -88,7 +108,8 @@ export function PracticeChat({
 
       if (!result || !result.ok) {
         if (result && "upgrade" in result && result.upgrade) {
-          setPhase("upgrade");
+          setUnsent(null);
+          setPhase("weekly-limit");
           return;
         }
         setError(result?.reason ?? "Practice is unavailable right now. Tap retry in a moment.");
@@ -98,7 +119,12 @@ export function PracticeChat({
 
       setSessionId(result.sessionId);
       setAccess(result.access);
-      setTranscript([...pending, { role: "tutor", text: result.reply }]);
+      setTranscript([
+        ...transcript,
+        ...(answer.length > 0 ? [{ role: "learner" as const, text: answer }] : []),
+        { role: "tutor", text: result.reply },
+      ]);
+      setUnsent(null);
       setDraft("");
 
       if (result.done && result.verdict) {
@@ -114,51 +140,52 @@ export function PracticeChat({
         setPhase("chatting");
       }
     },
-    [takeTurn, transcript, slug, lessonIndex, topic, lessonTitle, lessonText, earlierLessons, name],
+    [takeTurn, transcript, slug, lessonIndex, topic, lessonTitle, lessonText, earlierLessons],
   );
 
+  const shown: PracticeTurn[] =
+    unsent !== null ? [...transcript, { role: "learner", text: unsent }] : transcript;
   const learnerTurns = transcript.filter((t) => t.role === "learner").length;
 
   if (!signedIn) {
     return (
       <Card>
-        <Heading name={name} />
+        <Heading />
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Practice sessions are saved to your account so {name} remembers how you explained things.
-          Create an account or sign in to try it.
+          This lesson is already saved on this device. Explaining it back is a short conversation
+          with the guide, saved to an account, so it needs you to sign in.
         </p>
-        <div className="mt-4 flex gap-2">
-          <Button asChild className="h-11 flex-1 font-bold">
-            <Link to="/auth">Sign in</Link>
-          </Button>
-          <Button variant="outline" className="h-11 font-bold" onClick={() => onDone(null)}>
-            Skip
-          </Button>
-        </div>
+        <Button
+          className="mt-4 h-12 w-full rounded-sm text-base font-bold"
+          onClick={() => onDone(null)}
+        >
+          Finish the lesson
+        </Button>
+        <Link
+          to="/auth"
+          search={{ redirect: returnTo }}
+          className="mt-2 flex min-h-11 w-full items-center justify-center text-sm font-bold text-primary-text underline-offset-4 hover:underline"
+        >
+          Sign in to explain it back
+        </Link>
       </Card>
     );
   }
 
-  if (phase === "upgrade") {
+  if (phase === "weekly-limit") {
     return (
       <Card>
         <div className="flex items-start gap-3">
-          <Lock className="mt-1 h-5 w-5 shrink-0 text-primary-text" />
+          <CalendarClock aria-hidden className="mt-1 h-5 w-5 shrink-0 text-primary-text" />
           <div>
-            <h3 className="font-sans text-base font-bold">You've used this week's practice</h3>
+            <h3 className="font-sans text-base font-bold">
+              That's this week's {FREE_WEEKLY_PRACTICE} explain-it-back sessions
+            </h3>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Lessons and reviews stay free. Lamppost Practice unlocks unlimited explain-it-back
-              sessions with {name}; {FREE_WEEKLY_PRACTICE} a week are free.
+              They start again {reopensText(practiceReopensAt())}. Lessons, reviews and notes don't
+              need one, so carry on with those.
             </p>
           </div>
-        </div>
-        <div className="mt-4 flex gap-2">
-          <Button asChild className="h-11 flex-1 font-bold">
-            <Link to="/premium">See Lamppost Practice</Link>
-          </Button>
-          <Button variant="outline" className="h-11 font-bold" onClick={() => onDone(null)}>
-            Skip
-          </Button>
         </div>
       </Card>
     );
@@ -167,20 +194,20 @@ export function PracticeChat({
   if (phase === "intro") {
     return (
       <Card>
-        <Heading name={name} />
+        <Heading />
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          No options to pick from. {name} asks you to explain this lesson in your own words, then
-          reacts to what you actually wrote — and pushes you to connect it to something you already
-          learned.
+          No options to pick from. Explain this lesson in your own words, and the guide reacts to
+          what you actually wrote, then asks you to connect it to something you already learned.
         </p>
         <Button
           className="mt-4 h-11 w-full justify-between px-4 font-bold"
           onClick={() => void send("", null)}
         >
           <span>Explain it back</span>
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight aria-hidden className="h-4 w-4" />
         </Button>
         <button
+          type="button"
           onClick={() => onDone(null)}
           className="mt-2 h-9 w-full text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -193,7 +220,7 @@ export function PracticeChat({
   return (
     <Card>
       <div className="flex items-center justify-between gap-3">
-        <Heading name={name} />
+        <Heading />
         {access && !access.subscribed && (
           <span className="shrink-0 text-[11px] font-bold text-muted-foreground">
             {access.remaining} of {access.freeAllowance} left
@@ -201,8 +228,8 @@ export function PracticeChat({
         )}
       </div>
 
-      <div className="mt-4 space-y-3">
-        {transcript.map((turn, i) => (
+      <div role="log" aria-label="Conversation with the guide" className="mt-4 space-y-3">
+        {shown.map((turn, i) => (
           <div
             key={`${i}-${turn.text.slice(0, 12)}`}
             className={`animate-rise-in ${turn.role === "learner" ? "flex justify-end" : "flex items-start gap-2"}`}
@@ -215,6 +242,7 @@ export function PracticeChat({
                   : "bg-primary-soft text-accent-foreground"
               }`}
             >
+              <span className="sr-only">{turn.role === "tutor" ? "The guide: " : "You: "}</span>
               {turn.text}
             </p>
           </div>
@@ -222,22 +250,25 @@ export function PracticeChat({
         {phase === "loading" && (
           <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
             <GuideMark size={30} />
-            <span className="animate-pulse">{name} is reading your answer…</span>
+            <span className="animate-pulse">Reading your answer…</span>
           </div>
         )}
         <div ref={endRef} />
       </div>
 
       {phase === "error" && (
-        <div className="mt-4 rounded-2xl border border-destructive/40 bg-destructive/5 p-3">
+        <div
+          role="alert"
+          className="mt-4 rounded-2xl border border-destructive/40 bg-destructive/5 p-3"
+        >
           <p className="text-sm font-semibold text-foreground">{error}</p>
           <div className="mt-3 flex gap-2">
             <Button
               variant="outline"
               className="h-10 flex-1 font-bold"
-              onClick={() => void send(draft.trim(), sessionId)}
+              onClick={() => void send(unsent ?? "", sessionId)}
             >
-              <RefreshCw className="h-4 w-4" /> Retry
+              <RefreshCw aria-hidden className="h-4 w-4" /> Retry
             </Button>
             <Button variant="ghost" className="h-10 font-bold" onClick={() => onDone(null)}>
               Skip
@@ -261,7 +292,7 @@ export function PracticeChat({
           )}
           {close.connectionMade && (
             <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-text">
-              <Sparkles className="h-3.5 w-3.5" /> Connection bonus · +40 XP
+              <Sparkles aria-hidden className="h-3.5 w-3.5" /> Connection bonus · +40 XP
             </p>
           )}
           <Button className="mt-4 h-11 w-full font-bold" onClick={() => onDone(close)}>
@@ -297,7 +328,7 @@ export function PracticeChat({
               disabled={draft.trim().length === 0 || phase === "loading"}
               className="h-10 font-bold"
             >
-              Send <Send className="h-4 w-4" />
+              Send <Send aria-hidden className="h-4 w-4" />
             </Button>
           </div>
         </form>
@@ -310,10 +341,13 @@ const Card = ({ children }: { children: React.ReactNode }) => (
   <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">{children}</section>
 );
 
-const Heading = ({ name }: { name: string }) => (
-  <div>
-    <p className="text-[11px] font-semibold text-primary-text">Practice with {name}</p>
-    <h3 className="mt-1 font-sans text-lg font-bold leading-snug">Explain it back</h3>
-    <AiLabel note what={name} className="mt-1.5" />
+const Heading = () => (
+  <div className="flex items-start gap-3">
+    <GuideMark size={36} className="mt-0.5" />
+    <div>
+      <p className="legend text-muted-foreground">With your guide</p>
+      <h3 className="mt-1 font-sans text-lg font-bold leading-snug">Explain it back</h3>
+      <AiLabel note what="The guide's side of this chat" className="mt-1.5" />
+    </div>
   </div>
 );

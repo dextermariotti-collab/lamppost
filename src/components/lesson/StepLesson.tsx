@@ -34,6 +34,18 @@ import { LessonFinished } from "./LessonFinished";
 import { LessonPlayer } from "./LessonPlayer";
 import { NotesView } from "./NotesView";
 
+/** What a step pays, the same as `applyExercise` in progress-core (bonus on top). */
+const stepXp = (score: number) => Math.max(5, Math.round(25 * Math.min(Math.max(score, 0), 1)));
+
+/** Coming back from signing in at "Explain it back" opens the lesson there, once it's done. */
+const resumingAtExplain = () => {
+  try {
+    return new URLSearchParams(window.location.search).get("part") === "explain";
+  } catch {
+    return false;
+  }
+};
+
 /** What each kind of step is listed as on the finished screen. */
 const PRACTICED: Record<StepKind, string> = {
   flaw: "Spotting the flaw",
@@ -53,7 +65,7 @@ type Phase = "steps" | "notes" | "write" | "explain" | "finished";
 /**
  * One lesson, from the first step to the celebration: the interactive steps, then the idea in
  * full (the notes), then the short written argument (skippable), then explaining the idea back
- * to the companion, then the finish. Every answer feeds the same places a generated drill always
+ * to the guide, then the finish. Every answer feeds the same places a generated drill always
  * did: XP and combos, the attempt record (mastery, calibration), the review queue and the skill
  * rating.
  */
@@ -83,7 +95,8 @@ export function StepLesson({
   } = useProgress();
   const { record } = useLessonAttempts(meta.id);
   const unit = unitById(meta.unitId);
-  const place = lessonPlace(lessonNumber - 1);
+  const position = lessonNumber - 1;
+  const place = lessonPlace(position);
 
   const [phase, setPhase] = useState<Phase>("steps");
   const [results, setResults] = useState<Record<number, StepResult>>({});
@@ -92,19 +105,31 @@ export function StepLesson({
   const [skippedWriting, setSkippedWriting] = useState(false);
   const [completing, setCompleting] = useState(false);
 
-  // XP and lessons done when the lesson opened, so the finish can show what this lesson earned
-  // and whether it was the last stop on the whole map.
+  // XP and lessons done when the lesson opened, so the finish can show what this lesson earned,
+  // whether it was the last stop on the whole map, and whether this was a replay.
   const xpAtStart = useRef<number | null>(null);
   const doneAtStart = useRef<number | null>(null);
+  const wasDone = useRef(false);
   const xpNow = useRef(state.xp);
-  const doneNow = useRef(doneLessons.size);
+  const doneNow = useRef(doneLessons);
   xpNow.current = state.xp;
-  doneNow.current = doneLessons.size;
+  doneNow.current = doneLessons;
   useEffect(() => {
     if (!hydrated) return;
     xpAtStart.current = xpNow.current;
-    doneAtStart.current = doneNow.current;
-  }, [hydrated, meta.id]);
+    doneAtStart.current = doneNow.current.size;
+    wasDone.current = doneNow.current.has(position);
+    if (wasDone.current && resumingAtExplain()) setPhase("explain");
+  }, [hydrated, meta.id, position]);
+
+  // The lesson counts as soon as the writing is graded or skipped, so leaving at "Explain it
+  // back" (to sign in, say) never loses it. Once, however many ways the learner gets there.
+  const recorded = useRef(false);
+  const recordLesson = () => {
+    if (recorded.current) return;
+    recorded.current = true;
+    completeLesson(CURRICULUM_SLUG, course.topic, position, course.lessons.length);
+  };
 
   // Level-ups and badges wait until the lesson is over rather than interrupting a step.
   const over = phase === "finished";
@@ -125,14 +150,22 @@ export function StepLesson({
     setResults((prev) => ({ ...prev, [index]: result }));
     if (!isGraded(step)) return;
     const fresh = record(stepAttemptIndex(index), result.answer, result.score);
-    const correct = result.score === 1;
-    const streakNow = correct ? combo + 1 : 0;
+    // Right on a later try still ends on "Correct"; only full marks keep the run going.
+    const right = !result.revealed;
+    const firstTry = result.score === 1;
+    const streakNow = firstTry ? combo + 1 : 0;
     setCombo(streakNow);
-    const bonus = correct ? comboBonus(streakNow) : 0;
+    const bonus = firstTry ? comboBonus(streakNow) : 0;
     if (fresh) recordExercise(result.score, bonus);
-    playCue(correct ? "correct" : "wrong");
-    if (correct && streakNow >= 3) {
-      celebrateAnswer({ correct: true, xp: bonus, combo: streakNow, bonus, note: "In a row" });
+    playCue(right ? "correct" : "wrong");
+    if (fresh && firstTry && streakNow >= 3) {
+      celebrateAnswer({
+        correct: true,
+        xp: stepXp(result.score),
+        combo: streakNow,
+        bonus,
+        note: "In a row",
+      });
     }
 
     const confidence = statedConfidence(result.answer);
@@ -148,7 +181,7 @@ export function StepLesson({
 
   const finishLesson = () => {
     if (completing || phase === "finished") return;
-    completeLesson(CURRICULUM_SLUG, course.topic, lessonNumber - 1, course.lessons.length);
+    recordLesson();
     setCompleting(true);
     window.setTimeout(() => {
       setCompleting(false);
@@ -164,6 +197,12 @@ export function StepLesson({
     answered > 0
       ? Math.round((gradedResults.reduce((sum, r) => sum + r.score, 0) / answered) * 100)
       : 0;
+  /** This lesson is the last one left on the map, so finishing it finishes the course. */
+  const lastStop =
+    (doneAtStart.current ?? TOTAL_LESSONS) < TOTAL_LESSONS &&
+    Array.from({ length: TOTAL_LESSONS }, (_, i) => i).every(
+      (i) => i === position || doneLessons.has(i),
+    );
 
   if (phase === "finished") {
     const practiced = Array.from(
@@ -188,6 +227,7 @@ export function StepLesson({
         mapComplete={
           doneLessons.size >= TOTAL_LESSONS && (doneAtStart.current ?? 0) < TOTAL_LESSONS
         }
+        replay={wasDone.current}
       />
     );
   }
@@ -253,9 +293,11 @@ export function StepLesson({
                 <NotesView notes={notes} />
               </div>
               <p className="mt-6 text-[13px] text-muted-foreground">
-                These notes stay on My Path, next to the lesson, for whenever you want them again.
+                {doneLessons.has(position)
+                  ? "These notes stay on My Path, next to the lesson, for whenever you want them again."
+                  : "Finish the lesson and these notes stay on My Path, next to it, for whenever you want them again."}
               </p>
-              <div className="sticky bottom-3 z-20 mt-4">
+              <div className="sticky-action mt-4">
                 <Button
                   onClick={() => setPhase("write")}
                   className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
@@ -282,9 +324,11 @@ export function StepLesson({
                   setArgumentGrade(total);
                   if (attempt === 1) recordArgument(total, max);
                   recordWrittenScore(meta.id, total, max, scores);
+                  recordLesson();
                 }}
               />
-              <div className="sticky bottom-3 z-20 mt-6 space-y-2">
+              {/* In the flow, not pinned: the writing's own Submit is this part's one sticky bar. */}
+              <div className="mt-6 space-y-2">
                 {(argumentGrade !== null || skippedWriting) && (
                   <Button
                     onClick={() => setPhase("explain")}
@@ -298,6 +342,7 @@ export function StepLesson({
                     type="button"
                     onClick={() => {
                       setSkippedWriting(true);
+                      recordLesson();
                       setPhase("explain");
                     }}
                     className="min-h-11 w-full rounded-sm text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
@@ -322,22 +367,23 @@ export function StepLesson({
                 lessonTitle={meta.title}
                 lessonText={lessonText}
                 earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
-                companion={companion}
                 signedIn={!!userId}
+                returnTo={`/course/${CURRICULUM_SLUG}/lesson/${lessonNumber}?part=explain`}
                 onDone={(close: PracticeClose | null) => {
                   if (close) recordPractice(close.verdict, close.connectionMade);
                   finishLesson();
                 }}
               />
-              <Button
-                onClick={finishLesson}
-                disabled={completing}
-                className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
-              >
-                {lessonNumber < (course.lessons.length || TOTAL_LESSONS)
-                  ? "Finish the lesson"
-                  : "Finish the course"}
-              </Button>
+              {/* Signed out, the card's own "Finish the lesson" is the one way on. */}
+              {userId && (
+                <Button
+                  onClick={finishLesson}
+                  disabled={completing}
+                  className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
+                >
+                  {lastStop ? "Finish the course" : "Finish the lesson"}
+                </Button>
+              )}
             </div>
           )}
         </div>
