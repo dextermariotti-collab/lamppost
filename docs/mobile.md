@@ -59,6 +59,26 @@ Run `npm run app:sync` again after every change to the code. The native projects
 Icons and the splash screen were generated from `assets/` with
 `npx @capacitor/assets@3.0.5 generate`; rerun it if the artwork changes.
 
+## Version numbers for a release
+
+Both stores refuse a build number they have already seen. Set the version for both apps at once:
+
+```sh
+npm run release:bump -- 1.0.1 --dry-run   # print what would change, write nothing
+npm run release:bump -- 1.0.1             # write it
+```
+
+It sets the version people see (`versionName` in `android/app/build.gradle`, `MARKETING_VERSION`
+in every build configuration of `ios/App/App.xcodeproj/project.pbxproj`) and raises the build
+number (`versionCode`, `CURRENT_PROJECT_VERSION`) to one more than the larger of the current ones,
+so Android and iOS stay equal. It changes those lines only and prints each one. To upload another
+build of the same version, pass the current version again; a lower version is refused. It stops
+without writing anything if a file doesn't look as expected (a second `versionCode`, a version
+that isn't a plain number like `1.2.3`, an `Info.plist` that doesn't read `$(MARKETING_VERSION)`),
+so set that one by hand. Keep the `--` (without it npm takes `--dry-run` for itself; the script
+still treats that as a dry run). It doesn't tag anything: commit the two files, then tag that
+commit (`git tag v1.0.1`) and push the tag. Then run `npm run app:sync` and build the uploads.
+
 ## Before the first store submission
 
 - **Who holds the accounts.** Google requires the Play developer account holder to be 18 or over,
@@ -78,7 +98,8 @@ Icons and the splash screen were generated from `assets/` with
   - **iPad:** the project targets iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"` in
     `project.pbxproj`), so Apple asks for iPad screenshots and reviews the app on an iPad. **Open
     decision:** keep iPad (and check the phone frame there) or ship iPhone-only (`"1"`).
-  - **Listing:** a support URL, screenshots, and a demo account for the reviewer.
+  - **Listing:** a support URL (`https://YOUR-DOMAIN/support`), screenshots, and a demo account
+    for the reviewer.
 - **Rules Apple checks:**
   - Covered: Sign in with Apple, and in-app account deletion (Settings → Your data).
   - **To do:** deleting an account doesn't yet revoke the person's Sign in with Apple tokens.
@@ -90,15 +111,18 @@ Icons and the splash screen were generated from `assets/` with
   - The Data safety form (same answers as the App Store), the content rating questionnaire, the
     target audience (13 and over), and Play App Signing. `android/variables.gradle` targets API 36.
   - **Account deletion link.** Play requires a public web page where people can ask for their account
-    and data to be deleted without the app. It can be a page on the website that explains the steps
-    (sign in on the website → Settings → Your data → Delete my account) and gives the contact email.
+    and data to be deleted without the app. It is `https://YOUR-DOMAIN/delete-account`
+    (`src/routes/delete-account.tsx`, linked from Help and support): the steps (Profile → Settings →
+    Your data → Delete my account, in the app or on the website), what deleting removes and what is
+    kept, and the contact email for anyone who can't sign in. Put that URL in the Data safety form.
+    Fill in `CONTACT_EMAIL` in `src/lib/legal-config.ts` first: until then the page shows the
+    placeholder instead of an address.
   - **Closed test first.** A new personal developer account can't publish to production until a
     closed test has run with at least 12 testers who stay opted in for 14 days in a row. Start it
     early.
-- **Version numbers.** Every upload needs a higher build number. Bump them together:
-  `versionCode` and `versionName` in `android/app/build.gradle`, and `CURRENT_PROJECT_VERSION` and
-  `MARKETING_VERSION` (in both the Debug and Release settings of the App target) in
-  `ios/App/App.xcodeproj/project.pbxproj`.
+- **Version numbers.** Every upload needs a higher build number: run
+  `npm run release:bump -- <version>` before each one (see
+  [Version numbers for a release](#version-numbers-for-a-release)).
 - **AI provider terms (open decision for the owner).** Google's Gemini API terms appear to require
   users to be 18 or over and to bar apps directed at, or likely to be used by, people under 18.
   Lamppost accounts start at 13. Check the current terms, and if they still say this, choose a

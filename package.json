@@ -13,6 +13,7 @@
     "app:sync": "node scripts/build-app.mjs && cap sync",
     "app:ios": "cap open ios",
     "app:android": "cap open android",
+    "release:bump": "node scripts/release-bump.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

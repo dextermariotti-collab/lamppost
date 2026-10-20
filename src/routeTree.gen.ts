@@ -17,6 +17,7 @@ import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DebatesRouteImport } from './routes/debates'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as FinalCheckRouteImport } from './routes/final-check'
 import { Route as LeagueRouteImport } from './routes/league'
 import { Route as LookRouteImport } from './routes/look'
@@ -87,6 +88,11 @@ const CoursesRoute = CoursesRouteImport.update({
 const DebatesRoute = DebatesRouteImport.update({
   id: '/debates',
   path: '/debates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FinalCheckRoute = FinalCheckRouteImport.update({
@@ -254,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
   '/look': typeof LookRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
   '/look': typeof LookRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/consent': typeof ConsentRoute
   '/courses': typeof CoursesRoute
   '/debates': typeof DebatesRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/final-check': typeof FinalCheckRoute
   '/league': typeof LeagueRoute
   '/look': typeof LookRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/consent'
     | '/courses'
     | '/debates'
+    | '/delete-account'
     | '/final-check'
     | '/league'
     | '/look'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/consent'
     | '/courses'
     | '/debates'
+    | '/delete-account'
     | '/final-check'
     | '/league'
     | '/look'
@@ -462,6 +473,7 @@ export interface FileRouteTypes {
     | '/consent'
     | '/courses'
     | '/debates'
+    | '/delete-account'
     | '/final-check'
     | '/league'
     | '/look'
@@ -504,6 +516,7 @@ export interface RootRouteChildren {
   ConsentRoute: typeof ConsentRoute
   CoursesRoute: typeof CoursesRoute
   DebatesRoute: typeof DebatesRoute
+  DeleteAccountRoute: typeof DeleteAccountRoute
   FinalCheckRoute: typeof FinalCheckRoute
   LeagueRoute: typeof LeagueRoute
   LookRoute: typeof LookRoute
@@ -593,6 +606,13 @@ declare module '@tanstack/react-router' {
       path: '/debates'
       fullPath: '/debates'
       preLoaderRoute: typeof DebatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/final-check': {
@@ -824,6 +844,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConsentRoute: ConsentRoute,
   CoursesRoute: CoursesRoute,
   DebatesRoute: DebatesRoute,
+  DeleteAccountRoute: DeleteAccountRoute,
   FinalCheckRoute: FinalCheckRoute,
   LeagueRoute: LeagueRoute,
   LookRoute: LookRoute,

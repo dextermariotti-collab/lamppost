@@ -60,7 +60,11 @@ function Support() {
           <ul className="mt-2 space-y-2 text-sm leading-relaxed font-semibold text-foreground/80">
             <li>
               <span className="font-extrabold">Download or delete your data:</span> Settings, under
-              Your data. Deleting an account is permanent and takes effect at once.
+              Your data. Deleting an account is permanent and takes effect at once. See{" "}
+              <Link to="/delete-account" className="underline underline-offset-2">
+                how to delete your account
+              </Link>
+              , including if you can&apos;t sign in.
             </li>
             <li>
               <span className="font-extrabold">Report a person, or block them:</span> open their
