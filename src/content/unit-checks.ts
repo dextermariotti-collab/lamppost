@@ -16,20 +16,20 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What is this post trying to get you to accept?",
         stimulus:
-          "Our street needs a speed bump. Two cats were hit this year, children walk to school along here, and drivers use it as a shortcut to avoid the traffic light on Mill Road.",
+          "Our band room needs a new piano. Three keys on the old one stick, the tuner says it won't hold its tuning anymore, and the spring concert is in May.",
         options: [
           {
-            text: "Drivers use the street as a shortcut.",
+            text: "The spring concert is in May.",
             whyNot: "That's one of the reasons given. It's there to support the main point.",
           },
-          { text: "The street needs a speed bump." },
+          { text: "The band room needs a new piano." },
           {
-            text: "Two cats were hit on the street this year.",
+            text: "Three keys on the old piano stick.",
             whyNot: "That's evidence offered for the main point, not the point itself.",
           },
         ],
         correct: 1,
-        why: "Everything else in the post is there to support the speed bump. That's the claim.",
+        why: "Everything else in the post is there to support the new piano. That's the claim.",
       },
       {
         id: "claims-b2",
@@ -396,7 +396,7 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which thinking trap is Mo falling into?",
         stimulus:
-          "Mo paid $400 for an evening course he now finds useless. \"I can't quit now, I've already spent so much,\" he says, and books the next term too.",
+          'Mo has spent $40 on upgrades in a phone game he now finds boring. "All that would be wasted if I quit," he says, and buys the $10 season pass too.',
         options: [
           {
             text: "Trusting a friend's opinion too much.",
@@ -404,12 +404,12 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
           },
           { text: "Letting money already spent decide what he does next." },
           {
-            text: "Assuming the course is popular with others.",
+            text: "Assuming the game is popular with others.",
             whyNot: "Popularity doesn't come into Mo's reasoning.",
           },
         ],
         correct: 1,
-        why: "The $400 is gone whatever he does. Only future costs and benefits should decide. That's the sunk cost trap.",
+        why: "The $40 is gone whatever he does. Only future costs and benefits should decide. That's the sunk cost trap.",
       },
       {
         id: "biases-b2",
@@ -436,14 +436,14 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Why might Sam's judgment be off?",
         stimulus:
-          "After seeing three news stories about shark attacks, Sam decides swimming in the ocean is more dangerous than driving to the beach.",
+          "After seeing three news stories about roller coaster accidents, Sam decides a day at the theme park is more dangerous than the drive there.",
         options: [
           {
-            text: "Sam is not a strong enough swimmer.",
-            whyNot: "Sam's swimming isn't the issue. How Sam judges risk is.",
+            text: "Sam is too nervous to enjoy big rides.",
+            whyNot: "Sam's nerves aren't the issue. How Sam judges risk is.",
           },
           {
-            text: "News stories about sharks are always false.",
+            text: "News stories about ride accidents are always false.",
             whyNot: "The stories can be true and still make a rare danger feel common.",
           },
           { text: "Vivid stories feel more common than they really are." },
@@ -478,20 +478,20 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What should you take from the contractor's track record?",
         stimulus:
-          'Asked how long a kitchen job will take, a contractor says, "Three weeks, definitely." His last five jobs each took about twice as long as he said.',
+          'Asked how long a kitchen job will take, a contractor says, "Three weeks, definitely." Each of his last five kitchens took about twice as long as he said.',
         options: [
           {
             text: "He sounds sure, so three weeks is right.",
             whyNot: "Sounding sure isn't evidence. His record says otherwise.",
           },
           {
-            text: "Kitchen jobs always take exactly three weeks.",
+            text: "A kitchen always takes exactly three weeks.",
             whyNot: "Nothing supports that, and his own record contradicts it.",
           },
           { text: "His estimates run too confident, so plan for longer." },
         ],
         correct: 2,
-        why: "A record of jobs taking twice as long is better evidence than how certain he sounds.",
+        why: "Five kitchens taking twice as long is better evidence than how certain he sounds.",
       },
       {
         id: "biases-a3",
@@ -543,41 +543,41 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which argument gives better support?",
         stimulus:
-          'For a four-day week trial. A: "Everyone I\'ve asked would love a four-day week." B: "In a trial at 30 local firms, output held steady and sick days fell by a third."',
+          'Two students argue for water refill stations at school, to cut plastic waste. A: "Everyone I\'ve asked would love them." B: "At 15 schools that added them, sales of bottled water fell by half within a year."',
         options: [
           {
-            text: "A, because it shows what workers want.",
+            text: "A, because it shows what students want.",
             whyNot:
               "Wanting something doesn't show it works, and \"everyone I've asked\" is a small, chosen group.",
           },
-          { text: "B, because it reports measured results from many firms." },
+          { text: "B, because it reports measured results from many schools." },
           {
             text: "Neither, because this is purely a matter of taste.",
-            whyNot: "Output and sick days can be measured, so evidence can help here.",
+            whyNot: "Bottle sales can be measured, so evidence can help here.",
           },
         ],
         correct: 1,
-        why: "Measured results from 30 firms are evidence about the outcome. A's reason is only a preference.",
+        why: "Measured results from 15 schools are evidence about the outcome. A's reason is only a preference.",
       },
       {
         id: "arguments-b3",
         kind: "choice",
         prompt: "Which version of the claim fits the evidence best?",
         stimulus:
-          'Claim: "Homework improves test scores." Evidence: a study of 2,000 high school students found a small improvement for up to an hour a night, and none beyond that.',
+          'Claim: "Sports drinks improve performance." Evidence: a study of 800 runners found a small gain in races over 90 minutes, and none in shorter races.',
         options: [
-          { text: "Up to an hour a night is linked to a small gain." },
+          { text: "Sports drinks are linked to a small gain in long races." },
           {
-            text: "More homework always means better test scores.",
-            whyNot: 'The study found no gain beyond an hour, so "always" goes too far.',
+            text: "Sports drinks always make runners faster.",
+            whyNot: 'The study found no gain in shorter races, so "always" goes too far.',
           },
           {
-            text: "Homework makes no difference to test scores.",
-            whyNot: "The study did find a small gain, up to an hour.",
+            text: "Sports drinks make no difference to performance.",
+            whyNot: "The study did find a small gain, in races over 90 minutes.",
           },
         ],
         correct: 0,
-        why: "A claim should be as strong as the evidence and no stronger: a small gain, up to a limit.",
+        why: "A claim should be as strong as the evidence and no stronger: a small gain, and only in long races.",
       },
     ],
     after: [
@@ -585,17 +585,18 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "arguments-a1",
         kind: "choice",
         prompt: "Which is the strongest, fairest version of their view to answer?",
-        stimulus: "Some residents oppose a new bus lane on Main Street.",
+        stimulus:
+          "Some neighbors oppose turning the empty lot on their block into a basketball court.",
         options: [
           {
             text: "They just don't like anything new.",
             whyNot: "That dismisses them rather than stating a reason worth answering.",
           },
           {
-            text: "They don't care about traffic or pollution.",
+            text: "They don't care about kids having places to play.",
             whyNot: "That's an assumption about their motives, not their argument.",
           },
-          { text: "Losing a car lane could slow deliveries to shops." },
+          { text: "Late-night games could keep families nearby awake." },
         ],
         correct: 2,
         why: "Answering the best version of a view (steelmanning) is fairer, and it's the version that actually matters.",
@@ -604,20 +605,21 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         id: "arguments-a2",
         kind: "choice",
         prompt: "Which counterargument would the author most need to answer?",
-        stimulus: "Our school should ban phones in class, because they distract students.",
+        stimulus:
+          "Our school should stop selling soda, because sugary drinks harm students' teeth.",
         options: [
-          { text: "Some students use phones in class for translation." },
+          { text: "Students may just buy soda at the store nearby." },
           {
-            text: "Phones come in many colors and sizes.",
-            whyNot: "That has nothing to do with whether they distract.",
+            text: "Soda comes in many flavors and sizes.",
+            whyNot: "That has nothing to do with whether it harms teeth.",
           },
           {
-            text: "Many students also enjoy listening to music.",
-            whyNot: "That isn't a reason against the ban.",
+            text: "Many students also enjoy the cafeteria's tacos.",
+            whyNot: "That isn't a reason against the change.",
           },
         ],
         correct: 0,
-        why: "A real use in class is a serious objection: a total ban would take away help some students need.",
+        why: "If students can buy soda nearby, ending sales may not protect anyone's teeth. That's a serious objection to answer.",
       },
       {
         id: "arguments-a3",
@@ -668,21 +670,22 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "probability-b2",
         kind: "choice",
-        prompt: "On average, what is one ticket worth?",
-        stimulus: "A raffle ticket costs $5. There are 1,000 tickets and one prize of $2,000.",
+        prompt: "On average, what is one pack worth?",
+        stimulus:
+          "A comic shop sells mystery packs for $5. One pack in 100 holds a rare card worth $300; the rest hold common cards worth almost nothing.",
         options: [
-          { text: "$2" },
+          { text: "$3" },
           {
             text: "$5",
             whyNot: "That's what it costs, not what it's worth on average.",
           },
           {
-            text: "$2,000",
-            whyNot: "That's the prize, but only one ticket in 1,000 wins it.",
+            text: "$300",
+            whyNot: "That's the rare card, but only one pack in 100 holds it.",
           },
         ],
         correct: 0,
-        why: "$2,000 shared across 1,000 tickets is $2 each, so a $5 ticket loses $3 on average.",
+        why: "$300 spread across 100 packs is $3 each, so a $5 pack loses about $2 on average.",
       },
       {
         id: "probability-b3",
@@ -710,18 +713,18 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "probability-a1",
         kind: "choice",
-        prompt: "A bag has just been flagged. What is most likely?",
+        prompt: "A bill has just been flagged. What is most likely?",
         stimulus:
-          "A stadium's bag scanner flags about 1 bag in 100. Something truly dangerous turns up in about 1 bag in 100,000.",
+          "At the store where Jae works, a counterfeit-detecting pen flags about 1 bill in 200 as fake. A truly fake bill turns up about once in 20,000.",
         options: [
-          { text: "It is most likely harmless; flags far outnumber finds." },
+          { text: "It is most likely real: flags far outnumber fakes." },
           {
-            text: "It almost certainly holds something dangerous.",
-            whyNot: "Flags are a thousand times more common than real finds.",
+            text: "It is almost certainly a fake, since the pen flagged it.",
+            whyNot: "Flags are a hundred times more common than real fakes.",
           },
           {
-            text: "The scanner must be faulty.",
-            whyNot: "A scanner that flags a lot can still be working as designed.",
+            text: "The pen must be faulty to flag so many bills.",
+            whyNot: "A pen that flags a lot can still be working as designed.",
           },
         ],
         correct: 0,
@@ -732,39 +735,40 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "Which pays more on average, if you could choose many times?",
         stimulus:
-          "Option A: a guaranteed $50. Option B: a coin flip that pays $120 on heads and nothing on tails.",
+          "At an arcade's prize counter, 100 tickets buy a $5 snack card, or one spin of a wheel that wins a $24 snack card one time in four and nothing otherwise.",
         options: [
           {
-            text: "A, because it is guaranteed.",
-            whyNot: "Guaranteed is safer, but on average B pays more.",
+            text: "The snack card, because it is guaranteed.",
+            whyNot: "Guaranteed is safer, but on average the spin pays more.",
           },
           {
             text: "They pay the same on average.",
-            whyNot: "Half of $120 is $60, which is more than $50.",
+            whyNot: "A quarter of $24 is $6, which is more than $5.",
           },
-          { text: "B, because it averages $60 a try." },
+          { text: "The spin, because it averages $6 a try." },
         ],
         correct: 2,
-        why: "Expected value is the payoff times its chance: $120 × 0.5 = $60, against a sure $50.",
+        why: "Expected value is the payoff times its chance: $24 × 1/4 = $6, against a sure $5.",
       },
       {
         id: "probability-a3",
         kind: "choice",
-        prompt: "Which ripple effect should the town plan for?",
-        stimulus: "To bring more shoppers downtown, a town makes all its parking lots free.",
+        prompt: "Which ripple effect should the app plan for?",
+        stimulus:
+          "To win new users, a music-streaming app gives a free month for every friend a user signs up.",
         options: [
           {
-            text: "Shops will sell more umbrellas on rainy days.",
-            whyNot: "Nothing links free parking to umbrella sales.",
+            text: "People will listen to more music on rainy days.",
+            whyNot: "Nothing links the free months to the weather.",
           },
-          { text: "Commuters may take the free spaces all day long." },
+          { text: "Some users may sign up fake friends for free months." },
           {
-            text: "The parking lots will need repainting more often.",
-            whyNot: "That isn't caused by the change in price.",
+            text: "The app's logo will need a fresh design.",
+            whyNot: "That isn't caused by the reward for sign-ups.",
           },
         ],
         correct: 1,
-        why: "Making something free changes who uses it. Second-order effects can undo the first one.",
+        why: "Rewarding something changes what people do to get it. Second-order effects can undo the first one.",
       },
     ],
   },
@@ -796,40 +800,40 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
         kind: "choice",
         prompt: "What is misleading about this chart?",
         stimulus:
-          "A bar chart shows Brand X's battery lasting 10.2 hours and Brand Y's 10.0 hours. The axis starts at 9.9, so X's bar looks three times taller.",
+          "A pizza chain's ad has a bar chart of average delivery times: 29 minutes for the chain and 31 for its rival. The chart's scale begins at 28 minutes.",
         options: [
-          { text: "The cut-off axis makes a tiny gap look huge." },
+          { text: "The cut-off axis makes a small gap look huge." },
           {
-            text: "Battery life can't be measured in hours.",
-            whyNot: "Hours are the usual measure. The axis is the trick.",
+            text: "Delivery can't be measured in minutes.",
+            whyNot: "Minutes are the usual measure. The axis is the trick.",
           },
           {
-            text: "Brand X should be shown in a brighter color.",
+            text: "The chain's bar should be a brighter color.",
             whyNot: "Color isn't the issue. The scale is.",
           },
         ],
         correct: 0,
-        why: "The real difference is 2%. Starting the axis at 9.9 hides that.",
+        why: "The real gap is 2 minutes. Starting the axis at 28 makes the rival's bar look three times as tall.",
       },
       {
         id: "media-b3",
         kind: "choice",
         prompt: "What's the quickest good check?",
         stimulus:
-          'You find a polished website, "Institute for Healthy Families," arguing against a new food label. You\'ve never heard of the organization.',
+          'A video in your feed from the "Pet Nutrition Board," with a vet in a white coat, says grain-free dog food is the healthiest choice. You\'ve never heard of the board.',
         options: [
           {
-            text: "Read the whole site carefully to judge its tone.",
-            whyNot: "A site can sound careful and still be one-sided. Look outside it first.",
+            text: "Watch it again to judge how sure the vet sounds.",
+            whyNot: "Sounding sure isn't evidence. The video can only tell its own story.",
           },
-          { text: "Search its name elsewhere to see who runs and funds it." },
+          { text: "Search the board's name to see who runs and funds it." },
           {
-            text: "Check whether the site has a contact form.",
-            whyNot: "Almost any site has one. It tells you nothing about who is behind it.",
+            text: "Check how many people have liked the video.",
+            whyNot: "Likes show how far it spread, not who is behind it.",
           },
         ],
         correct: 1,
-        why: "Leaving the site to see what others say about it (lateral reading) is faster and more reliable.",
+        why: "Leaving the video to see what others say about the board (lateral reading) is faster and more reliable.",
       },
     ],
     after: [
@@ -856,22 +860,22 @@ export const UNIT_CHECKS: Record<string, UnitCheck> = {
       {
         id: "media-a2",
         kind: "choice",
-        prompt: "What is this page trying to do?",
+        prompt: "What is this pop-up trying to do?",
         stimulus:
-          'An online store shows: "Only 2 left! 14 people are looking at this now. Offer ends in 09:59." The timer starts again every time you reload the page.',
+          'On a recipe site, a pop-up flashes red: "WARNING: Your phone has 3 viruses! Tap now to clean it." A friend sees the same pop-up, word for word, on a brand-new phone.',
         options: [
-          { text: "Rush you into buying with pressure that isn't real." },
+          { text: "Scare you into tapping with a threat that isn't real." },
           {
-            text: "Give you useful, honest stock information.",
-            whyNot: "A timer that resets isn't honest information.",
+            text: "Give you a useful, honest security warning.",
+            whyNot: "The same warning on a brand-new phone shows it isn't checking yours.",
           },
           {
-            text: "Show how popular the store is locally.",
-            whyNot: "Nothing here is about the local area. It's about urgency.",
+            text: "Show how popular the recipe site is.",
+            whyNot: "Nothing here is about the site's readers. It's about fear.",
           },
         ],
         correct: 0,
-        why: 'A fake countdown and "only 2 left" are pressure tactics to stop you thinking it over.',
+        why: "A scary warning that shows up for everyone is fear used as pressure, to make you tap before you think it over.",
       },
       {
         id: "media-a3",
