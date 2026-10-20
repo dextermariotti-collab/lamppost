@@ -123,11 +123,11 @@ const evidence: Record<string, LessonScript> = {
         question: "The claim: “Reading before bed improves sleep.” Which evidence is strongest?",
         options: [
           {
-            text: "A survey of 5,000 people found that readers say they sleep better.",
+            text: "A survey of 5,000 people found that those who read say they sleep better.",
             whyNot: "It shows a link in what people report, but readers may differ in other ways.",
           },
           {
-            text: "A sleep specialist says reading before bed is a good habit.",
+            text: "A sleep specialist with 20 years of practice says reading before bed helps.",
             whyNot: "An expert's view counts for something, but it's weaker than measured results.",
           },
           {
@@ -161,14 +161,14 @@ const evidence: Record<string, LessonScript> = {
           "A school wants to know whether a reading program works. Which evidence would be strongest?",
         options: [
           {
-            text: "Test scores for students randomly given the program, compared with those not given it.",
+            text: "Test scores of students randomly given the program versus those not given it.",
           },
           {
-            text: "A warm letter from a parent whose child loved the program.",
+            text: "A warm letter from a parent saying her child loved the program and reads more now.",
             whyNot: "One family's experience, with nothing to compare it to.",
           },
           {
-            text: "Teachers say at the staff meeting that the program feels effective.",
+            text: "Teachers saying at a staff meeting that the program feels like it's working.",
             whyNot: "Impressions from people who like the program, without measured results.",
           },
         ],
@@ -182,25 +182,25 @@ const evidence: Record<string, LessonScript> = {
         kind: "choice",
         prompt: "A hospital has three kinds of evidence. Which should it weigh most, and why?",
         stimulus:
-          "A hospital wants to know whether a new hand-washing reminder cuts infections. It has nurses' opinions of the reminder; infection rates before and after on one ward that chose to use it; and a study in which 20 wards were randomly picked to use it or not.",
+          "A hospital wants to know whether a new hand-washing reminder cuts infections. It has nurses' opinions of the reminder; infection rates before and after in one unit that chose to use it; and a study in which 20 units were randomly picked to use it or not.",
         options: [
           {
-            text: "The study of 20 wards, because chance decided which wards used the reminder.",
+            text: "The study of 20 units, because chance decided which units used the reminder.",
           },
           {
-            text: "The ward that chose it, because it measured real infections over time.",
+            text: "The unit that chose it, because it measured real infections over time.",
             whyNot:
-              "Real measurements help, but that ward chose the reminder. Motivated staff or a quieter season could explain the change.",
+              "Real measurements help, but that unit chose the reminder. Motivated staff or a quieter season could explain the change.",
           },
           {
             text: "The nurses' opinions, because they see infections every single day.",
             whyNot:
-              "Experience matters, but impressions can't separate the reminder from everything else that changes on a ward.",
+              "Experience matters, but impressions can't separate the reminder from everything else that changes in a unit.",
           },
         ],
         correct: 0,
-        hint: "Which source can separate the reminder from everything else going on in the wards?",
-        why: "Random assignment makes the wards alike apart from the reminder, so a difference in infections points at it. Before-and-after on one ward that volunteered can't rule out the rivals.",
+        hint: "Which source can separate the reminder from everything else going on in the units?",
+        why: "Random assignment makes the units alike apart from the reminder, so a difference in infections points at it. Before-and-after in one unit that volunteered can't rule out the rivals.",
       },
     ],
   },
@@ -305,10 +305,10 @@ const evidence: Record<string, LessonScript> = {
           "Priya says: “I know three people who won the raffle, so winning must be easy.” How should you read that?",
         options: [
           {
-            text: "Fine evidence: three winners is a lot of winners.",
+            text: "Fine evidence: three winners she knows is a lot of winners.",
             whyNot: "Three winners means little without knowing how many people entered.",
           },
-          { text: "It tells you little without knowing how many entered and how many won." },
+          { text: "It tells you little until you know how many people entered." },
           {
             text: "Proof that the raffle is rigged in favor of her friends.",
             whyNot: "That jumps to a cause with no evidence for it. The numbers just aren't there.",
@@ -326,11 +326,11 @@ const evidence: Record<string, LessonScript> = {
         conclusion: "So most customers love the blender.",
         options: [
           {
-            text: "Blenders are useful in most kitchens.",
+            text: "Blenders are useful appliances in most home kitchens.",
             whyNot: "True, but it doesn't connect the quoted customers to all customers.",
           },
           {
-            text: "The website is well designed and easy to read.",
+            text: "The website is well designed and easy to read on a phone.",
             whyNot: "Good design doesn't tell you how the quotes were chosen.",
           },
           { text: "The quoted customers are typical of all the customers." },
@@ -475,7 +475,7 @@ const evidence: Record<string, LessonScript> = {
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "Dr. Alder, a well-known cardiologist, is paid by Lumen Sweets to say sugar is harmless. How should you treat her statement?",
+          "Dr. Alder, a well-known cardiologist, is paid by Lumen Candy to say sugar is harmless. How should you treat her statement?",
         options: [
           {
             text: "Accept it: she's an expert, so what she says is true.",

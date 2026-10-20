@@ -132,7 +132,7 @@ const fallacies: Record<string, LessonScript> = {
           "“That claim is nonsense, and here is the survey that contradicts it.” Is this an ad hominem?",
         options: [
           {
-            text: "Yes: calling a claim nonsense is an attack.",
+            text: "Yes: calling someone's claim nonsense is a personal attack.",
             whyNot:
               "Harsh wording isn't a fallacy. It is aimed at the claim, and a reason follows.",
           },
@@ -141,7 +141,7 @@ const fallacies: Record<string, LessonScript> = {
             whyNot:
               "Not praising the speaker isn't a fallacy either. The reply still answers the claim.",
           },
-          { text: "No: it is blunt, but it goes at the claim and offers evidence." },
+          { text: "No: it's blunt, but it targets the claim and gives evidence." },
         ],
         correct: 2,
         hint: "Is the target the person or the claim?",
@@ -158,9 +158,9 @@ const fallacies: Record<string, LessonScript> = {
             text: "Lena disagrees with Tomas about most things, most of the time.",
             whyNot: "General disagreement doesn't decide whether this reply answers this claim.",
           },
-          { text: "A reply only answers a claim if it responds to the claim actually made." },
+          { text: "A reply answers a claim only if it deals with the claim actually made." },
           {
-            text: "Tomas is more experienced than Lena at debating in public.",
+            text: "Tomas has more experience than Lena at debating in front of a crowd.",
             whyNot: "Experience has no bearing on whether her reply addressed his claim.",
           },
         ],
@@ -795,15 +795,15 @@ const fallacies: Record<string, LessonScript> = {
         stimulus: "“The captain is the best leader because she leads the team better than anyone.”",
         options: [
           {
-            text: "The captain is the best leader because she is the finest leader on the team.",
+            text: "The captain is the best leader because she is the finest leader the team has ever had.",
             whyNot: "Still the same claim twice, with “finest” swapped for “best.”",
           },
           {
-            text: "The captain is the best leader because nobody leads the team better than she does.",
+            text: "The captain is the best leader because nobody on the team leads it better than she does.",
             whyNot: "Different words, same meaning. Nothing new has been offered.",
           },
           {
-            text: "The captain is the best leader: the team won 11 of 12 games under her, and players say she listens.",
+            text: "The captain is the best leader: the team won 11 of 12 under her, and players say she listens.",
           },
         ],
         correct: 2,

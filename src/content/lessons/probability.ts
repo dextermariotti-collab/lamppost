@@ -580,7 +580,7 @@ const probability: Record<string, LessonScript> = {
           "A decision was made with careful reasoning and the outcome was bad. What is the most likely explanation?",
         options: [
           {
-            text: "The decision was poor, or it wouldn't have gone badly.",
+            text: "The decision must have been poor, or it wouldn't have gone badly.",
             whyNot: "Good decisions still lose sometimes, because chance is part of every outcome.",
           },
           {
@@ -964,7 +964,7 @@ const probability: Record<string, LessonScript> = {
           },
         ],
         hint: "Is it the price itself, or what people do because of it?",
-        why: "Direct effects come from the change itself. Ripple effects come from people adjusting, and they're often larger.",
+        why: "Direct effects come from the change itself. Ripple effects come from people adjusting, and they can be bigger than the change, cancel it out or even reverse it.",
       },
       {
         id: "square",

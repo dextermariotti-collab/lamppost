@@ -181,45 +181,63 @@ describe("the charts tell the story they claim to", () => {
   });
 });
 
+/** A right answer longer than this times the longest wrong one can be guessed by its length. */
+const MAX_LENGTH_RATIO = 1.15;
+
+/**
+ * Steps (`lessonId/stepId`) whose right answer is still over `MAX_LENGTH_RATIO`, pending a
+ * content fix in their lesson file. Take a step off once its options are rebalanced; the guard
+ * below fails if a listed step no longer needs to be here.
+ */
+const PENDING_LENGTH_FIX = new Set(["biases-overconfidence/prime"]);
+
 describe("answers aren't predictable", () => {
   const choiceLike = () =>
-    [...loaded.values()].flatMap((script) =>
-      script.steps.flatMap((s) =>
-        s.kind === "choice" || s.kind === "gap" || s.kind === "confidence" || s.kind === "cause"
-          ? [s]
+    [...loaded.entries()].flatMap(([lessonId, script]) =>
+      script.steps.flatMap((step) =>
+        step.kind === "choice" ||
+        step.kind === "gap" ||
+        step.kind === "confidence" ||
+        step.kind === "cause"
+          ? [{ key: `${lessonId}/${step.id}`, step }]
           : [],
       ),
     );
+
+  const lengths = (step: { options: { text: string }[]; correct: number }) => {
+    const right = step.options[step.correct]!.text.length;
+    const wrong = step.options.filter((_, i) => i !== step.correct).map((o) => o.text.length);
+    return { right, wrong, ratio: right / Math.max(...wrong) };
+  };
 
   it("spreads the right answer across positions instead of always putting it in one place", () => {
     const steps = choiceLike();
     if (steps.length < 12) return;
     const counts = new Map<number, number>();
-    for (const s of steps) counts.set(s.correct, (counts.get(s.correct) ?? 0) + 1);
+    for (const { step } of steps) counts.set(step.correct, (counts.get(step.correct) ?? 0) + 1);
     for (const [position, n] of counts) {
       expect(n / steps.length, `share of answers in position ${position}`).toBeLessThan(0.5);
     }
     expect(counts.size).toBeGreaterThanOrEqual(3);
   });
 
-  it("never makes the right answer far longer than the wrong ones", () => {
-    const tooLong: string[] = [];
-    for (const s of choiceLike().filter((x) => x.options.length >= 3)) {
-      const wrong = s.options.filter((_, i) => i !== s.correct).map((o) => o.text.length);
-      const right = s.options[s.correct]!.text.length;
-      if (right / Math.max(...wrong) > 1.6) tooLong.push(`${s.id}: ${right} vs ${wrong.join("/")}`);
-    }
-    expect(tooLong).toEqual([]);
+  it("never makes the right answer noticeably longer than every wrong one", () => {
+    const giveaway = choiceLike().flatMap(({ key, step }) => {
+      const { right, wrong, ratio } = lengths(step);
+      return ratio > MAX_LENGTH_RATIO && !PENDING_LENGTH_FIX.has(key)
+        ? [`${key}: ${right} vs ${wrong.join("/")} (${ratio.toFixed(2)}x)`]
+        : [];
+    });
+    expect(giveaway).toEqual([]);
   });
 
-  it("only rarely makes the right answer noticeably longer than every wrong one", () => {
-    const steps = choiceLike().filter((s) => s.options.length >= 3);
-    if (steps.length < 12) return;
-    const giveaway = steps.filter((s) => {
-      const wrong = s.options.filter((_, i) => i !== s.correct).map((o) => o.text.length);
-      return s.options[s.correct]!.text.length > 1.15 * Math.max(...wrong);
+  it("lists a step as pending a length fix only while it still needs one", () => {
+    const steps = new Map(choiceLike().map(({ key, step }) => [key, step]));
+    const stale = [...PENDING_LENGTH_FIX].filter((key) => {
+      const step = steps.get(key);
+      return !step || lengths(step).ratio <= MAX_LENGTH_RATIO;
     });
-    expect(giveaway.length / steps.length).toBeLessThan(0.25);
+    expect(stale).toEqual([]);
   });
 });
 

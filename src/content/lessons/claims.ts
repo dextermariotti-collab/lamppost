@@ -363,11 +363,11 @@ const claims: Record<string, LessonScript> = {
         conclusion: "So students will find cheating easier.",
         options: [
           {
-            text: "Exams are stressful for most students at Northfield.",
+            text: "Exams are stressful for most of the students at Northfield.",
             whyNot: "For many students, yes, but it doesn't link online exams to cheating.",
           },
           {
-            text: "Students own laptops that they can use at home.",
+            text: "Most students at Northfield own laptops they can use at home.",
             whyNot:
               "They need laptops to take online exams, but that alone doesn't make cheating easier.",
           },
@@ -604,12 +604,12 @@ const claims: Record<string, LessonScript> = {
         label: "Putting it together",
         kind: "choice",
         prompt:
-          "Two neighbors disagree about new floodlights. Where does their disagreement really lie?",
+          "Two neighbors disagree about new field lights. Where does their disagreement really lie?",
         stimulus:
-          "Jonah: “The new floodlights at Brook Park are a waste. They cost $40,000 and they're only used twice a week.” Ama: “Twice a week is 100 extra hours of soccer a year for kids who had nowhere to play in winter. That's money well spent.”",
+          "Jonah: “The new lights on the Brook Park soccer field are a waste. They cost $40,000 and they're only used twice a week.” Ama: “Twice a week is 100 extra hours of soccer a year for kids who had nowhere to play in winter. That's money well spent.”",
         options: [
           {
-            text: "In what the floodlights cost and how often they're used.",
+            text: "In what the field lights cost and how often they're used.",
             whyNot:
               "They agree on those facts: $40,000, used about twice a week. Neither disputes the numbers.",
           },
@@ -883,7 +883,7 @@ const claims: Record<string, LessonScript> = {
         items: [
           {
             id: "1",
-            text: "Lumen Tea contains 40 mg of caffeine per cup.",
+            text: "A cup of Lumen Tea has half the caffeine of a cup of coffee.",
             bucket: "testable",
             why: "A lab could measure it, and the answer could be different.",
           },
@@ -984,7 +984,7 @@ const claims: Record<string, LessonScript> = {
         noun: "Sign",
         prompt: "Two cafe signs. Which claim could a customer actually check?",
         a: "Our coffee is linked to a great morning.",
-        b: "Every cup is made with 18 grams of freshly ground beans.",
+        b: "Every cup is made with three tablespoons of freshly ground beans.",
         stronger: "b",
         factor: "You can check it",
         weakerWhy:
