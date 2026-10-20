@@ -161,7 +161,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "gap",
         prompt: "What does this argument quietly rely on?",
         reason: "Every student in Mia's class passed the practice test.",
-        conclusion: "So Mia's class will do well in the real exam.",
+        conclusion: "So Mia's class will do well on the real exam.",
         options: [
           {
             text: "All the students studied together in the library.",
@@ -227,7 +227,7 @@ const argumentsUnit: Record<string, LessonScript> = {
           },
           {
             id: "pp1",
-            text: "The Friday clean adds little, because the office is half empty on Fridays.",
+            text: "The Friday cleaning adds little, because the office is half empty on Fridays.",
             role: "premise",
           },
           {
@@ -281,7 +281,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         id: "relevance",
         kind: "sort",
         prompt:
-          "The claim: “Oakleaf School should run a walking bus,” with adults leading students to school on foot. Which reasons bear on it?",
+          "The claim: “Oakleaf School should run a walking school bus,” with adults leading students to school on foot. Which reasons bear on it?",
         buckets: [
           { id: "bears", label: "Bears on the claim" },
           { id: "not", label: "Doesn't bear on it" },
@@ -291,7 +291,7 @@ const argumentsUnit: Record<string, LessonScript> = {
             id: "1",
             text: "Twenty parents say they can't drive their children to school.",
             bucket: "bears",
-            why: "It shows a need that a walking bus would meet.",
+            why: "It shows a need that a walking school bus would meet.",
           },
           {
             id: "2",
@@ -318,7 +318,7 @@ const argumentsUnit: Record<string, LessonScript> = {
             why: "It gives a direct reason to favor walking.",
           },
         ],
-        hint: "Ask of each one: would it make a walking bus more or less worth running?",
+        hint: "Ask of each one: would it make a walking school bus more or less worth running?",
         why: "Relevance is the first test. A reason that has no link to the claim can't support it, however true it is.",
       },
       {
@@ -496,7 +496,7 @@ const argumentsUnit: Record<string, LessonScript> = {
         kind: "stronger",
         noun: "Restatement",
         prompt:
-          "Two people restate the view that the museum should charge entry. Which is the stronger, fairer restatement?",
+          "Two people restate the view that the museum should charge admission. Which is the stronger, fairer restatement?",
         a: "Some people think the museum should charge, which is understandable, though I hope they'd agree it would be nice to keep it free.",
         b: "The museum should charge because fees would pay for repairs and longer opening hours, and a free day each month keeps it open to everyone.",
         stronger: "b",

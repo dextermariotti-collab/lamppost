@@ -81,7 +81,7 @@ const evidence: Record<string, LessonNotes> = {
         "Take the story seriously as a fact: this child was bullied, and it matters.",
         "Ask what it can show. It proves bullying happens there. It can't show it happens more than at other schools.",
         "Check the data's denominator: every student who answered, compared with nearby schools. That speaks to how common the problem is.",
-        "A fair conclusion uses both: the school looks no worse than others, and this case still needs dealing with.",
+        "A fair conclusion uses both: the school looks no worse than others, and this case still needs attention.",
       ],
     },
     subtleties: [
@@ -104,7 +104,7 @@ const evidence: Record<string, LessonNotes> = {
     hook: "You can't check everything yourself, so most of what you know comes from sources. The skill is deciding quickly and fairly which ones deserve your trust.",
     idea: [
       "Four questions decide most cases. Does the source know this subject, through relevant training or direct access to what it describes? Who pays it, and does it gain if you believe it? What has it gotten right or wrong before? Does anyone independent agree?",
-      "No single answer settles it. A company's scientists may know the subject better than anyone and still have a stake in the result. A campaign group may be independent of sellers and still have a cause to promote. Weigh the four together, and treat a strong incentive as a reason to look for independent confirmation, not as proof the source is wrong.",
+      "No single answer settles it. A company's scientists may know the subject better than anyone and still have a stake in the result. An advocacy group may be independent of sellers and still have a cause to promote. Weigh the four together, and treat a strong incentive as a reason to look for independent confirmation, not as proof the source is wrong.",
     ],
     terms: [
       {

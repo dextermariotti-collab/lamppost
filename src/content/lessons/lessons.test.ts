@@ -184,13 +184,6 @@ describe("the charts tell the story they claim to", () => {
 /** A right answer longer than this times the longest wrong one can be guessed by its length. */
 const MAX_LENGTH_RATIO = 1.15;
 
-/**
- * Steps (`lessonId/stepId`) whose right answer is still over `MAX_LENGTH_RATIO`, pending a
- * content fix in their lesson file. Take a step off once its options are rebalanced; the guard
- * below fails if a listed step no longer needs to be here.
- */
-const PENDING_LENGTH_FIX = new Set(["biases-overconfidence/prime"]);
-
 describe("answers aren't predictable", () => {
   const choiceLike = () =>
     [...loaded.entries()].flatMap(([lessonId, script]) =>
@@ -224,20 +217,11 @@ describe("answers aren't predictable", () => {
   it("never makes the right answer noticeably longer than every wrong one", () => {
     const giveaway = choiceLike().flatMap(({ key, step }) => {
       const { right, wrong, ratio } = lengths(step);
-      return ratio > MAX_LENGTH_RATIO && !PENDING_LENGTH_FIX.has(key)
+      return ratio > MAX_LENGTH_RATIO
         ? [`${key}: ${right} vs ${wrong.join("/")} (${ratio.toFixed(2)}x)`]
         : [];
     });
     expect(giveaway).toEqual([]);
-  });
-
-  it("lists a step as pending a length fix only while it still needs one", () => {
-    const steps = new Map(choiceLike().map(({ key, step }) => [key, step]));
-    const stale = [...PENDING_LENGTH_FIX].filter((key) => {
-      const step = steps.get(key);
-      return !step || lengths(step).ratio <= MAX_LENGTH_RATIO;
-    });
-    expect(stale).toEqual([]);
   });
 });
 

@@ -66,7 +66,7 @@ const media: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A flyer from Elmstead Buses shows a bar chart headed “Punctuality soars!” The bars go from 91% of buses on time last year to 94% this year, and the vertical axis runs from 90% to 95%.",
+      case: "A flyer from Elmstead Transit shows a bar chart headed “On-time rate soars!” The bars go from 91% of buses on time last year to 94% this year, and the vertical axis runs from 90% to 95%.",
       moves: [
         "Read the axis: it starts at 90%, so a 3-point difference fills most of the chart.",
         "Read the numbers: 91% to 94% on time. Late buses fell from 9 in 100 to 6 in 100, a real improvement.",
@@ -81,7 +81,7 @@ const media: Record<string, LessonNotes> = {
       },
       {
         title: "Same numbers, different stories",
-        body: "“Late buses fell by a third” and “punctuality rose 3 points” are both true of the example. Choosing between them is a choice of emphasis. Look for both framings before deciding how big a change is.",
+        body: "“Late buses fell by a third” and “the on-time rate rose 3 points” are both true of the example. Choosing between them is a choice of emphasis. Look for both framings before deciding how big a change is.",
       },
     ],
     ask: "Where does the axis start, what's the window, and what are the units?",
@@ -100,7 +100,7 @@ const media: Record<string, LessonNotes> = {
       {
         term: "False urgency",
         meaning:
-          "A deadline with no real reason behind it, designed to stop you comparing or checking.",
+          "A deadline with no real reason behind it, designed to stop you from comparing or checking.",
       },
       {
         term: "Social proof",
@@ -123,7 +123,7 @@ const media: Record<string, LessonNotes> = {
     subtleties: [
       {
         title: "Honest persuasion uses feeling too",
-        body: "A flood relief fundraiser may show distressing pictures. If it also says what the money does and where its accounts are published, it's giving you something to check. Don't dismiss every emotional message as manipulation.",
+        body: "A flood relief fundraiser may show distressing pictures. If it also says what the money does and where its financial reports are published, it's giving you something to check. Don't dismiss every emotional message as manipulation.",
       },
       {
         title: "Pressure works best when you're tired",

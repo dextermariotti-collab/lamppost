@@ -83,7 +83,7 @@ const biases: Record<string, LessonNotes> = {
     ],
     ask: "Where did the first number come from, and what do I think without it?",
     tryIt:
-      "Before your next sizeable purchase, write down what you think it's worth and why, before you see the price. Then compare, and notice how far the listed number tugs at you.",
+      "Before your next sizable purchase, write down what you think it's worth and why, before you see the price. Then compare, and notice how far the listed number tugs at you.",
   },
 
   "biases-availability": {
@@ -125,7 +125,7 @@ const biases: Record<string, LessonNotes> = {
     ],
     ask: "Is this common, or just easy to remember?",
     tryIt:
-      "Next time a news story makes something feel dangerous, look up how many people it actually affects in a year. Compare it with one everyday risk, such as falls at home or road accidents.",
+      "Next time a news story makes something feel dangerous, look up how many people it actually affects in a year. Compare it with one everyday risk, such as falls at home or car crashes.",
   },
 
   "biases-sunk-cost": {
@@ -217,7 +217,7 @@ const biases: Record<string, LessonNotes> = {
     ],
     ask: "How often am I right when I feel this sure?",
     tryIt:
-      "This week, write down five predictions about things you'll soon find out, like a match, a delivery time or a meeting's outcome, each with a percentage. Check them at the end of the week.",
+      "This week, write down five predictions about things you'll soon find out, like a game, a delivery time or a meeting's outcome, each with a percentage. Check them at the end of the week.",
   },
 };
 

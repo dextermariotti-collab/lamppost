@@ -24,7 +24,7 @@ const argumentsNotes: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "A staff email at Cobalt Print: “The printer on floor two broke three times this month, and each repair cost $180. A new one costs $900 and comes with a three-year warranty. Our office manager has worked here since 2015. Since repairs are adding up fast, we should replace it rather than keep fixing it.”",
+      case: "A staff email at Cobalt Print: “The second-floor printer broke three times this month, and each repair cost $180. A new one costs $900 and comes with a three-year warranty. Our office manager has worked here since 2015. Since repairs are adding up fast, we should replace it rather than keep fixing it.”",
       moves: [
         "Conclusion: we should replace the printer rather than keep fixing it. “Should” marks it, and “since” marks the reason just before it.",
         "Premises: three breakdowns this month at $180 each, and a new printer costs $900 with a warranty.",

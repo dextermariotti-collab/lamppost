@@ -424,7 +424,7 @@ const biases: Record<string, LessonScript> = {
     written: {
       prompt: "Explain why the fear may not match the risk, and what numbers you'd want to see.",
       passage:
-        "After a widely reported news story about a boat capsizing at Marlow Lake, bookings at the lake's boat rental fell by half. That summer, the lake recorded one capsizing among 9,000 rentals. That same summer, an unreported tally showed 41 minor injuries from cycling on the lakeside path.",
+        "After a widely reported news story about a boat capsizing at Marlow Lake, reservations at the lake's boat rental fell by half. That summer, the lake recorded one capsizing among 9,000 rentals. That same summer, an unreported tally showed 41 minor injuries from cycling on the lakeside path.",
       guidance: "Compare how vivid each risk is with how often it happens.",
     },
     steps: [
@@ -676,7 +676,7 @@ const biases: Record<string, LessonScript> = {
             id: "2",
             text: "Another $3,000 needed to finish the project.",
             bucket: "ahead",
-            why: "They only pay it if they carry on.",
+            why: "They only pay it if they keep going.",
           },
           {
             id: "3",
@@ -843,7 +843,7 @@ const biases: Record<string, LessonScript> = {
             text: "Yes, it is prime.",
             whyNot: "It looks prime, but 17 × 23 = 391. It has factors, so it isn't.",
           },
-          { text: "No, it has factors other than 1 and itself." },
+          { text: "No, it isn't prime." },
         ],
         correct: 1,
         hint: "Try dividing by 17.",

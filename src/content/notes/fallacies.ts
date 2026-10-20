@@ -202,7 +202,7 @@ const fallacies: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "After her first week at a new office, Nadia says: “People in the finance team are unfriendly. Two of them didn't say hello in the elevator, and one ignored my email.”",
+      case: "After her first week at a new office, Nadia says: “People on the finance team are unfriendly. Two of them didn't say hello in the elevator, and one ignored my email.”",
       moves: [
         "Count the cases: three moments, three people, one week.",
         "Ask how they were chosen: only the moments that stood out. Friendly hellos are easy to forget.",

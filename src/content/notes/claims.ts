@@ -79,7 +79,7 @@ const claims: Record<string, LessonNotes> = {
       moves: [
         "Find the gap: members say they're fitter, therefore the early opening improved their health.",
         "Name what bridges it. First, that saying you're fitter means you are. Second, that the early hours caused it rather than something else.",
-        "Negate each. If the members who say they're fitter aren't, the argument has nothing. If a new class or a new year's resolution explains it, early opening gets no credit.",
+        "Negate each. If the members who say they're fitter aren't, the argument has nothing. If a new class or a New Year's resolution explains it, early opening gets no credit.",
         "Both are load-bearing, so those are the two questions to put to the gym.",
       ],
     },
@@ -100,7 +100,7 @@ const claims: Record<string, LessonNotes> = {
 
   "claims-facts-opinions-values": {
     lessonId: "claims-facts-opinions-values",
-    hook: "Many disagreements are stuck because people are arguing about different kinds of thing. Some questions are settled by checking, and others by deciding what matters.",
+    hook: "Many disagreements are stuck because people are arguing about different kinds of things. Some questions are settled by checking, and others by deciding what matters.",
     idea: [
       "A factual claim says how the world is, and could in principle be checked: the bus takes 40 minutes, the trial cut injuries by 9%. Facts can be wrong, but there is a way to find out.",
       "An opinion reports a preference: the movie was dull, cilantro tastes awful. A value claim says what ought to matter or be done: the trial was worth the cost, the park should be protected. Values can be argued for with reasons, but data alone can't settle them, because the question is how to weigh things.",
@@ -149,7 +149,7 @@ const claims: Record<string, LessonNotes> = {
 
   "claims-burden-of-proof": {
     lessonId: "claims-burden-of-proof",
-    hook: "Whoever has to prove a claim often loses an argument by default. Knowing who owes the evidence stops you being talked into proving a negative.",
+    hook: "Whoever has to prove a claim often loses an argument by default. Knowing who owes the evidence stops you from being talked into proving a negative.",
     idea: [
       "The person who makes a claim owes the support for it. If someone says a supplement doubles your energy, it is up to them to show it, not up to you to show it doesn't. “You can't prove it isn't true” tries to shift that burden, and it adds no evidence at all.",
       "How much support is owed depends on how surprising the claim is. “I had cereal for breakfast” needs little more than my word. “I saw a flying car” needs far more, because it clashes with everything else we know. A negative claim, like “the new schedule won't save time,” is still a claim, and owes support too.",
@@ -171,11 +171,11 @@ const claims: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "At a staff meeting at Pinecrest Clinic, Dana says the new booking app is losing appointments. Rob replies: “Show me one appointment it lost. Until you can, the app is fine.”",
+      case: "At a staff meeting at Pinecrest Clinic, Dana says the new scheduling app is losing appointments. Rob replies: “Show me one appointment it lost. Until you can, the app is fine.”",
       moves: [
         "Dana made a claim: the app is losing appointments. The burden is hers, so Rob can fairly ask for evidence.",
         "But Rob made a claim too: “the app is fine.” It needs support as well, and the lack of Dana's evidence isn't it.",
-        "How surprising is Dana's claim? New software losing bookings is ordinary, so modest evidence would do: a few patients whose bookings vanished.",
+        "How surprising is Dana's claim? New software losing appointments is ordinary, so modest evidence would do: a few patients whose appointments vanished.",
         "The fair outcome: Dana gathers examples, and nobody declares the app fine or broken until someone has looked.",
       ],
     },

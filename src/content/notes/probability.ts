@@ -158,12 +158,12 @@ const probability: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "Ravi thinks his local swimming pool might be closing: maybe 30% likely. Then three things happen: he hears a rumor in the locker room, a city council agenda lists “future of Ravenbrook Pool,” and the pool cancels all bookings after March.",
+      case: "Ravi thinks his local swimming pool might be closing: maybe 30% likely. Then three things happen: he hears a rumor in the locker room, a city council agenda lists “future of Ravenbrook Pool,” and the pool cancels all reservations after March.",
       moves: [
         "Start from his prior: about 30%.",
         "The rumor: rumors like this spread whether or not a pool is closing. A small nudge at most.",
         "The agenda item: likelier if closure is being considered, but city councils review pools for many reasons. A moderate move.",
-        "The canceled bookings: hard to explain unless something is ending. A big move, though a renovation would fit too, so not all the way to certain.",
+        "The canceled reservations: hard to explain unless something is ending. A big move, though a renovation would fit too, so not all the way to certain.",
       ],
     },
     subtleties: [
@@ -185,7 +185,7 @@ const probability: Record<string, LessonNotes> = {
     lessonId: "probability-second-order",
     hook: "Most plans are judged by what they do first. What people do in response often matters more, and it's the part nobody planned.",
     idea: [
-      "A first-order effect is the direct, intended result of a change: a parking charge reduces parking. A second-order effect is what follows as people respond: drivers park on side streets, shoppers go to the shopping center instead, the main street gets quieter.",
+      "A first-order effect is the direct, intended result of a change: a parking fee reduces parking. A second-order effect is what follows as people respond: drivers park on side streets, shoppers go to the shopping center instead, the main street gets quieter.",
       "To find second-order effects, ask “and then what?” at least twice, and ask who will change what they do. People respond to prices, rules and rewards, and when a measure becomes a target they work on the measure. The response can be bigger than the change, cancel it out, or even reverse it.",
     ],
     terms: [
@@ -204,10 +204,10 @@ const probability: Record<string, LessonNotes> = {
       },
     ],
     example: {
-      case: "To cut waiting times, Lakeside Hospital's emergency department is set a target: see 95% of patients within four hours.",
+      case: "To cut wait times, Lakeside Hospital's emergency department is given a target: see 95% of patients within four hours.",
       moves: [
         "First order: staff work to see patients faster. Good.",
-        "Then what? Patients close to four hours get moved to a ward to stop the clock, whether or not that's best for them.",
+        "Then what? Patients close to four hours get moved to an inpatient unit to stop the clock, whether or not that's best for them.",
         "And then what? Wards fill up, and scheduled surgeries are canceled to make room.",
         "So judge the target on all three, and also measure what it was meant to improve: how patients do.",
       ],

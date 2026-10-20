@@ -579,14 +579,14 @@ const media: Record<string, LessonScript> = {
         ],
         fallacy: "Manufactured urgency",
         hint: "Which line gives you no time to think?",
-        why: "A deadline with no reason behind it is there to stop you checking. The return policy does the opposite by giving you time.",
+        why: "A deadline with no reason behind it is there to stop you from checking. The return policy does the opposite by giving you time.",
       },
       {
         id: "charity",
         kind: "confidence",
         prompt: "Choose, then say how sure you are.",
         question:
-          "A message says: “Twelve children at Ash Street Elementary have no winter coats. $20 buys one. Our full accounts are on our site.” What does it do?",
+          "A message says: “Twelve children at Ash Street Elementary have no winter coats. $20 buys one. Our full financial reports are on our site.” What does it do?",
         options: [
           { text: "Uses feeling, but gives facts you can check." },
           {
@@ -595,12 +595,12 @@ const media: Record<string, LessonScript> = {
           },
           {
             text: "Hides where the donated money actually goes.",
-            whyNot: "It points to its accounts, which is the opposite of hiding.",
+            whyNot: "It points to its financial reports, which is the opposite of hiding.",
           },
         ],
         correct: 0,
         hint: "Can you check what it says?",
-        why: "The message is emotional, but it gives numbers and points to its accounts. Feeling with checkable facts is honest persuasion.",
+        why: "The message is emotional, but it gives numbers and points to its financial reports. Feeling with checkable facts is honest persuasion.",
       },
       {
         id: "hall",
@@ -710,7 +710,7 @@ const media: Record<string, LessonScript> = {
         ],
         correct: 0,
         hint: "Which claim, if it were false, would remove the pressure entirely?",
-        why: "The deadline and the price rise create the pressure. If they're real and in the terms, you can decide calmly; if not, the email is just hurrying you. The other details are decoration.",
+        why: "The deadline and the price increase create the pressure. If they're real and in the terms, you can decide calmly; if not, the email is just hurrying you. The other details are decoration.",
       },
     ],
   },

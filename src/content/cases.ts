@@ -303,7 +303,7 @@ export const DAILY_CASES: DailyCase[] = [
         "conclusion",
         "What's the conclusion the email wants you to accept?",
         [
-          "The rise is necessary and you should accept it",
+          "The increase is needed and you should accept it",
           [
             "Costs have risen across the board this year",
             "That's offered as a reason for the conclusion, not the point itself.",
@@ -313,7 +313,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Another reason given in support. The conclusion is what it's all for.",
           ],
         ],
-        "The reasons are the costs and the roof. The point they're there to support is that you should accept the rise.",
+        "The reasons are the costs and the roof. The point they're there to support is that you should accept the increase.",
       ),
       ask(
         "fallacies-dilemma-slippery-slope",
@@ -322,15 +322,15 @@ export const DAILY_CASES: DailyCase[] = [
         [
           [
             "It's a fair summary of the only two choices there are",
-            "There are others, like a smaller rise or spreading the roof's cost over years.",
+            "There are others, like a smaller increase or spreading the roof's cost over years.",
           ],
-          "It hides other options, like a smaller rise",
+          "It hides other options, like a smaller increase",
           [
             "It's a personal attack on tenants who complain",
             "It doesn't attack anyone. Its problem is pretending there are only two options.",
           ],
         ],
-        "A false dilemma offers two choices when there are more. A smaller rise, or paying for the roof over several years, are both possible.",
+        "A false dilemma offers two choices when there are more. A smaller increase, or paying for the roof over several years, are both possible.",
       ),
       ask(
         "claims-facts-opinions-values",
@@ -342,12 +342,12 @@ export const DAILY_CASES: DailyCase[] = [
             "That's a judgment dressed as a fact. Whether there's a choice is the very question.",
           ],
           [
-            "The rise is the fair thing to do",
+            "The increase is the fair thing to do",
             "That's a value judgment. People can agree on every fact and still disagree on what's fair.",
           ],
           "The rent goes up by 12% in April",
         ],
-        'The size and date of the rise can be checked against the lease and the next rent bill. "No choice" and "fair" are judgments.',
+        'The size and date of the increase can be checked against the lease and the next rent bill. "No choice" and "fair" are judgments.',
       ),
     ],
     takeaway: "When you're told there's no choice, list the options that were left out.",
@@ -401,7 +401,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Adding more exclamation points for emphasis",
             "Emphasis makes it louder, not clearer. It still can't be tested.",
           ],
-          "Saying what has got worse, and since when",
+          "Saying what has gotten worse, and since when",
           [
             "Getting more people in the area to agree",
             "Agreement doesn't make it specific. \"Downhill\" still doesn't say what changed.",
@@ -593,7 +593,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-010",
     source: "listing",
     title: "Charming family home",
-    text: 'CHARMING FAMILY HOME, Elm Rise. Asking $425,000. Three bedrooms, a sunny backyard and a quiet street, just minutes from the station. Similar homes nearby have sold for up to $500,000. "The best-kept house I\'ve seen this year," says a local agent. Showings are filling up fast, so book today.',
+    text: 'CHARMING FAMILY HOME, Elm Rise. Asking $425,000. Three bedrooms, a sunny backyard and a quiet street, just minutes from the station. Similar homes nearby have sold for up to $500,000. "The best-kept house I\'ve seen this year," says a local agent. Showings are filling up fast, so schedule yours today.',
     questions: [
       ask(
         "claims-vague-language",
@@ -888,7 +888,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-015",
     source: "article",
     title: "A new liver test",
-    text: "HEADLINE: New test finds hidden liver disease in 500 people\n\nA new screening test for a rare liver condition is described as 95% accurate. In a trial it was given to 10,000 adults, and it flagged about 510 of them. The condition affects roughly 1 in 1,000 people. A charity is now calling for everyone over 40 to be screened.",
+    text: "HEADLINE: New test finds hidden liver disease in 500 people\n\nA new screening test for a rare liver condition is described as 95% accurate. In a trial it was given to 10,000 adults, and it flagged about 510 of them. The condition affects roughly 1 in 1,000 people. A patient group is now calling for everyone over 40 to be screened.",
     questions: [
       sure(
         "probability-base-rates",
@@ -1066,7 +1066,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-018",
     source: "chatbot",
     title: "Rain on the fun run?",
-    text: "Q: Will it rain at the Brookfield fun run on Saturday?\n\nA: The forecast gives a 30% chance of rain on Saturday afternoon. That means it probably won't rain, so you don't need to plan for it. For context, last year's fun run was also dry. I'd recommend going ahead without any wet-weather arrangements.",
+    text: "Q: Will it rain at the Brookfield fun run on Saturday?\n\nA: The forecast gives a 30% chance of rain on Saturday afternoon. That means it probably won't rain, so you don't need to plan for it. For context, last year's fun run was also dry. I'd recommend going ahead without a rain plan.",
     questions: [
       sure(
         "probability-thinking-in-bets",
@@ -1083,7 +1083,7 @@ export const DAILY_CASES: DailyCase[] = [
             "It means rain on about three days in ten like this one, not certain rain.",
           ],
         ],
-        "Unlikely isn't impossible. If a few gazebos would save the day, a three-in-ten chance is worth planning for.",
+        "Unlikely isn't impossible. If a few pop-up tents would save the day, a three-in-ten chance is worth planning for.",
       ),
       ask(
         "media-ai-answers",
@@ -1148,7 +1148,7 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "claims-hidden-assumptions",
         "value",
-        'The rise will "fund new equipment that members clearly value." What does that assume?',
+        'The increase will "fund new equipment that members clearly value." What does that assume?',
         [
           ["That the gym has a front desk", "It says so. Nothing hidden there."],
           ["That membership fees also went up last year", "Nothing in the notice depends on that."],
@@ -1159,7 +1159,7 @@ export const DAILY_CASES: DailyCase[] = [
       ask(
         "arguments-strong-vs-weak",
         "support",
-        "Do the survey results support the fee rise?",
+        "Do the survey results support the fee increase?",
         [
           [
             "Yes: happy members will be glad to pay more",
@@ -1171,7 +1171,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           "Not really: the reason doesn't lead to the conclusion",
         ],
-        "Even a fair 92% would show members like the gym. It wouldn't show they want this equipment or this rise.",
+        "Even a fair 92% would show members like the gym. It wouldn't show they want this equipment or this increase.",
       ),
     ],
     takeaway: "Ask who answered, and whether they were answering the question being decided.",
@@ -1253,7 +1253,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           [
             "The years on the chart may be in the wrong order",
-            "Nothing suggests that. The real issue is in the small print.",
+            "Nothing suggests that. The real issue is in the fine print.",
           ],
           'Counting cafe card holders changes what "member" means',
         ],
@@ -1360,7 +1360,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-023",
     source: "post",
     title: "Share if you agree",
-    text: 'SHARE IF YOU AGREE! A screenshot is going around of a quote from "Professor Hannah Gale, Kellerby University": "Children who play video games are 70% more likely to fail at school." The post has 40,000 shares. There\'s no link to a study, and the account that posted it was created last month.',
+    text: 'SHARE IF YOU AGREE! A screenshot is going around of a quote from "Professor Hannah Gale, Kellerby University": "Children who play video games are 70% more likely to fail in school." The post has 40,000 shares. There\'s no link to a study, and the account that posted it was created last month.',
     questions: [
       ask(
         "media-lateral-reading",
@@ -1420,7 +1420,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-024",
     source: "article",
     title: "A parking lot for Ashby",
-    text: 'City council members in Ashby have approved a 400-space parking lot on the edge of the town center. "Stores are struggling because people can\'t park," said the planning lead. "More spaces means more shoppers." To help pay for it, the plan removes the free bus that runs from the station to the main street. Building starts in spring.',
+    text: 'City council members in Ashby have approved a 400-space parking lot on the edge of the town center. "Stores are struggling because people can\'t park," said the planning lead. "More spaces means more shoppers." To help pay for it, the plan removes the free bus that runs from the station to the main street. Construction starts in spring.',
     questions: [
       ask(
         "probability-second-order",
@@ -1433,7 +1433,7 @@ export const DAILY_CASES: DailyCase[] = [
           ],
           "People who came by bus may stop coming at all",
           [
-            "The building work will start in the spring",
+            "Construction will start in the spring",
             "That's in the article. A ripple effect follows from the change.",
           ],
         ],
@@ -1480,7 +1480,7 @@ export const DAILY_CASES: DailyCase[] = [
     id: "case-025",
     source: "email",
     title: "Delivery attempt failed",
-    text: "Subject: Delivery attempt failed, action needed\n\nWe tried to deliver your package today but no one was home. To rebook, please pay the $1.99 redelivery fee within 24 hours, or your package will be returned to the sender. Pay now at package-redelivery-now.co. Thousands of customers rebook this way every day.",
+    text: "Subject: Delivery attempt failed, action needed\n\nWe tried to deliver your package today but no one was home. To reschedule, please pay the $1.99 redelivery fee within 24 hours, or your package will be returned to the sender. Pay now at package-redelivery-now.co. Thousands of customers reschedule this way every day.",
     questions: [
       ask(
         "media-manipulation",
@@ -1495,7 +1495,7 @@ export const DAILY_CASES: DailyCase[] = [
             "Because packages are only kept for a day",
             "Delivery companies normally keep packages much longer. The tight limit is there to rush you.",
           ],
-          "To stop you checking before you pay",
+          "To stop you from checking before you pay",
         ],
         "A short deadline and a small fee make paying feel easier than checking. That's the pattern of a scam.",
       ),
