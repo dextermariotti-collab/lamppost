@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fakeAdmin, filteredTo } from "@/test/admin";
+import { fakeAdmin, filteredTo, type FakeTable } from "@/test/admin";
 
 vi.mock("@tanstack/react-start", async () => (await import("@/test/server-fn")).startMock);
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
@@ -34,13 +34,19 @@ const getLeague = async () => {
   return (fn as unknown as League)({ data: { today: TODAY }, context: { userId: ME } });
 };
 
-/** rpc answers by name: standings depend on the week asked about. */
+/**
+ * rpc answers by name: standings depend on the week asked about. Like the database, the first
+ * apply_league_result for a week records it (so it reads back) and any later one does nothing;
+ * `judgedFirst` is a record another request made in between.
+ */
 function setup(opts: {
   thisWeek: ReturnType<typeof person>[];
   lastWeek: ReturnType<typeof person>[];
   settled?: Record<string, unknown> | null;
+  judgedFirst?: Record<string, unknown>;
 }) {
-  admin.current = fakeAdmin({ league_results: { single: opts.settled ?? null } });
+  const results: FakeTable = { single: opts.settled ?? null };
+  admin.current = fakeAdmin({ league_results: results });
   admin.current.rpc.mockImplementation(async (name: string, args: Record<string, unknown>) => {
     if (name === "league_standings") {
       const { previousWeekStart } = await import("./weeks");
@@ -48,6 +54,19 @@ function setup(opts: {
         data: args["_week"] === previousWeekStart(TODAY) ? opts.lastWeek : opts.thisWeek,
         error: null,
       };
+    }
+    if (name === "apply_league_result") {
+      results.single ??= opts.judgedFirst ?? null;
+      if (results.single) return { data: false, error: null };
+      results.single = {
+        week_start: args["_week"],
+        rank: args["_rank"],
+        group_size: args["_group"],
+        weekly_xp: args["_xp"],
+        tier_before: args["_before"],
+        tier_after: args["_after"],
+      };
+      return { data: true, error: null };
     }
     return { data: true, error: null };
   });
@@ -176,6 +195,106 @@ describe("the friends league", () => {
     // It didn't even ask for last week's standings.
     const weeks = admin.current!.rpc.mock.calls.filter(([n]) => n === "league_standings");
     expect(weeks).toHaveLength(1);
+  });
+
+  describe("a tie", () => {
+    type LastWeek = { lastWeek: { change: string; tierAfter: number; reason: string } };
+    const level = (n: number) =>
+      [person(ME, 100, 1), ...Array.from({ length: n - 1 }, (_, i) => person(`p${i}`, 100))] as [
+        ReturnType<typeof person>,
+        ...ReturnType<typeof person>[],
+      ];
+
+    it("moves nobody when everyone finished level, and says so", async () => {
+      setup({ thisWeek: [person(ME, 0, 1)], lastWeek: level(3) });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(applied()[0]).toMatchObject({ _rank: 1, _group: 3, _before: 1, _after: 1 });
+      expect(view.lastWeek).toMatchObject({ change: "stayed", tierAfter: 1 });
+      expect(view.lastWeek.reason).toMatch(/everyone finished level/i);
+    });
+
+    it("tells a big level group the same, from the tie it judged", async () => {
+      setup({ thisWeek: [person(ME, 0, 1)], lastWeek: level(6) });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(applied()[0]).toMatchObject({ _rank: 1, _group: 6, _after: 1 });
+      expect(view.lastWeek.reason).toMatch(/everyone finished level/i);
+    });
+
+    it("keeps a tie from the top third into the bottom where it was", async () => {
+      setup({
+        thisWeek: [person(ME, 0, 1)],
+        lastWeek: [...level(5), person("low", 60)],
+      });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(applied()[0]).toMatchObject({ _rank: 1, _group: 6, _after: 1 });
+      expect(view.lastWeek.change).toBe("stayed");
+      expect(view.lastWeek.reason).toMatch(/level with friends from the top third/i);
+    });
+
+    it("still explains a level week read back later, without the top-third line", async () => {
+      setup({
+        thisWeek: [person(ME, 0, 1)],
+        lastWeek: [],
+        settled: {
+          week_start: "2026-09-21",
+          rank: 1,
+          group_size: 3,
+          weekly_xp: 100,
+          tier_before: 1,
+          tier_after: 1,
+        },
+      });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(applied()).toEqual([]);
+      expect(view.lastWeek.change).toBe("stayed");
+      expect(view.lastWeek.reason).toMatch(/everyone finished level/i);
+      expect(view.lastWeek.reason).not.toMatch(/you finished in the top third/i);
+    });
+
+    it("reads a big level week back as true, if less exact", async () => {
+      setup({
+        thisWeek: [person(ME, 0, 1)],
+        lastWeek: [],
+        settled: {
+          week_start: "2026-09-21",
+          rank: 2,
+          group_size: 6,
+          weekly_xp: 100,
+          tier_before: 1,
+          tier_after: 1,
+        },
+      });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(view.lastWeek.reason).toMatch(/level with friends from the top third/i);
+    });
+
+    it("explains a week another request judged first by its record, not this tie", async () => {
+      setup({
+        thisWeek: [person(ME, 0, 1)],
+        lastWeek: level(6),
+        judgedFirst: {
+          week_start: "2026-09-21",
+          rank: 1,
+          group_size: 6,
+          weekly_xp: 100,
+          tier_before: 1,
+          tier_after: 2,
+        },
+      });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(view.lastWeek).toMatchObject({ change: "promoted", tierAfter: 2 });
+      expect(view.lastWeek.reason).toBe("You finished in the top third.");
+    });
+
+    it("still promotes the top third when the tie stays inside it", async () => {
+      setup({
+        thisWeek: [person(ME, 0, 1)],
+        lastWeek: [...level(2), person("c", 80), person("d", 70), person("e", 60), person("f", 55)],
+      });
+      const view = (await getLeague()) as unknown as LastWeek;
+      expect(applied()[0]).toMatchObject({ _rank: 1, _group: 6, _after: 2 });
+      expect(view.lastWeek.change).toBe("promoted");
+    });
   });
 
   it("shows nothing but tier, weekly XP, handle and companion about a friend", async () => {

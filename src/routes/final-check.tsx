@@ -175,7 +175,7 @@ function Summary({
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {change.units > 0
-            ? `Across the ${change.units} line${change.units === 1 ? "" : "s"} you checked both times: ${change.before} of ${change.total} right before, ${change.after} of ${change.total} after.`
+            ? `Across the ${change.units} line${change.units === 1 ? "" : "s"} you checked both times: ${change.before} of ${change.beforeTotal} right before, ${change.after} of ${change.afterTotal} after.`
             : "No line has a before and an after yet, so there is nothing to compare. The after-checks still show where you are now."}
         </p>
         <BeforeAfterTable units={UNITS} checks={checks} className="mt-4" />

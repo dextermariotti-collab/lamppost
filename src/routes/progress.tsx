@@ -173,7 +173,7 @@ function ProgressScreen() {
             title="Before and after"
             summary={
               change.units > 0
-                ? `Across ${change.units} unit${change.units === 1 ? "" : "s"}: ${change.before} of ${change.total} right before, ${change.after} of ${change.total} after.`
+                ? `Across ${change.units} unit${change.units === 1 ? "" : "s"}: ${change.before} of ${change.beforeTotal} right before, ${change.after} of ${change.afterTotal} after.`
                 : checkedUnits.length > 0
                   ? "Your after-checks open as you finish each unit."
                   : "A three-question check before and after each unit shows whether the skills carry over."

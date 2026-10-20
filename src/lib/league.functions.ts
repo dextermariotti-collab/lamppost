@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { TodayInput, resolveToday } from "./client-day";
-import { LEAGUE_MIN_XP, leagueMove, rankStandings } from "./league";
+import { LEAGUE_MIN_GROUP, LEAGUE_MIN_XP, MAX_TIER, leagueMove, rankStandings } from "./league";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 import { previousWeekStart, weekStartOf } from "./weeks";
 
@@ -62,14 +62,29 @@ async function standings(userId: string, week: string): Promise<StandingRow[]> {
   return data ?? [];
 }
 
-const describeMove = (result: {
+type LeagueResult = {
   rank: number | null;
   group_size: number;
   weekly_xp: number;
   tier_before: number;
   tier_after: number;
   week_start: string;
-}): LeagueLastWeek => ({
+};
+
+/**
+ * How many shared the learner's place, as far as a stored result can tell: league_results keeps
+ * the rank but not the tie. A top-third learner below the top tier who didn't move up can only
+ * have been level with someone in the bottom third, so it is the smallest tie that reaches there.
+ */
+function tieOnRecord(result: LeagueResult): number {
+  const { rank, group_size: taking } = result;
+  const zone = Math.floor(taking / 3);
+  if (rank === null || rank > zone || taking < LEAGUE_MIN_GROUP) return 1;
+  if (result.weekly_xp < LEAGUE_MIN_XP || result.tier_before >= MAX_TIER) return 1;
+  return result.tier_after === result.tier_before ? taking - zone - rank + 2 : 1;
+}
+
+const describeMove = (result: LeagueResult, tied = tieOnRecord(result)): LeagueLastWeek => ({
   weekStart: result.week_start,
   rank: result.rank,
   taking: result.group_size,
@@ -88,6 +103,7 @@ const describeMove = (result: {
     weeklyXp: result.weekly_xp,
     rank: result.rank,
     taking: result.group_size,
+    tied,
   }).reason,
 });
 
@@ -124,8 +140,9 @@ async function settleLastWeek(userId: string, lastWeek: string): Promise<LeagueL
     weeklyXp: me?.weeklyXp ?? 0,
     rank: me?.rank ?? null,
     taking,
+    tied: me?.tied,
   });
-  await supabaseAdmin.rpc("apply_league_result", {
+  const { data: judgedHere } = await supabaseAdmin.rpc("apply_league_result", {
     _user: userId,
     _week: lastWeek,
     _rank: me?.rank ?? (null as unknown as number),
@@ -134,10 +151,11 @@ async function settleLastWeek(userId: string, lastWeek: string): Promise<LeagueL
     _before: before,
     _after: move.tier,
   });
-  // Another request may have judged the week first; whichever did, this is the record.
+  // Another request may have judged the week first; whichever did, this is the record. Only a
+  // record made here is sure to come from this tie.
   const stored = await read();
   return stored
-    ? describeMove(stored)
+    ? describeMove(stored, judgedHere === true ? me?.tied : undefined)
     : {
         weekStart: lastWeek,
         rank: me?.rank ?? null,

@@ -46,12 +46,13 @@ function UnitCheckScreen() {
   const check = UNIT_CHECKS[unitId]!;
   // Three months on, the after-check's own questions come back, to see what stuck.
   const items = phase === "later" ? check.after : check[phase];
-  const { doneLessons, hydrated } = useProgress();
+  const { doneLessons, studiedLessons, hydrated } = useProgress();
   const { checks, hydrated: checksReady } = useUnitChecks();
-  const unit = useMemo(
-    () => unitProgress(doneLessons).find((u) => u.unit.id === unitId)!,
-    [doneLessons, unitId],
-  );
+  const unit = useMemo(() => {
+    const done = unitProgress(doneLessons).find((u) => u.unit.id === unitId)!;
+    const studied = unitProgress(studiedLessons)[done.index]?.completed ?? 0;
+    return { ...done, placed: done.completed - studied };
+  }, [doneLessons, studiedLessons, unitId]);
 
   const [step, setStep] = useState(0);
   const [answered, setAnswered] = useState(false);

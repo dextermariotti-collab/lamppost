@@ -9,12 +9,12 @@ import {
   TOTAL_LESSONS,
   lessonIndexOf,
   lessonPlace,
-  nextLessonIndex,
   unitProgress,
   type UnitProgress,
 } from "@/lib/curriculum";
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
+import { upNextIndex } from "@/lib/progress-view";
 import { useDueDrills } from "@/lib/review-drills";
 import {
   checkAvailability,
@@ -45,8 +45,11 @@ export const Route = createFileRoute("/courses")({
   component: MyPath,
 });
 
+/** A unit on the map, with how many of its finished lessons placement marked as known. */
+type PathUnit = UnitProgress & { placed: number };
+
 function MyPath() {
-  const { state, doneLessons, registerCourse } = useProgress();
+  const { state, doneLessons, studiedLessons, registerCourse } = useProgress();
   useCurriculumCourse();
 
   useEffect(() => {
@@ -54,8 +57,15 @@ function MyPath() {
   }, [registerCourse]);
 
   const completed = doneLessons.size;
-  const units = useMemo(() => unitProgress(doneLessons), [doneLessons]);
-  const nextIndex = nextLessonIndex(doneLessons);
+  const units = useMemo((): PathUnit[] => {
+    const studied = unitProgress(studiedLessons);
+    return unitProgress(doneLessons).map((unit) => ({
+      ...unit,
+      placed: unit.completed - (studied[unit.index]?.completed ?? 0),
+    }));
+  }, [doneLessons, studiedLessons]);
+  // The same next stop as Home: along the line the learner is on.
+  const nextIndex = upNextIndex(doneLessons, state.doneLessonIds);
   const { items: dueItems } = useDueDrills(100);
   const { checks } = useUnitChecks();
 
@@ -77,7 +87,6 @@ function MyPath() {
   }, [nextIndex, touched]);
 
   const pct = Math.round((completed / TOTAL_LESSONS) * 100);
-  void state;
 
   return (
     <PhoneFrame>
@@ -124,7 +133,7 @@ function UnitCard({
   checks,
   onToggle,
 }: {
-  unit: UnitProgress;
+  unit: PathUnit;
   due: number;
   open: boolean;
   nextIndex: number;
@@ -239,7 +248,7 @@ function UnitCard({
  * offered before the unit is started and again once it is done, and once taken, the results
  * side by side.
  */
-function CheckStop({ unit, checks }: { unit: UnitProgress; checks: UnitCheckResults | undefined }) {
+function CheckStop({ unit, checks }: { unit: PathUnit; checks: UnitCheckResults | undefined }) {
   const before = checkAvailability("before", unit, checks);
   const after = checkAvailability("after", unit, checks);
   const later = checkAvailability("later", unit, checks);

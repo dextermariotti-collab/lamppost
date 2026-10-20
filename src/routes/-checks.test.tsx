@@ -3,19 +3,26 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LESSONS } from "@/lib/curriculum";
+import type { CheckStore } from "@/lib/unit-checks";
 
 const h = vi.hoisted(() => ({
   playCue: vi.fn(),
   doneLessons: new Set<number>(),
+  studiedLessons: new Set<number>(),
+  checks: {} as CheckStore,
 }));
 
 vi.mock("@/lib/feedback", () => ({ playCue: h.playCue }));
 vi.mock("@/lib/progress", () => ({
-  useProgress: () => ({ doneLessons: h.doneLessons, hydrated: true }),
+  useProgress: () => ({
+    doneLessons: h.doneLessons,
+    studiedLessons: h.studiedLessons,
+    hydrated: true,
+  }),
 }));
 vi.mock("@/lib/unit-checks", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/unit-checks")>()),
-  useUnitChecks: () => ({ checks: {}, hydrated: true }),
+  useUnitChecks: () => ({ checks: h.checks, hydrated: true }),
   recordCheck: vi.fn(),
 }));
 vi.mock("@/components/PhoneFrame", () => ({
@@ -49,6 +56,8 @@ const claims = () => new Set(LESSONS.flatMap((l, i) => (l.unitId === "claims" ? 
 
 beforeEach(() => {
   h.doneLessons = new Set();
+  h.studiedLessons = new Set();
+  h.checks = {};
 });
 afterEach(cleanup);
 
@@ -78,6 +87,18 @@ describe("Unit check", () => {
     expect(screen.getByText("3 of 3")).toBeTruthy();
     expect(rewardsHeld()).toBe(false);
   });
+
+  it("stays open on a unit placement marked as known, until a lesson in it is studied", () => {
+    h.doneLessons = claims();
+    render(<Screen />);
+    expect(screen.getByRole("button", { name: "Answer right" })).toBeTruthy();
+    cleanup();
+
+    h.studiedLessons = new Set([...claims()].slice(0, 1));
+    render(<Screen />);
+    expect(screen.queryByRole("button", { name: "Answer right" })).toBeNull();
+    expect(screen.getByText(/the before-check only counts before/i)).toBeTruthy();
+  });
 });
 
 describe("Final check", () => {
@@ -94,5 +115,16 @@ describe("Final check", () => {
     expect(h.playCue.mock.calls.map((c) => c[0])).toEqual(["correct", "wrong", "correct"]);
     expect(screen.getByRole("heading", { name: "Before and after" })).toBeTruthy();
     expect(rewardsHeld()).toBe(false);
+  });
+
+  it("counts the before and the after each out of their own questions", () => {
+    h.checks = {
+      claims: {
+        before: { right: 1, total: 2, day: "2026-10-01" },
+        after: { right: 3, total: 3, day: "2026-10-12" },
+      },
+    };
+    render(<Screen />);
+    expect(screen.getByText(/1 of 2 right before, 3 of 3 after\./)).toBeTruthy();
   });
 });
