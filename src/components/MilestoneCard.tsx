@@ -13,7 +13,7 @@ export function MilestoneCard({
   onClose: () => void;
 }) {
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-foreground/45 px-5">
+    <div className="absolute inset-0 z-40 flex items-center justify-center bg-overlay px-5">
       <div className="relative w-full max-w-[320px] animate-rise-in">
         <div className="sign relative p-6 text-center">
           <button

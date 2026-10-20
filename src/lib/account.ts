@@ -3,7 +3,6 @@ import { useCallback } from "react";
 import { dayKey } from "./days";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile } from "./profile.functions";
-import { listAchievements } from "./achievements.functions";
 import { listFriends, listNudges } from "./friends.functions";
 
 export function useAccount() {
@@ -15,16 +14,6 @@ export function useAccount() {
     staleTime: 30_000,
   });
   return { ...query, signedIn: Boolean(userId), sessionReady: ready };
-}
-
-export function useAchievements() {
-  const { userId, ready } = useSessionUser();
-  return useQuery({
-    queryKey: ["achievements", userId],
-    queryFn: () => listAchievements({ data: { today: dayKey() } }),
-    enabled: ready && Boolean(userId),
-    staleTime: 30_000,
-  });
 }
 
 export function useFriends() {
@@ -53,7 +42,6 @@ export function useRefreshAccount() {
   return useCallback(() => {
     void client.invalidateQueries({ queryKey: ["account"] });
     void client.invalidateQueries({ queryKey: ["friends"] });
-    void client.invalidateQueries({ queryKey: ["achievements"] });
     void client.invalidateQueries({ queryKey: ["nudges"] });
   }, [client]);
 }

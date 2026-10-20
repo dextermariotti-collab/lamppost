@@ -63,6 +63,7 @@
   --color-graph-locked: var(--graph-locked);
   --color-graph-line: var(--graph-line);
   --color-graph-edge: var(--graph-edge);
+  --color-overlay: var(--overlay);
   /* Overpass descends from Highway Gothic, the lettering on US road signs. */
   --font-display: "Middle Dot", "Overpass", "Arial Narrow", Arial, sans-serif;
   --font-sans: "Middle Dot", "Overpass", ui-sans-serif, system-ui, sans-serif;
@@ -134,6 +135,9 @@
   --graph-locked-border: #6b7179;
   --graph-locked-text: #111418;
   --gradient-hero: linear-gradient(var(--primary), var(--primary));
+  /* The scrim behind dialogs, sheets and drawers. Dark in both sets, never the foreground:
+     at night the foreground is light and would wash the page out instead of dimming it. */
+  --overlay: rgb(17 20 24 / 0.55);
 }
 
 /* Night: the streetlight. Only the work in front of you is lit. */
@@ -188,6 +192,7 @@
   --graph-edge: #c9d1db;
   --graph-locked-border: #7a8797;
   --graph-locked-text: #edeff2;
+  --overlay: rgb(4 7 12 / 0.7);
 }
 
 @layer base {

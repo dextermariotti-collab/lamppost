@@ -33,6 +33,18 @@ const ratio = (tokens: Record<string, string>, fg: string, bg: string) => {
 const TEXT = 4.5;
 const GRAPHIC = 3;
 
+const scrimOf = (tokens: Record<string, string>): Rgb => {
+  const value = tokens["overlay"] ?? "";
+  const match = /^rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+)\s*\)$/.exec(value);
+  if (!match) throw new Error(`--overlay should be rgb(r g b / alpha), not "${value}"`);
+  const [, r, g, b, a] = match.map(Number) as [number, number, number, number, number];
+  return { r: r / 255, g: g / 255, b: b / 255, a };
+};
+
+// Contrast against black rises with luminance, so it orders colors from dark to light.
+const BLACK = parseColor("#000000");
+const lightness = (color: Rgb) => contrast(color, BLACK);
+
 describe.each(themes)("$name theme", ({ name, tokens }) => {
   it("keeps body and muted text readable on every surface", () => {
     for (const bg of ["background", "card", "muted"]) {
@@ -67,6 +79,22 @@ describe.each(themes)("$name theme", ({ name, tokens }) => {
     for (const bg of ["background", "card", "muted"]) {
       expect(ratio(tokens, "ring", bg), `ring on ${bg}`).toBeGreaterThanOrEqual(GRAPHIC);
     }
+  });
+
+  it("dims what sits behind a dialog, sheet or drawer instead of washing it out", () => {
+    const scrim = scrimOf(tokens);
+    expect(scrim.a).toBeGreaterThan(0);
+    expect(scrim.a).toBeLessThan(1);
+    for (const surface of ["canvas", "background", "card", "muted"]) {
+      const under = colorOf(tokens, surface);
+      expect(lightness(over(scrim, under)), `${surface} under the overlay`).toBeLessThan(
+        lightness(under),
+      );
+    }
+    // Text behind the scrim drops below body-text contrast, so only the panel on top reads.
+    const page = colorOf(tokens, "background");
+    const behind = contrast(over(scrim, colorOf(tokens, "foreground")), over(scrim, page));
+    expect(behind, "foreground behind the overlay").toBeLessThan(TEXT);
   });
 
   it("keeps the XP icon visible as a graphic", () => {

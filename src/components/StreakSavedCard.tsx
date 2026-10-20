@@ -20,15 +20,15 @@ export function StreakSavedCard({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[65] flex items-center justify-center bg-foreground/45 px-6 backdrop-blur-sm">
-      <div className="w-full max-w-[20rem] animate-pop-in rounded-3xl border border-border bg-card p-6 text-center shadow-float">
+    <div className="fixed inset-0 z-[65] flex items-center justify-center bg-overlay px-6">
+      <div className="sign w-full max-w-[20rem] animate-pop-in p-6 text-center">
         <span
           aria-hidden
           className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gem/15"
         >
           <Snowflake className="h-9 w-9 text-gem" strokeWidth={2} />
         </span>
-        <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-gem">Streak saved</p>
+        <p className="legend mt-4 text-gem">Streak saved</p>
         <h2 className="mt-1 text-2xl leading-tight">Your {streak}-day streak held</h2>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           A streak freeze covered {days === 1 ? "the day" : `${days} days`} you missed. You have{" "}

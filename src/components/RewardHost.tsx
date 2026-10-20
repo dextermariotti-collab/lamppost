@@ -98,7 +98,7 @@ function LevelUpCard({ level, onClose }: { level: UnitLevel; onClose: () => void
   return (
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[70] bg-foreground/45" />
+        <Dialog.Overlay className="fixed inset-0 z-[70] bg-overlay" />
         <div className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center px-6">
           <Dialog.Content
             aria-modal="true"
