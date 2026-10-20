@@ -79,13 +79,13 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("Daily review", () => {
-  it("counts a right answer after the nudge as right, and shows what a right review pays", () => {
+  it("counts a right answer after the nudge as right, and pays and shows half", () => {
     render(<Screen />);
     click("Right, with the nudge");
     expect(h.grade).toHaveBeenCalledWith(expect.any(String), true, 7);
-    expect(h.recordReview).toHaveBeenCalledWith(true);
+    expect(h.recordReview).toHaveBeenCalledWith(true, 0.5);
     expect(h.celebrateAnswer).toHaveBeenCalledWith(
-      expect.objectContaining({ correct: true, xp: REVIEW_XP.correct }),
+      expect.objectContaining({ correct: true, xp: REVIEW_XP.correct / 2 }),
     );
     expect(h.playCue).toHaveBeenCalledTimes(1);
     expect(h.playCue).toHaveBeenCalledWith("correct");
@@ -94,6 +94,7 @@ describe("Daily review", () => {
   it("shows what a missed review pays, and plays the miss cue once", () => {
     render(<Screen />);
     click("Wrong");
+    expect(h.recordReview).toHaveBeenCalledWith(false, 1);
     expect(h.celebrateAnswer).toHaveBeenCalledWith(
       expect.objectContaining({ correct: false, xp: REVIEW_XP.wrong }),
     );

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { LESSONS } from "./curriculum";
 import { dayKey } from "./days";
 import { choiceStep, confidenceStep, stepProblems, wordCount } from "./steps/types";
+import { useToday } from "./use-today";
 
 /**
  * The daily case: one real-world text (an ad, a post, an email, a chatbot answer...) and three
@@ -212,7 +213,7 @@ export function useDailyCase(cases: readonly DailyCase[], done: ReadonlySet<numb
     };
   }, []);
 
-  const today = dayKey();
+  const today = useToday();
   const library = useMemo(
     () => [...cases, ...Object.values(store.generated).sort((a, b) => (a.id < b.id ? -1 : 1))],
     [cases, store.generated],

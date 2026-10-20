@@ -263,10 +263,6 @@ export function saveLessons(
 }
 
 /**
- * Adds lessons the account has finished on another device. Returns `prev` when none are new.
- * The indexes follow when the state is saved (`saveLessons`).
- */
-/**
  * Finished lessons that were studied rather than placed out of at onboarding, sorted. Units that
  * schedule upkeep reviews or close a before-check should read these.
  */
@@ -279,9 +275,28 @@ export function studiedLessonIndexes(
   return doneLessonIndexes(state, slug).filter((i) => !placed.has(order[i] ?? ""));
 }
 
+/**
+ * The next stop after lesson `index` (0-based): the first unfinished lesson further along the
+ * map, else the first unfinished one before it, else none. Someone who chose a unit carries on
+ * from where they are.
+ */
+export function nextStopAfter(
+  index: number,
+  done: ReadonlySet<number>,
+  total: number,
+): number | null {
+  for (let i = index + 1; i < total; i++) if (!done.has(i)) return i;
+  for (let i = 0; i < Math.min(index, total); i++) if (!done.has(i)) return i;
+  return null;
+}
+
 /** The later of two day keys: a clock that is behind never moves the last active day back. */
 const laterDay = (day: string | null, today: string) => (day && day > today ? day : today);
 
+/**
+ * Adds lessons the account has finished on another device. Returns `prev` when none are new.
+ * The indexes follow when the state is saved (`saveLessons`).
+ */
 export function adoptLessons(prev: ProgressState, ids: readonly string[]): ProgressState {
   const have = new Set(prev.doneLessonIds ?? []);
   const added = [...new Set(ids)].filter((id) => !have.has(id));
@@ -399,9 +414,23 @@ export function applyUnlockLessons(
   };
 }
 
+/**
+ * What one review answer pays: `scale` is the share of the usual (0.5 after the nudge), so the
+ * amount shown is the amount paid.
+ */
+export function reviewXp(correct: boolean, scale = 1): number {
+  const share = Number.isFinite(scale) ? Math.min(Math.max(scale, 0), 1) : 1;
+  return Math.round((correct ? REVIEW_XP.correct : REVIEW_XP.wrong) * share);
+}
+
 /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
-export function applyReview(prev: ProgressState, correct: boolean, today: string): ProgressState {
-  return applyPracticed(prev, correct ? REVIEW_XP.correct : REVIEW_XP.wrong, today);
+export function applyReview(
+  prev: ProgressState,
+  correct: boolean,
+  today: string,
+  scale = 1,
+): ProgressState {
+  return applyPracticed(prev, reviewXp(correct, scale), today);
 }
 
 /** XP for a daily case: something for reading it, more for each question right. */

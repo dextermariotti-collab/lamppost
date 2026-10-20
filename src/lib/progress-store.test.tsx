@@ -489,6 +489,15 @@ describe("lessons finished today", () => {
     expect(result.current.doneToday).toBe(1);
   });
 
+  it("pays a review answered with the nudge half", async () => {
+    const { REVIEW_XP, useProgress } = await loadStore();
+    const { result } = renderHook(() => useProgress());
+    act(() => result.current.recordReview(true, 0.5));
+    expect(result.current.state.xp).toBe(REVIEW_XP.correct / 2);
+    act(() => result.current.recordReview(true));
+    expect(result.current.state.xp).toBe(REVIEW_XP.correct * 1.5);
+  });
+
   it("knows which lessons were placed out of rather than studied", async () => {
     const { useProgress } = await loadStore();
     const { result } = renderHook(() => useProgress());

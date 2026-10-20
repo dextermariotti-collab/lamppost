@@ -331,9 +331,13 @@ export function useProgress() {
     [],
   );
 
-  /** A graded spaced-repetition answer: keeps the streak alive and pays out. */
+  /**
+   * A graded spaced-repetition answer: keeps the streak alive and pays out. `xpScale` is the
+   * share of the usual XP it pays (0.5 after the nudge).
+   */
   const recordReview = useCallback(
-    (correct: boolean) => update((prev) => applyReview(prev, correct, dayKey())),
+    (correct: boolean, xpScale = 1) =>
+      update((prev) => applyReview(prev, correct, dayKey(), xpScale)),
     [],
   );
 

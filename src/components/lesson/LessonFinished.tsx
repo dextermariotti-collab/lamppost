@@ -15,21 +15,12 @@ import {
   type CurriculumLesson,
 } from "@/lib/curriculum";
 import { unitMastery } from "@/lib/mastery";
-import { dayKey, useProgress } from "@/lib/progress";
+import { useProgress } from "@/lib/progress";
+import { nextStopAfter } from "@/lib/progress-core";
 import { shareUnitCard } from "@/lib/share-image";
 import { unitAccent } from "@/lib/unit-accent";
 import { useUnitChecks } from "@/lib/unit-checks";
 import { TryItCard } from "./NotesView";
-
-/**
- * The next stop after this one: the first unfinished lesson further along the map, else the first
- * unfinished one before it. Someone who chose a unit carries on from where they are.
- */
-function nextStopAfter(index: number, done: ReadonlySet<number>): number | null {
-  for (let i = index + 1; i < TOTAL_LESSONS; i++) if (!done.has(i)) return i;
-  for (let i = 0; i < index; i++) if (!done.has(i)) return i;
-  return null;
-}
 
 /**
  * The end of a lesson, as an arrival board: where you are on the line, what this lesson earned,
@@ -69,15 +60,14 @@ export function LessonFinished({
   replay?: boolean;
 }) {
   const navigate = useNavigate();
-  const { state, streak, doneLessons } = useProgress();
-  const doneToday = state.history[dayKey()] ?? 0;
+  const { state, streak, doneLessons, doneToday } = useProgress();
   const goal = state.dailyGoal;
   const unit = unitById(meta.unitId);
   const accent = unitAccent(meta.unitId);
   const unitLessons = unitProgress(doneLessons).find((u) => u.unit.id === meta.unitId);
   const unitDone = !replay && unitLessons?.state === "complete";
   const perfect = answered > 0 && accuracy === 100;
-  const nextIndex = nextStopAfter(lessonNumber - 1, doneLessons);
+  const nextIndex = nextStopAfter(lessonNumber - 1, doneLessons, TOTAL_LESSONS);
   const nextMeta = nextIndex === null ? undefined : lessonAt(nextIndex);
   const place = lessonPlace(lessonNumber - 1);
   const { checks } = useUnitChecks();

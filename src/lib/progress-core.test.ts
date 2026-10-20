@@ -15,6 +15,8 @@ import {
   deriveInsights,
   gemsEarned,
   mergeAccountProgress,
+  nextStopAfter,
+  reviewXp,
   type ProgressState,
 } from "./progress-core";
 
@@ -371,6 +373,26 @@ describe("lessons are counted apart from other practice", () => {
   });
 });
 
+describe("a review answered with the nudge", () => {
+  const today = "2026-10-17";
+
+  it("pays half, as the nudge says, and still counts for the day", () => {
+    const hinted = applyReview(DEFAULT_STATE, true, today, 0.5);
+    expect(hinted.xp).toBe(REVIEW_XP.correct / 2);
+    expect(hinted.xp).toBe(reviewXp(true, 0.5));
+    expect(hinted.history[today]).toBe(1);
+    expect(hinted.streak).toBe(1);
+  });
+
+  it("pays in whole XP, and never more than the full amount or less than nothing", () => {
+    expect(reviewXp(false, 0.5)).toBe(Math.round(REVIEW_XP.wrong / 2));
+    expect(reviewXp(true)).toBe(REVIEW_XP.correct);
+    expect(reviewXp(true, 3)).toBe(REVIEW_XP.correct);
+    expect(reviewXp(true, -1)).toBe(0);
+    expect(reviewXp(true, Number.NaN)).toBe(REVIEW_XP.correct);
+  });
+});
+
 describe("the last active day only moves forward", () => {
   const ahead = { ...DEFAULT_STATE, streak: 3, lastActiveDay: "2026-09-24" };
 
@@ -479,5 +501,18 @@ describe("an account's active days", () => {
       "2026-09-23",
     );
     expect(next.history).toEqual({ "2026-09-23": 3 });
+  });
+});
+
+describe("nextStopAfter", () => {
+  it("carries on along the map, skipping stops already done", () => {
+    expect(nextStopAfter(10, new Set([10, 11, 12]), 35)).toBe(13);
+  });
+
+  it("goes back round to the first undone stop, and has none once all are done", () => {
+    const allBut = (skip: number) =>
+      new Set(Array.from({ length: 35 }, (_, i) => i).filter((i) => i !== skip));
+    expect(nextStopAfter(34, allBut(3), 35)).toBe(3);
+    expect(nextStopAfter(34, new Set(Array.from({ length: 35 }, (_, i) => i)), 35)).toBeNull();
   });
 });

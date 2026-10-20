@@ -2,18 +2,30 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { LESSONS } from "@/lib/curriculum";
+import { LESSONS, TOTAL_LESSONS } from "@/lib/curriculum";
 
 const h = vi.hoisted(() => {
   const listeners = new Set<() => void>();
-  const store = { done: new Set<number>(), completedCount: 0, version: 0 };
+  const store = {
+    done: new Set<number>(),
+    completedCount: 0,
+    version: 0,
+    xp: 0,
+    history: {} as Record<string, number>,
+    doneToday: 0,
+  };
   return {
     store,
     listeners,
     userId: null as string | null,
+    navigate: vi.fn(),
     useCurriculumLesson: vi.fn(),
     completeLesson: vi.fn((_slug: string, _topic: string, index: number) => {
+      if (store.done.has(index)) return;
       store.done = new Set([...store.done, index]);
+      store.xp += 50;
+      store.doneToday += 1;
+      store.history = { ...store.history, "2026-10-19": (store.history["2026-10-19"] ?? 0) + 1 };
       store.version += 1;
       listeners.forEach((listener) => listener());
     }),
@@ -35,14 +47,15 @@ vi.mock("@/lib/progress", async () => {
       );
       return {
         state: {
-          xp: 0,
-          history: {},
-          dailyGoal: 1,
+          xp: h.store.xp,
+          history: h.store.history,
+          dailyGoal: 2,
           courses: { "critical-thinking": { completed: h.store.completedCount } },
         },
         streak: 1,
         hydrated: true,
         doneLessons: h.store.done,
+        doneToday: h.store.doneToday,
         completeLesson: h.completeLesson,
         recordPractice: vi.fn(),
         recordExercise: vi.fn(),
@@ -101,7 +114,7 @@ vi.mock("@/components/PracticeChat", () => ({
 }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children }: { to: string; children?: ReactNode }) => <a href={to}>{children}</a>,
-  useNavigate: () => vi.fn(),
+  useNavigate: () => h.navigate,
 }));
 
 import { LegacyLesson } from "./LegacyLesson";
@@ -139,6 +152,9 @@ beforeEach(() => {
   window.localStorage.clear();
   h.store.done = new Set();
   h.store.completedCount = 0;
+  h.store.xp = 0;
+  h.store.history = {};
+  h.store.doneToday = 0;
   h.userId = null;
   vi.clearAllMocks();
   h.useCurriculumLesson.mockImplementation((index: number) => lessonFor(index));
@@ -198,5 +214,85 @@ describe("LegacyLesson", () => {
       vi.advanceTimersByTime(1500);
     });
     expect(screen.getByText("Line complete")).toBeTruthy();
+  });
+});
+
+const everyLessonBut = (index: number) =>
+  new Set(Array.from({ length: TOTAL_LESSONS }, (_, i) => i).filter((i) => i !== index));
+
+function finish() {
+  playToSummary();
+  click(/See the summary/);
+  click("Card: finish the lesson");
+}
+
+describe("LegacyLesson's finish", () => {
+  it("counts today's lessons toward the goal, not the reviews and cases", () => {
+    vi.useFakeTimers();
+    h.store.history = { "2026-10-19": 4 };
+    render(<LegacyLesson lessonNumber={1} />);
+    finish();
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(screen.getByText("1 of 2 lessons")).toBeTruthy();
+  });
+
+  it("shows the XP the lesson paid, not a made-up number", () => {
+    vi.useFakeTimers();
+    render(<LegacyLesson lessonNumber={1} />);
+    finish();
+    expect(screen.getByRole("status").textContent).toContain("+50 XP");
+    expect(screen.queryByText(/\+100 XP/)).toBeNull();
+  });
+
+  it("says nothing about XP on a replay that paid none", () => {
+    vi.useFakeTimers();
+    h.store.done = new Set([0]);
+    render(<LegacyLesson lessonNumber={1} />);
+    finish();
+    expect(screen.getByRole("status").textContent).not.toContain("XP");
+  });
+
+  it("finishes the course only when this lesson is the last one left", () => {
+    h.userId = "user-1";
+    render(<LegacyLesson lessonNumber={TOTAL_LESSONS} />);
+    playToSummary();
+    click(/See the summary/);
+    expect(screen.queryByRole("button", { name: /Finish the course/ })).toBeNull();
+    cleanup();
+
+    h.store.done = everyLessonBut(4);
+    render(<LegacyLesson lessonNumber={5} />);
+    playToSummary();
+    click(/See the summary/);
+    expect(screen.getByRole("button", { name: /Finish the course/ })).toBeTruthy();
+  });
+
+  it("goes on to the next lesson not yet done", () => {
+    vi.useFakeTimers();
+    h.store.done = new Set([1, 2]);
+    render(<LegacyLesson lessonNumber={1} />);
+    finish();
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    click(/Continue to the next lesson/);
+    expect(h.navigate).toHaveBeenLastCalledWith(
+      expect.objectContaining({ params: expect.objectContaining({ index: "4" }) }),
+    );
+  });
+
+  it("points to the final check, not another lesson, once the map is complete", () => {
+    vi.useFakeTimers();
+    h.store.done = everyLessonBut(TOTAL_LESSONS - 1);
+    render(<LegacyLesson lessonNumber={TOTAL_LESSONS} />);
+    finish();
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(screen.queryByRole("button", { name: /Continue to the next lesson/ })).toBeNull();
+    click(/Take the final check/);
+    expect(h.navigate).toHaveBeenLastCalledWith({ to: "/final-check" });
   });
 });

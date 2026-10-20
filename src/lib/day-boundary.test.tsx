@@ -242,7 +242,11 @@ describe("daily case", () => {
 describe("four-week calendar", () => {
   it("ends on the local today and marks the 9:30pm lesson on it", () => {
     at(NINE_THIRTY_PM);
-    const state = { ...DEFAULT_STATE, history: { "2026-09-23": 1 } };
+    const state = {
+      ...DEFAULT_STATE,
+      history: { "2026-09-23": 1 },
+      lessonsByDay: { "2026-09-23": 1 },
+    };
     const { container } = render(<StreakCalendar state={state} />);
     const cells = [...container.querySelectorAll("[title]")];
     expect(cells).toHaveLength(28);

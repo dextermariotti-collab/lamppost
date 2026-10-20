@@ -6,6 +6,8 @@ import { LESSONS, TOTAL_LESSONS } from "@/lib/curriculum";
 
 const h = vi.hoisted(() => ({
   done: new Set<number>(),
+  doneToday: 0,
+  history: {} as Record<string, number>,
   navigate: vi.fn(),
   share: vi.fn(),
   unitAccuracy: 0.6,
@@ -14,9 +16,10 @@ const h = vi.hoisted(() => ({
 vi.mock("@/lib/progress", () => ({
   dayKey: () => "2026-10-19",
   useProgress: () => ({
-    state: { history: {}, dailyGoal: 1 },
+    state: { history: h.history, dailyGoal: 3 },
     streak: 2,
     doneLessons: h.done,
+    doneToday: h.doneToday,
   }),
 }));
 vi.mock("@/lib/mastery", () => ({
@@ -60,6 +63,8 @@ const nextStop = () => {
 
 beforeEach(() => {
   h.done = new Set();
+  h.doneToday = 0;
+  h.history = {};
   vi.clearAllMocks();
 });
 afterEach(cleanup);
@@ -113,5 +118,17 @@ describe("LessonFinished's next stop", () => {
     h.done = new Set(Array.from({ length: TOTAL_LESSONS }, (_, i) => i));
     mount(TOTAL_LESSONS);
     expect(screen.queryByRole("button", { name: /Next stop/ })).toBeNull();
+  });
+});
+
+describe("LessonFinished's daily goal", () => {
+  it("counts the lessons finished today, not the reviews and cases", () => {
+    h.history = { "2026-10-19": 5 };
+    h.doneToday = 1;
+    mount(1);
+    expect(screen.getByText("1 / 3")).toBeTruthy();
+    expect(
+      screen.getByRole("progressbar", { name: "Today's goal" }).getAttribute("aria-valuenow"),
+    ).toBe("1");
   });
 });

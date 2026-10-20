@@ -1,8 +1,9 @@
 import { Flame, Snowflake } from "lucide-react";
 import { useEffect, useState } from "react";
-import { dayKey, shiftDay } from "@/lib/days";
+import { shiftDay } from "@/lib/days";
 import type { ProgressState } from "@/lib/progress-core";
 import { calendarRange, weekdayLetter } from "@/lib/progress-view";
+import { useToday } from "@/lib/use-today";
 
 /** Streak milestones. The flame grows visibly at each one. */
 export const STREAK_TIERS = [3, 7, 30, 100];
@@ -39,14 +40,14 @@ export function StreakFlame({
 
 /**
  * The last four weeks of real practice, under the month and a row of weekday letters. Filled
- * squares are days lessons were finished, snowflakes are days a freeze covered, blanks are days
- * missed, and today has a ring.
+ * squares are days practiced (a lesson, a review or a case, as the streak counts them),
+ * snowflakes are days a freeze covered, blanks are days missed, and today has a ring.
  */
 export function StreakCalendar({ state }: { state: ProgressState }) {
   // "Today" is the device's local day, which the server can't know.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const today = dayKey();
+  const today = useToday();
   if (!mounted) return <div className="h-40 animate-pulse rounded-2xl bg-muted" aria-hidden />;
   const days = Array.from({ length: 28 }, (_, i) => shiftDay(today, -(27 - i)));
   const frozen = new Set(state.freezeLog);
@@ -64,12 +65,22 @@ export function StreakCalendar({ state }: { state: ProgressState }) {
       <div className="grid grid-cols-7 gap-1.5">
         {days.map((day) => {
           const count = state.history[day] ?? 0;
+          const lessons = state.lessonsByDay[day] ?? 0;
           const isFrozen = count === 0 && frozen.has(day);
           const isToday = day === today;
+          // The square shows practice; only lessons are called lessons.
+          const label =
+            lessons > 0
+              ? `${lessons} lesson${lessons === 1 ? "" : "s"}`
+              : count > 0
+                ? "practiced"
+                : isFrozen
+                  ? "freeze used"
+                  : "no practice";
           return (
             <div
               key={day}
-              title={`${day}: ${count > 0 ? `${count} lesson${count === 1 ? "" : "s"}` : isFrozen ? "freeze used" : "no practice"}`}
+              title={`${day}: ${label}`}
               className={`flex aspect-square items-center justify-center rounded-lg text-[10px] font-bold ${
                 count > 0
                   ? "bg-primary/85 text-primary-foreground"

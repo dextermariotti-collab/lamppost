@@ -26,7 +26,8 @@ import { useCurriculumCourse, useCurriculumLesson } from "@/lib/curriculum-store
 import { EXERCISE_LABEL, describeExercise } from "@/lib/exercises";
 import { useLessonAttempts } from "@/lib/exercise-store";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
-import { dayKey, useProgress } from "@/lib/progress";
+import { useProgress } from "@/lib/progress";
+import { nextStopAfter } from "@/lib/progress-core";
 import { recordWrittenScore, unitMastery } from "@/lib/mastery";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
@@ -52,6 +53,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     streak,
     hydrated,
     doneLessons,
+    doneToday,
     completeLesson,
     recordPractice,
     recordExercise,
@@ -97,11 +99,14 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
   xpNow.current = state.xp;
   /** Already finished before this run: a replay completes no line. */
   const wasDone = useRef(false);
+  /** Lessons done when the lesson opened, so finishing the last one left can say so. */
+  const doneAtStart = useRef<number | null>(null);
   const doneNow = useRef(doneLessons);
   doneNow.current = doneLessons;
   useEffect(() => {
     if (!hydrated) return;
     xpAtStart.current = xpNow.current;
+    doneAtStart.current = doneNow.current.size;
     wasDone.current = doneNow.current.has(lessonNumber - 1);
   }, [index, hydrated, lessonNumber]);
 
@@ -186,6 +191,15 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
   const onEasier = easierPage !== null && page === easierPage;
   const onWritten = hasWrittenPage && page === writtenPage;
   const onSummary = page === summaryPage;
+
+  /** What this run has earned so far, the lesson's own XP included once it is recorded. */
+  const xpEarned = Math.max(state.xp - (xpAtStart.current ?? state.xp), 0);
+  /** This lesson is the last one left on the map, so finishing it finishes the course. */
+  const lastStop =
+    (doneAtStart.current ?? TOTAL_LESSONS) < TOTAL_LESSONS &&
+    Array.from({ length: TOTAL_LESSONS }, (_, i) => i).every(
+      (i) => i === lessonNumber - 1 || doneLessons.has(i),
+    );
 
   const stepPct = Math.round(
     ((lessonNumber - 1 + Math.min(page + 1, totalPages) / totalPages) / TOTAL_LESSONS) * 100,
@@ -272,18 +286,19 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           : "See the summary"
         : onWritten
           ? "See the summary"
-          : lessonNumber < course.lessons.length
-            ? "Continue"
-            : "Finish course";
+          : lastStop
+            ? "Finish the course"
+            : "Continue";
 
   if (finished) {
     const scores = exercises.map((_, i) => attempts[i]?.score ?? 0);
     const answeredCount = exercises.filter((_, i) => attempts[i] !== undefined).length;
     const accuracy =
       answeredCount > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / answeredCount) * 100) : 0;
-    const xpEarned = Math.max(state.xp - (xpAtStart.current ?? state.xp), 0);
-    const doneToday = state.history[dayKey()] ?? 0;
     const goal = state.dailyGoal;
+    const nextIndex = nextStopAfter(lessonNumber - 1, doneLessons, TOTAL_LESSONS);
+    const mapComplete =
+      doneLessons.size >= TOTAL_LESSONS && (doneAtStart.current ?? 0) < TOTAL_LESSONS;
     // Only what was actually done gets listed.
     const practiced = Array.from(
       new Set(
@@ -308,7 +323,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           <div className="relative z-30 flex flex-col items-start">
             <p className="legend flex items-center gap-2 text-muted-foreground">
               <LineBullet unitId={meta?.unitId ?? "claims"} />
-              {unitDone ? "Line complete" : "Lesson complete"}
+              {mapComplete ? "Map complete" : unitDone ? "Line complete" : "Lesson complete"}
             </p>
             <h1 className="mt-2 text-3xl leading-tight">
               {unitDone ? `${unitTitle} — done.` : "You trained your reasoning."}
@@ -381,7 +396,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           <div className="mt-4 rounded-3xl bg-card p-5 shadow-soft">
             <p className="text-[11px] font-semibold text-primary-text">Today's goal</p>
             <p className="mt-1 text-sm font-bold text-foreground">
-              {Math.min(doneToday, goal)} of {goal} lessons
+              {Math.min(doneToday, goal)} of {goal} lesson{goal === 1 ? "" : "s"}
             </p>
             <div className="mt-2 h-2 overflow-hidden bg-muted">
               <div
@@ -407,12 +422,12 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           </div>
 
           <div className="mt-6 flex flex-col gap-2">
-            {lessonNumber < course.lessons.length && (
+            {nextIndex !== null ? (
               <Button
                 onClick={() =>
                   navigate({
                     to: "/course/$slug/lesson/$index",
-                    params: { slug, index: String(lessonNumber + 1) },
+                    params: { slug, index: String(nextIndex + 1) },
                   })
                 }
                 className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
@@ -420,6 +435,16 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
                 Continue to the next lesson
                 <ArrowRight className="h-4 w-4" />
               </Button>
+            ) : (
+              mapComplete && (
+                <Button
+                  onClick={() => navigate({ to: "/final-check" })}
+                  className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
+                >
+                  Take the final check
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )
             )}
             <Button
               variant="secondary"
@@ -719,7 +744,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <p className="mt-5 text-sm font-bold text-primary-text">Lesson complete</p>
             <h2 className="mt-2 text-3xl leading-tight">You trained your reasoning.</h2>
             <p className="mt-3 text-sm font-semibold text-muted-foreground">
-              +100 XP · Progress saved
+              {xpEarned > 0 ? `+${xpEarned} XP · Progress saved` : "Progress saved"}
             </p>
           </div>
         </div>

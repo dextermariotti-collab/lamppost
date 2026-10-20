@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { act, cleanup, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   caseForDay,
   caseProblems,
@@ -15,6 +15,8 @@ import {
 import { dayKey, shiftDay } from "./days";
 
 beforeEach(() => window.localStorage.clear());
+// A hook left mounted would keep the day's midnight timer on the clock it was mounted under.
+afterEach(cleanup);
 
 const q = (id: string, lessonId: string, correct = 0): DailyCase["questions"][number] => ({
   lessonId,
@@ -188,5 +190,44 @@ describe("recording a case", () => {
 
   it("counts a unit as studied once one of its lessons is done", () => {
     expect([...studiedUnits(new Set([0, 6]))].sort()).toEqual(["claims", "evidence"]);
+  });
+});
+
+describe("today's case across midnight", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const all = new Set(Array.from({ length: 35 }, (_, i) => i));
+
+  it("moves on to the next case at local midnight, with the screen still open", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 17, 23, 58));
+    const hook = renderHook(() => useDailyCase(library, all));
+    act(() => {
+      recordCase(hook.result.current.pick!.case.id, 3, 3);
+    });
+    expect(hook.result.current.pick).toMatchObject({ case: { id: "case-001" }, done: true });
+
+    act(() => {
+      vi.advanceTimersByTime(3 * 60_000);
+    });
+    expect(hook.result.current.pick).toMatchObject({ case: { id: "case-002" }, done: false });
+    expect(hook.result.current.result).toBeUndefined();
+  });
+
+  it("catches up when the app comes back after a night asleep", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 17, 22));
+    const hook = renderHook(() => useDailyCase(library, all));
+    act(() => {
+      recordCase(hook.result.current.pick!.case.id, 2, 3);
+    });
+    // The midnight timer never fired while the device slept.
+    vi.setSystemTime(new Date(2026, 9, 18, 7));
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(hook.result.current.pick).toMatchObject({ case: { id: "case-002" }, done: false });
   });
 });

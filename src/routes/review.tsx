@@ -18,7 +18,7 @@ import {
 import { recordDrillOutcome } from "@/lib/rating";
 import { celebrateAnswer } from "@/components/AnswerFeedback";
 import { playCue } from "@/lib/feedback";
-import { REVIEW_XP } from "@/lib/progress-core";
+import { reviewXp } from "@/lib/progress-core";
 import { holdRewards } from "@/lib/reward-hold";
 
 export const Route = createFileRoute("/review")({
@@ -65,24 +65,24 @@ function ReviewQueue() {
   const running = session !== null && !done;
   useEffect(() => (running ? holdRewards() : undefined), [running]);
 
-  // The hint's half XP isn't passed on: recordReview pays a fixed REVIEW_XP either way.
   const handleAnswer = (
     score: number,
     variant: number,
     _answer: unknown,
     _exercise: unknown,
     difficulty: number,
+    xpScale: number,
   ) => {
     if (answered || !item) return;
     setAnswered(true);
     const correct = score >= 1;
     if (correct) setRight((n) => n + 1);
     grade(item.key, correct, variant);
-    recordReview(correct);
+    recordReview(correct, xpScale);
     playCue(correct ? "correct" : "wrong");
     celebrateAnswer({
       correct,
-      xp: correct ? REVIEW_XP.correct : REVIEW_XP.wrong,
+      xp: reviewXp(correct, xpScale),
       note: EXERCISE_LABEL[item.kind],
     });
     recordDrillOutcome(item.lessonId, { score, difficulty });
