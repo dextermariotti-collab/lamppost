@@ -32,9 +32,13 @@ type Rpc = (
 export type Limiter = {
   /** Counts this request against `policy` and says whether it may go ahead. */
   enforce(policy: PolicyName): Promise<LimitResult>;
-  /** Takes the lease for `key`; false if someone else holds it (or on any error). */
-  acquireLock(key: string, ttlSeconds: number): Promise<boolean>;
-  releaseLock(key: string): Promise<void>;
+  /**
+   * Takes the lease for `key` on behalf of `holder`; false if someone else holds it (or on any
+   * error). Only the same holder can release it, so a worker whose lease expired can't release
+   * the one that replaced it.
+   */
+  acquireLock(key: string, ttlSeconds: number, holder: string): Promise<boolean>;
+  releaseLock(key: string, holder: string): Promise<void>;
 };
 
 /** A keyed hash, so the database holds a stable opaque key and never a network address. */
@@ -94,11 +98,12 @@ export function createLimiter(deps: { rpc: Rpc; identity: () => Promise<Identity
       }
     },
 
-    async acquireLock(key, ttlSeconds) {
+    async acquireLock(key, ttlSeconds, holder) {
       try {
         const { data, error } = await deps.rpc("acquire_lock", {
           _key: key,
           _ttl_seconds: ttlSeconds,
+          _holder: holder,
         });
         return !error && data === true;
       } catch {
@@ -106,9 +111,9 @@ export function createLimiter(deps: { rpc: Rpc; identity: () => Promise<Identity
       }
     },
 
-    async releaseLock(key) {
+    async releaseLock(key, holder) {
       try {
-        await deps.rpc("release_lock", { _key: key });
+        await deps.rpc("release_lock", { _key: key, _holder: holder });
       } catch {
         /* the lease expires by itself */
       }
@@ -194,7 +199,10 @@ export async function guardedGeneration<T>(
   },
   using: Limiter = limiter(),
 ): Promise<Guarded<T>> {
-  if (!(await using.acquireLock(opts.lockKey, opts.lockTtlSeconds))) return { status: "busy" };
+  const holder = crypto.randomUUID();
+  if (!(await using.acquireLock(opts.lockKey, opts.lockTtlSeconds, holder))) {
+    return { status: "busy" };
+  }
   try {
     const verdict = await using.enforce(opts.policy);
     if (!verdict.ok) {
@@ -207,6 +215,6 @@ export async function guardedGeneration<T>(
     }
     return { status: "ran", value: await opts.run() };
   } finally {
-    await using.releaseLock(opts.lockKey);
+    await using.releaseLock(opts.lockKey, holder);
   }
 }

@@ -45,8 +45,8 @@ export type PartsDeps = {
   /** Puts the finished lesson where lessons are served from (and seeds the drill pool). */
   publish(meta: CurriculumLesson, lesson: Lesson, domains: string[]): Promise<void>;
   lock: {
-    acquire(key: string, ttlSeconds: number): Promise<boolean>;
-    release(key: string): Promise<void>;
+    acquire(key: string, ttlSeconds: number, holder: string): Promise<boolean>;
+    release(key: string, holder: string): Promise<void>;
   };
 };
 
@@ -208,13 +208,14 @@ export async function assembleIfComplete(
   if (!lesson) return null;
 
   const key = `assemble:${meta.id}`;
-  if (!(await deps.lock.acquire(key, 60))) return lesson;
+  const holder = crypto.randomUUID();
+  if (!(await deps.lock.acquire(key, 60, holder))) return lesson;
   try {
     const domains = meta.drills.map((_, slot) => domainForSlot(meta.id, slot));
     await deps.publish(meta, lesson, domains);
     await deps.store.clear(meta.id);
   } finally {
-    await deps.lock.release(key);
+    await deps.lock.release(key, holder);
   }
   return lesson;
 }
@@ -365,8 +366,8 @@ export async function livePartsDeps(): Promise<PartsDeps> {
         .catch(() => undefined);
     },
     lock: {
-      acquire: (key, ttl) => limiter().acquireLock(key, ttl),
-      release: (key) => limiter().releaseLock(key),
+      acquire: (key, ttl, holder) => limiter().acquireLock(key, ttl, holder),
+      release: (key, holder) => limiter().releaseLock(key, holder),
     },
   };
 }

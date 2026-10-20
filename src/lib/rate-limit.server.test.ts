@@ -82,18 +82,31 @@ describe("leases", () => {
       rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
       identity: async () => guest,
     });
-    expect(await taken.acquireLock("gen:lesson-1", 60)).toBe(true);
+    expect(await taken.acquireLock("gen:lesson-1", 60, "h1")).toBe(true);
     const held = createLimiter({
       rpc: vi.fn().mockResolvedValue({ data: false, error: null }),
       identity: async () => guest,
     });
-    expect(await held.acquireLock("gen:lesson-1", 60)).toBe(false);
+    expect(await held.acquireLock("gen:lesson-1", 60, "h1")).toBe(false);
     const broken = createLimiter({
       rpc: vi.fn().mockRejectedValue(new Error("down")),
       identity: async () => guest,
     });
-    expect(await broken.acquireLock("gen:lesson-1", 60)).toBe(false);
-    await expect(broken.releaseLock("gen:lesson-1")).resolves.toBeUndefined();
+    expect(await broken.acquireLock("gen:lesson-1", 60, "h1")).toBe(false);
+    await expect(broken.releaseLock("gen:lesson-1", "h1")).resolves.toBeUndefined();
+  });
+
+  it("names the holder when taking and releasing, so only that holder can release", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
+    const limiter = createLimiter({ rpc, identity: async () => guest });
+    await limiter.acquireLock("gen:lesson-1", 60, "h1");
+    await limiter.releaseLock("gen:lesson-1", "h1");
+    expect(rpc).toHaveBeenCalledWith("acquire_lock", {
+      _key: "gen:lesson-1",
+      _ttl_seconds: 60,
+      _holder: "h1",
+    });
+    expect(rpc).toHaveBeenCalledWith("release_lock", { _key: "gen:lesson-1", _holder: "h1" });
   });
 });
 
@@ -212,5 +225,19 @@ describe("guardedGeneration", () => {
       ),
     ).rejects.toThrow("model down");
     expect(limiter.releaseLock).toHaveBeenCalledTimes(1);
+  });
+
+  it("releases with the same holder it took the lease with, fresh for each run", async () => {
+    const first = fake();
+    const second = fake();
+    await guardedGeneration(opts(async () => "a"), first);
+    await guardedGeneration(opts(async () => "b"), second);
+    const holderOf = (limiter: ReturnType<typeof fake>) => {
+      const taken = vi.mocked(limiter.acquireLock).mock.calls[0]?.[2];
+      expect(vi.mocked(limiter.releaseLock).mock.calls[0]?.[1]).toBe(taken);
+      return taken;
+    };
+    expect(holderOf(first)).toBeTruthy();
+    expect(holderOf(first)).not.toBe(holderOf(second));
   });
 });
