@@ -78,10 +78,11 @@ function ProfileScreen() {
             </span>
             <span className="min-w-0">
               <span className="block truncate text-base font-bold">{name}</span>
-              <span className="block truncate text-[13px] text-muted-foreground">
-                Learning with {companionName(companion)}
-                {account?.joinedAt ? ` · Joined ${monthYear(account.joinedAt)}` : ""}
-              </span>
+              {account?.joinedAt ? (
+                <span className="block truncate text-[13px] text-muted-foreground">
+                  Joined {monthYear(account.joinedAt)}
+                </span>
+              ) : null}
             </span>
           </Link>
           <Link

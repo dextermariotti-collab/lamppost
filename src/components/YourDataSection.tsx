@@ -171,7 +171,7 @@ export function YourDataSection() {
   );
 }
 
-/** For someone without an account: the only copy of their progress is in this browser. */
+/** For someone without an account: the only copy of their progress is on this device. */
 export function DeviceDataSection() {
   const [confirming, setConfirming] = useState(false);
   const [cleared, setCleared] = useState(false);
@@ -185,8 +185,9 @@ export function DeviceDataSection() {
         Data on this device
       </h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        Without an account, your progress, drill answers and settings are kept in this browser only.
-        Nothing about them is on our servers.
+        Without an account, your progress, drill answers and settings are kept only on this device:
+        in this browser on the website, or in the app on iPhone and Android. Nothing about them is
+        on our servers.
       </p>
       {cleared ? (
         <p role="status" className="mt-3 rounded-2xl bg-card p-3 text-xs font-bold shadow-soft">

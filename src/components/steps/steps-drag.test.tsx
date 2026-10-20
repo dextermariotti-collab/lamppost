@@ -57,6 +57,13 @@ describe("Sort it", () => {
   const bucketButton = (label: string) =>
     screen.getByRole("button", { name: `Put it in ${label}` });
 
+  it("says a bucket takes a tap, and that a drag starts with a hold", () => {
+    mount();
+    expect(
+      screen.getByText("Where does it go? Tap a bucket, or hold the card and drag it onto one."),
+    ).toBeTruthy();
+  });
+
   it("shows one card at a time with every bucket in reach, and no Check until all are filed", async () => {
     mount();
     expect(card(/130 feet.*not sorted yet/)).toBeTruthy();
@@ -261,6 +268,15 @@ describe("Argument builder", () => {
     fireEvent.click(piece(text));
     fireEvent.click(screen.getAllByRole("button", { name: "Put it here" })[slotButtonIndex]!);
   };
+
+  it("leads with tapping, and says a drag starts with a hold", () => {
+    mount();
+    expect(
+      screen.getByText(
+        "Tap a piece, then tap where it goes. Or hold a piece and drag it into the map.",
+      ),
+    ).toBeTruthy();
+  });
 
   it("starts with an empty map and counts what is in place", async () => {
     mount();

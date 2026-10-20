@@ -152,6 +152,14 @@ describe("Your data", () => {
 });
 
 describe("Data on this device (no account)", () => {
+  it("says the progress is kept on this device, in the browser or the iPhone and Android apps", () => {
+    render(<DeviceDataSection />);
+    const text = screen.getByRole("region", { name: "Data on this device" }).textContent!;
+    expect(text).toContain("kept only on this device");
+    expect(text).toMatch(/iPhone and Android/);
+    expect(text).not.toMatch(/in this browser only/);
+  });
+
   it("clears only Lamppost's keys after a second tap", () => {
     window.localStorage.setItem("lamppost-progress-v1", "{}");
     window.localStorage.setItem("lamppost-exercises-v1", "{}");

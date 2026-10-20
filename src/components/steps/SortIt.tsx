@@ -197,7 +197,9 @@ export function SortIt({
       {(inHand || dnd.drag !== null) && (
         <>
           <p className="mt-4 text-xs font-semibold text-muted-foreground">
-            {inHand ? "Where does it go? Tap a bucket, or drag the card onto one." : "Buckets"}
+            {inHand
+              ? "Where does it go? Tap a bucket, or hold the card and drag it onto one."
+              : "Buckets"}
           </p>
           <div role="group" aria-label="Buckets" className="mt-1.5 space-y-2">
             {step.buckets.map((bucket) => (

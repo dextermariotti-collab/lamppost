@@ -92,7 +92,7 @@ export function ArgumentBuilder({
       }}
     >
       <p className="mb-3 text-xs text-muted-foreground">
-        Drag each piece into the map. Or tap a piece, then tap where it goes.
+        Tap a piece, then tap where it goes. Or hold a piece and drag it into the map.
       </p>
 
       <div

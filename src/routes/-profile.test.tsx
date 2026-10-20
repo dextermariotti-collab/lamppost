@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const h = vi.hoisted(() => ({
   signedIn: false,
   accountError: false,
+  account: undefined as { joinedAt: string } | undefined,
   refetchAccount: vi.fn(),
   refetchFriends: vi.fn(),
 }));
@@ -29,7 +30,7 @@ vi.mock("@/lib/companion-store", () => ({
 vi.mock("@/lib/account", () => ({
   displayNameFor: () => "Learner",
   useAccount: () => ({
-    data: undefined,
+    data: h.account,
     isError: h.accountError,
     refetch: h.refetchAccount,
   }),
@@ -50,6 +51,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 }));
 
 import { BADGES } from "@/lib/badges";
+import { companionName } from "@/lib/companions";
+import { monthYear } from "@/lib/days";
 import { Route } from "./profile";
 
 const Screen = Route.options.component as () => ReactNode;
@@ -58,12 +61,33 @@ beforeEach(() => {
   window.localStorage.clear();
   h.signedIn = false;
   h.accountError = false;
+  h.account = undefined;
   h.refetchAccount.mockReset();
   h.refetchFriends.mockReset();
 });
 afterEach(cleanup);
 
 describe("Profile", () => {
+  it("names the person and when they joined, with the companion only as their avatar", () => {
+    h.signedIn = true;
+    h.account = { joinedAt: "2026-08-15T12:00:00.000Z" };
+    render(<Screen />);
+    const header = screen.getByRole("banner");
+    expect(header.textContent).toContain("Learner");
+    expect(header.textContent).toContain(`Joined ${monthYear("2026-08-15T12:00:00.000Z")}`);
+    expect(header.textContent).not.toMatch(/Learning with/);
+    const fox = { preset: "fox" } as Parameters<typeof companionName>[0];
+    expect(header.textContent).not.toContain(companionName(fox));
+    expect(within(header).getByRole("link", { name: "Change companion" })).toBeTruthy();
+  });
+
+  it("shows only the name when the join date isn't known", () => {
+    render(<Screen />);
+    const header = screen.getByRole("banner");
+    expect(header.textContent).toContain("Learner");
+    expect(header.textContent).not.toMatch(/Joined|Learning with/);
+  });
+
   it("shows the same achievements as Progress, signed out too", async () => {
     render(<Screen />);
     // A 9-day streak earns Iron Streak's bronze (7 days) in the local catalog.

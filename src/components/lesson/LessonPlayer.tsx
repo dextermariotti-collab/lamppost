@@ -71,7 +71,7 @@ export function LessonPlayer({
           />
         </div>
 
-        <div className="sticky bottom-3 z-20 mt-6">
+        <div className="sticky-action mt-6">
           <Button
             type="button"
             disabled={!resolved}

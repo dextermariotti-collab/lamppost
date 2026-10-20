@@ -39,8 +39,8 @@ function Acknowledgements() {
             Typefaces
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Loaded from Google Fonts when you open the app, which means your device contacts Google
-            to fetch them. See the Privacy Policy.
+            Bundled with the app, so your device doesn&apos;t contact Google or anyone else to load
+            them.
           </p>
           <ul className="mt-2 divide-y divide-border rounded-2xl border border-border">
             {FONTS.map((font) => (
