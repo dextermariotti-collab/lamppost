@@ -119,4 +119,12 @@ describe("deleting a real account", () => {
     const counters = await db.query(`SELECT 1 FROM rate_limits WHERE key = $1`, [`u:${ALICE}`]);
     expect(counters.rows).toHaveLength(1);
   });
+
+  it("keeps a report about a person when that person deletes their account, unlinked", async () => {
+    // Alice reported Bob above and has gone; now Bob goes too. Deleting an account must not be
+    // a way to erase the reports about it.
+    await db.query(`DELETE FROM auth.users WHERE id=$1`, [BOB]);
+    const filed = await db.query(`SELECT reporter_id, reported_user_id, reason FROM user_reports`);
+    expect(filed.rows).toEqual([{ reporter_id: null, reported_user_id: null, reason: "other" }]);
+  });
 });

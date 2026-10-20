@@ -1,9 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { shiftDay } from "./days";
 import { TodayInput, resolveToday } from "./client-day";
 import { MAX_SHARED_STREAKS, evaluateSharedStreak } from "./shared-streak";
 import { isVisibility, DEFAULT_VISIBILITY, type Visibility } from "./safety";
+import { socialConsentProblem } from "./safety.functions";
 
 export type PersonCard = {
   id: string;
@@ -79,9 +81,59 @@ const toCard = (row: ProfileRow, asFriend = false): PersonCard => {
   };
 };
 
+/** Most friend requests a person can have waiting for an answer at once. */
+export const MAX_PENDING_REQUESTS = 20;
+
+const Id = z.string().uuid();
+const PersonInput = z.object({ userId: Id });
+const FriendshipInput = z.object({ friendshipId: Id });
+const RequestAnswer = z.object({ friendshipId: Id, accept: z.boolean() });
+const StreakAnswer = z.object({ sharedStreakId: Id, accept: z.boolean() });
+const NudgeInput = z.object({
+  toUserId: Id,
+  sharedStreakId: Id.optional(),
+  today: z.string().max(10).optional(),
+});
+const SearchInput = z.object({ query: z.string().max(100) });
+const InviteInput = z.object({ code: z.string().max(40) });
+const HandleInput = z.object({ handle: z.string().max(40) });
+
+/** Checks input at run time; anything malformed gets one plain message instead of a stack. */
+function parsed<S extends z.ZodTypeAny>(schema: S, input: unknown): z.infer<S> {
+  const result = schema.safeParse(input);
+  if (!result.success) throw new Error("That request didn't look right. Refresh and try again.");
+  return result.data;
+}
+
+/** Logs what went wrong for us and tells the person plainly, never with the database's words. */
+function failed(what: string, error: unknown): never {
+  console.error(`[friends] ${what}`, error);
+  throw new Error("That couldn't be done just now. Try again in a moment.");
+}
+
+/** Stops here if the caller hasn't accepted the current terms (see socialConsentProblem). */
+async function requireConsent(userId: string) {
+  const problem = await socialConsentProblem(userId);
+  if (problem) throw new Error(problem);
+}
+
+async function requireLimit(policy: "friendRequest" | "profileSearch") {
+  const { limiter } = await import("./rate-limit.server");
+  const verdict = await limiter().enforce(policy);
+  if (!verdict.ok) throw new Error(verdict.message);
+}
+
+/** RPCs added after the generated client types (search_profiles takes a viewer now). */
+type UntypedRpc = (
+  fn: string,
+  args: Record<string, unknown>,
+) => PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }>;
+
+type SearchRow = Omit<ProfileRow, "current_streak" | "total_xp" | "profile_visibility">;
+
 export const listFriends = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => TodayInput.parse(input))
+  .validator((input: unknown) => parsed(TodayInput, input))
   .handler(async ({ data, context }): Promise<FriendsSnapshot> => {
     const { supabase, userId } = context;
     const today = resolveToday(data);
@@ -100,7 +152,7 @@ export const listFriends = createServerFn({ method: "POST" })
         .maybeSingle(),
       supabase.from("friendships").select("id, requester_id, addressee_id, status"),
     ]);
-    if (linkError) throw new Error(linkError.message);
+    if (linkError) failed("Listing friendships", linkError);
 
     const rows = links ?? [];
     const otherId = (row: { requester_id: string; addressee_id: string }) =>
@@ -237,77 +289,121 @@ export const listFriends = createServerFn({ method: "POST" })
 
 export const searchPeople = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { query: string }) => input)
+  .validator((input: { query: string }) => parsed(SearchInput, input))
   .handler(async ({ data, context }): Promise<PersonCard[]> => {
-    const query = data.query.trim();
-    if (query.length < 2) return [];
-    const { data: results, error } = await context.supabase.rpc("search_profiles", {
+    const query = data.query.trim().replace(/^@/, "");
+    if (query.length < 3) return [];
+    await requireConsent(context.userId);
+    await requireLimit("profileSearch");
+    // Search is server-only: it matches handles (never names), skips blocked pairs and the
+    // caller, and is counted against the caller's limit above.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: results, error } = await (admin.rpc as unknown as UntypedRpc)("search_profiles", {
+      _viewer: context.userId,
       _query: query,
     });
-    if (error) throw new Error(error.message);
-    return (results ?? []).map((row) => toCard({ ...row, total_xp: 0 } as ProfileRow));
+    if (error) failed("Searching people", error);
+    return ((results ?? []) as SearchRow[]).map((row) =>
+      toCard({ ...row, current_streak: null, total_xp: 0 }),
+    );
   });
 
 export const sendFriendRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { userId: string }) => input)
+  .validator((input: { userId: string }) => parsed(PersonInput, input))
   .handler(async ({ data, context }) => {
-    if (data.userId === context.userId) throw new Error("You can't add yourself.");
-    const { error } = await context.supabase.from("friendships").insert({
-      requester_id: context.userId,
+    const { userId } = context;
+    if (data.userId === userId) throw new Error("You can't add yourself.");
+    await requireConsent(userId);
+    await requireLimit("friendRequest");
+
+    // The browser can't insert friendships (see the social_safety_hardening migration), so the
+    // request is checked and written here. The database still refuses one between a blocked pair.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: link, error: linkError } = await admin
+      .from("friendships")
+      .select("requester_id, status")
+      .or(
+        `and(requester_id.eq.${userId},addressee_id.eq.${data.userId}),and(requester_id.eq.${data.userId},addressee_id.eq.${userId})`,
+      )
+      .maybeSingle();
+    if (linkError) failed("Checking an existing friendship", linkError);
+    if (link) {
+      if (link.status === "accepted") throw new Error("You're already friends.");
+      throw new Error(
+        link.requester_id === userId
+          ? "You've already asked them. They'll see it next time they visit."
+          : "They've already asked you. Accept their request instead.",
+      );
+    }
+
+    const { count, error: countError } = await admin
+      .from("friendships")
+      .select("id", { count: "exact", head: true })
+      .eq("requester_id", userId)
+      .eq("status", "pending");
+    if (countError) failed("Counting waiting requests", countError);
+    if ((count ?? 0) >= MAX_PENDING_REQUESTS) {
+      throw new Error(
+        `You have ${MAX_PENDING_REQUESTS} requests waiting for an answer. Send more once some are answered.`,
+      );
+    }
+
+    const { error } = await admin.from("friendships").insert({
+      requester_id: userId,
       addressee_id: data.userId,
       status: "pending",
     });
     if (error) {
       // A refused request (for example, between people where one has blocked the other) gets
       // the same plain message as any other failure, so it never reveals a block.
-      throw new Error(
-        error.code === "23505"
-          ? "You're already connected with them."
-          : "That request could not be sent.",
-      );
+      if (error.code === "23505") throw new Error("You're already connected with them.");
+      console.error("[friends] Sending a request", error);
+      throw new Error("That request could not be sent.");
     }
     return { ok: true };
   });
 
 export const respondToRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { friendshipId: string; accept: boolean }) => input)
+  .validator((input: { friendshipId: string; accept: boolean }) => parsed(RequestAnswer, input))
   .handler(async ({ data, context }) => {
     if (!data.accept) {
       const { error } = await context.supabase
         .from("friendships")
         .delete()
         .eq("id", data.friendshipId);
-      if (error) throw new Error(error.message);
+      if (error) failed("Declining a request", error);
       return { ok: true };
     }
+    await requireConsent(context.userId);
     const { error } = await context.supabase
       .from("friendships")
       .update({ status: "accepted", accepted_at: new Date().toISOString() })
       .eq("id", data.friendshipId)
       .eq("addressee_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) failed("Accepting a request", error);
     return { ok: true };
   });
 
 export const removeFriend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { friendshipId: string }) => input)
+  .validator((input: { friendshipId: string }) => parsed(FriendshipInput, input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("friendships")
       .delete()
       .eq("id", data.friendshipId);
-    if (error) throw new Error(error.message);
+    if (error) failed("Removing a friend", error);
     return { ok: true };
   });
 
 export const proposeSharedStreak = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { friendshipId: string }) => input)
+  .validator((input: { friendshipId: string }) => parsed(FriendshipInput, input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    await requireConsent(userId);
     // Shared streaks are written by the server, so membership is checked here:
     // the friendship must be one of the caller's own (RLS) and already accepted.
     const { data: friendship } = await supabase
@@ -333,16 +429,15 @@ export const proposeSharedStreak = createServerFn({ method: "POST" })
       status: "pending",
     });
     if (error) {
-      throw new Error(
-        error.code === "23505" ? "A shared streak already exists with them." : error.message,
-      );
+      if (error.code === "23505") throw new Error("A shared streak already exists with them.");
+      failed("Starting a shared streak", error);
     }
     return { ok: true };
   });
 
 export const respondToSharedStreak = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { sharedStreakId: string; accept: boolean }) => input)
+  .validator((input: { sharedStreakId: string; accept: boolean }) => parsed(StreakAnswer, input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: streak, error: readError } = await supabase
@@ -350,7 +445,7 @@ export const respondToSharedStreak = createServerFn({ method: "POST" })
       .select("id, proposed_by, status")
       .eq("id", data.sharedStreakId)
       .maybeSingle();
-    if (readError) throw new Error(readError.message);
+    if (readError) failed("Reading a shared streak", readError);
     if (!streak) throw new Error("That shared streak is no longer available.");
     if (streak.proposed_by === userId && data.accept) {
       throw new Error("Your friend still needs to accept this one.");
@@ -358,33 +453,69 @@ export const respondToSharedStreak = createServerFn({ method: "POST" })
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     if (!data.accept) {
       const { error } = await admin.from("shared_streaks").delete().eq("id", streak.id);
-      if (error) throw new Error(error.message);
+      if (error) failed("Ending a shared streak", error);
       return { ok: true };
     }
+    await requireConsent(userId);
     // Accepting an already-running streak must not restart its count.
     if (streak.status !== "pending") return { ok: true };
     const { error } = await admin
       .from("shared_streaks")
       .update({ status: "active", started_at: new Date().toISOString(), current_count: 0 })
       .eq("id", streak.id);
-    if (error) throw new Error(error.message);
+    if (error) failed("Accepting a shared streak", error);
     return { ok: true };
   });
 
 export const sendNudge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { toUserId: string; sharedStreakId?: string; today?: string }) => input)
+  .validator((input: { toUserId: string; sharedStreakId?: string; today?: string }) =>
+    parsed(NudgeInput, input),
+  )
   .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await requireConsent(userId);
+    const { data: link } = await supabase
+      .from("friendships")
+      .select("id")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${userId},addressee_id.eq.${data.toUserId}),and(requester_id.eq.${data.toUserId},addressee_id.eq.${userId})`,
+      )
+      .maybeSingle();
+    if (!link) throw new Error("You can only nudge a friend.");
+
+    // The database checks all of this again for the browser role; asking first means the
+    // person is told plainly why a nudge didn't go.
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: recipient } = await admin
+      .from("profiles")
+      .select("notify_nudges_inapp")
+      .eq("id", data.toUserId)
+      .maybeSingle();
+    if (!recipient?.notify_nudges_inapp) throw new Error("They've turned nudges off.");
+    if (data.sharedStreakId) {
+      const { data: streak } = await admin
+        .from("shared_streaks")
+        .select("friendship_id")
+        .eq("id", data.sharedStreakId)
+        .maybeSingle();
+      if (streak?.friendship_id !== link.id) {
+        throw new Error("That shared streak is no longer available.");
+      }
+    }
+
     // "One nudge per friend per day" is counted on the sender's local day, the
     // same day listFriends uses to say whether they've already nudged today.
-    const { error } = await context.supabase.from("nudges").insert({
-      from_user_id: context.userId,
+    const { error } = await supabase.from("nudges").insert({
+      from_user_id: userId,
       to_user_id: data.toUserId,
       shared_streak_id: data.sharedStreakId ?? null,
       day: resolveToday(data),
     });
     if (error) {
-      throw new Error(error.code === "23505" ? "You already nudged them today." : error.message);
+      if (error.code === "23505") throw new Error("You already nudged them today.");
+      failed("Sending a nudge", error);
     }
     return { ok: true };
   });
@@ -400,7 +531,7 @@ export const listNudges = createServerFn({ method: "POST" })
       .is("read_at", null)
       .order("sent_at", { ascending: false })
       .limit(10);
-    if (error) throw new Error(error.message);
+    if (error) failed("Listing nudges", error);
     const senders = (data ?? []).map((n) => n.from_user_id);
     const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const profiles = senders.length
@@ -424,18 +555,19 @@ export const markNudgesRead = createServerFn({ method: "POST" })
       .update({ read_at: new Date().toISOString() })
       .eq("to_user_id", context.userId)
       .is("read_at", null);
-    if (error) throw new Error(error.message);
+    if (error) failed("Marking nudges read", error);
     return { ok: true };
   });
 
 export const resolveInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { code: string }) => input)
+  .validator((input: { code: string }) => parsed(InviteInput, input))
   .handler(async ({ data, context }): Promise<PersonCard | null> => {
+    await requireConsent(context.userId);
     const { data: rows, error } = await context.supabase.rpc("profile_by_invite", {
       _code: data.code,
     });
-    if (error) throw new Error(error.message);
+    if (error) failed("Looking up an invite", error);
     const row = (rows ?? [])[0];
     if (!row || row.id === context.userId) return null;
     return toCard({ ...row, total_xp: 0 } as ProfileRow);
@@ -450,7 +582,7 @@ const ownProgress = (profile: { current_streak: number; total_xp: number }) => (
 
 export const getFriendProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { handle: string }) => input)
+  .validator((input: { handle: string }) => parsed(HandleInput, input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Only accepted friends' rows are readable through the browser grant, but this
@@ -466,7 +598,7 @@ export const getFriendProfile = createServerFn({ method: "POST" })
         data.handle.replace(/[\\%_]/g, (c) => `\\${c}`),
       )
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) failed("Looking up a profile", error);
     if (!profile) return null;
 
     const { data: link } = await supabase

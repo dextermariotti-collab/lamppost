@@ -37,9 +37,12 @@ afterAll(async () => {
 
 describe("rolling back the rate limits", () => {
   const NAME = "20260929100000_rate_limits_and_locks";
+  const LATER = "20261019100000_social_safety_hardening";
 
   it("removes the counters, leases and functions, and can be re-applied", async () => {
     expect(await tableExists("rate_limits")).toBe(true);
+    // Rollbacks run newest first; the later one puts the original lease functions back.
+    await db.exec(down(LATER));
     await db.exec(down(NAME));
     expect(await tableExists("rate_limits")).toBe(false);
     expect(await tableExists("server_locks")).toBe(false);
@@ -50,8 +53,11 @@ describe("rolling back the rate limits", () => {
     await db.exec(down(NAME));
 
     await db.exec(up(NAME));
+    await db.exec(up(LATER));
     const again = await server(() => attempt(db, `SELECT * FROM check_rate_limits('[]'::jsonb)`));
     expect(again.ok).toBe(true);
+    const lease = await server(() => attempt(db, `SELECT acquire_lock('k', 5, 'me') AS got`));
+    expect(lease.ok && lease.rows[0]?.["got"]).toBe(true);
   }, 60_000);
 });
 

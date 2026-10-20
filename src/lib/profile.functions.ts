@@ -9,14 +9,19 @@ import { isDayKey, shiftDay, utcDay } from "./days";
 import {
   MAX_DONE_LESSONS,
   MAX_GEMS_PER_DAY,
+  MAX_SYNC_HISTORY_DAYS,
   MAX_XP_PER_DAY,
   activityToStore,
   boundedTotal,
+  creditedUntil,
   doneLessonsToStore,
   firstSyncCarryOver,
+  freezeDaysToUse,
   growthAllowance,
   weeklyXpCredit,
 } from "./progress-limits";
+import { screenLocally } from "./moderation";
+import { socialConsentProblem } from "./safety.functions";
 import { streakEndingAtLatest } from "./streak";
 import { MAX_HINT_TOKENS, isCosmetic } from "./rewards";
 import { weekStartOf } from "./weeks";
@@ -45,6 +50,8 @@ export type AccountProfile = {
   lastActiveDay: string | null;
   /** The lessons finished on any of the account's devices, by id. */
   doneLessons: string[];
+  /** The account's most recent days with activity (local day keys, newest first, at most 60). */
+  activeDays: string[];
   companion: {
     preset: string;
     palette: string;
@@ -90,6 +97,9 @@ async function readDoneLessons(client: unknown, userId: string): Promise<string[
 
 const KNOWN_LESSONS: ReadonlySet<string> = new Set(LESSONS.map((lesson) => lesson.id));
 
+/** How many of the account's recent active days getMyProfile hands a device. */
+const ACTIVE_DAYS_RETURNED = 60;
+
 const SELECT =
   "id, display_name, handle, invite_code, created_at, daily_goal, notify_nudges_inapp, notify_nudges_email, current_streak, longest_streak, total_xp, gems, gems_earned, gems_granted, gems_spent, hint_tokens, league_tier, last_active_day, companion_preset, companion_palette, companion_accessory, companion_expression";
 
@@ -115,6 +125,15 @@ export const getMyProfile = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
     const doneLessons = (await readDoneLessons(supabaseAdmin, context.userId)) ?? [];
+    // So a new device that adopts the account's streak also shows the days it was made of.
+    const { data: recent } = await supabaseAdmin
+      .from("daily_activity")
+      .select("day")
+      .eq("user_id", context.userId)
+      .gt("lessons_completed", 0)
+      .order("day", { ascending: false })
+      .limit(ACTIVE_DAYS_RETURNED);
+    const activeDays = (recent ?? []).map((row) => row.day).filter((day) => isDayKey(day));
     const email = (context.claims as { email?: string } | null)?.email ?? null;
     return {
       id: data.id,
@@ -137,6 +156,7 @@ export const getMyProfile = createServerFn({ method: "POST" })
       leagueTier: data.league_tier,
       lastActiveDay: data.last_active_day,
       doneLessons,
+      activeDays,
       companion: {
         preset: data.companion_preset,
         palette: data.companion_palette,
@@ -150,6 +170,30 @@ export const getMyProfile = createServerFn({ method: "POST" })
     };
   });
 
+const ProfilePatch = z.object({
+  displayName: z.string().max(400).optional(),
+  handle: z.string().max(100).optional(),
+  dailyGoal: z.number().finite().optional(),
+  notifyNudgesInApp: z.boolean().optional(),
+  notifyNudgesEmail: z.boolean().optional(),
+  goal: z.string().max(400).optional(),
+});
+
+/** Other people see these, so a handle or name that passes for the app itself is refused. */
+const passesForLamppost = (text: string) => /lamppost/i.test(text.replace(/[^a-z]/gi, ""));
+
+/** A display name as stored: no control or invisible characters, single spaces, 40 at most. */
+function cleanDisplayName(raw: string): string | null {
+  const name = raw
+    .normalize("NFC")
+    .replace(/[\p{Cc}\p{Cf}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40)
+    .trim();
+  return name.length > 0 ? name : null;
+}
+
 export const updateMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(
@@ -160,18 +204,28 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       notifyNudgesInApp?: boolean;
       notifyNudgesEmail?: boolean;
       goal?: string;
-    }) => input,
+    }) => {
+      const parsed = ProfilePatch.safeParse(input);
+      if (!parsed.success) throw new Error("That didn't save. Check it and try again.");
+      return parsed.data;
+    },
   )
   .handler(async ({ data, context }) => {
     const patch: Record<string, string | number | boolean | null> = {};
     if (data.displayName !== undefined) {
-      const name = data.displayName.trim().slice(0, 40);
-      patch["display_name"] = name.length > 0 ? name : null;
+      const name = cleanDisplayName(data.displayName);
+      if (name && (passesForLamppost(name) || !screenLocally(name).allowed)) {
+        throw new Error("That name can't be used. Pick a different one.");
+      }
+      patch["display_name"] = name;
     }
     if (data.handle !== undefined) {
-      const handle = data.handle.trim().toLowerCase();
-      if (!/^[a-z0-9_]{3,20}$/.test(handle)) {
-        throw new Error("Handles use 3–20 letters, numbers or underscores.");
+      const handle = data.handle.trim().replace(/^@/, "").toLowerCase();
+      if (!/^[a-z0-9_-]{3,24}$/.test(handle)) {
+        throw new Error("Handles use 3–24 lowercase letters, numbers, dashes or underscores.");
+      }
+      if (passesForLamppost(handle) || !screenLocally(handle.replace(/[-_]/g, " ")).allowed) {
+        throw new Error("That handle can't be used. Pick a different one.");
       }
       patch["handle"] = handle;
     }
@@ -183,12 +237,23 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     if (data.notifyNudgesEmail !== undefined) patch["notify_nudges_email"] = data.notifyNudgesEmail;
     if (Object.keys(patch).length === 0) return { ok: true };
 
-    const { error } = await context.supabase
+    // A name and handle are what other people see, so they wait for the terms to be accepted.
+    if ("display_name" in patch || "handle" in patch) {
+      const problem = await socialConsentProblem(context.userId);
+      if (problem) throw new Error(problem);
+    }
+
+    // The browser can't write the name or handle (see the social_safety_hardening migration), so
+    // the checked patch is written here, to the caller's own row only.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("profiles")
       .update(patch as never)
       .eq("id", context.userId);
     if (error) {
-      throw new Error(error.code === "23505" ? "That handle is already taken." : error.message);
+      if (error.code === "23505") throw new Error("That handle is already taken.");
+      console.error("Saving the profile failed", error);
+      throw new Error("That didn't save. Try again in a moment.");
     }
     return { ok: true };
   });
@@ -200,11 +265,13 @@ const SyncInput = z.object({
   /** The device's balance. Only builds from before the server-side wallet send this instead. */
   gems: z.number().int().min(0).max(10_000_000).optional(),
   /** Days (device-local) with activity, and how much. The server decides what it accepts. */
-  history: z.record(z.string(), z.number()),
+  history: z
+    .record(z.string().max(10), z.number())
+    .refine((days) => Object.keys(days).length <= MAX_SYNC_HISTORY_DAYS),
   /** The lessons finished on the device, by id. Only real lessons are kept, and only ever added. */
   doneLessons: z.array(z.string().max(80)).max(MAX_DONE_LESSONS).optional(),
-  /** Days a streak freeze covered on the device. */
-  freezeLog: z.array(z.string()).max(60).default([]),
+  /** Days a streak freeze covered on the device. At most MAX_FREEZE_DAYS of them are used. */
+  freezeLog: z.array(z.string().max(10)).max(60).default([]),
   /** The device's local today; validated against the server clock. */
   today: z.string().optional(),
   /** 2 = every day key is the device's local calendar day. Older clients omit it. */
@@ -320,7 +387,7 @@ export const syncProgress = createServerFn({ method: "POST" })
       .lte("day", shiftDay(utcDay(now), 1));
     if (activityError) throw new Error(activityError.message);
     const activeDays = (stored ?? []).filter((r) => r.lessons_completed > 0).map((r) => r.day);
-    const freezeDays = data.freezeLog.filter((day) => isDayKey(day));
+    const freezeDays = freezeDaysToUse(data.freezeLog, today);
     const { streak, lastActiveDay } = streakEndingAtLatest(activeDays, freezeDays);
 
     const xpCap = growthAllowance({
@@ -345,13 +412,22 @@ export const syncProgress = createServerFn({ method: "POST" })
           isCosmetic,
         })
       : null;
+    const totalXp = boundedTotal(current.total_xp, data.totalXp, xpCap);
+    const syncedUntil = creditedUntil({
+      lastSyncedAt,
+      growth: [
+        { gained: totalXp - current.total_xp, perDay: MAX_XP_PER_DAY },
+        { gained: earned - current.gems_earned, perDay: MAX_GEMS_PER_DAY },
+      ],
+      now,
+    });
     const next = {
       current_streak: streak,
       longest_streak: Math.max(current.longest_streak, streak),
-      total_xp: boundedTotal(current.total_xp, data.totalXp, xpCap),
+      total_xp: totalXp,
       gems_earned: earned,
       last_active_day: lastActiveDay,
-      progress_synced_at: now.toISOString(),
+      progress_synced_at: syncedUntil.toISOString(),
       ...(upgrading ? { day_key_version: 2 } : {}),
       // Only the account's first sync may bring across what was spent before it existed.
       ...(carry

@@ -1,8 +1,47 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { consentIsCurrent } from "./consent";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 import { MAX_REPORT_DETAILS, USER_REPORT_REASONS, VISIBILITIES, type Visibility } from "./safety";
+
+export const FINISH_SIGNUP =
+  "Finish signing up first: accept the terms and confirm your age. Then you can connect with people.";
+const UNAVAILABLE = "That couldn't be done just now. Try again in a moment.";
+
+/** What PostgREST reports when a column doesn't exist: the consent migration isn't applied. */
+const MISSING_COLUMN = new Set(["42703", "PGRST204"]);
+
+/**
+ * Why `userId` can't reach other people yet (search, invites, requests, nudges, a public name),
+ * or null when they can. The browser's ConsentGate sends an account that hasn't accepted the
+ * current terms to /consent; this is the same rule on the server, and it fails closed. Only a
+ * database without the consent columns reads as "nothing to enforce", as everywhere else.
+ * Blocking, reporting, declining and removing are never held back by it.
+ */
+export async function socialConsentProblem(userId: string): Promise<string | null> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("terms_version, privacy_version, age_band")
+      .eq("id", userId)
+      .maybeSingle();
+    if (error) return MISSING_COLUMN.has(String(error.code ?? "")) ? null : UNAVAILABLE;
+    if (!data) return FINISH_SIGNUP;
+    const current = consentIsCurrent({
+      known: true,
+      termsVersion: data.terms_version,
+      privacyVersion: data.privacy_version,
+      acceptedAt: null,
+      ageBand: data.age_band === "13-17" || data.age_band === "18+" ? data.age_band : null,
+    });
+    return current ? null : FINISH_SIGNUP;
+  } catch (error) {
+    console.error("Reading consent failed", error);
+    return UNAVAILABLE;
+  }
+}
 
 /**
  * Blocking, reporting and profile visibility. All of it is written by the server with the

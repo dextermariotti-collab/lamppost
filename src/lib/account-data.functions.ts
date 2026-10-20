@@ -1,5 +1,61 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
+
+type DebateRow = {
+  id: string;
+  challenger_id: string;
+  opponent_id: string;
+  lesson_id: string | null;
+  topic: string;
+  prompt: string;
+  passage: string;
+  challenger_side: string;
+  opponent_side: string;
+  challenger_answer: string | null;
+  opponent_answer: string | null;
+  challenger_scores: Json | null;
+  opponent_scores: Json | null;
+  challenger_total: number | null;
+  opponent_total: number | null;
+  challenger_tip: string | null;
+  opponent_tip: string | null;
+  max_score: number;
+  status: string;
+  created_at: string;
+};
+
+/**
+ * A debate as the caller's own data: the motion, their side, their answer and grade. The other
+ * person's answer and tip are theirs, so they never appear; once both have answered, the result
+ * (both totals) does.
+ */
+export function debateForExport(row: DebateRow, userId: string) {
+  const mine = row.challenger_id === userId;
+  const bothAnswered = row.challenger_answer !== null && row.opponent_answer !== null;
+  return {
+    id: row.id,
+    lessonId: row.lesson_id,
+    topic: row.topic,
+    prompt: row.prompt,
+    passage: row.passage,
+    role: mine ? "challenger" : "opponent",
+    side: mine ? row.challenger_side : row.opponent_side,
+    answer: mine ? row.challenger_answer : row.opponent_answer,
+    scores: mine ? row.challenger_scores : row.opponent_scores,
+    total: mine ? row.challenger_total : row.opponent_total,
+    tip: mine ? row.challenger_tip : row.opponent_tip,
+    status: row.status,
+    result: bothAnswered
+      ? {
+          yourTotal: mine ? row.challenger_total : row.opponent_total,
+          theirTotal: mine ? row.opponent_total : row.challenger_total,
+          maxScore: row.max_score,
+        }
+      : null,
+    createdAt: row.created_at,
+  };
+}
 
 /** Machine-readable copy of everything the account holds. */
 export const exportMyData = createServerFn({ method: "POST" })
@@ -41,7 +97,14 @@ export const exportMyData = createServerFn({ method: "POST" })
       supabase.from("content_reports").select("*").eq("user_id", userId),
       supabase.from("argument_attempts").select("*").eq("user_id", userId),
       supabase.from("practice_sessions").select("*").eq("user_id", userId),
-      supabase.from("debates").select("*"),
+      // Answers and scores aren't readable through the browser grant; the caller's own debates
+      // are read here and cut down to their own part (debateForExport).
+      supabaseAdmin
+        .from("debates")
+        .select(
+          "id, challenger_id, opponent_id, lesson_id, topic, prompt, passage, challenger_side, opponent_side, challenger_answer, opponent_answer, challenger_scores, opponent_scores, challenger_total, opponent_total, challenger_tip, opponent_tip, max_score, status, created_at",
+        )
+        .or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`),
       supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
       supabaseAdmin.from("consent_records").select("*").eq("user_id", userId),
       // Rewards and league rows are server-only (the browser role can't read them).
@@ -72,7 +135,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       contentReports: reports.data ?? [],
       argumentAttempts: argumentAttempts.data ?? [],
       practiceSessions: practiceSessions.data ?? [],
-      debates: debates.data ?? [],
+      debates: ((debates.data ?? []) as DebateRow[]).map((row) => debateForExport(row, userId)),
       subscription: subscription.data ?? null,
       consentRecords: consentRecords.data ?? [],
       rewardChests: rewardChests.data ?? [],

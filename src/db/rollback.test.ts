@@ -12,6 +12,10 @@ const ALICE = "00000000-0000-0000-0000-00000000000a";
 const read = (file: string) => readFileSync(join(process.cwd(), file), "utf8");
 const down = () => read("docs/rollback/20260928200000_lock_server_owned_writes.down.sql");
 const up = () => read("supabase/migrations/20260928200000_lock_server_owned_writes.sql");
+// Rollbacks run newest first: this one puts back what the older rollback expects to find.
+const LATER = "20261019100000_social_safety_hardening";
+const downLater = () => read(`docs/rollback/${LATER}.down.sql`);
+const upLater = () => read(`supabase/migrations/${LATER}.sql`);
 
 let db: PGlite;
 
@@ -44,12 +48,14 @@ describe("rolling the migration back", () => {
   it("restores the previous rules, and re-applying the migration locks them again", async () => {
     expect(await forge()).toEqual({ xp: false, activity: false });
 
+    await db.exec(downLater());
     await db.exec(down());
     expect(await forge()).toEqual({ xp: true, activity: true });
     // Running the rollback twice is harmless.
     await db.exec(down());
 
     await db.exec(up());
+    await db.exec(upLater());
     await db.query(`UPDATE profiles SET total_xp = 0`);
     await db.query(`DELETE FROM daily_activity`);
     expect(await forge()).toEqual({ xp: false, activity: false });

@@ -88,20 +88,25 @@ describe("profile visibility", () => {
 });
 
 describe("discovery", () => {
-  it("shows a stranger a name and an avatar, and no streak", async () => {
-    const found = await asUser(CAROL, () =>
-      attempt(db, `SELECT * FROM search_profiles('example')`),
-    );
-    // Nobody has a handle containing "example"; use the real handle.
-    expect(found.ok).toBe(true);
+  it("shows a stranger a handle, a name if chosen, and an avatar, never progress", async () => {
     const handle = (
       await db.query<{ handle: string }>(`SELECT handle FROM profiles WHERE id=$1`, [ALICE])
     ).rows[0]!.handle;
-    const rows = await asUser(CAROL, () =>
-      attempt(db, `SELECT * FROM search_profiles($1)`, [handle]),
+    const rows = await server(() =>
+      attempt(db, `SELECT * FROM search_profiles($1, $2)`, [CAROL, handle]),
     );
     expect(rows.ok && rows.rows.map((r) => r["id"])).toContain(ALICE);
-    expect(rows.ok && rows.rows.every((r) => r["current_streak"] === null)).toBe(true);
+    expect(rows.ok && Object.keys(rows.rows[0]!).sort()).toEqual(
+      [
+        "companion_accessory",
+        "companion_expression",
+        "companion_palette",
+        "companion_preset",
+        "display_name",
+        "handle",
+        "id",
+      ].sort(),
+    );
   });
 });
 
@@ -140,7 +145,8 @@ describe("blocking", () => {
       [ALICE, BOB],
       [BOB, ALICE],
     ] as const) {
-      const r = await asUser(from, () =>
+      // Requests are written by the server, and the database refuses this one even then.
+      const r = await server(() =>
         attempt(
           db,
           `INSERT INTO friendships (requester_id, addressee_id, status) VALUES ('${from}','${to}','pending')`,
@@ -150,7 +156,7 @@ describe("blocking", () => {
       expect(!r.ok && r.error).toMatch(/could not be sent/);
     }
     // Someone unrelated is unaffected.
-    const fine = await asUser(CAROL, () =>
+    const fine = await server(() =>
       attempt(
         db,
         `INSERT INTO friendships (requester_id, addressee_id, status) VALUES ('${CAROL}','${ALICE}','pending')`,
@@ -177,8 +183,8 @@ describe("blocking", () => {
       [ALICE, BOB],
       [BOB, ALICE],
     ] as const) {
-      const s = await asUser(viewer, () =>
-        attempt(db, `SELECT id FROM search_profiles($1)`, [handles.get(other)]),
+      const s = await server(() =>
+        attempt(db, `SELECT id FROM search_profiles($1, $2)`, [viewer, handles.get(other)]),
       );
       expect(s.ok && s.rows.map((r) => r["id"])).not.toContain(other);
       expect(s.ok).toBe(true);
@@ -201,7 +207,7 @@ describe("blocking", () => {
 
   it("can be lifted by the server, after which the two can find each other again", async () => {
     await server(() => db.query(`DELETE FROM user_blocks WHERE blocker_id = $1`, [ALICE]));
-    const ok = await asUser(ALICE, () =>
+    const ok = await server(() =>
       attempt(
         db,
         `INSERT INTO friendships (requester_id, addressee_id, status) VALUES ('${ALICE}','${BOB}','pending')`,
@@ -243,7 +249,7 @@ describe("reports about people", () => {
     expect((await report(ALICE, ALICE, "other", null)).ok).toBe(false);
   });
 
-  it("stay, unlinked, if the reporter deletes their account, and go if the reported person does", async () => {
+  it("stay, unlinked, whichever of the two deletes their account", async () => {
     await report(BOB, CAROL, "spam", null);
     await db.query(`DELETE FROM auth.users WHERE id = $1`, [BOB]);
     const unlinked = await db.query<{ reporter_id: string | null }>(
@@ -252,10 +258,21 @@ describe("reports about people", () => {
     );
     expect(unlinked.rows).toEqual([{ reporter_id: null }]);
 
+    // A harasser who deletes their account doesn't take the reports about them along.
+    const before = await count(`SELECT count(*)::int n FROM user_reports`);
     await db.query(`DELETE FROM auth.users WHERE id = $1`, [CAROL]);
     expect(
       await count(`SELECT count(*)::int n FROM user_reports WHERE reported_user_id = $1`, [CAROL]),
     ).toBe(0);
+    expect(await count(`SELECT count(*)::int n FROM user_reports`)).toBe(before);
+    const orphaned = await db.query<{ reporter_id: string | null; reason: string }>(
+      `SELECT reporter_id, reason FROM user_reports WHERE reported_user_id IS NULL ORDER BY reason`,
+    );
+    expect(orphaned.rows).toEqual([
+      { reporter_id: ALICE, reason: "harassment" }, // about Carol
+      { reporter_id: ALICE, reason: "other" }, // about Bob, from the seed data
+      { reporter_id: null, reason: "spam" }, // from Bob, about Carol
+    ]);
     await createUsers(db, [BOB, CAROL]);
   });
 });

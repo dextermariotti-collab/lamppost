@@ -1,5 +1,5 @@
 import { acceptableHistory } from "./client-day";
-import { shiftDay } from "./days";
+import { isDayKey, shiftDay } from "./days";
 
 /**
  * What the server is willing to record when a device syncs its progress.
@@ -13,13 +13,22 @@ import { shiftDay } from "./days";
 
 /** Most lesson-or-review completions counted for one day. */
 export const MAX_ACTIVITY_PER_DAY = 40;
-/** Most XP / gems that can arrive per day since the last sync (plus one day of slack). */
+/** Most XP / gems that can arrive per day since the account was last credited. */
 export const MAX_XP_PER_DAY = 4000;
 export const MAX_GEMS_PER_DAY = 800;
+/**
+ * What a sync may bring on top of the time since the account was last credited, as a fraction of
+ * a day's allowance: about ten lessons back to back. Syncs in quick succession share it.
+ */
+export const SYNC_BURST_DAYS = 0.5;
 /** After an account's first sync, activity can only be added for this many recent days. */
 export const BACKFILL_DAYS = 7;
 /** The first sync imports what a device did before signing in, up to this many days. */
 export const FIRST_SYNC_DAYS = 60;
+/** Most days of history one sync may send: ten years of learning every day. */
+export const MAX_SYNC_HISTORY_DAYS = 3660;
+/** Most streak-freeze days one sync may claim (a device keeps its last 30). */
+export const MAX_FREEZE_DAYS = 30;
 
 const DAY_MS = 86_400_000;
 
@@ -38,9 +47,10 @@ export function activityToStore(
 }
 
 /**
- * How much a counter (XP or gems) may grow in one sync: a day's worth for every
- * day since the last sync, plus one; for the first sync, for every day of
- * activity being imported, plus one.
+ * How much a counter (XP or gems) may grow in one sync. The first sync may bring a day's worth
+ * for every day of activity being imported, plus one. After that it is in proportion to the time
+ * since the account was last credited (`lastSyncedAt`, see `creditedUntil`) plus the burst, and
+ * never more than FIRST_SYNC_DAYS' worth.
  */
 export function growthAllowance(opts: {
   perDay: number;
@@ -49,10 +59,37 @@ export function growthAllowance(opts: {
   now?: Date;
 }): number {
   const now = opts.now ?? new Date();
-  const days = opts.lastSyncedAt
-    ? Math.min(FIRST_SYNC_DAYS, Math.ceil((now.getTime() - opts.lastSyncedAt.getTime()) / DAY_MS))
-    : Math.min(FIRST_SYNC_DAYS, opts.activeDays);
-  return opts.perDay * (Math.max(days, 0) + 1);
+  if (!opts.lastSyncedAt) {
+    return opts.perDay * (Math.min(FIRST_SYNC_DAYS, Math.max(opts.activeDays, 0)) + 1);
+  }
+  const days = (now.getTime() - opts.lastSyncedAt.getTime()) / DAY_MS + SYNC_BURST_DAYS;
+  return Math.floor(opts.perDay * Math.min(FIRST_SYNC_DAYS, Math.max(days, 0)));
+}
+
+/**
+ * The moment the account counts as credited up to after a sync, stored as `progress_synced_at`.
+ * It moves on from the last mark (never from earlier than FIRST_SYNC_DAYS ago) by the time the
+ * growth just accepted stands for, so a hundred syncs a second share one allowance instead of
+ * each getting a burst of its own. The first sync starts the clock now.
+ */
+export function creditedUntil(opts: {
+  lastSyncedAt: Date | null;
+  growth: readonly { gained: number; perDay: number }[];
+  now?: Date;
+}): Date {
+  const now = (opts.now ?? new Date()).getTime();
+  if (!opts.lastSyncedAt) return new Date(now);
+  const start = Math.max(opts.lastSyncedAt.getTime(), now - FIRST_SYNC_DAYS * DAY_MS);
+  const usedDays = Math.max(0, ...opts.growth.map((g) => Math.max(g.gained, 0) / g.perDay));
+  return new Date(Math.min(start + usedDays * DAY_MS, now + SYNC_BURST_DAYS * DAY_MS));
+}
+
+/** Freeze days a sync may use: real days, not after today, once each, the most recent few. */
+export function freezeDaysToUse(log: readonly string[], today: string): string[] {
+  return [...new Set(log)]
+    .filter((day) => isDayKey(day) && day <= today)
+    .sort((a, b) => (a < b ? 1 : -1))
+    .slice(0, MAX_FREEZE_DAYS);
 }
 
 /** The stored total after a sync: never lower than before, never above the allowance. */

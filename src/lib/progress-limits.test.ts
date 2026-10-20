@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
   BACKFILL_DAYS,
+  FIRST_SYNC_DAYS,
   MAX_ACTIVITY_PER_DAY,
   MAX_DONE_LESSONS,
+  MAX_FREEZE_DAYS,
   MAX_XP_PER_DAY,
+  SYNC_BURST_DAYS,
   activityToStore,
   boundedTotal,
+  creditedUntil,
   doneLessonsToStore,
   firstSyncCarryOver,
+  freezeDaysToUse,
   growthAllowance,
   weeklyXpCredit,
 } from "./progress-limits";
@@ -42,21 +47,68 @@ describe("activityToStore", () => {
 });
 
 describe("growthAllowance / boundedTotal", () => {
-  it("scales with the time since the last sync", () => {
+  it("scales with the time since the last sync, not with whole days rounded up", () => {
     const soon = growthAllowance({
       perDay: MAX_XP_PER_DAY,
-      lastSyncedAt: new Date("2026-09-24T01:00:00Z"),
+      lastSyncedAt: new Date("2026-09-24T01:00:00Z"), // 30 minutes ago
       activeDays: 0,
       now,
     });
     const later = growthAllowance({
       perDay: MAX_XP_PER_DAY,
-      lastSyncedAt: new Date("2026-09-14T01:00:00Z"),
+      lastSyncedAt: new Date("2026-09-14T01:30:00Z"), // exactly 10 days ago
       activeDays: 0,
       now,
     });
-    expect(soon).toBe(MAX_XP_PER_DAY * 2);
-    expect(later).toBe(MAX_XP_PER_DAY * 12); // 11 days elapsed (rounded up) + 1 of slack
+    expect(soon).toBe(Math.floor(MAX_XP_PER_DAY * (1 / 48 + SYNC_BURST_DAYS)));
+    expect(soon).toBeLessThan(MAX_XP_PER_DAY);
+    expect(later).toBe(MAX_XP_PER_DAY * (10 + SYNC_BURST_DAYS));
+  });
+
+  it("never allows more than the first sync's window, however long it has been", () => {
+    const allowance = growthAllowance({
+      perDay: MAX_XP_PER_DAY,
+      lastSyncedAt: new Date("2025-01-01T00:00:00Z"),
+      activeDays: 0,
+      now,
+    });
+    expect(allowance).toBe(MAX_XP_PER_DAY * FIRST_SYNC_DAYS);
+  });
+
+  it("shares one burst between syncs in quick succession", () => {
+    // A forged client syncing every second, each time claiming as much as it may.
+    let mark: Date = new Date("2026-09-24T01:00:00Z");
+    let total = 0;
+    for (let i = 0; i < 200; i++) {
+      const at = new Date(now.getTime() + i * 1000);
+      const allowance = growthAllowance({
+        perDay: MAX_XP_PER_DAY,
+        lastSyncedAt: mark,
+        activeDays: 0,
+        now: at,
+      });
+      total += allowance;
+      mark = creditedUntil({
+        lastSyncedAt: mark,
+        growth: [{ gained: allowance, perDay: MAX_XP_PER_DAY }],
+        now: at,
+      });
+    }
+    // 30 minutes and 200 seconds of time, plus one burst: nowhere near 200 bursts.
+    const elapsedDays = (30 * 60 + 200) / 86_400;
+    expect(total).toBeLessThanOrEqual(MAX_XP_PER_DAY * (elapsedDays + SYNC_BURST_DAYS) + 1);
+    expect(total).toBeGreaterThan(MAX_XP_PER_DAY * SYNC_BURST_DAYS);
+  });
+
+  it("keeps time that went unused for the next sync", () => {
+    const last = new Date("2026-09-23T01:30:00Z"); // a day ago
+    const mark = creditedUntil({
+      lastSyncedAt: last,
+      growth: [{ gained: 1000, perDay: MAX_XP_PER_DAY }],
+      now,
+    });
+    expect(mark.getTime()).toBe(last.getTime() + 0.25 * 86_400_000);
+    expect(creditedUntil({ lastSyncedAt: null, growth: [], now })).toEqual(now);
   });
 
   it("sizes the first sync by the days of activity being imported", () => {
@@ -83,6 +135,20 @@ describe("growthAllowance / boundedTotal", () => {
     expect(boundedTotal(500, 9_999_999, allowance)).toBe(500 + allowance);
     expect(boundedTotal(500, 100, allowance)).toBe(500);
     expect(boundedTotal(500, -50, allowance)).toBe(500);
+  });
+});
+
+describe("freezeDaysToUse", () => {
+  it("keeps real past days once each, and only the most recent few", () => {
+    const log = ["2026-09-20", "2026-09-20", "not-a-day", "2026-09-30", "2026-09-21"];
+    expect(freezeDaysToUse(log, today)).toEqual(["2026-09-21", "2026-09-20"]);
+    const many = Array.from(
+      { length: 60 },
+      (_, i) => `2026-07-${String((i % 28) + 1).padStart(2, "0")}`,
+    ).concat(Array.from({ length: 31 }, (_, i) => `2026-08-${String(i + 1).padStart(2, "0")}`));
+    const kept = freezeDaysToUse(many, today);
+    expect(kept).toHaveLength(MAX_FREEZE_DAYS);
+    expect(kept[0]).toBe("2026-08-31");
   });
 });
 

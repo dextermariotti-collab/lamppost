@@ -168,12 +168,30 @@ describe("everything the app still does from the browser keeps working", () => {
       await asUser(ALICE, () =>
         attempt(
           db,
-          `UPDATE profiles SET display_name='Alice', handle='alice_l', daily_goal=4, goal='think better',
+          `UPDATE profiles SET daily_goal=4, goal='think better',
              notify_nudges_inapp=false, notify_nudges_email=false, onboarding_completed=true,
              companion_preset='scout', companion_palette='default', companion_accessory='none', companion_expression='happy'
            WHERE id=$1`,
           [ALICE],
         ),
+      ),
+    );
+    await asServer(() =>
+      attempt(db, `UPDATE profiles SET notify_nudges_inapp=true WHERE id=$1`, [ALICE]),
+    );
+  });
+
+  it("leaves the name and handle, which other people see, to the server", async () => {
+    for (const set of ["display_name='Alice'", "handle='alice_l'"]) {
+      denied(
+        await asUser(ALICE, () => attempt(db, `UPDATE profiles SET ${set} WHERE id = $1`, [ALICE])),
+      );
+    }
+    allowed(
+      await asServer(() =>
+        attempt(db, `UPDATE profiles SET display_name='Alice', handle='alice_l' WHERE id=$1`, [
+          ALICE,
+        ]),
       ),
     );
   });
@@ -195,8 +213,8 @@ describe("everything the app still does from the browser keeps working", () => {
     await db.query(`UPDATE profiles SET profile_visibility = 'minimal' WHERE id = $1`, [BOB]);
   });
 
-  it("handles friend requests, acceptance and nudges", async () => {
-    allowed(
+  it("handles friend requests (sent by the server), acceptance and nudges", async () => {
+    denied(
       await asUser(BOB, () =>
         attempt(
           db,
@@ -205,12 +223,12 @@ describe("everything the app still does from the browser keeps working", () => {
         ),
       ),
     );
-    denied(
-      await asUser(BOB, () =>
+    allowed(
+      await asServer(() =>
         attempt(
           db,
-          `INSERT INTO friendships (requester_id, addressee_id, status) VALUES ($1,$2,'accepted')`,
-          [BOB, ALICE],
+          `INSERT INTO friendships (requester_id, addressee_id, status) VALUES ($1,$2,'pending')`,
+          [BOB, CAROL],
         ),
       ),
     );
@@ -228,11 +246,12 @@ describe("everything the app still does from the browser keeps working", () => {
         attempt(db, `UPDATE friendships SET status='pending' WHERE addressee_id=$1`, [CAROL]),
       ),
     );
+    // Yesterday (UTC) is still someone's today; the nudge from earlier in this file is today's.
     allowed(
       await asUser(ALICE, () =>
         attempt(
           db,
-          `INSERT INTO nudges (from_user_id, to_user_id, day) VALUES ($1,$2,'2026-09-23')`,
+          `INSERT INTO nudges (from_user_id, to_user_id, day) VALUES ($1,$2,(now() AT TIME ZONE 'utc')::date - 1)`,
           [ALICE, BOB],
         ),
       ),
@@ -241,7 +260,7 @@ describe("everything the app still does from the browser keeps working", () => {
       await asUser(ALICE, () =>
         attempt(
           db,
-          `INSERT INTO nudges (from_user_id, to_user_id, day) VALUES ($1,$2,'2026-09-23')`,
+          `INSERT INTO nudges (from_user_id, to_user_id, day) VALUES ($1,$2,(now() AT TIME ZONE 'utc')::date - 1)`,
           [ALICE, gen()],
         ),
       ),
@@ -270,6 +289,24 @@ describe("everything the app still does from the browser keeps working", () => {
     denied(
       await asUser(ALICE, () =>
         attempt(db, `INSERT INTO content_reports (user_id, reason) VALUES ($1,'other')`, [BOB]),
+      ),
+    );
+    denied(
+      await asUser(ALICE, () =>
+        attempt(
+          db,
+          `INSERT INTO content_reports (user_id, reason, status) VALUES ($1,'other','actioned')`,
+          [ALICE],
+        ),
+      ),
+    );
+    denied(
+      await asUser(ALICE, () =>
+        attempt(
+          db,
+          `INSERT INTO content_reports (user_id, reason, details) VALUES ($1,'other',repeat('y', 200000))`,
+          [ALICE],
+        ),
       ),
     );
     for (const table of [
@@ -398,14 +435,20 @@ describe("what other people can see of you", () => {
   });
 
   it("treats % and _ in a people search as ordinary characters", async () => {
-    const all = await asUser(BOB, () =>
-      attempt(db, `SELECT count(*)::int AS n FROM search_profiles('%%')`),
+    const all = await asServer(() =>
+      attempt(db, `SELECT count(*)::int AS n FROM search_profiles($1, '%%%')`, [BOB]),
     );
     expect(all.ok && all.rows[0]?.["n"]).toBe(0);
-    const real = await asUser(BOB, () =>
-      attempt(db, `SELECT count(*)::int AS n FROM search_profiles('alice')`),
+    const real = await asServer(() =>
+      attempt(db, `SELECT count(*)::int AS n FROM search_profiles($1, 'alice')`, [BOB]),
     );
     expect(real.ok && real.rows[0]?.["n"]).toBe(1);
+  });
+
+  it("keeps people search on the server", async () => {
+    denied(
+      await asUser(BOB, () => attempt(db, `SELECT * FROM search_profiles($1, 'alice')`, [BOB])),
+    );
   });
 });
 
@@ -457,41 +500,60 @@ describe("no other write path has quietly opened up", () => {
        WHERE grantee='authenticated' AND table_schema='public' AND privilege_type IN ('INSERT','UPDATE','DELETE','TRUNCATE')
        ORDER BY table_name, privilege_type`,
     );
-    const columns = await db.query<{ table_name: string; column_name: string }>(
-      `SELECT table_name, column_name FROM information_schema.column_privileges
-       WHERE grantee='authenticated' AND table_schema='public' AND privilege_type='UPDATE'
+    const columns = await db.query<{
+      table_name: string;
+      column_name: string;
+      privilege_type: string;
+    }>(
+      `SELECT table_name, column_name, privilege_type FROM information_schema.column_privileges
+       WHERE grantee='authenticated' AND table_schema='public' AND privilege_type IN ('INSERT','UPDATE')
        ORDER BY table_name, column_name`,
     );
     const tableWrites = tables.rows.map((r) => `${r.table_name}:${r.privilege_type}`);
-    expect(tableWrites).toEqual([
-      "content_reports:INSERT",
-      "friendships:DELETE",
-      "friendships:INSERT",
-      "nudges:INSERT",
-    ]);
+    expect(tableWrites).toEqual(["friendships:DELETE", "nudges:INSERT"]);
 
     const byTable: Record<string, string[]> = {};
-    for (const r of columns.rows) (byTable[r.table_name] ??= []).push(r.column_name);
+    for (const r of columns.rows) {
+      (byTable[`${r.table_name}:${r.privilege_type}`] ??= []).push(r.column_name);
+    }
     // (Table-level UPDATE would list every column; only the granted ones may appear.)
-    expect(byTable["debates"]).toEqual(["challenger_seen_result", "opponent_seen_result"]);
-    expect(byTable["friendships"]).toEqual(["accepted_at", "status"]);
-    expect(byTable["nudges"]).toEqual(["read_at"]);
-    expect(byTable["profiles"]).toEqual(
+    expect(byTable["debates:UPDATE"]).toEqual(["challenger_seen_result", "opponent_seen_result"]);
+    expect(byTable["friendships:UPDATE"]).toEqual(["accepted_at", "status"]);
+    expect(byTable["nudges:UPDATE"]).toEqual(["read_at"]);
+    expect(byTable["profiles:UPDATE"]).toEqual(
       [
         "companion_accessory",
         "companion_expression",
         "companion_palette",
         "companion_preset",
         "daily_goal",
-        "display_name",
         "goal",
-        "handle",
         "notify_nudges_email",
         "notify_nudges_inapp",
         "onboarding_completed",
       ].sort(),
     );
-    expect(Object.keys(byTable).sort()).toEqual(["debates", "friendships", "nudges", "profiles"]);
+    // A content report is filed with what it is about; its id, time and status are the server's.
+    expect(byTable["content_reports:INSERT"]).toEqual(
+      [
+        "course_slug",
+        "course_topic",
+        "details",
+        "excerpt",
+        "lesson_index",
+        "lesson_title",
+        "reason",
+        "user_id",
+      ].sort(),
+    );
+    expect(Object.keys(byTable).sort()).toEqual([
+      "content_reports:INSERT",
+      "debates:UPDATE",
+      "friendships:UPDATE",
+      "nudges:INSERT", // the table-level grant above, listed column by column
+      "nudges:UPDATE",
+      "profiles:UPDATE",
+    ]);
   });
 });
 
