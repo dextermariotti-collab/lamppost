@@ -6,7 +6,6 @@ import { ReportContentButton } from "@/components/ReportContentButton";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAiConsentGate } from "@/lib/ai-consent";
-import type { Companion } from "@/lib/companions";
 import { describeAnswer, describeExercise, type Exercise } from "@/lib/exercises";
 import { isLimited } from "@/lib/rate-limit";
 import { socraticLine } from "@/lib/socratic.functions";
@@ -28,8 +27,6 @@ export function SocraticPopup({
   correct,
   onDismiss,
 }: {
-  /** Not sent: the guide speaks for itself, whoever the learner's companion is. */
-  companion?: Companion;
   lessonTitle: string;
   objective: string;
   exercise: Exercise;

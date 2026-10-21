@@ -256,14 +256,6 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     finishLesson();
   };
 
-  const practiceText = [
-    lesson.concept?.body ?? "",
-    lesson.concept?.example ?? "",
-    ...(lesson.keyPoints ?? []),
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
   const canContinue = onExercise
     ? currentAttempt !== undefined
     : onEasier
@@ -558,7 +550,6 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             {socratic?.index === exerciseIndex && (
               <SocraticPopup
                 key={`socratic-${lessonNumber}-${exerciseIndex}`}
-                companion={companion}
                 lessonTitle={lesson.title}
                 objective={lesson.subtitle}
                 exercise={currentExercise}
@@ -661,10 +652,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             <PracticeChat
               slug={slug}
               lessonIndex={lessonNumber}
-              topic={course.topic}
               lessonTitle={lesson.title}
-              lessonText={practiceText}
-              earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
               signedIn={!!userId}
               returnTo={`/course/${slug}/lesson/${lessonNumber}`}
               onDone={handlePracticeDone}

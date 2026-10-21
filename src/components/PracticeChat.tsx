@@ -28,10 +28,6 @@ type Props = {
   /** 1-based, as the lesson screens count. */
   lessonIndex: number;
   lessonTitle: string;
-  /** No longer sent: the server builds the lesson's context itself. */
-  topic?: string;
-  lessonText?: string;
-  earlierLessons?: string[];
   signedIn: boolean;
   /** Where signing in comes back to: this lesson's path on this site. */
   returnTo: string;

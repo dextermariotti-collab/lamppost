@@ -2,7 +2,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { recordAiConsent } from "@/lib/ai-consent";
-import { DEFAULT_COMPANION } from "@/lib/companions";
 
 const mocks = vi.hoisted(() => ({ socraticLine: vi.fn() }));
 vi.mock("@/lib/socratic.functions", () => ({ socraticLine: mocks.socraticLine }));
@@ -34,7 +33,6 @@ async function mount(props: { correct?: boolean } = {}) {
   const { SocraticPopup } = await import("./SocraticPopup");
   return render(
     <SocraticPopup
-      companion={DEFAULT_COMPANION}
       lessonTitle="A lesson"
       objective="Do the thing."
       exercise={exercise}
@@ -125,7 +123,6 @@ describe("SocraticPopup when a limit was reached", () => {
     const { SocraticPopup } = await import("./SocraticPopup");
     render(
       <SocraticPopup
-        companion={DEFAULT_COMPANION}
         lessonTitle="A lesson"
         objective="Do the thing."
         exercise={exercise}

@@ -66,10 +66,7 @@ function mount(signedIn = true) {
     <PracticeChat
       slug="critical-thinking"
       lessonIndex={3}
-      topic="Critical thinking"
       lessonTitle="A lesson"
-      lessonText="The idea."
-      earlierLessons={[]}
       signedIn={signedIn}
       returnTo={RETURN_TO}
       onDone={onDone}

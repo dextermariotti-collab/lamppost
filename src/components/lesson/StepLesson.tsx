@@ -29,7 +29,7 @@ import { scrollToTop } from "@/lib/scroll";
 import { isGraded, reviewKindFor, statedConfidence, stepAttemptIndex } from "@/lib/steps/attempts";
 import type { StepResult } from "@/lib/steps/scoring";
 import type { LessonScript, LessonStep, StepKind } from "@/lib/steps/types";
-import { notesText, type LessonNotes } from "@/lib/lesson-notes";
+import type { LessonNotes } from "@/lib/lesson-notes";
 import { LessonFinished } from "./LessonFinished";
 import { LessonPlayer } from "./LessonPlayer";
 import { NotesView } from "./NotesView";
@@ -232,13 +232,6 @@ export function StepLesson({
     );
   }
 
-  // The notes come first: the tutor sees at most 6,000 characters and they are the fullest account.
-  const lessonText = [
-    script.takeaway,
-    ...(notes ? [notesText(notes)] : []),
-    ...script.steps.flatMap((step) => (step.kind === "note" ? [step.prompt] : [step.why])),
-  ].join("\n\n");
-
   return (
     <PhoneFrame showNav={false}>
       <ScreenHeader
@@ -363,10 +356,7 @@ export function StepLesson({
               <PracticeChat
                 slug={CURRICULUM_SLUG}
                 lessonIndex={lessonNumber}
-                topic={course.topic}
                 lessonTitle={meta.title}
-                lessonText={lessonText}
-                earlierLessons={course.lessons.slice(0, lessonNumber - 1).map((l) => l.title)}
                 signedIn={!!userId}
                 returnTo={`/course/${CURRICULUM_SLUG}/lesson/${lessonNumber}?part=explain`}
                 onDone={(close: PracticeClose | null) => {
