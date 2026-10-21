@@ -4,7 +4,14 @@ const model = vi.hoisted(() => ({ generateText: vi.fn() }));
 vi.mock("ai", () => model);
 vi.mock("./ai-gateway.server", () => ({ createAiProvider: () => () => "model" }));
 
-import { CHECK_UNAVAILABLE, parseTopicVerdict, screenTopicText } from "./moderation.server";
+import {
+  CHECK_UNAVAILABLE,
+  SCREEN_NOTES_CHARS,
+  SCREEN_TOPIC_CHARS,
+  TOO_LONG_TO_CHECK,
+  parseTopicVerdict,
+  screenTopicText,
+} from "./moderation.server";
 
 const reply = (text: string) => model.generateText.mockResolvedValue({ text });
 
@@ -114,5 +121,43 @@ describe("screenTopicText fails closed", () => {
   it("has nothing to check when there is no text at all", async () => {
     expect(await screenTopicText("", "  ", "key")).toEqual({ allowed: true });
     expect(model.generateText).not.toHaveBeenCalled();
+  });
+});
+
+describe("screenTopicText caps what it sends", () => {
+  it("sends the classifier no more than its caps, quoted as data", async () => {
+    reply('{"allowed":true,"category":"none"}');
+    const topic = `Bread" ${"t".repeat(SCREEN_TOPIC_CHARS - 7)}`;
+    const notes = "n".repeat(SCREEN_NOTES_CHARS);
+    expect(await screenTopicText(` ${topic} `, notes, "key")).toEqual({ allowed: true });
+    const { prompt, maxOutputTokens } = model.generateText.mock.calls[0]![0] as {
+      prompt: string;
+      maxOutputTokens: number;
+    };
+    expect(prompt).toContain(JSON.stringify(topic));
+    expect(prompt).toContain(JSON.stringify(notes));
+    expect(prompt.length).toBeLessThan(SCREEN_TOPIC_CHARS + SCREEN_NOTES_CHARS + 100);
+    expect(maxOutputTokens).toBeGreaterThan(0);
+  });
+
+  it("refuses text longer than it reads, without a model call, as a check that couldn't run", async () => {
+    for (const [topic, notes] of [
+      ["t".repeat(SCREEN_TOPIC_CHARS + 1), ""],
+      ["Bread", "n".repeat(SCREEN_NOTES_CHARS + 1)],
+    ] as const) {
+      const verdict = await screenTopicText(topic, notes, "key");
+      expect(verdict).toMatchObject({
+        allowed: false,
+        unavailable: true,
+        message: TOO_LONG_TO_CHECK,
+      });
+    }
+    expect(model.generateText).not.toHaveBeenCalled();
+  });
+
+  it("still screens all of an overlong text locally", async () => {
+    const verdict = await screenTopicText("Bread", `${"n".repeat(5000)}. porn`, "key");
+    expect(verdict).toMatchObject({ allowed: false, category: "sexual" });
+    expect(verdict.allowed === false && verdict.unavailable).toBeUndefined();
   });
 });

@@ -28,6 +28,23 @@ export const FREE_WEEKLY_PRACTICE = 3;
 /** Maximum learner replies before the tutor wraps up. */
 export const MAX_PRACTICE_TURNS = 3;
 
+/**
+ * The free sessions are counted per week from Monday 00:00 UTC, the same instant for every
+ * learner wherever they are (Sunday evening across the US). This is when the current week began.
+ */
+export function practiceWeekStart(now: Date = new Date()): Date {
+  const sinceMonday = (now.getUTCDay() + 6) % 7;
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - sinceMonday),
+  );
+}
+
+/** When this week's free sessions come back: the next Monday 00:00 UTC, always after `now`. */
+export function nextPracticeReset(now: Date = new Date()): Date {
+  const start = practiceWeekStart(now);
+  return new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + 7));
+}
+
 const KEY = "lamppost-practice-v1";
 
 type Stored = PracticeClose & { at: number };

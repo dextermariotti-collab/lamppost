@@ -92,7 +92,7 @@ function toSummary(
   const profile = profiles.get(opponentId);
   const myAnswer = mine ? row.challenger_answer : row.opponent_answer;
   const theirAnswer = mine ? row.opponent_answer : row.challenger_answer;
-  const graded = row.status === "graded";
+  const graded = row.status === "graded" && myAnswer !== null && theirAnswer !== null;
   const myGrade = gradeOf(
     mine ? row.challenger_scores : row.opponent_scores,
     mine ? row.challenger_total : row.opponent_total,
@@ -140,12 +140,34 @@ function toSummary(
   };
 }
 
+const UNGRADABLE = "That answer can't be graded here. Try writing about the motion.";
+
+/** Everything of a grade the two people see: each criterion's feedback and the tip. */
+const gradeText = (grade: ArgumentGrade) =>
+  [...Object.values(grade.scores).map((s) => s.feedback), grade.tip].join("\n");
+
 const COLUMNS =
   "id, challenger_id, opponent_id, topic, prompt, passage, challenger_side, opponent_side, challenger_answer, opponent_answer, challenger_scores, opponent_scores, challenger_total, opponent_total, challenger_tip, opponent_tip, max_score, status, challenger_seen_result, opponent_seen_result, created_at";
 
 /**
- * Names of the people in the caller's own debates. The ids come from rows the caller can
- * already read, and only a name and handle are returned, so this reads with the service role:
+ * Answers, scores and tips aren't readable through the browser grant (see the
+ * social_safety_hardening migration), so debates are read with the service role, only ever the
+ * caller's own, and cut down to what they may see by `toSummary`.
+ */
+const participantIn = (userId: string) => `challenger_id.eq.${userId},opponent_id.eq.${userId}`;
+
+const isParticipant = (row: Pick<Row, "challenger_id" | "opponent_id">, userId: string) =>
+  row.challenger_id === userId || row.opponent_id === userId;
+
+/** Logs what went wrong for us and tells the person plainly, never with the database's words. */
+function failed(what: string, error: unknown): never {
+  console.error(`[debates] ${what}`, error);
+  throw new Error("That couldn't be done just now. Try again in a moment.");
+}
+
+/**
+ * Names of the people in the caller's own debates. The ids come from debates the caller is in,
+ * and only a name and handle are returned, so this reads with the service role:
  * a friend who has not chosen to share progress is still someone you can debate.
  */
 async function loadProfiles(
@@ -175,6 +197,26 @@ Reply with ONLY minified JSON: {"topic":string,"passage":string,"prompt":string}
 Pick an everyday, arguable issue: school and work policy, technology, cities, money, media, sport.
 Avoid anything involving self-harm, sexual content, violence, medical or legal advice, or the
 personal details of real named individuals. Nothing partisan about live elections or named politicians.`;
+
+/** The motion as it is stored and shown, or null when the reply doesn't hold one. */
+function readMotion(text: string): { topic: string; passage: string; prompt: string } | null {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  let raw: Record<string, unknown>;
+  try {
+    raw = JSON.parse(match[0]) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+  const field = (name: string, max: number) => {
+    const value = raw[name];
+    return typeof value === "string" ? value.trim().slice(0, max) : "";
+  };
+  const passage = field("passage", 2000);
+  const prompt = field("prompt", 500);
+  if (!passage || !prompt) return null;
+  return { topic: field("topic", 80) || "Debate", passage, prompt };
+}
 
 export const challengeToDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -217,19 +259,10 @@ export const challengeToDebate = createServerFn({ method: "POST" })
       ...aiOutput("debateMotion"),
     }).text;
 
-    const screened = screenOutput(text);
-    if (!screened.allowed) throw new Error(screened.message);
-
-    const match = text.match(/\{[\s\S]*\}/);
-    let motion: { topic?: string; passage?: string; prompt?: string } = {};
-    if (match) {
-      try {
-        motion = JSON.parse(match[0]) as typeof motion;
-      } catch {
-        motion = {};
-      }
-    }
-    if (!motion.passage || !motion.prompt) {
+    // The learner typed nothing here, so a refused motion reads as one that couldn't be
+    // written rather than as a refusal of something they asked for.
+    const motion = screenOutput(text).allowed ? readMotion(text) : null;
+    if (!motion || !screenOutput(Object.values(motion).join("\n")).allowed) {
       throw new Error("A motion couldn't be written just now. Try again in a moment.");
     }
 
@@ -240,9 +273,7 @@ export const challengeToDebate = createServerFn({ method: "POST" })
       .insert({
         challenger_id: userId,
         opponent_id: data.opponentId,
-        topic: motion.topic?.slice(0, 80) ?? "Debate",
-        passage: motion.passage.slice(0, 2000),
-        prompt: motion.prompt.slice(0, 500),
+        ...motion,
         challenger_side: challengerFirst ? "for" : "against",
         opponent_side: challengerFirst ? "against" : "for",
         max_score: MAX_SCORE,
@@ -256,14 +287,16 @@ export const challengeToDebate = createServerFn({ method: "POST" })
 export const listDebates = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DebateSummary[]> => {
-    const { supabase, userId } = context;
-    const { data, error } = await supabase
+    const { userId } = context;
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await admin
       .from("debates")
       .select(COLUMNS)
+      .or(participantIn(userId))
       .order("created_at", { ascending: false })
       .limit(30);
-    if (error) throw new Error(error.message);
-    const rows = (data ?? []) as Row[];
+    if (error) failed("Listing debates", error);
+    const rows = ((data ?? []) as Row[]).filter((row) => isParticipant(row, userId));
     const profiles = await loadProfiles(
       rows.map((r) => (r.challenger_id === userId ? r.opponent_id : r.challenger_id)),
     );
@@ -274,15 +307,17 @@ export const getDebate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<DebateSummary | null> => {
-    const { supabase, userId } = context;
-    const { data: row, error } = await supabase
+    const { userId } = context;
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await admin
       .from("debates")
       .select(COLUMNS)
       .eq("id", data.id)
+      .or(participantIn(userId))
       .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!row) return null;
-    const typed = row as Row;
+    if (error) failed("Reading a debate", error);
+    const typed = row as Row | null;
+    if (!typed || !isParticipant(typed, userId)) return null;
     const profiles = await loadProfiles([
       typed.challenger_id === userId ? typed.opponent_id : typed.challenger_id,
     ]);
@@ -295,7 +330,7 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), answer: z.string().min(1).max(4000) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
     const screened = screenLocally(data.answer);
     if (!screened.allowed) return { ok: false as const, reason: screened.message };
     if (data.answer.trim().split(/\s+/).length < 25) {
@@ -305,14 +340,18 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
       };
     }
 
-    const { data: row, error } = await supabase
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await admin
       .from("debates")
       .select(COLUMNS)
       .eq("id", data.id)
+      .or(participantIn(userId))
       .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!row) return { ok: false as const, reason: "That debate no longer exists." };
-    const typed = row as Row;
+    if (error) failed("Reading a debate", error);
+    const typed = row as Row | null;
+    if (!typed || !isParticipant(typed, userId)) {
+      return { ok: false as const, reason: "That debate no longer exists." };
+    }
     const mine = typed.challenger_id === userId;
     if ((mine ? typed.challenger_answer : typed.opponent_answer) !== null) {
       return { ok: false as const, reason: "You've already made your case." };
@@ -330,6 +369,7 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
     const { createAiProvider } = await import("./ai-gateway.server");
     const { graderSystem, graderPrompt } = await import("./argument.server");
     const { withGuardrails } = await import("./ai-guardrails.server");
+    const { screenOutput } = await import("./moderation.server");
     const gateway = createAiProvider(key);
 
     const side = mine ? typed.challenger_side : typed.opponent_side;
@@ -349,9 +389,15 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
       ...aiOutput("grading"),
     }).text;
 
+    // A grade is shown to both people, so it is screened like every other generated text. A
+    // refusal is not stored and the answer stays unsubmitted, so it can be rewritten.
+    if (!screenOutput(graded).allowed) return { ok: false as const, reason: UNGRADABLE };
     const parsed = parseGrade(graded, TASK.criteria);
     if (!parsed)
       return { ok: false as const, reason: "The grader's reply couldn't be read. Try again." };
+    if (!screenOutput(gradeText(parsed.grade)).allowed) {
+      return { ok: false as const, reason: UNGRADABLE };
+    }
 
     const bothIn = (mine ? typed.opponent_answer : typed.challenger_answer) !== null;
     const patch = mine
@@ -368,14 +414,13 @@ export const submitDebateResponse = createServerFn({ method: "POST" })
           opponent_tip: parsed.grade.tip,
         };
 
-    // Answers and scores are stored by the server, which graded them; the row was
-    // read through the caller's own access above, so they are a participant.
-    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    // Answers and scores are stored by the server, which graded them; the row was only read
+    // above because the caller is one of its two people.
     const { error: updateError } = await admin
       .from("debates")
       .update({ ...patch, ...(bothIn ? { status: "graded" } : {}) })
       .eq("id", typed.id);
-    if (updateError) throw new Error(updateError.message);
+    if (updateError) failed("Saving a debate answer", updateError);
 
     // Both sides can submit at the same moment; whoever lands second closes the debate.
     let closed = bothIn;

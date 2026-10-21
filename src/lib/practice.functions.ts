@@ -6,18 +6,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { screenLocally } from "./moderation";
-import { FREE_WEEKLY_PRACTICE, MAX_PRACTICE_TURNS, type PracticeTurn } from "./practice";
+import {
+  FREE_WEEKLY_PRACTICE,
+  MAX_PRACTICE_TURNS,
+  practiceWeekStart,
+  type PracticeTurn,
+} from "./practice";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
-
-/** Monday-start week key used for the free allowance window. */
-function weekStartIso() {
-  const now = new Date();
-  const day = (now.getUTCDay() + 6) % 7;
-  const start = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day, 0, 0, 0),
-  );
-  return start.toISOString();
-}
 
 /** Longest reply a learner can send the tutor in one turn. */
 export const MAX_PRACTICE_ANSWER_CHARS = 1500;
@@ -78,6 +73,9 @@ export type PracticeReply =
 
 const OFF_TOPIC_REPLY =
   "I can only help with critical thinking here. Try explaining the lesson's idea in your own words.";
+
+const CROSSED_REPLY =
+  "Another reply to this conversation arrived at the same moment. Tap retry to send yours.";
 
 type ModelReply = {
   reply: string;
@@ -170,7 +168,7 @@ async function readAccess({ supabase: db, userId }: Ctx): Promise<PracticeAccess
       .from("practice_sessions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
-      .gte("created_at", weekStartIso()),
+      .gte("created_at", practiceWeekStart().toISOString()),
   ]);
 
   const status = (sub?.status ?? "none") as string;
@@ -232,13 +230,14 @@ export const practiceTurn = createServerFn({ method: "POST" })
 
     let sessionId = data.sessionId;
     let history: PracticeTurn[] = [];
+    let readAt: string | null = null;
     if (!opening) {
       // A follow-up turn must belong to a real, unfinished session of this learner;
       // otherwise a made-up id would get unlimited tutor turns without opening one. The
       // conversation so far is the stored one, so the turn cap can't be reset by the browser.
       const { data: existing } = await db
         .from("practice_sessions")
-        .select("id, completed_at, transcript")
+        .select("id, completed_at, transcript, updated_at")
         .eq("id", sessionId!)
         .eq("user_id", userId)
         .maybeSingle();
@@ -247,6 +246,7 @@ export const practiceTurn = createServerFn({ method: "POST" })
       if (!existing || existing.completed_at || used >= MAX_PRACTICE_TURNS) {
         return { ok: false, reason: "That practice session has ended. Start a new one." };
       }
+      readAt = existing.updated_at;
     }
     const lesson = await lessonContext(meta);
 
@@ -312,7 +312,10 @@ export const practiceTurn = createServerFn({ method: "POST" })
         { role: "tutor", text: parsed.reply.trim() },
       ];
 
-      await admin
+      // Two turns sent at the same moment both read the same stored conversation. Only the
+      // first to finish is kept (any write moves `updated_at` on), so neither overwrites the
+      // other and the session never holds more learner turns than the cap.
+      let write = admin
         .from("practice_sessions")
         .update({
           transcript: nextTranscript,
@@ -327,6 +330,10 @@ export const practiceTurn = createServerFn({ method: "POST" })
         })
         .eq("id", sessionId!)
         .eq("user_id", userId);
+      if (readAt !== null) write = write.eq("updated_at", readAt);
+      const { data: stored, error: storeError } = await write.select("id");
+      if (storeError) throw storeError;
+      if (!stored || stored.length === 0) return { ok: false, reason: CROSSED_REPLY };
 
       return {
         ok: true,

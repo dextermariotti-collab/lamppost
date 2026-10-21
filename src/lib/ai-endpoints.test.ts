@@ -2,38 +2,75 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadLessonScript } from "@/content/lessons";
 import { CURRICULUM_SLUG, LESSONS } from "./curriculum";
 import { CRITERION_LABEL, WRITTEN_TASKS } from "./exercises";
-import { MAX_PRACTICE_TURNS } from "./practice";
+import { MAX_PRACTICE_TURNS, practiceWeekStart } from "./practice";
 
 vi.mock("@tanstack/react-start", async () => (await import("@/test/server-fn")).startMock);
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("./optional-auth.server", () => ({ optionalUserId: async () => null }));
 
-/** A stand-in for the Supabase client: practice sessions come from `db.session`. */
+/**
+ * A stand-in for the Supabase client: practice sessions come from `db.session`, debates from
+ * `db.debate` and friendships from `db.friendship`. An update to the stored session moves its
+ * `updated_at` on, as the table's touch trigger does, and lands only if its filters still match.
+ */
 const db = vi.hoisted(() => {
   const state = {
     session: null as Record<string, unknown> | null,
+    debate: null as Record<string, unknown> | null,
+    friendship: null as Record<string, unknown> | null,
     inserts: [] as Record<string, unknown>[],
     updates: [] as Record<string, unknown>[],
+    /** Every `created_at` lower bound a count was made from. */
+    since: [] as unknown[],
     client: () => ({
       from: (table: string) => {
+        const stored = () =>
+          table === "practice_sessions"
+            ? state.session
+            : table === "debates"
+              ? state.debate
+              : table === "friendships"
+                ? state.friendship
+                : null;
+        const filters: Record<string, unknown> = {};
+        let patch: Record<string, unknown> | null = null;
         const chain: Record<string, unknown> = {};
-        for (const name of ["select", "eq", "gte", "not", "order", "limit"]) {
+        for (const name of ["select", "not", "order", "limit", "or", "in"]) {
           chain[name] = () => chain;
         }
-        chain["maybeSingle"] = async () => ({
-          data: table === "practice_sessions" ? state.session : null,
-        });
+        chain["eq"] = (column: string, value: unknown) => {
+          filters[column] = value;
+          return chain;
+        };
+        chain["gte"] = (column: string, value: unknown) => {
+          if (column === "created_at") state.since.push(value);
+          return chain;
+        };
+        chain["maybeSingle"] = async () => {
+          const row = stored();
+          return { data: row ? { ...row } : null };
+        };
         chain["single"] = async () => ({ data: { id: SESSION_ID }, error: null });
         chain["insert"] = (row: Record<string, unknown>) => {
           state.inserts.push(row);
           return chain;
         };
         chain["update"] = (row: Record<string, unknown>) => {
-          state.updates.push(row);
+          patch = row;
           return chain;
         };
-        chain["then"] = (resolve: (value: unknown) => unknown) =>
-          resolve({ data: null, count: 0, error: null });
+        chain["then"] = (resolve: (value: unknown) => unknown) => {
+          if (!patch) return resolve({ data: null, count: 0, error: null });
+          const row = stored();
+          const lands = Object.entries(filters).every(
+            ([column, value]) => !row || column === "user_id" || row[column] === value,
+          );
+          if (lands) {
+            state.updates.push(patch);
+            if (row) Object.assign(row, patch, { updated_at: `write ${state.updates.length}` });
+          }
+          return resolve({ data: lands ? [{ id: filters["id"] }] : [], error: null });
+        };
         return chain;
       },
     }),
@@ -99,10 +136,20 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env["AI_API_KEY"] = "test-key";
   enforce.mockResolvedValue({ ok: true });
+  moderation.screenOutput.mockImplementation(() => ({ allowed: true }));
   db.session = null;
+  db.debate = null;
+  db.friendship = null;
   db.inserts = [];
   db.updates = [];
+  db.since = [];
 });
+
+/** Screens generated text for real, instead of the stand-in that lets everything through. */
+async function screenForReal() {
+  const actual = await vi.importActual<typeof import("./moderation.server")>("./moderation.server");
+  moderation.screenOutput.mockImplementation((text?: string) => actual.screenOutput(text ?? ""));
+}
 
 describe("gradeArgument", () => {
   it("counts a request that would really call the model, and stops when refused", async () => {
@@ -444,5 +491,158 @@ describe("the practice tutor's inputs", () => {
     expect(result).toMatchObject({ ok: false, reason: expect.stringMatching(/ended/) });
     expect(enforce).not.toHaveBeenCalled();
     expect(model.streamText).not.toHaveBeenCalled();
+  });
+
+  it("keeps only one of two follow-up turns sent at the same moment", async () => {
+    db.session = {
+      id: SESSION,
+      completed_at: null,
+      transcript: [{ role: "tutor", text: "Explain the idea." }],
+      updated_at: "2026-10-20T09:00:00.000001+00:00",
+    };
+    // Neither reply comes back until both turns have read the session and asked the model.
+    let firstAsked!: () => void;
+    let bothAsked!: () => void;
+    const asked = [
+      new Promise<void>((resolve) => (firstAsked = resolve)),
+      new Promise<void>((resolve) => (bothAsked = resolve)),
+    ] as const;
+    model.streamText.mockImplementation(() => {
+      if (model.streamText.mock.calls.length === 1) firstAsked();
+      else bothAsked();
+      return { text: asked[1].then(() => reply) };
+    });
+    const first = takeTurn(turn({ sessionId: SESSION, answer: "First answer" }));
+    await asked[0];
+    const second = takeTurn(turn({ sessionId: SESSION, answer: "Second answer" }));
+    const results = await Promise.all([first, second]);
+    expect(model.streamText).toHaveBeenCalledTimes(2);
+    expect(results.filter((result) => result["ok"] === true)).toHaveLength(1);
+    expect(results.filter((result) => result["ok"] === false)).toEqual([
+      { ok: false, reason: expect.stringMatching(/same moment/) },
+    ]);
+    expect(db.updates).toHaveLength(1);
+    const kept = db.session["transcript"] as { role: string }[];
+    expect(kept.filter((t) => t.role === "learner")).toHaveLength(1);
+  });
+
+  it("counts the week's free sessions from the Monday the app shows", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    // Sunday 8:30pm in New York is already Monday in UTC, so a new week has begun.
+    vi.setSystemTime(new Date("2026-10-19T00:30:00Z"));
+    try {
+      const { getPracticeAccess } = await import("./practice.functions");
+      const run = getPracticeAccess as unknown as (input: unknown) => Promise<unknown>;
+      expect(await run({ context: as })).toMatchObject({ remaining: 3, canPractice: true });
+      expect(db.since).toEqual([practiceWeekStart().toISOString()]);
+      expect(db.since).toEqual(["2026-10-19T00:00:00.000Z"]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("debates", () => {
+  const USER = "22222222-2222-4222-8222-222222222222";
+  const FRIEND = "33333333-3333-4333-8333-333333333333";
+  const DEBATE = "44444444-4444-4444-8444-444444444444";
+  const as = { supabase: db.client(), userId: USER };
+  const call = async (name: "challengeToDebate" | "submitDebateResponse", data: unknown) => {
+    const fns = await import("./debate.functions");
+    const run = fns[name] as unknown as (input: unknown) => Promise<Record<string, unknown>>;
+    return run({ data, context: as });
+  };
+  const open = () => ({
+    id: DEBATE,
+    challenger_id: USER,
+    opponent_id: FRIEND,
+    topic: "Phones at school",
+    prompt: "Argue your side in three to five sentences.",
+    passage: "Some schools collect phones at the door; others leave the choice to teachers.",
+    challenger_side: "for",
+    opponent_side: "against",
+    challenger_answer: null,
+    opponent_answer: null,
+    challenger_scores: null,
+    opponent_scores: null,
+    challenger_total: null,
+    opponent_total: null,
+    challenger_tip: null,
+    opponent_tip: null,
+    max_score: 16,
+    status: "open",
+    challenger_seen_result: false,
+    opponent_seen_result: false,
+    created_at: "2026-10-20T09:00:00Z",
+  });
+  const submit = () => call("submitDebateResponse", { id: DEBATE, answer: ANSWER });
+
+  it("stores a grade that passes the output screen", async () => {
+    await screenForReal();
+    db.debate = open();
+    replyWith('{"onTopic":true,"scores":{},"tip":"Name the strongest objection."}');
+    expect(await submit()).toMatchObject({ ok: true, graded: false });
+    expect(enforce).toHaveBeenCalledWith("debateGrade");
+    expect(db.updates[0]).toMatchObject({
+      challenger_answer: ANSWER,
+      challenger_tip: "Name the strongest objection.",
+    });
+  });
+
+  it("does not store or show a grade the grader refused", async () => {
+    await screenForReal();
+    db.debate = open();
+    replyWith('{"refused":true,"category":"violence"}');
+    expect(await submit()).toEqual({
+      ok: false,
+      reason: expect.stringMatching(/can't be graded/),
+    });
+    expect(db.updates).toEqual([]);
+  });
+
+  it("screens the feedback as the two people will read it, not only the raw reply", async () => {
+    await screenForReal();
+    db.debate = open();
+    replyWith('{"onTopic":true,"scores":{},"tip":"Here is how to make \\u006deth at home."}');
+    expect(await submit()).toEqual({
+      ok: false,
+      reason: expect.stringMatching(/can't be graded/),
+    });
+    expect(db.updates).toEqual([]);
+  });
+
+  it("screens the motion as it will be stored, and stores nothing it refuses", async () => {
+    await screenForReal();
+    db.friendship = { id: "friendship" };
+    replyWith(
+      '{"topic":"Phones","passage":"Here is how to make \\u006deth at home.","prompt":"Argue."}',
+    );
+    await expect(call("challengeToDebate", { opponentId: FRIEND })).rejects.toThrow(
+      /couldn't be written/,
+    );
+    replyWith('{"refused":true,"category":"other"}');
+    await expect(call("challengeToDebate", { opponentId: FRIEND })).rejects.toThrow(
+      /couldn't be written/,
+    );
+    expect(db.inserts).toEqual([]);
+  });
+
+  it("stores a motion capped to its columns, and refuses a reply with no motion in it", async () => {
+    db.friendship = { id: "friendship" };
+    db.debate = { id: DEBATE };
+    replyWith(
+      JSON.stringify({ topic: "t".repeat(200), passage: "p".repeat(5000), prompt: "Argue." }),
+    );
+    expect(await call("challengeToDebate", { opponentId: FRIEND })).toEqual({ id: DEBATE });
+    expect(db.inserts[0]).toMatchObject({
+      topic: "t".repeat(80),
+      passage: "p".repeat(2000),
+      prompt: "Argue.",
+    });
+    replyWith('{"topic":1,"passage":2,"prompt":3}');
+    await expect(call("challengeToDebate", { opponentId: FRIEND })).rejects.toThrow(
+      /couldn't be written/,
+    );
+    expect(db.inserts).toHaveLength(1);
   });
 });
