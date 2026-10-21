@@ -7,7 +7,7 @@ import {
   DRILL_INTERVALS,
   UPKEEP_BOX,
   drillKey,
-  enrolFinishedUnits,
+  enrollFinishedUnits,
   trackDrillResult,
   useDueDrills,
   type DrillItem,
@@ -115,12 +115,12 @@ describe("upkeep for lessons placement marked as known", () => {
 
   it("puts only the lessons actually studied on the upkeep schedule", () => {
     const placed = new Set(unit.lessons.slice(0, -1).map((lesson) => lesson.id));
-    enrolFinishedUnits(done, placed);
+    enrollFinishedUnits(done, placed);
     expect(Object.values(stored()).map((i) => i.lessonId)).toEqual([unit.lessons.at(-1)!.id]);
   });
 
-  it("enrols every lesson when none were placed", () => {
-    enrolFinishedUnits(done);
+  it("enrolls every lesson when none were placed", () => {
+    enrollFinishedUnits(done);
     expect(Object.values(stored()).map((i) => i.lessonId)).toEqual(
       unit.lessons.map((lesson) => lesson.id),
     );

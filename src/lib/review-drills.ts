@@ -156,7 +156,7 @@ export function upkeepEntries(
  * Puts every finished unit's lessons on the upkeep schedule, once. `placed` are the lessons the
  * placement check marked as known without them being studied; they have nothing to keep up.
  */
-export function enrolFinishedUnits(
+export function enrollFinishedUnits(
   done: ReadonlySet<number>,
   placed: ReadonlySet<string> = new Set(),
 ) {

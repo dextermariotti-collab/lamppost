@@ -2,7 +2,7 @@ import type { Exercise, ExerciseKind } from "@/lib/exercises";
 
 /**
  * One well-formed drill of every type. They satisfy the structural rules, so the
- * rules, the generator's normaliser and the drill components can all be tested
+ * rules, the generator's normalizer and the drill components can all be tested
  * against the same examples.
  */
 export const SAMPLES = {
