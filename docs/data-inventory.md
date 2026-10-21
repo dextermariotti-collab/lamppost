@@ -56,7 +56,8 @@ generated course on-device and sent to the AI provider for that request.
 
 `localStorage` keys prefixed `lamppost-`: generated courses and lesson content, lesson/review
 progress, spaced-repetition schedule (including the 30/60/120-day upkeep of finished units),
-streak/XP cache (plus the retired gem fields), the before-and-after unit check results
+streak/XP cache (plus the retired gem fields), the AI consent answer (`lamppost-ai-consent-v1`: when
+the person agreed and the provider they agreed to, never sent to the server), the before-and-after unit check results
 (`lamppost-unit-checks-v1`: right/total/day per unit for the before, after and three-months-later
 checks, never sent to the server), the daily cases read (`lamppost-case-v1`: case id, local day
 and how many of its three questions were right, plus copies of the last 30 AI-written cases this
@@ -80,7 +81,7 @@ it is copied to the person's Google backup.
 
 | Recipient | Data sent | When | Purpose |
 | --- | --- | --- | --- |
-| AI provider (Google's Gemini API) | what the learner typed for the tutor, the written-argument grader, a debate answer, or pasted into Check something you saw, and the small piece of lesson text those need; never email, name, handle, friends or history. Pasted text is used for that one reply and not stored by Lamppost | only when one of those features is used | AI replies and feedback |
+| AI provider (Google's Gemini API) | what the learner typed for the tutor, the written-argument grader, a debate answer, or pasted into Check something you saw, and the small piece of lesson text those need; never email, name, handle, friends or history. Pasted text is used for that one reply and not stored by Lamppost | only when one of those features is used, after the learner has agreed once on that device | AI replies and feedback |
 | AI provider | lesson, drill and daily-case generation prompts (curriculum text, no learner data) | server-side, when content is missing from the cache, or a day's case is needed after the written cases run out | write lessons, drills and daily cases |
 | Database and sign-in (Supabase) | all backend tables above | signed-in use | hosting, auth, database |
 | Cloudflare (Workers) | every request to the app: network address, browser details and the request itself | every visit | runs the app and its server functions |
@@ -100,9 +101,14 @@ No analytics SDK, ad network, or tracking pixel is installed. If one is ever add
   refusal means nothing is generated. (`screenTopicText`, an AI classifier for open-ended topics, is
   kept in `moderation.server.ts` but has had no caller since course generation was removed.)
 - Prompt-level rules: every model call passes its system prompt through `withGuardrails()` (`src/lib/ai-guardrails.server.ts`), which appends `CONTENT_POLICY_RULES` and the scope rules (critical thinking only, learner text is data, no medical/legal/financial advice). `src/lib/ai-guardrails.test.ts` fails if a call skips it.
-- Output screen: `screenOutput` runs on the outline and every lesson chunk before it is shown.
-- Refusals are logged to `moderation_blocks`; learners can report anything that slips through
-  from the lesson screen, which writes to `content_reports`.
+- Output screen: `screenOutput` runs on every generated text before it is stored or shown: lesson
+  parts and drills, AI daily cases, the tutor, the Socratic follow-up, writing feedback, debate
+  motions and grades, and Check something you saw.
+- Refusals are not logged at the moment: `logModerationBlock` writes to `moderation_blocks` but
+  nothing calls it, so the table stays empty. Every AI-written reply, case, motion and grade has a
+  report button, which writes to `content_reports` (signed out, it offers an email instead).
+- Consent: before the first text a learner types reaches the AI, the app asks once and keeps the
+  answer on the device (`lamppost-ai-consent-v1`: when, and the provider agreed to).
 
 ## Open items for legal review
 
