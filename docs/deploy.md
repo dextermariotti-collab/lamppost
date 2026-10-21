@@ -81,6 +81,7 @@ checks for the key before it calls the model: the tutor chat, the written-argume
 something you saw and the drill follow-ups say AI isn't available, a new debate can't be started
 and says why, and the daily case falls back to a written one. The authored lessons, drills already
 in the cache, streaks, sync and friends keep working. Put the key back to turn them on again.
+`docs/incident.md` has this and the other steps for when something goes wrong.
 
 ## 4. Deploy to Cloudflare
 
@@ -92,7 +93,8 @@ npx wrangler secret put SUPABASE_PUBLISHABLE_KEY --name lamppost
 npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY --name lamppost
 npx wrangler secret put AI_API_KEY --name lamppost
 npx wrangler secret put WARM_TOKEN --name lamppost
-# Optional, the same way: RATE_LIMIT_SECRET, APP_ORIGINS (.env.example says what each does).
+# Optional, the same way: RATE_LIMIT_SECRET, APP_ORIGINS, CLIENT_IP_HEADER (.env.example says
+# what each does).
 # Build (with the VITE_ values in .env) and upload:
 npm run deploy
 ```
@@ -103,17 +105,32 @@ worker, or run `npm run deploy` once and set the secrets after. Add your domain 
 **Workers & Pages → lamppost → Settings → Domains & Routes**. Set every server value as a secret:
 the generated config replaces plain variables set in the dashboard on each deploy.
 
-To build for a different host, set `NITRO_PRESET` (for example `node-server` or `vercel`) when
-running `npm run build`. Nitro supports most hosts.
+The per-address rate limits read the caller's address from one header only: `CLIENT_IP_HEADER`, or
+Cloudflare's `cf-connecting-ip` when it is empty. Leave it empty on Cloudflare, which overwrites that
+header on every request.
 
-## 5. Fill the lesson cache (optional)
+To build for a different host, set `NITRO_PRESET` (for example `node-server` or `vercel`) when
+running `npm run build`. Nitro supports most hosts. Set `CLIENT_IP_HEADER` there too, to the header
+that host overwrites with the caller's address: a header the caller can set themselves would let
+anyone take a fresh limit with every request.
+
+## 5. Fill the lesson cache
 
 Authored lessons don't need it. The older AI-written drills that reviews and the placement check
-use are written on demand, and warming the cache writes them all ahead of time:
+use are written on demand, and warming the cache writes them all ahead of time. Run it after the
+first deploy and **after every deploy that bumps `CONTENT_VERSION`** (in
+`src/lib/curriculum-generate.server.ts`; it is 8 now): a bump makes every cached lesson stale, and
+until the warm-up runs, each one is rewritten in parts the first time someone needs it.
 
 ```sh
-curl -X POST https://YOUR-DOMAIN/api/public/warm-curriculum -H "x-warm-token: $WARM_TOKEN"
+curl -X POST https://YOUR-DOMAIN/api/public/warm-curriculum \
+  -H "x-warm-token: $WARM_TOKEN" -H "content-type: application/json" -d '{"limit": 6}'
 ```
+
+Each call writes up to `limit` lessons (3 if you leave it out, 6 at most) and answers with `done`,
+`failed` and `remaining`. Run it again until `remaining` is 0. If the same lessons keep coming back in
+`failed`, the worker's logs say why (`docs/incident.md`). Without `WARM_TOKEN` set on the worker, the
+endpoint answers 503.
 
 ## Moving people over from Lovable Cloud
 

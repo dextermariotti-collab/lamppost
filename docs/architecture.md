@@ -37,9 +37,12 @@ the learning state. None of it blocks new features, but each gets more expensive
 - **Content as data, held to rules by tests.** Lessons, notes, cases and unit checks are typed
   data. Tests enforce word limits, answer-position balance, made-up names and no overlap between
   checks and lessons. Adding content means adding data, not code.
-- **AI behind four gates.** Every model call goes through `withGuardrails()` (tested by scanning the
-  source), a database rate limit that fails closed, input screening (`screenLocally`) and output
-  screening or parsing (`readLookResult`, `readGeneratedCase`). New AI features should copy the
+- **AI behind five gates.** Every model call goes through `withGuardrails()` and an output cap
+  (`aiOutput()`; both tested by scanning the source), a database rate limit that fails closed, input
+  screening (`screenLocally`) and output screening or parsing (`readLookResult`,
+  `readGeneratedCase`). Lesson context in a prompt is built on the server from the lesson id, never
+  taken from the request. Learners are asked once before their text first goes to the provider
+  (`useAiConsentGate`) and can report what comes back (`ReportContentButton`). New AI features should copy the
   shape of `look-closer.*`: a pure module for limits and parsing, a `.server.ts` prompt, and a
   `.functions.ts` handler.
 - **Local days everywhere.** One module (`days.ts`) makes day keys, and the 9pm-Eastern suite
@@ -51,7 +54,7 @@ the learning state. None of it blocks new features, but each gets more expensive
 | --- | --- | --- |
 | A lesson, or a unit of any size | **Yes** | Add it to `curriculum.ts`, `content/lessons`, `content/notes`, then run the tests. Never rename a shipped id (the test says so) |
 | A step kind | **Yes** | Add the schema in `lib/steps/types.ts`, a component in `components/steps`, and register it |
-| An AI feature | **Yes** | Copy `look-closer.*`, add a policy in `rate-limit.ts` and a model in `ai-models.ts` |
+| An AI feature | **Yes** | Copy `look-closer.*`, add a policy in `rate-limit.ts`, and a model and an `AI_REPLY_TOKENS` cap in `ai-models.ts` |
 | A table holding personal data | **Yes** | Add it with RLS and `ON DELETE CASCADE`. The audit tests enforce both |
 | A field that follows the learner across devices | **Partly** | Progress has a path (`syncProgress`), but each field needs its own merge rule written by hand. See roadmap 2 |
 | Another curriculum or course | **No** | `CURRICULUM_SLUG` is a constant throughout, and `courses[slug]` is a leftover of generated courses. Fine while there is one curriculum. Make it a parameter first if a second one is planned |
@@ -68,7 +71,8 @@ the learning state. None of it blocks new features, but each gets more expensive
    biggest simplification available, and it removes the main source of AI cost.
 2. **Sync the learning state, not just the numbers.** The review queue, skill ratings, unit-check
    results, badges and drill attempts are still device-only (about ten stores). A new phone gets
-   XP, streak and lessons, but not the reviews that are due. Store one versioned, server-bounded
+   XP, streak, lessons and the streak's recent days (`getMyProfile` returns the last 60 active
+   days), but not the reviews that are due. Store one versioned, server-bounded
    `learning_state` document per account, merged the way progress is. Decide this before many
    people use two devices, because merging two histories later is harder than syncing from the start.
 3. **One local-store primitive.** About twenty `lamppost-` stores are each read through hand-written
@@ -88,7 +92,9 @@ the learning state. None of it blocks new features, but each gets more expensive
    add a size budget to CI.
 7. **Regenerate the database types.** `generated_cases` and `profiles.done_lessons` are reached
    through small untyped accessors (`casesTable`, `doneLessonsOf`), because `types.ts` predates them.
-   Once the new Supabase project is built, run `npm run db:types` and delete the accessors.
+   The social safety migration (October 19) changed `search_profiles` to take a viewer, so it is
+   called through `UntypedRpc` in `friends.functions.ts` for now. Once the new Supabase project is
+   built, run `npm run db:types` and delete the accessors.
 8. **Decide on the retired economy.** Gems, carry-over and hint tokens still travel in every sync so
    that accounts stay consistent. If they are not coming back, one migration (with a rollback) can
    drop the columns and tables and shrink the sync payload.
