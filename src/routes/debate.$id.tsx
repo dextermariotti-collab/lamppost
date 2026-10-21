@@ -1,5 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AiLabel } from "@/components/AiLabel";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenLine, Swords, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -7,6 +9,7 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/lib/account";
+import { useAiConsentGate } from "@/lib/ai-consent";
 import { getDebate, markDebateSeen, submitDebateResponse } from "@/lib/debate.functions";
 import { CRITERION_LABEL, WRITTEN_TASKS, type ArgumentGrade } from "@/lib/exercises";
 
@@ -74,6 +77,7 @@ function DebateScreen() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const consent = useAiConsentGate();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["debate", id],
@@ -130,7 +134,17 @@ function DebateScreen() {
           {opponentName} argues {data.theirSide}.
         </p>
 
-        <AiLabel className="mt-4" />
+        <div className="mt-4 flex flex-wrap items-center gap-x-3">
+          <AiLabel />
+          <ReportContentButton
+            className=""
+            context={{
+              courseTopic: "Debate",
+              lessonTitle: `Debate: ${data.topic}`,
+              excerpt: [data.topic, data.passage, data.prompt].join("\n\n"),
+            }}
+          />
+        </div>
         <blockquote className="mt-2 rounded-2xl border-l-4 border-primary/40 bg-muted/50 px-4 py-3 text-[13px] font-semibold leading-relaxed">
           {data.passage}
         </blockquote>
@@ -154,7 +168,7 @@ function DebateScreen() {
             </p>
             {error && <p className="mt-2 text-[13px] font-semibold text-destructive">{error}</p>}
             <Button
-              onClick={submit}
+              onClick={() => consent.ask(submit)}
               disabled={busy || text.trim().length < 40}
               className="mt-3 h-12 w-full rounded-sm text-base font-semibold"
             >
@@ -190,6 +204,17 @@ function DebateScreen() {
             </div>
 
             <AiLabel note what="The scoring" />
+            <ReportContentButton
+              className="-mt-2"
+              context={{
+                courseTopic: "Debate",
+                lessonTitle: `Debate: ${data.topic}`,
+                excerpt: [
+                  `Your case: ${data.myGrade.total}/${data.myGrade.max}. ${data.myGrade.tip}`,
+                  `Their case: ${data.theirGrade.total}/${data.theirGrade.max}. ${data.theirGrade.tip}`,
+                ].join("\n\n"),
+              }}
+            />
             <GradeCard label="Your case" grade={data.myGrade} tip={data.myGrade.tip} />
             <GradeCard
               label={`${opponentName}'s case`}
@@ -206,6 +231,7 @@ function DebateScreen() {
           </div>
         )}
       </div>
+      <AiConsentSheet {...consent.sheet} />
     </PhoneFrame>
   );
 }

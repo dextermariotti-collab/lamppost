@@ -1,13 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { GuideMark } from "@/components/LineBullet";
+import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AiLabel } from "@/components/AiLabel";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, CalendarClock, RefreshCw, Send, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAiConsentGate } from "@/lib/ai-consent";
 import {
   FREE_WEEKLY_PRACTICE,
   MAX_PRACTICE_TURNS,
+  nextPracticeReset,
   savePracticeResult,
   VERDICT_COPY,
   type PracticeClose,
@@ -21,11 +25,13 @@ import {
 
 type Props = {
   slug: string;
+  /** 1-based, as the lesson screens count. */
   lessonIndex: number;
-  topic: string;
   lessonTitle: string;
-  lessonText: string;
-  earlierLessons: string[];
+  /** No longer sent: the server builds the lesson's context itself. */
+  topic?: string;
+  lessonText?: string;
+  earlierLessons?: string[];
   signedIn: boolean;
   /** Where signing in comes back to: this lesson's path on this site. */
   returnTo: string;
@@ -34,20 +40,6 @@ type Props = {
 };
 
 type Phase = "intro" | "loading" | "chatting" | "closed" | "error" | "weekly-limit";
-
-/** The tutor is the app's guide, the lamp, whoever the learner's companion is. */
-const GUIDE = "the guide";
-
-/**
- * When this week's sessions come back. The server counts them from Monday 00:00 UTC
- * (`weekStartIso` in practice.functions.ts), which is Sunday evening across the US.
- */
-function practiceReopensAt(now = new Date()): Date {
-  const daysToMonday = (8 - now.getUTCDay()) % 7 || 7;
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToMonday),
-  );
-}
 
 function reopensText(at: Date) {
   const day = at.toLocaleDateString("en-US", { weekday: "long" });
@@ -58,15 +50,13 @@ function reopensText(at: Date) {
 export function PracticeChat({
   slug,
   lessonIndex,
-  topic,
   lessonTitle,
-  lessonText,
-  earlierLessons,
   signedIn,
   returnTo,
   onDone,
 }: Props) {
   const takeTurn = useServerFn(practiceTurn);
+  const consent = useAiConsentGate();
   const [phase, setPhase] = useState<Phase>("intro");
   /** Turns the server has answered. */
   const [transcript, setTranscript] = useState<PracticeTurn[]>([]);
@@ -90,20 +80,7 @@ export function PracticeChat({
       setUnsent(answer.length > 0 ? answer : null);
 
       const result = await takeTurn({
-        data: {
-          context: {
-            slug,
-            lessonIndex,
-            topic,
-            lessonTitle,
-            lessonText: lessonText.slice(0, 6000),
-            earlierLessons,
-            companionName: GUIDE,
-          },
-          transcript,
-          answer,
-          sessionId: id,
-        },
+        data: { context: { slug, lessonIndex, lessonTitle }, answer, sessionId: id },
       }).catch(() => null);
 
       if (!result || !result.ok) {
@@ -140,12 +117,16 @@ export function PracticeChat({
         setPhase("chatting");
       }
     },
-    [takeTurn, transcript, slug, lessonIndex, topic, lessonTitle, lessonText, earlierLessons],
+    [takeTurn, transcript, slug, lessonIndex, lessonTitle],
   );
 
   const shown: PracticeTurn[] =
     unsent !== null ? [...transcript, { role: "learner", text: unsent }] : transcript;
   const learnerTurns = transcript.filter((t) => t.role === "learner").length;
+  const tutorSaid = [
+    ...transcript.filter((t) => t.role === "tutor").map((t) => t.text),
+    ...(close?.remembered ? [close.remembered] : []),
+  ];
 
   if (!signedIn) {
     return (
@@ -182,8 +163,8 @@ export function PracticeChat({
               That's this week's {FREE_WEEKLY_PRACTICE} explain-it-back sessions
             </h3>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              They start again {reopensText(practiceReopensAt())}. Lessons, reviews and notes don't
-              need one, so carry on with those.
+              They start again {reopensText(nextPracticeReset(new Date()))}. Lessons, reviews and
+              notes don't need one, so carry on with those.
             </p>
           </div>
         </div>
@@ -201,7 +182,7 @@ export function PracticeChat({
         </p>
         <Button
           className="mt-4 h-11 w-full justify-between px-4 font-bold"
-          onClick={() => void send("", null)}
+          onClick={() => consent.ask(() => void send("", null))}
         >
           <span>Explain it back</span>
           <ArrowRight aria-hidden className="h-4 w-4" />
@@ -213,6 +194,7 @@ export function PracticeChat({
         >
           Skip for now
         </button>
+        <AiConsentSheet {...consent.sheet} />
       </Card>
     );
   }
@@ -256,6 +238,19 @@ export function PracticeChat({
         <div ref={endRef} />
       </div>
 
+      {tutorSaid.length > 0 && (
+        <ReportContentButton
+          className="mt-2"
+          context={{
+            courseSlug: slug,
+            courseTopic: "Tutor chat",
+            lessonIndex,
+            lessonTitle,
+            excerpt: tutorSaid.join("\n\n"),
+          }}
+        />
+      )}
+
       {phase === "error" && (
         <div
           role="alert"
@@ -266,7 +261,7 @@ export function PracticeChat({
             <Button
               variant="outline"
               className="h-10 flex-1 font-bold"
-              onClick={() => void send(unsent ?? "", sessionId)}
+              onClick={() => consent.ask(() => void send(unsent ?? "", sessionId))}
             >
               <RefreshCw aria-hidden className="h-4 w-4" /> Retry
             </Button>
@@ -306,7 +301,8 @@ export function PracticeChat({
           onSubmit={(e) => {
             e.preventDefault();
             if (draft.trim().length === 0 || phase === "loading") return;
-            void send(draft.trim(), sessionId);
+            const answer = draft.trim();
+            consent.ask(() => void send(answer, sessionId));
           }}
           className="mt-4"
         >
@@ -333,6 +329,7 @@ export function PracticeChat({
           </div>
         </form>
       )}
+      <AiConsentSheet {...consent.sheet} />
     </Card>
   );
 }

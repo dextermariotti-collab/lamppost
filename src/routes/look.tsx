@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Search } from "lucide-react";
 import { useState } from "react";
+import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AiLabel } from "@/components/AiLabel";
 import { LineBullet } from "@/components/LineBullet";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
+import { useAiConsentGate } from "@/lib/ai-consent";
 import { CURRICULUM_SLUG, LESSONS, lessonIndexOf } from "@/lib/curriculum";
 import {
   LOOK_SOURCES,
@@ -42,6 +45,7 @@ function LookScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LookResult | null>(null);
+  const consent = useAiConsentGate();
   const length = text.trim().length;
   const problem = lookInputProblem(text);
   const ready = problem === null;
@@ -143,7 +147,7 @@ function LookScreen() {
             )}
             <Button
               type="button"
-              onClick={() => void submit()}
+              onClick={() => consent.ask(() => void submit())}
               disabled={!ready || busy}
               className="mt-4 h-12 w-full justify-between rounded-sm px-4 text-base font-bold disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
             >
@@ -153,6 +157,7 @@ function LookScreen() {
           </>
         )}
       </div>
+      <AiConsentSheet {...consent.sheet} />
     </PhoneFrame>
   );
 }
@@ -227,6 +232,18 @@ function LookAnswer({
       </section>
 
       <AiLabel note what="This" className="mt-4" />
+      {/* What they pasted stays out of the report: this screen promises it isn't saved. */}
+      <ReportContentButton
+        className="mt-1"
+        context={{
+          courseTopic: "Check something you saw",
+          excerpt: [
+            result.claim,
+            ...result.lenses.map((lens) => `${lens.question} ${lens.lookFor}`),
+            result.check,
+          ].join("\n\n"),
+        }}
+      />
       <p className="mt-2 text-xs text-muted-foreground">
         It points to the questions; it doesn't say whether the text is true. That's yours to decide.
       </p>

@@ -5,6 +5,7 @@ import { AiLabel } from "@/components/AiLabel";
 import { LessonPlayer } from "@/components/lesson/LessonPlayer";
 import { LineBullet } from "@/components/LineBullet";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { DAILY_CASES } from "@/content/cases";
@@ -53,7 +54,25 @@ function CaseScreen() {
   const { doneLessons, completeCase } = useProgress();
   const { pick, result, hydrated, wantsNew, record } = useDailyCase(DAILY_CASES, doneLessons);
   const writing = useAiCaseTopUp(wantsNew);
-  const [finished, setFinished] = useState<StepResult[] | null>(null);
+  const [askedForNew, setAskedForNew] = useState(false);
+  const [held, setHeld] = useState<{ case: DailyCase; repeat: boolean } | null>(null);
+  const [finished, setFinished] = useState<{ item: DailyCase; results: StepResult[] } | null>(null);
+
+  // Today's case follows the local day, so at midnight `pick` can move on. The case on screen is
+  // held from the moment it is shown until the learner finishes it or leaves, and a case an AI is
+  // about to write isn't started in the old one's place.
+  const ready = hydrated && pick !== null && !pick.done && !writing && (!wantsNew || askedForNew);
+  const startable = useMemo(
+    () => (ready && pick ? { case: pick.case, repeat: pick.repeat } : null),
+    [ready, pick],
+  );
+  const playing = held ?? startable;
+  useEffect(() => {
+    if (writing) setAskedForNew(true);
+  }, [writing]);
+  useEffect(() => {
+    if (!held && startable) setHeld(startable);
+  }, [held, startable]);
 
   return (
     <PhoneFrame>
@@ -63,27 +82,27 @@ function CaseScreen() {
         backTo="/"
       />
       <div className="px-5 pb-10">
-        {!hydrated || !pick ? null : writing ? (
-          <p className="sign p-5 text-sm text-muted-foreground" role="status">
-            You've read every case so far, so today's is being written. This takes a moment.
-          </p>
-        ) : finished ? (
-          <CaseFinished item={pick.case} results={finished} />
-        ) : pick.done ? (
-          <CaseDone item={pick.case} right={result?.right ?? null} total={result?.total ?? 3} />
-        ) : (
+        {!hydrated || !pick ? null : finished ? (
+          <CaseFinished item={finished.item} results={finished.results} />
+        ) : playing ? (
           <CasePlayer
-            key={pick.case.id}
-            item={pick.case}
-            repeat={pick.repeat}
+            key={playing.case.id}
+            item={playing.case}
+            repeat={playing.repeat}
             studied={studiedUnits(doneLessons)}
             onComplete={(results) => {
               const right = results.filter((r) => r.score >= 1).length;
-              if (record(pick.case.id, right, results.length)) completeCase(right);
-              setFinished(results);
+              if (record(playing.case.id, right, results.length)) completeCase(right);
+              setFinished({ item: playing.case, results });
             }}
           />
-        )}
+        ) : pick.done ? (
+          <CaseDone item={pick.case} right={result?.right ?? null} total={result?.total ?? 3} />
+        ) : wantsNew ? (
+          <p className="sign p-5 text-sm text-muted-foreground" role="status">
+            You've read every case so far, so today's is being written. This takes a moment.
+          </p>
+        ) : null}
       </div>
     </PhoneFrame>
   );
@@ -106,8 +125,30 @@ function CaseText({ item }: { item: DailyCase }) {
         {item.title}
       </h2>
       <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{item.text}</p>
-      {isAiCase(item) && <AiLabel note what="This case" className="mt-3" />}
+      {isAiCase(item) && <AiCaseNote item={item} className="mt-3" />}
     </section>
+  );
+}
+
+/** An AI-written case says so, and can be reported from wherever it is shown. */
+function AiCaseNote({ item, className }: { item: DailyCase; className: string }) {
+  return (
+    <div className={className}>
+      <AiLabel note what="This case" />
+      <ReportContentButton
+        className="mt-1"
+        context={{
+          courseTopic: "AI daily case",
+          lessonTitle: item.title,
+          excerpt: [
+            item.title,
+            item.text,
+            ...item.questions.map((q) => q.step.prompt),
+            item.takeaway,
+          ].join("\n\n"),
+        }}
+      />
+    </div>
   );
 }
 
@@ -225,6 +266,7 @@ function CaseFinished({ item, results }: { item: DailyCase; results: StepResult[
         <p className="legend text-muted-foreground">To carry away</p>
         <p className="mt-1 text-[15px] font-bold leading-snug">{item.takeaway}</p>
       </section>
+      {isAiCase(item) && <AiCaseNote item={item} className="mt-3" />}
       <p className="mt-4 text-sm text-muted-foreground">A new case is ready tomorrow.</p>
       <Button asChild className="mt-4 h-12 w-full rounded-sm text-base font-bold">
         <Link to="/">Back to home</Link>

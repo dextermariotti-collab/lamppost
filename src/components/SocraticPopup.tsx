@@ -1,9 +1,12 @@
 import { Send, X } from "lucide-react";
 import { GuideMark } from "@/components/LineBullet";
+import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AiLabel } from "@/components/AiLabel";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { companionName, type Companion } from "@/lib/companions";
+import { useAiConsentGate } from "@/lib/ai-consent";
+import type { Companion } from "@/lib/companions";
 import { describeAnswer, describeExercise, type Exercise } from "@/lib/exercises";
 import { isLimited } from "@/lib/rate-limit";
 import { socraticLine } from "@/lib/socratic.functions";
@@ -12,12 +15,12 @@ import { socraticLine } from "@/lib/socratic.functions";
 let limitNoted = false;
 
 /**
- * The mascot's Socratic beat: after a wrong answer (and now and then after a
+ * The guide's Socratic beat: after a wrong answer (and now and then after a
  * right one) it asks one short question about the learner's reasoning. Replying
- * is optional and never blocks progress.
+ * is optional and never blocks progress. Only the reply is the learner's own
+ * text, so only the reply asks for AI consent first.
  */
 export function SocraticPopup({
-  companion,
   lessonTitle,
   objective,
   exercise,
@@ -25,7 +28,8 @@ export function SocraticPopup({
   correct,
   onDismiss,
 }: {
-  companion: Companion;
+  /** Not sent: the guide speaks for itself, whoever the learner's companion is. */
+  companion?: Companion;
   lessonTitle: string;
   objective: string;
   exercise: Exercise;
@@ -40,7 +44,7 @@ export function SocraticPopup({
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const asked = useRef(false);
-  const name = companionName(companion);
+  const consent = useAiConsentGate();
 
   useEffect(() => {
     if (asked.current) return;
@@ -48,7 +52,6 @@ export function SocraticPopup({
     void socraticLine({
       data: {
         mode: "question",
-        companionName: name,
         lessonTitle,
         objective,
         exercise: describeExercise(exercise),
@@ -66,7 +69,7 @@ export function SocraticPopup({
         }
       })
       .catch(() => undefined);
-  }, [name, lessonTitle, objective, exercise, answer, correct]);
+  }, [lessonTitle, objective, exercise, answer, correct]);
 
   if (!question) {
     if (!note) return null;
@@ -96,7 +99,6 @@ export function SocraticPopup({
     void socraticLine({
       data: {
         mode: "reply",
-        companionName: name,
         lessonTitle,
         objective,
         exercise: "",
@@ -139,7 +141,17 @@ export function SocraticPopup({
             <X aria-hidden className="h-3.5 w-3.5" />
           </button>
         </div>
-        <AiLabel className="mt-1.5" />
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3">
+          <AiLabel />
+          <ReportContentButton
+            className=""
+            context={{
+              courseTopic: "Follow-up question",
+              lessonTitle,
+              excerpt: feedback ? `${question}\n\n${feedback}` : question,
+            }}
+          />
+        </div>
 
         {feedback ? (
           <p className="mt-2 text-[13px] font-semibold leading-snug text-accent-foreground">
@@ -153,14 +165,14 @@ export function SocraticPopup({
               rows={2}
               maxLength={600}
               placeholder="Optional — say what you think"
-              aria-label="Reply to your companion"
+              aria-label="Reply to the guide"
               className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-[13px] font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
             <Button
               type="button"
               size="sm"
               disabled={!reply.trim() || sending}
-              onClick={send}
+              onClick={() => consent.ask(send)}
               aria-label="Send reply"
               className="h-9 shrink-0 rounded-sm"
             >
@@ -177,6 +189,7 @@ export function SocraticPopup({
           </button>
         )}
       </div>
+      <AiConsentSheet {...consent.sheet} />
     </div>
   );
 }

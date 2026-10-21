@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { recordAiConsent } from "@/lib/ai-consent";
 import { COMPANION_PRESETS } from "@/lib/companions";
 
 process.env["TZ"] = "America/New_York";
@@ -12,6 +13,13 @@ vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
 vi.mock("@/lib/practice.functions", () => ({
   practiceTurn: mocks.turn,
   MAX_PRACTICE_ANSWER_CHARS: 1500,
+}));
+vi.mock("@/components/ReportContentButton", () => ({
+  ReportContentButton: ({ context }: { context: { courseTopic?: string; excerpt?: string } }) => (
+    <button type="button" data-topic={context.courseTopic} data-excerpt={context.excerpt}>
+      Report this content
+    </button>
+  ),
 }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -72,7 +80,15 @@ function mount(signedIn = true) {
 
 beforeEach(() => {
   window.localStorage.clear();
+  recordAiConsent();
   mocks.turn.mockReset();
+  window.matchMedia ??= (() => ({
+    matches: false,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+  })) as unknown as typeof window.matchMedia;
 });
 afterEach(() => {
   cleanup();
@@ -90,6 +106,29 @@ describe("PracticeChat for a signed-out learner", () => {
     expect(href.pathname).toBe("/auth");
     expect(href.searchParams.get("redirect")).toBe(RETURN_TO);
     expect(mocks.turn).not.toHaveBeenCalled();
+  });
+});
+
+describe("PracticeChat before the learner has agreed to AI", () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it("asks first, and Not now sends nothing", async () => {
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: /Explain it back/ }));
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Not now" }));
+    expect(mocks.turn).not.toHaveBeenCalled();
+  });
+
+  it("starts the chat once they continue", async () => {
+    mocks.turn.mockResolvedValue(reply("Tell me the idea in your words."));
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: /Explain it back/ }));
+    await screen.findByRole("dialog");
+    expect(mocks.turn).not.toHaveBeenCalled();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Continue" })));
+    expect(mocks.turn).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("log").textContent).toContain("Tell me the idea in your words.");
   });
 });
 
@@ -130,10 +169,54 @@ describe("PracticeChat's tutor", () => {
 
     const retried = mocks.turn.mock.calls[2]![0].data;
     expect(retried.answer).toBe("A claim needs a reason.");
-    expect(retried.transcript).toEqual([
-      { role: "tutor", text: "Tell me the idea in your words." },
-    ]);
+    expect(retried.sessionId).toBe(reply("").sessionId);
     expect(screen.getAllByText("A claim needs a reason.")).toHaveLength(1);
+  });
+
+  it("sends only which lesson it is and what the learner wrote", async () => {
+    mocks.turn
+      .mockResolvedValueOnce(reply("Tell me the idea in your words."))
+      .mockResolvedValueOnce(reply("Good. Now connect it."));
+    mount();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Explain it back/ })));
+    fireEvent.change(screen.getByLabelText("Your explanation"), {
+      target: { value: "A claim needs a reason." },
+    });
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Send/ })));
+
+    const lesson = { slug: "critical-thinking", lessonIndex: 3, lessonTitle: "A lesson" };
+    expect(mocks.turn.mock.calls[0]![0].data).toEqual({
+      context: lesson,
+      answer: "",
+      sessionId: null,
+    });
+    // The server reads the conversation from its own record and builds the lesson's context
+    // itself, so neither the transcript, the lesson text nor a companion name is sent.
+    expect(mocks.turn.mock.calls[1]![0].data).toEqual({
+      context: lesson,
+      answer: "A claim needs a reason.",
+      sessionId: reply("").sessionId,
+    });
+  });
+
+  it("lets the learner report what the guide said, from inside the chat", async () => {
+    mocks.turn
+      .mockResolvedValueOnce(reply("Tell me the idea in your words."))
+      .mockResolvedValueOnce(reply("Good. Now connect it."));
+    mount();
+    expect(screen.queryByRole("button", { name: /report this content/i })).toBeNull();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Explain it back/ })));
+    fireEvent.change(screen.getByLabelText("Your explanation"), {
+      target: { value: "A claim needs a reason." },
+    });
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Send/ })));
+
+    const report = screen.getByRole("button", { name: /report this content/i });
+    expect(report.dataset["topic"]).toBe("Tutor chat");
+    expect(report.dataset["excerpt"]).toContain("Tell me the idea in your words.");
+    expect(report.dataset["excerpt"]).toContain("Good. Now connect it.");
+    // Only the AI's side goes in the report, not what the learner wrote.
+    expect(report.dataset["excerpt"]).not.toContain("A claim needs a reason.");
   });
 
   it("says plainly when this week's sessions come back, and sells nothing", async () => {

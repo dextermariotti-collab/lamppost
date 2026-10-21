@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { AiLabel } from "@/components/AiLabel";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,7 @@ function DebatesScreen() {
             );
           })}
         </ul>
+        {debates.length > 0 && <AiLabel note what="Each motion" className="mt-4" />}
       </div>
     </PhoneFrame>
   );

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { recordAiConsent } from "@/lib/ai-consent";
 import { DEFAULT_COMPANION } from "@/lib/companions";
 
 const mocks = vi.hoisted(() => ({
@@ -8,6 +9,22 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/argument.functions", () => ({ gradeArgument: mocks.gradeArgument }));
+vi.mock("@/components/ReportContentButton", () => ({
+  ReportContentButton: ({
+    context,
+  }: {
+    context: { courseTopic?: string; lessonIndex?: number; excerpt?: string };
+  }) => (
+    <button
+      type="button"
+      data-topic={context.courseTopic}
+      data-lesson={context.lessonIndex}
+      data-excerpt={context.excerpt}
+    >
+      Report this content
+    </button>
+  ),
+}));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children }: { to: string; children?: React.ReactNode }) => (
     <a href={to}>{children}</a>
@@ -53,6 +70,60 @@ function mount() {
 
 const ANSWER =
   "This is the bandwagon fallacy because popularity among friends does not show it is good for everyone, so the conclusion does not follow.";
+
+beforeEach(() => {
+  window.localStorage.clear();
+  recordAiConsent();
+  window.matchMedia ??= (() => ({
+    matches: false,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+  })) as unknown as typeof window.matchMedia;
+});
+
+describe("WrittenArgument and the AI", () => {
+  beforeEach(() => {
+    mocks.gradeArgument.mockReset();
+    mocks.gradeArgument.mockResolvedValue(grade);
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+  afterEach(cleanup);
+
+  it("asks before the first answer goes to the grader, and Not now keeps it here", async () => {
+    window.localStorage.clear();
+    mount();
+    fireEvent.change(screen.getByLabelText("Your argument"), { target: { value: ANSWER } });
+    fireEvent.click(screen.getByRole("button", { name: /Submit for feedback/ }));
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Not now" }));
+    expect(mocks.gradeArgument).not.toHaveBeenCalled();
+    expect((screen.getByLabelText("Your argument") as HTMLTextAreaElement).value).toBe(ANSWER);
+
+    fireEvent.click(screen.getByRole("button", { name: /Submit for feedback/ }));
+    await act(async () => {
+      fireEvent.click(await screen.findByRole("button", { name: "Continue" }));
+    });
+    expect(mocks.gradeArgument).toHaveBeenCalledTimes(1);
+    expect(mocks.gradeArgument.mock.calls[0]![0].data.answer).toBe(ANSWER);
+  });
+
+  it("lets the learner report the feedback, naming the lesson", async () => {
+    mount();
+    expect(screen.queryByRole("button", { name: /report this content/i })).toBeNull();
+    fireEvent.change(screen.getByLabelText("Your argument"), { target: { value: ANSWER } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /Submit for feedback/ }));
+    });
+    const report = await screen.findByRole("button", { name: /report this content/i });
+    expect(report.dataset["topic"]).toBe("Writing feedback");
+    expect(report.dataset["lesson"]).toBe("1");
+    expect(report.dataset["excerpt"]).toContain("Add one sentence on the fix.");
+    expect(report.dataset["excerpt"]).toContain("You named the bandwagon.");
+    expect(report.dataset["excerpt"]).not.toContain(ANSWER);
+  });
+});
 
 /**
  * Regression: the grader takes ~15s. Its loading panel used to sit at the very

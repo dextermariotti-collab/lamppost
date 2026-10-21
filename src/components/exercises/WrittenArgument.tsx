@@ -1,8 +1,12 @@
 import { Loader2, PenLine } from "lucide-react";
 import { GuideMark } from "@/components/LineBullet";
+import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AiLabel } from "@/components/AiLabel";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAiConsentGate } from "@/lib/ai-consent";
+import { CURRICULUM_SLUG, lessonIndexOf } from "@/lib/curriculum";
 import type { Companion } from "@/lib/companions";
 import {
   CRITERION_LABEL,
@@ -97,6 +101,8 @@ export function WrittenArgument({
   const [revising, setRevising] = useState(false);
   const task = WRITTEN_TASKS[written.type];
   const [focus, setFocus] = useState<RubricCriterion | null>(null);
+  const consent = useAiConsentGate();
+  const lessonNumber = lessonIndexOf(lessonId) + 1;
 
   // Read after hydration: the weakest criterion lives in local history.
   useEffect(() => setFocus(weakestCriterion(task.criteria)?.criterion ?? null), [task.criteria]);
@@ -191,7 +197,7 @@ export function WrittenArgument({
           {busy && <GradingProgress companion={companion} elapsed={elapsed} />}
           <Button
             type="button"
-            onClick={submit}
+            onClick={() => consent.ask(submit)}
             disabled={
               busy ||
               text.trim().length <
@@ -222,6 +228,20 @@ export function WrittenArgument({
           </div>
 
           <AiLabel note what="This feedback" />
+          <ReportContentButton
+            className="-mt-1"
+            context={{
+              courseTopic: "Writing feedback",
+              ...(lessonNumber > 0
+                ? { courseSlug: CURRICULUM_SLUG, lessonIndex: lessonNumber }
+                : {}),
+              lessonTitle,
+              excerpt: [
+                grade.tip,
+                ...task.criteria.flatMap((c) => grade.scores[c]?.feedback ?? []),
+              ].join("\n\n"),
+            }}
+          />
 
           {task.criteria.map((criterion) => {
             const row = grade.scores[criterion] ?? {
@@ -278,6 +298,7 @@ export function WrittenArgument({
           )}
         </div>
       )}
+      <AiConsentSheet {...consent.sheet} />
     </section>
   );
 }
