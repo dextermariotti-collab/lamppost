@@ -4,7 +4,14 @@ import type { FriendsSnapshot, PersonCard, getFriendProfile } from "./friends.fu
 
 vi.mock("@tanstack/react-start", async () => (await import("@/test/server-fn")).startMock);
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
-const admin = vi.hoisted(() => ({ current: null as ReturnType<typeof fakeAdmin> | null }));
+vi.mock("@/lib/rate-limit.server", () => ({
+  limiter: () => ({ enforce: async () => ({ ok: true }) }),
+}));
+vi.mock("./safety.functions", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./safety.functions")>()),
+  socialConsentProblem: async () => null,
+}));
+const admin = vi.hoisted(() => ({ current: null as { client: unknown } | null }));
 vi.mock("@/integrations/supabase/client.server", () => ({
   get supabaseAdmin() {
     return admin.current!.client;
@@ -96,12 +103,18 @@ describe("the friends list", () => {
 
 describe("finding people", () => {
   it("never returns a streak for someone who isn't yet a friend", async () => {
-    const user = fakeAdmin();
-    user.rpc.mockResolvedValue({
+    const server = fakeAdmin();
+    admin.current = server;
+    server.rpc.mockResolvedValue({
       data: [{ ...profile(SHARER, "sharer", "friends", 5, 100), total_xp: undefined }],
       error: null,
     });
-    const [person] = await call<PersonCard[]>("searchPeople", { query: "shar" }, user.client);
+    const [person] = await call<PersonCard[]>(
+      "searchPeople",
+      { query: "shar" },
+      fakeAdmin().client,
+    );
+    expect(server.rpc).toHaveBeenCalledWith("search_profiles", { _viewer: ME, _query: "shar" });
     expect(person).toMatchObject({ handle: "sharer", currentStreak: null, sharesProgress: false });
     expect(person).not.toHaveProperty("totalXp");
   });
@@ -118,15 +131,26 @@ describe("finding people", () => {
   });
 
   it("gives a refused friend request the same vague message as any other failure", async () => {
-    const refusing = {
-      from: () => ({
-        insert: async () => ({
-          error: { code: "42501", message: "That request could not be sent." },
-        }),
-      }),
+    // No existing link and nothing waiting, then the database refuses the insert (as it does
+    // between a blocked pair): the learner sees the same message as for any other failure.
+    const chain = {
+      select: () => chain,
+      or: () => chain,
+      eq: () => chain,
+      maybeSingle: async () => ({ data: null, error: null }),
+      then: (resolve: (value: unknown) => unknown) => resolve({ count: 0, error: null }),
     };
-    await expect(call("sendFriendRequest", { userId: SHARER }, refusing)).rejects.toThrow(
-      "That request could not be sent.",
+    admin.current = {
+      client: {
+        from: () => ({
+          ...chain,
+          insert: async () => ({ error: { code: "P0001", message: "blocked pair" } }),
+        }),
+      },
+    };
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(call("sendFriendRequest", { userId: SHARER }, fakeAdmin().client)).rejects.toThrow(
+      /^That request could not be sent\.$/,
     );
   });
 });

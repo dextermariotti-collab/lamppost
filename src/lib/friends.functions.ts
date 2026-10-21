@@ -83,6 +83,8 @@ const toCard = (row: ProfileRow, asFriend = false): PersonCard => {
 
 /** Most friend requests a person can have waiting for an answer at once. */
 export const MAX_PENDING_REQUESTS = 20;
+/** People search matches handles from this many characters (the database refuses fewer). */
+export const MIN_SEARCH_CHARS = 3;
 
 const Id = z.string().uuid();
 const PersonInput = z.object({ userId: Id });
@@ -292,7 +294,7 @@ export const searchPeople = createServerFn({ method: "POST" })
   .validator((input: { query: string }) => parsed(SearchInput, input))
   .handler(async ({ data, context }): Promise<PersonCard[]> => {
     const query = data.query.trim().replace(/^@/, "");
-    if (query.length < 3) return [];
+    if (query.length < MIN_SEARCH_CHARS) return [];
     await requireConsent(context.userId);
     await requireLimit("profileSearch");
     // Search is server-only: it matches handles (never names), skips blocked pairs and the

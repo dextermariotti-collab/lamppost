@@ -33,6 +33,7 @@ vi.mock("@/lib/friends.functions", () => ({
   searchPeople: vi.fn(),
   sendFriendRequest: vi.fn(),
   sendNudge: vi.fn(),
+  MIN_SEARCH_CHARS: 3,
 }));
 vi.mock("@/lib/safety.functions", () => ({
   blockUser: vi.fn(),

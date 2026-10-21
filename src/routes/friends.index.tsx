@@ -31,6 +31,7 @@ import {
   respondToSharedStreak,
   markNudgesRead,
   searchPeople,
+  MIN_SEARCH_CHARS,
   sendFriendRequest,
   sendNudge,
   type PersonCard,
@@ -80,7 +81,7 @@ function FriendsScreen() {
 
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
+    if (q.length < MIN_SEARCH_CHARS) {
       setResults([]);
       return;
     }
@@ -149,8 +150,8 @@ function FriendsScreen() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or handle"
-            aria-label="Search by name or handle"
+            placeholder="Search by handle"
+            aria-label="Search by handle"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {searching ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : null}
@@ -187,9 +188,13 @@ function FriendsScreen() {
               </li>
             ))}
           </ul>
-        ) : query.trim().length >= 2 && !searching ? (
+        ) : query.trim().length >= MIN_SEARCH_CHARS && !searching ? (
           <p className="mt-3 text-xs text-muted-foreground">
             No one matches that yet. Share your invite link instead.
+          </p>
+        ) : query.trim().length > 0 ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Type at least {MIN_SEARCH_CHARS} letters of their handle.
           </p>
         ) : null}
 
