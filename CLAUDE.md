@@ -385,7 +385,9 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
   are given a lesson id and build its context on the server (`writtenTaskFor` in `argument.server.ts`,
   `practiceLesson` and `lessonContext` for the tutor), screen what the learner wrote, and accept but
   ignore the fields older installed apps still send. The tutor reads the conversation from its stored
-  session, so the browser can't reset the turn cap.
+  session, so the browser can't reset the turn cap. The one exception is the Socratic follow-up's
+  drill and its own earlier question (`socratic.functions.ts`), which still come from the browser:
+  capped (1,200 and 300 characters), screened and rate limited, and its reply is cut to one short line.
 - Secrets: only `SUPABASE_URL` and the publishable key reach the browser (as `VITE_` values); those
   are public by design. `SUPABASE_SERVICE_ROLE_KEY`, `AI_API_KEY`, `WARM_TOKEN` and the optional
   `RATE_LIMIT_SECRET` are server-only: in the local `.env` (never committed) and as Cloudflare

@@ -54,8 +54,9 @@ and anyone can still use the app signed out.
 
 ## Logs
 
-- **The server (Cloudflare):** `npx wrangler tail lamppost` streams live logs. For stored logs, turn on
-  Workers Logs under **Workers & Pages → lamppost → Observability**. Server functions log failures
+- **The server (Cloudflare):** `npx wrangler tail lamppost` streams live logs. Stored logs are in
+  **Workers & Pages → lamppost → Observability** (Workers Logs, on in `vite.config.ts`, kept 3 days
+  on the free plan and 7 on a paid one). Server functions log failures
   with a prefix (`[friends]`, `[debates]`, `[rate-limit]` and so on); a limiter that can't reach the
   database logs "refusing (fail closed)".
 - **The database and sign-in (Supabase):** **Logs** in the dashboard, with separate views for the API,

@@ -29,7 +29,15 @@ export default defineConfig(({ command, mode }) => ({
           nitro({
             defaultPreset: "cloudflare-module",
             compatibilityDate: "2026-07-30",
-            cloudflare: { nodeCompat: true, deployConfig: true, wrangler: { name: "lamppost" } },
+            cloudflare: {
+              nodeCompat: true,
+              deployConfig: true,
+              // Workers Logs: the generated config would otherwise turn off a dashboard setting.
+              wrangler: {
+                name: "lamppost",
+                observability: { enabled: true, redact_query_string: true },
+              },
+            },
           }),
         ]
       : []),

@@ -109,7 +109,7 @@ export const PRIVACY: LegalDoc = {
         {
           list: [
             "Supabase: runs our database and sign-in, and sends sign-in emails.",
-            "Cloudflare: runs our servers, so it sees your network address and browser details when you connect.",
+            "Cloudflare: runs our servers, so it sees your network address and browser details when you connect, and keeps our server logs, which can include them, for up to 7 days.",
             "Google: runs the AI model described above (the Gemini API).",
             "Google and Apple, for sign-in: if you choose Continue with Google or Continue with Apple, that company signs you in and tells us your email address.",
             "QR code service (only if you ask for it): if you tap Show QR code on the Friends screen, your invite link is sent to api.qrserver.com so it can draw the code. Nothing is sent unless you tap.",

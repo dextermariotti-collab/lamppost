@@ -40,6 +40,14 @@ ignored by git: never commit it.
    `main` only, and put its job behind a GitHub environment with a required reviewer (**GitHub →
    Settings → Environments**), so nobody changes the production database without a second look.
 
+   **Deploy the code right after the migrations it goes with.** The workflow applies a migration as
+   soon as it is pushed, but the server is deployed by hand (section 4), so for a while one is ahead
+   of the other. Some changes only work together: `20261019100000_social_safety_hardening` stops the
+   browser reading debate answers, so a build from before it can't open `/debates`, and the current
+   build calls `search_profiles` and passes a lease holder, which only that migration provides. When
+   a push carries both SQL and server code, wait for the workflow to finish and run `npm run deploy`
+   straight after.
+
    To run the same thing from your own machine instead:
 
    ```sh
@@ -73,7 +81,9 @@ policy has a `[CONFIRM]` note about this. Put it in `.env` as `AI_API_KEY`.
 
 The models are named in `src/lib/ai-models.ts`. If Google renames or retires one, change it there.
 To use another OpenAI-compatible service instead (OpenRouter, for example), set `AI_BASE_URL` and
-name that service's models in the same file.
+name that service's models in the same file. Every call asks for low reasoning effort (`aiOutput` in
+`ai-models.ts`, sent as `reasoning_effort`); a service that refuses that field for a model that
+doesn't reason fails every call, so try one call before switching.
 
 **Kill switch.** To stop every model call at once (a cost spike, a bad reply, a provider problem),
 remove `AI_API_KEY` (`npx wrangler secret delete AI_API_KEY --name lamppost`). Each AI feature
