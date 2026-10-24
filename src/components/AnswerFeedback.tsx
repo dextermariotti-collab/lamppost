@@ -1,6 +1,6 @@
 import { Check, Flame, X, Zap } from "lucide-react";
 import { GuideMark } from "@/components/LineBullet";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { holdRewards } from "@/lib/reward-hold";
 
 /**
@@ -10,6 +10,8 @@ import { holdRewards } from "@/lib/reward-hold";
  *
  * Any screen can fire it with `celebrateAnswer(...)`, so drills in lessons, reviews and the
  * daily case all look the same. It makes no sound: each screen plays its cue from its own verdict.
+ * One verdict shows at a time: a new one replaces any still up, and a screen moving on to its next
+ * step calls `clearAnswerFeedback()`, so a verdict never sits over a question it wasn't about.
  */
 
 export type AnswerCelebration = {
@@ -25,11 +27,18 @@ export type AnswerCelebration = {
 };
 
 const EVENT = "lamppost-answer-celebration";
+const CLEAR_EVENT = "lamppost-answer-clear";
 const VISIBLE_MS = 1900;
 
 export function celebrateAnswer(detail: AnswerCelebration) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent<AnswerCelebration>(EVENT, { detail }));
+}
+
+/** Takes down the verdict showing, if any, before its time is up. */
+export function clearAnswerFeedback() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(CLEAR_EVENT));
 }
 
 /** Combo pays from the third correct answer on, and is capped to stay fair. */
@@ -61,16 +70,23 @@ const answerMessage = ({ correct, xp, bonus = 0 }: AnswerCelebration) =>
 
 export function AnswerFeedbackHost() {
   const [shown, setShown] = useState<
-    (AnswerCelebration & { at: number; place: Place | null }) | null
+    (AnswerCelebration & { id: number; place: Place | null }) | null
   >(null);
+  const count = useRef(0);
 
   useEffect(() => {
     const onCelebrate = (event: Event) => {
       const detail = (event as CustomEvent<AnswerCelebration>).detail;
-      setShown({ ...detail, at: Date.now(), place: placeOverContent() });
+      count.current += 1;
+      setShown({ ...detail, id: count.current, place: placeOverContent() });
     };
+    const onClear = () => setShown(null);
     window.addEventListener(EVENT, onCelebrate);
-    return () => window.removeEventListener(EVENT, onCelebrate);
+    window.addEventListener(CLEAR_EVENT, onClear);
+    return () => {
+      window.removeEventListener(EVENT, onCelebrate);
+      window.removeEventListener(CLEAR_EVENT, onClear);
+    };
   }, []);
 
   useEffect(() => {
@@ -106,7 +122,7 @@ export function AnswerFeedbackHost() {
           }`}
         >
           <div
-            key={shown.at}
+            key={shown.id}
             className={`sign answer-banner flex min-h-12 items-center gap-3 px-3 py-2 ${
               correct ? "answer-banner-right" : "answer-banner-wrong"
             }`}

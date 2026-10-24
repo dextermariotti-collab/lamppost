@@ -23,7 +23,7 @@ import { CountUp } from "@/components/CountUp";
 import { ProgressRing } from "@/components/ProgressRing";
 import { StreakFlame } from "@/components/StreakCalendar";
 import { useCurriculumCourse, useCurriculumLesson } from "@/lib/curriculum-store";
-import { EXERCISE_LABEL, describeExercise } from "@/lib/exercises";
+import { EXERCISE_LABEL, describeExercise, exerciseXpFor } from "@/lib/exercises";
 import { useLessonAttempts } from "@/lib/exercise-store";
 import { needsFitnessDisclaimer } from "@/lib/moderation";
 import { useProgress } from "@/lib/progress";
@@ -31,8 +31,9 @@ import { nextStopAfter } from "@/lib/progress-core";
 import { recordWrittenScore, unitMastery } from "@/lib/mastery";
 import { trackDrillResult } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
-import { celebrateAnswer, comboBonus } from "@/components/AnswerFeedback";
+import { celebrateAnswer, clearAnswerFeedback, comboBonus } from "@/components/AnswerFeedback";
 import { playCue } from "@/lib/feedback";
+import { holdRewards } from "@/lib/reward-hold";
 import type { PracticeClose } from "@/lib/practice";
 
 /** Roughly one in three correct answers also gets a Socratic nudge. */
@@ -132,6 +133,15 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     recorded.current = false;
   }, [index]);
 
+  // Leaving a page takes its verdict down with it, so it never sits over the next drill.
+  useEffect(() => clearAnswerFeedback, [index, page]);
+
+  // Badges and level-ups wait for the finish board, as in the authored lessons.
+  useEffect(() => {
+    if (finished) return;
+    return holdRewards();
+  }, [finished]);
+
   if (!ready || !lesson) {
     return (
       <PhoneFrame showNav={false}>
@@ -211,15 +221,18 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     const streakNow = correct ? combo + 1 : 0;
     setCombo(streakNow);
     const bonus = correct ? comboBonus(streakNow) : 0;
-    if (fresh) recordExercise(score, bonus);
     playCue(correct ? "correct" : "wrong");
-    celebrateAnswer({
-      correct,
-      xp: Math.max(5, Math.round(25 * Math.min(Math.max(score, 0), 1))),
-      combo: streakNow,
-      bonus,
-      ...(currentExercise ? { note: EXERCISE_LABEL[currentExercise.kind] } : {}),
-    });
+    // Only a first answer pays, so only a first answer shows what it paid.
+    if (fresh) {
+      recordExercise(score, bonus);
+      celebrateAnswer({
+        correct,
+        xp: exerciseXpFor(score),
+        combo: streakNow,
+        bonus,
+        ...(currentExercise ? { note: EXERCISE_LABEL[currentExercise.kind] } : {}),
+      });
+    }
     // Shaky drills earn a spaced review as a fresh variant of the same skill.
     if (meta && currentExercise) {
       const confidence = (answer as { confidence?: number } | null)?.confidence;

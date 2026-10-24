@@ -5,10 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const h = vi.hoisted(() => ({ playCue: vi.fn() }));
 vi.mock("@/lib/feedback", () => ({ playCue: h.playCue }));
 
-import { AnswerFeedbackHost, celebrateAnswer } from "./AnswerFeedback";
+import { AnswerFeedbackHost, celebrateAnswer, clearAnswerFeedback } from "./AnswerFeedback";
 import { rewardsHeld } from "@/lib/reward-hold";
 
 const banner = () => screen.queryByTestId("answer-banner");
+const banners = () => screen.queryAllByTestId("answer-banner");
 const live = () => screen.getByRole("status");
 
 beforeEach(() => vi.useFakeTimers());
@@ -87,5 +88,43 @@ describe("the answer banner", () => {
     act(() => vi.advanceTimersByTime(2000));
     expect(banner()).toBeNull();
     expect(rewardsHeld()).toBe(false);
+  });
+
+  it("shows only the newest verdict, which gets its own full time", () => {
+    render(<AnswerFeedbackHost />);
+    act(() => celebrateAnswer({ correct: true, xp: 25, combo: 5, bonus: 15 }));
+    act(() => vi.advanceTimersByTime(1000));
+    act(() => celebrateAnswer({ correct: false, xp: 5 }));
+
+    expect(banners()).toHaveLength(1);
+    expect(banner()!.textContent).toContain("Not this time.");
+    expect(banner()!.textContent).not.toMatch(/Correct|in a row|\+40 XP/);
+    expect(live().textContent).toBe("Not this time. +5 XP.");
+
+    act(() => vi.advanceTimersByTime(1500));
+    expect(banner()).not.toBeNull();
+    expect(rewardsHeld()).toBe(true);
+    act(() => vi.advanceTimersByTime(500));
+    expect(banner()).toBeNull();
+    expect(rewardsHeld()).toBe(false);
+  });
+
+  it("comes down at once when cleared, letting badges through and keeping the live region", () => {
+    render(<AnswerFeedbackHost />);
+    const region = live();
+    act(() => celebrateAnswer({ correct: true, xp: 25, combo: 5, bonus: 15 }));
+    expect(rewardsHeld()).toBe(true);
+
+    act(() => clearAnswerFeedback());
+    expect(banner()).toBeNull();
+    expect(rewardsHeld()).toBe(false);
+    expect(live()).toBe(region);
+    expect(region.textContent).toBe("");
+
+    act(() => clearAnswerFeedback());
+    expect(rewardsHeld()).toBe(false);
+    act(() => celebrateAnswer({ correct: false, xp: 5 }));
+    expect(banner()!.textContent).toContain("Not this time.");
+    expect(region.textContent).toBe("Not this time. +5 XP.");
   });
 });

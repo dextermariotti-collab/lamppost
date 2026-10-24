@@ -18,6 +18,8 @@ const h = vi.hoisted(() => {
     store,
     listeners,
     userId: null as string | null,
+    score: 0,
+    recordExercise: vi.fn(),
     navigate: vi.fn(),
     useCurriculumLesson: vi.fn(),
     completeLesson: vi.fn((_slug: string, _topic: string, index: number) => {
@@ -58,7 +60,7 @@ vi.mock("@/lib/progress", async () => {
         doneToday: h.store.doneToday,
         completeLesson: h.completeLesson,
         recordPractice: vi.fn(),
-        recordExercise: vi.fn(),
+        recordExercise: h.recordExercise,
         recordArgument: vi.fn(),
       };
     },
@@ -101,7 +103,7 @@ vi.mock("@/components/SocraticPopup", () => ({ SocraticPopup: () => null }));
 vi.mock("@/components/SuccessBurst", () => ({ SuccessBurst: () => null }));
 vi.mock("@/components/exercises/ExerciseRunner", () => ({
   ExerciseRunner: ({ onAnswer }: { onAnswer: (answer: unknown, score: number) => void }) => (
-    <button onClick={() => onAnswer(0, 0)}>Answer the drill</button>
+    <button onClick={() => onAnswer(0, h.score)}>Answer the drill</button>
   ),
 }));
 vi.mock("@/components/exercises/WrittenArgument", () => ({
@@ -117,6 +119,13 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => h.navigate,
 }));
 
+import {
+  AnswerFeedbackHost,
+  celebrateAnswer,
+  type AnswerCelebration,
+} from "@/components/AnswerFeedback";
+import { applyExercise, DEFAULT_STATE } from "@/lib/progress-core";
+import { rewardsHeld } from "@/lib/reward-hold";
 import { LegacyLesson } from "./LegacyLesson";
 
 const firstUnit = LESSONS.flatMap((lesson, i) => (lesson.unitId === LESSONS[0]!.unitId ? [i] : []));
@@ -156,6 +165,7 @@ beforeEach(() => {
   h.store.history = {};
   h.store.doneToday = 0;
   h.userId = null;
+  h.score = 0;
   vi.clearAllMocks();
   h.useCurriculumLesson.mockImplementation((index: number) => lessonFor(index));
   window.scrollTo = vi.fn() as never;
@@ -294,5 +304,102 @@ describe("LegacyLesson's finish", () => {
     expect(screen.queryByRole("button", { name: /Continue to the next lesson/ })).toBeNull();
     click(/Take the final check/);
     expect(h.navigate).toHaveBeenLastCalledWith({ to: "/final-check" });
+  });
+});
+
+describe("LegacyLesson's answer banner", () => {
+  const celebrated = () => vi.mocked(celebrateAnswer).mock.calls.map(([c]) => c);
+  const shown = (c: AnswerCelebration) => c.xp + (c.bonus ?? 0);
+  const withDrills = (count: number) =>
+    h.useCurriculumLesson.mockImplementation((index: number) => ({
+      ...lessonFor(index),
+      drills: Array.from({ length: count }, () => ({
+        kind: LESSONS[index]!.drills[0]!,
+        question: "Q",
+      })),
+    }));
+
+  it("shows exactly what each first answer pays, the combo bonus included", () => {
+    withDrills(3);
+    h.score = 1;
+    render(<LegacyLesson lessonNumber={1} />);
+    click(/Start training/);
+    click("Answer the drill");
+    click(/Next drill/);
+    click("Answer the drill");
+    click(/Next drill/);
+    click("Answer the drill");
+
+    expect(h.recordExercise.mock.calls).toEqual([
+      [1, 0],
+      [1, 0],
+      [1, 5],
+    ]);
+    expect(celebrated().map((c) => [c.combo, c.bonus])).toEqual([
+      [1, 0],
+      [2, 0],
+      [3, 5],
+    ]);
+    h.recordExercise.mock.calls.forEach(([score, bonus], i) => {
+      const paid = applyExercise(DEFAULT_STATE, score, bonus).xp;
+      expect(shown(celebrated()[i]!)).toBe(paid);
+    });
+    expect(shown(celebrated()[2]!)).toBe(30);
+  });
+
+  it("shows the five a missed answer pays", () => {
+    render(<LegacyLesson lessonNumber={1} />);
+    click(/Start training/);
+    click("Answer the drill");
+    expect(h.recordExercise).toHaveBeenCalledWith(0, 0);
+    expect(celebrated()).toEqual([expect.objectContaining({ correct: false, xp: 5, bonus: 0 })]);
+  });
+
+  it("shows no banner, and no XP, for a replayed answer that pays nothing", () => {
+    const meta = LESSONS[0]!;
+    window.localStorage.setItem(
+      "lamppost-exercises-v1",
+      JSON.stringify({ [`${meta.id}#0`]: { answer: 0, score: 1, at: Date.now() } }),
+    );
+    h.score = 1;
+    render(<LegacyLesson lessonNumber={1} />);
+    click(/Start training/);
+    click("Answer the drill");
+    expect(h.recordExercise).not.toHaveBeenCalled();
+    expect(celebrateAnswer).not.toHaveBeenCalled();
+  });
+
+  it("takes a drill's verdict down when the learner moves to the next page", () => {
+    withDrills(2);
+    render(<AnswerFeedbackHost />);
+    render(<LegacyLesson lessonNumber={1} />);
+    click(/Start training/);
+    click("Answer the drill");
+    // The real banner, as celebrateAnswer would raise it (it is mocked above to record calls).
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent("lamppost-answer-celebration", {
+          detail: { correct: true, xp: 25, combo: 5, bonus: 15 },
+        }),
+      );
+    });
+    expect(screen.getByTestId("answer-banner")).toBeTruthy();
+    click(/Next drill/);
+    expect(screen.queryByTestId("answer-banner")).toBeNull();
+  });
+});
+
+describe("LegacyLesson's rewards", () => {
+  it("holds badges and level-ups back until the finish board, as the authored lessons do", () => {
+    vi.useFakeTimers();
+    render(<LegacyLesson lessonNumber={1} />);
+    expect(rewardsHeld()).toBe(true);
+    finish();
+    expect(rewardsHeld()).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(screen.getByText("Lesson complete")).toBeTruthy();
+    expect(rewardsHeld()).toBe(false);
   });
 });
