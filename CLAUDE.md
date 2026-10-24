@@ -77,7 +77,9 @@ per account per page load (`getMyProfile`) and pushes changes through **one modu
 (`requestSync` → `syncProgress` in `lib/profile.functions.ts`), not one per mounted hook: one call in
 flight, a change made meanwhile goes after it, and an unchanged payload isn't sent (the server
 credits weekly XP from a read and then a write, so two calls for one change could count it twice).
-A change that changes nothing writes nothing. `resetProgressStore()` forgets the in-memory snapshot
+A change that changes nothing writes nothing. After a sync the server accepted, `lib/badge-award.ts`
+asks it to award the account badges friends see (`listAchievements`, from server-held numbers): once
+after the first sync of a page load, then once syncs have been quiet for 30 s. `resetProgressStore()` forgets the in-memory snapshot
 and ignores replies to requests sent before it; `clearDeviceData()` calls it, and clearing device
 data or deleting the account then reloads the app (`window.location.replace("/")`) so no screen still
 open can save the old numbers back.
@@ -191,7 +193,10 @@ to try this week). `StepLesson` plays them; problem first, explanation after, so
 the steps and only open in the `/notes` library once the lesson is done. Each lesson's last step is a
 harder "Putting it together" case. A lesson is recorded (`completeLesson`) once, as soon as its writing
 is graded or skipped, so leaving at "Explain it back" (to sign in, say) never loses it; signed out, that
-card's main action is "Finish the lesson". `lessons.test.ts` and `notes.test.ts` hold both to their word limits,
+card's main action is "Finish the lesson". The run is held in sessionStorage (`lamppost-lesson-run`:
+the lesson, the ids finished before it, its XP) so the finish after signing in is the one they would
+have seen; a lesson done now that wasn't when the run began came from the account, and the board then
+speaks for this lesson only, never for a line or map the run didn't complete. `lessons.test.ts` and `notes.test.ts` hold both to their word limits,
 answer-position balance and the content rules in `content/content-rules.ts` (made-up names, no party
 line). The generated pipeline below is the fallback (`LegacyLesson`) and still feeds reviews and the
 placement check.
@@ -234,8 +239,9 @@ the cross-site check in `start.ts`; Vite's own CORS is off so dev matches produc
 - **Sign-in** goes through `startOAuth` (`lib/oauth.ts`): in the app, the system browser and back
   through `com.lamppost.app://auth-callback` with PKCE, finished by `NativeShell`. Google sign-in comes
   with Sign in with Apple (App Store rule 4.8). `/auth?redirect=` returns the person to a same-site
-  path only (`safeRedirect` refuses `//host`, `/\host` and control characters), kept in
-  sessionStorage (`lamppost-auth-redirect`) across the OAuth round trip.
+  path only (`safeRedirect` in `lib/oauth.ts` refuses `//host`, `/\host` and control characters). On
+  the web it is kept in sessionStorage (`lamppost-auth-redirect`, with the time) across the OAuth round
+  trip and ignored after ten minutes, so a canceled sign-in can't send a later one somewhere old.
 - **Store privacy.** `ios/App/App/PrivacyInfo.xcprivacy` declares the data the app collects (no
   tracking) and the required-reason APIs it uses (file timestamps, UserDefaults). Update it, and the
   App Privacy answers (`docs/mobile.md`), when the app collects a new kind of data or it or a new
@@ -290,6 +296,8 @@ lines with their stops; after the whole map, "Keep it sharp" as above) and the s
 an arrival board (`LessonFinished`: three numbers, today's goal, the next stop). `/course/:slug` redirects
 to My Path. Onboarding is three screens (intro, one real question, setup); a companion can be chosen from
 Profile.
+A URL that names nothing is the app's 404, never a quiet redirect: unmatched paths through the
+catch-all `routes/$.tsx`, a lesson number outside the lesson list and an unknown notes id through `notFound()`.
 
 ### Check something you saw
 `/look` (a row on Home once a learner has started): paste a post, an advert, a headline or a
@@ -351,8 +359,9 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
   name; sign-up metadata is ignored, and handles built from an email or a Google name were replaced. The
   name and handle are written only by `updateMyProfile` (service role: cleaned, screened, nothing that
   passes for Lamppost), and CHECK constraints bound them (handle `^[a-z0-9_-]{3,24}$`, name 1–40
-  characters). People search matches handles only, from three characters, at most 12 results, and only
-  the server runs it (`search_profiles(_viewer, _query)`, after the `profileSearch` limit). Friend requests
+  characters). People search matches handles only, from three characters, at most 12 results, a default
+  `reader-` handle only when typed whole (`20261021100000_search_named_handles`, which also replaced the
+  first trigger's `learner…` defaults), and only the server runs it (`search_profiles(_viewer, _query)`, after the `profileSearch` limit). Friend requests
   are inserted by `sendFriendRequest` (the `friendRequest` limit, no duplicates, at most
   `MAX_PENDING_REQUESTS` waiting). `are_friends()` and `shares_progress_with()` answer only when the caller
   is one of the two (or is the server). A nudge must go to a friend who takes nudges, name that pair's own
@@ -399,7 +408,8 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
   tutor, writing feedback, a reply to the guide, Check something you saw, debates), `useAiConsentGate`
   (`lib/ai-consent.ts`) shows `AiConsentSheet` first: what is sent, to whom (`AI_PROVIDER_NAME`, named
   only there) and that replies can be wrong. "Not now" sends nothing. The agreement is kept on the
-  device and covers that provider only, so a new provider asks again. A new feature that sends typed
+  device and covers that provider only, so a new provider asks again; Settings can withdraw it
+  (`withdrawAiConsent`). A new feature that sends typed
   text goes through the gate. The tutor, the guide's follow-up, writing feedback, Look, an AI-written
   case, debates and lessons carry `ReportContentButton`, which files a `content_reports` row (signed
   out, it opens an email to `CONTACT_EMAIL` instead).

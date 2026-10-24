@@ -70,8 +70,12 @@ since). A save that can't be read is copied, unchanged, to `lamppost-progress-v1
 before anything is written over it. Cleared on account deletion from within the app and by
 clearing browser storage.
 
-`sessionStorage` holds one key: `lamppost-auth-redirect`, the same-site page to return to after a
-Google or Apple sign-in round trip (only a local path is ever kept), removed as soon as it is read.
+`sessionStorage` holds two keys, each removed as soon as it is read and on "Clear progress on this
+device": `lamppost-auth-redirect`, the same-site page to return to after a Google or Apple sign-in on
+the website and when it was saved (only a local path is kept, and it is ignored after ten minutes),
+and `lamppost-lesson-run`, held when a signed-out learner leaves "Explain it back" to sign in: the
+lesson's id, the ids of the lessons finished before it, the XP the run earned and the time (ignored
+after thirty minutes), so the finish afterward is the one they would have seen.
 
 The iPhone and Android apps keep exactly the same on-device storage, inside the app's own web view
 storage; it is removed with the app. Android cloud backup is off (`allowBackup="false"`), so none of
