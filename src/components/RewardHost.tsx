@@ -94,6 +94,9 @@ function LevelUpCard({ level, onClose }: { level: UnitLevel; onClose: () => void
     typeof document === "undefined" ? null : (document.activeElement as HTMLElement | null),
   );
   useEffect(() => () => before?.focus?.(), [before]);
+  // The card waits for a lesson to end, so the numbers are the unit's as it opens, not as they
+  // were when the level was reached a few answers earlier.
+  const [now] = useState(() => unitLevels().find((u) => u.unitId === level.unitId) ?? level);
 
   return (
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
@@ -124,7 +127,7 @@ function LevelUpCard({ level, onClose }: { level: UnitLevel; onClose: () => void
                 <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
               </p>
               <Dialog.Description className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {level.accuracy}% of this unit's drills right across {level.answered} answers.
+                {now.accuracy}% of this unit's drills right across {now.answered} answers.
               </Dialog.Description>
               <Dialog.Close
                 ref={keepGoing}

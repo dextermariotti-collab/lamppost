@@ -7,6 +7,7 @@ import type { UnitLevel } from "@/lib/levels";
 const h = vi.hoisted(() => ({
   badges: [] as unknown[],
   levels: [] as unknown[],
+  current: [] as unknown[],
 }));
 vi.mock("@/lib/progress", () => ({ useProgress: () => ({ state: {}, hydrated: true }) }));
 vi.mock("@/lib/feedback", () => ({ playCue: vi.fn() }));
@@ -15,7 +16,7 @@ vi.mock("@/lib/badges", () => ({
   drainNewUnlocks: () => h.badges.splice(0),
 }));
 vi.mock("@/lib/levels", () => ({
-  unitLevels: () => [],
+  unitLevels: () => h.current,
   drainLevelUps: () => h.levels.splice(0),
 }));
 
@@ -51,6 +52,7 @@ const flush = () => act(async () => {});
 beforeEach(() => {
   h.badges = [];
   h.levels = [];
+  h.current = [];
 });
 afterEach(cleanup);
 
@@ -87,6 +89,17 @@ describe("RewardHost", () => {
     const title = document.getElementById(dialog.getAttribute("aria-labelledby")!);
     expect(title?.textContent).toBe("Claims");
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Keep going" }));
+  });
+
+  it("gives the unit's numbers as they are when it opens, not when the level was reached", async () => {
+    // Reached at 80% over 10 answers mid-lesson, shown at the end after 13 answers at 85%.
+    h.levels = [level];
+    h.current = [{ ...level, accuracy: 85, answered: 13 }];
+    render(<RewardHost />);
+    await flush();
+    const text = screen.getByRole("dialog").textContent ?? "";
+    expect(text).toContain("85% of this unit's drills right across 13 answers");
+    expect(text).not.toContain("80%");
   });
 
   it("closes on Escape and gives focus back to where it was", async () => {
