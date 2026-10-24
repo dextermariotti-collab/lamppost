@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { LESSONS, lessonIndexOf, unitById } from "./curriculum";
 
 /**
  * Adaptivity.
@@ -123,56 +122,6 @@ export function markPoolVariantSeen(lessonId: string, variant: number) {
   const current = store[lessonId] ?? blank();
   if (current.seen.includes(variant)) return;
   writeStore({ ...store, [lessonId]: { ...current, seen: [...current.seen, variant].slice(-60) } });
-}
-
-/* ------------------------------ what to practice ------------------------------ */
-
-export type SkillNeed = {
-  lessonId: string;
-  lessonTitle: string;
-  lessonIndex: number;
-  unitTitle: string;
-  rating: number;
-  answered: number;
-  daysSince: number | null;
-  /** One line explaining why this came up. */
-  reason: string;
-};
-
-/**
- * Weakest and least-recently-practiced unlocked skills first. Used by reviews and
- * the home "Continue" recommendation.
- */
-export function skillsToPractice(done: ReadonlySet<number>): SkillNeed[] {
-  const store = readStore();
-  const now = Date.now();
-  return LESSONS.filter((_, index) => done.has(index))
-    .map((lesson) => {
-      const row = store[lesson.id] ?? blank();
-      const daysSince = row.lastAt ? Math.floor((now - row.lastAt) / 86_400_000) : null;
-      const staleness = daysSince === null ? 3 : Math.min(daysSince, 14) / 14;
-      const weakness = (1150 - row.rating) / 300;
-      return {
-        lessonId: lesson.id,
-        lessonTitle: lesson.title,
-        lessonIndex: lessonIndexOf(lesson.id),
-        unitTitle: unitById(lesson.unitId).title,
-        rating: row.rating,
-        answered: row.answered,
-        daysSince,
-        reason:
-          row.answered === 0
-            ? "You haven't drilled this skill yet."
-            : row.rating < 980
-              ? `This one keeps catching you out — ${lesson.title.toLowerCase()}.`
-              : daysSince !== null && daysSince >= 7
-                ? `You haven't touched ${lesson.title.toLowerCase()} in ${daysSince} days.`
-                : "Keeps a solid skill sharp.",
-        score: weakness + staleness,
-      };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map(({ score: _score, ...need }) => need);
 }
 
 /** Live view of the rating store, for screens that show mastery. */

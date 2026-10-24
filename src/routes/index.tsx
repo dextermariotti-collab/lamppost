@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Newspaper, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { skillsToPractice } from "@/lib/rating";
 import { AiLabel } from "@/components/AiLabel";
 import { Button } from "@/components/ui/button";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -23,6 +22,7 @@ import {
 import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { CASE_SOURCES, caseUnits, isAiCase, useDailyCase, type CasePick } from "@/lib/daily-case";
 import { useAiCaseTopUp } from "@/lib/daily-case-ai";
+import { readAttemptStore } from "@/lib/exercise-store";
 import { useProgress } from "@/lib/progress";
 import { upNextIndex } from "@/lib/progress-view";
 import {
@@ -96,17 +96,18 @@ function Home() {
   // The counters wait for the first lesson: before it they would only be zeros.
   const started = lessonsDone > 0 || state.xp > 0 || streak > 0;
 
-  // One-line reason for the recommendation, from the learner's own drill history.
-  const [recommendation, setRecommendation] = useState<{ reason: string } | null>(null);
-  useEffect(() => {
-    const top = skillsToPractice(doneLessons)[0];
-    setRecommendation(top ? { reason: top.reason } : null);
-  }, [doneLessons]);
-
   // Follows the line the learner is on (a unit chosen at onboarding included), not lesson 1.
   const nextIndex = upNextIndex(doneLessons, state.doneLessonIds);
   const next = lessonAt(nextIndex);
   const finished = lessonsDone >= TOTAL_LESSONS;
+
+  // The sign only says things about its own lesson: here, that it was begun and left.
+  const nextId = next?.id;
+  const nextDone = doneLessons.has(nextIndex);
+  const [begun, setBegun] = useState(false);
+  useEffect(() => {
+    setBegun(nextId !== undefined && !nextDone && hasAnswers(nextId));
+  }, [nextId, nextDone]);
   const unit = unitById(next?.unitId ?? "claims");
   const place = lessonPlace(nextIndex);
   const minutes = Math.max(5, (next?.drills.length ?? 4) * 2);
@@ -129,7 +130,8 @@ function Home() {
       <div className="min-h-full px-5 pb-10">
         {/* Header: the mark, and how you're doing once there is something to show */}
         <header className="flex min-h-12 items-center gap-3 pt-5">
-          <span className="legend flex items-center gap-1.5 text-foreground">
+          {/* From 1024px the sidebar carries the wordmark. */}
+          <span className="legend flex items-center gap-1.5 text-foreground lg:hidden">
             <LampMark className="h-5 w-5" /> Lamppost
           </span>
           {started && (
@@ -166,8 +168,8 @@ function Home() {
             <p className="mt-2 font-mono text-xs text-muted-foreground">
               about {minutes} min · lesson {nextIndex + 1} of {TOTAL_LESSONS}
             </p>
-            {recommendation && (
-              <p className="mt-1 text-xs text-muted-foreground">{recommendation.reason}</p>
+            {begun && (
+              <p className="mt-1 text-xs text-muted-foreground">You've started this one before.</p>
             )}
             <Button
               type="button"
@@ -339,6 +341,12 @@ function Home() {
       </div>
     </PhoneFrame>
   );
+}
+
+/** Whether any of a lesson's steps were answered, i.e. it was begun at some point. */
+function hasAnswers(lessonId: string) {
+  const prefix = `${lessonId}#`;
+  return Object.keys(readAttemptStore()).some((key) => key.startsWith(prefix));
 }
 
 /** After the map: today's case is the main thing to do. */
