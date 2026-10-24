@@ -1,15 +1,27 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { LegacyLesson } from "@/components/lesson/LegacyLesson";
 import { StepLesson } from "@/components/lesson/StepLesson";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { CURRICULUM_SLUG, TOTAL_LESSONS, lessonAt, unitById } from "@/lib/curriculum";
+import { CURRICULUM_SLUG, LESSONS, lessonAt, unitById } from "@/lib/curriculum";
 import { useLessonScript } from "@/lib/steps/use-lesson-script";
 import { useLessonNotes } from "@/lib/use-lesson-notes";
 
+/** The lesson number in the address, 1 to the number of lessons, or null for anything else. */
+function lessonNumberFrom(param: string): number | null {
+  if (!/^\d+$/.test(param)) return null;
+  const number = Number(param);
+  return number >= 1 && number <= LESSONS.length ? number : null;
+}
+
 export const Route = createFileRoute("/course/$slug/lesson/$index")({
+  // A number that is no lesson is a missing page, never the nearest lesson under the wrong address.
+  beforeLoad: ({ params }) => {
+    if (lessonNumberFrom(params.index) === null) throw notFound();
+  },
   head: ({ params }) => {
-    const meta = lessonAt(Math.max(Number(params.index) || 1, 1) - 1);
+    const number = lessonNumberFrom(params.index);
+    const meta = number === null ? undefined : lessonAt(number - 1);
     const title = meta?.title ?? "Critical thinking lesson";
     return {
       meta: [
@@ -40,7 +52,8 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
 function LessonRoute() {
   const { slug: slugParam, index } = Route.useParams();
   const navigate = useNavigate();
-  const lessonNumber = Math.min(Math.max(Number(index) || 1, 1), TOTAL_LESSONS);
+  // beforeLoad has turned away anything that isn't a lesson number.
+  const lessonNumber = lessonNumberFrom(index) ?? 1;
   const meta = lessonAt(lessonNumber - 1);
   const script = useLessonScript(meta?.unitId, meta?.id);
   const notes = useLessonNotes(meta?.unitId, meta?.id);

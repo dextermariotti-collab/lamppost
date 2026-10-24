@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { NotesView } from "@/components/lesson/NotesView";
@@ -7,8 +7,9 @@ import { useProgress } from "@/lib/progress";
 import { useLessonNotes } from "@/lib/use-lesson-notes";
 
 export const Route = createFileRoute("/notes/$lessonId")({
+  // An id that is no lesson is a missing page. A real lesson not yet done opens, and says so.
   beforeLoad: ({ params }) => {
-    if (lessonIndexOf(params.lessonId) < 0) throw redirect({ to: "/notes", replace: true });
+    if (lessonIndexOf(params.lessonId) < 0) throw notFound();
   },
   head: ({ params }) => {
     const title = LESSONS.find((l) => l.id === params.lessonId)?.title ?? "Lesson notes";
