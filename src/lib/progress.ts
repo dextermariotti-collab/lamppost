@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { cancelBadgeCheck, scheduleBadgeCheck, setBadgeAccount } from "./badge-award";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS } from "./curriculum";
@@ -235,6 +236,8 @@ function requestSync(userId: string) {
           ),
         { earned: false },
       );
+      // Badges are the server's to award, from what this sync just stored.
+      scheduleBadgeCheck(userId);
     })
     .catch(() => {
       if (syncedSignature === signature) syncedSignature = "";
@@ -253,6 +256,7 @@ function requestSync(userId: string) {
  */
 export function resetProgressStore() {
   generation += 1;
+  cancelBadgeCheck();
   pulledAccounts.clear();
   syncedSignature = "";
   syncAgainFor = null;
@@ -271,7 +275,7 @@ export function useProgress() {
     () => false,
   );
   const today = useToday();
-  const { userId } = useSessionUser();
+  const { userId, ready: sessionReady } = useSessionUser();
 
   // On sign-in, pull the account's numbers down so a new device isn't blank.
   // Once per account per page load, not once per screen that mounts this hook.
@@ -290,8 +294,11 @@ export function useProgress() {
 
   // Write-through sync: the account is the source of truth friends can see.
   useEffect(() => {
-    if (hydrated && userId) requestSync(userId);
-  }, [hydrated, userId, state]);
+    if (!hydrated) return;
+    // A screen that just mounted reads no user until its session check answers: not a sign-out.
+    if (sessionReady) setBadgeAccount(userId);
+    if (userId) requestSync(userId);
+  }, [hydrated, sessionReady, userId, state]);
 
   const registerCourse = useCallback(
     (slug: string, topic: string, total: number) =>

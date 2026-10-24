@@ -13,6 +13,10 @@ vi.mock("./profile.functions", () => ({
   getMyProfile: mocks.getMyProfile,
   syncProgress: mocks.syncProgress,
 }));
+// Asking the server to award badges is covered in badge-award.test.tsx.
+vi.mock("./achievements.functions", () => ({
+  listAchievements: vi.fn().mockResolvedValue({ badges: [], justUnlocked: [] }),
+}));
 
 const KEY = "lamppost-progress-v1";
 
