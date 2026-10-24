@@ -5,13 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import { LegalFooter } from "@/components/LegalFooter";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { StepView } from "@/components/steps/StepView";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { markOnboardingSeen } from "@/lib/companion-store";
 import { companionFromPreset, type Companion } from "@/lib/companions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS, UNITS } from "@/lib/curriculum";
-import type { ExerciseKind } from "@/lib/exercises";
+import { describeExercise, type Exercise, type ExerciseKind } from "@/lib/exercises";
 import { playCue } from "@/lib/feedback";
 import { FIRST_QUESTION, TIME_OPTIONS, saveIntent } from "@/lib/onboarding";
 import { useProgress } from "@/lib/progress";
@@ -307,6 +308,8 @@ function PlacementStep({
   const [step, setStep] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [answered, setAnswered] = useState(false);
+  /** The drill on screen, once answered: what a report about it quotes. */
+  const [shown, setShown] = useState<Exercise | null>(null);
   const [missRun, setMissRun] = useState(0);
   /** Highest lesson number answered correctly — what gets marked as known. */
   const [reached, setReached] = useState(0);
@@ -361,9 +364,11 @@ function PlacementStep({
           label: "Start at lesson 1",
           onSkip: () => onDone(correct, Math.max(asked, 1), true, 0),
         }}
-        onAnswer={(score) => {
+        onShown={setShown}
+        onAnswer={(score, _variant, _answer, exercise) => {
           if (answered) return;
           setAnswered(true);
+          setShown(exercise);
           playCue(score >= 1 ? "correct" : "wrong");
           if (score >= 1) {
             setCorrect((n) => n + 1);
@@ -374,10 +379,22 @@ function PlacementStep({
           }
         }}
       />
+      {shown && (
+        <ReportContentButton
+          className="mt-3"
+          context={{
+            courseTopic: "Placement drill",
+            lessonTitle: LESSONS[pair.lessonIndex - 1]?.title ?? "",
+            lessonIndex: pair.lessonIndex,
+            excerpt: describeExercise(shown),
+          }}
+        />
+      )}
       {answered && (
         <Button
           onClick={() => {
             setAnswered(false);
+            setShown(null);
             setStep((s) => s + 1);
           }}
           className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"

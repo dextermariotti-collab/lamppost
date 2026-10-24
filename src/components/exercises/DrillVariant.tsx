@@ -39,6 +39,7 @@ export function DrillVariant({
   showCount = true,
   difficulty,
   skip,
+  onShown,
   onAnswer,
 }: {
   lessonId: string;
@@ -51,6 +52,8 @@ export function DrillVariant({
   difficulty?: 1 | 2 | 3;
   /** A way past a drill that can't be fetched, e.g. "Skip this drill". */
   skip?: { label: string; onSkip: () => void };
+  /** Called once a drill has loaded and is on screen, so the screen can offer to report it. */
+  onShown?: (exercise: Exercise) => void;
   /**
    * `score` is how the answer was marked (1 is right). `xpScale` is what the drill pays, as a
    * share of the usual: a nudge halves the XP, never the verdict.
@@ -75,6 +78,8 @@ export function DrillVariant({
   const [pause, setPause] = useState<string | null>(null);
   const [round, setRound] = useState(0);
   const retries = useRef(0);
+  const shown = useRef(onShown);
+  shown.current = onShown;
 
   useEffect(() => {
     let canceled = false;
@@ -111,6 +116,7 @@ export function DrillVariant({
               variant: result.variant,
               difficulty: result.difficulty,
             });
+            shown.current?.(result.exercise);
             return;
           }
           if (isLimited(result)) {

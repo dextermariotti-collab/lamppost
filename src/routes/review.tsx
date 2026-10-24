@@ -3,12 +3,12 @@ import { GuideMark } from "@/components/LineBullet";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { ReportContentButton } from "@/components/ReportContentButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { Button } from "@/components/ui/button";
 import { useProgress } from "@/lib/progress";
-import { EXERCISE_LABEL } from "@/lib/exercises";
-import { CURRICULUM_SLUG } from "@/lib/curriculum";
+import { EXERCISE_LABEL, describeExercise, type Exercise } from "@/lib/exercises";
 import {
   nextReviewLine,
   useDrillSchedule,
@@ -16,7 +16,7 @@ import {
   type ScheduledDrill,
 } from "@/lib/review-drills";
 import { recordDrillOutcome } from "@/lib/rating";
-import { celebrateAnswer } from "@/components/AnswerFeedback";
+import { celebrateAnswer, clearAnswerFeedback } from "@/components/AnswerFeedback";
 import { playCue } from "@/lib/feedback";
 import { reviewXp } from "@/lib/progress-core";
 import { holdRewards } from "@/lib/reward-hold";
@@ -55,7 +55,10 @@ function ReviewQueue() {
 
   const [step, setStep] = useState(0);
   const [answered, setAnswered] = useState(false);
+  /** The drill on screen, once answered: what a report about it quotes. */
+  const [shown, setShown] = useState<Exercise | null>(null);
   const [right, setRight] = useState(0);
+  const [wrong, setWrong] = useState(0);
   const [skipped, setSkipped] = useState(0);
 
   const item = session?.[step];
@@ -65,18 +68,23 @@ function ReviewQueue() {
   const running = session !== null && !done;
   useEffect(() => (running ? holdRewards() : undefined), [running]);
 
+  // Moving on takes the last verdict down, so it never sits over the next drill.
+  useEffect(() => clearAnswerFeedback, [step]);
+
   const handleAnswer = (
     score: number,
     variant: number,
     _answer: unknown,
-    _exercise: unknown,
+    exercise: Exercise,
     difficulty: number,
     xpScale: number,
   ) => {
     if (answered || !item) return;
     setAnswered(true);
+    setShown(exercise);
     const correct = score >= 1;
     if (correct) setRight((n) => n + 1);
+    else setWrong((n) => n + 1);
     grade(item.key, correct, variant);
     recordReview(correct, xpScale);
     playCue(correct ? "correct" : "wrong");
@@ -148,13 +156,27 @@ function ReviewQueue() {
               index={step}
               total={session!.length}
               skip={{ label: "Skip this drill", onSkip: skipDrill }}
+              onShown={setShown}
               onAnswer={handleAnswer}
             />
+
+            {shown && (
+              <ReportContentButton
+                className="mt-3"
+                context={{
+                  courseTopic: "Review drill",
+                  lessonTitle: item.lessonTitle,
+                  ...(item.lessonIndex >= 0 ? { lessonIndex: item.lessonIndex + 1 } : {}),
+                  excerpt: describeExercise(shown),
+                }}
+              />
+            )}
 
             {answered && (
               <Button
                 onClick={() => {
                   setAnswered(false);
+                  setShown(null);
                   setStep((s) => s + 1);
                 }}
                 className="sticky-action mt-5 h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
@@ -183,21 +205,71 @@ function ReviewQueue() {
         )}
 
         {done && session!.length > 0 && (
-          <div className="flex animate-pop-in flex-col items-center text-center">
-            <GuideMark size={72} />
-            <h2 className="mt-4 text-2xl">Review complete</h2>
-            <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">
-              {right} of {session!.length} handled. The ones you missed return tomorrow with new
-              material.
-              {skipped > 0 &&
-                ` ${skipped === 1 ? "The one you skipped is" : `The ${skipped} you skipped are`} still in your queue.`}
-            </p>
-            <Button asChild className="mt-6 h-12 rounded-sm px-6 text-sm font-semibold">
-              <Link to="/">Back to home</Link>
-            </Button>
-          </div>
+          <ReviewSummary right={right} wrong={wrong} skipped={skipped} />
         )}
       </div>
     </PhoneFrame>
+  );
+}
+
+/**
+ * The end of a review, telling right, missed and skipped apart and saying what happens to each:
+ * a miss comes back tomorrow as a new scenario, a skipped drill was never graded so it stays due,
+ * and a right answer comes back later, further apart. A review where nothing was answered says
+ * so plainly rather than calling itself complete.
+ */
+function ReviewSummary({
+  right,
+  wrong,
+  skipped,
+}: {
+  right: number;
+  wrong: number;
+  skipped: number;
+}) {
+  const skippedLine =
+    skipped === 1
+      ? "The one you skipped is still due and comes back in a later review."
+      : `The ${skipped} you skipped are still due and come back in a later review.`;
+
+  if (right + wrong === 0) {
+    return (
+      <div className="sign p-5">
+        <h2 className="text-lg">No drills answered</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {skipped === 1
+            ? "The drill was skipped, so nothing was graded. It's still due and comes back in a later review."
+            : `All ${skipped} drills were skipped, so nothing was graded. They're still due and come back in a later review.`}
+        </p>
+        <Button asChild className="mt-4 h-12 w-full rounded-sm text-sm font-semibold">
+          <Link to="/">Back to home</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const next = [
+    wrong === 1
+      ? "The one you missed comes back tomorrow as a new scenario."
+      : wrong > 1
+        ? `The ${wrong} you missed come back tomorrow as new scenarios.`
+        : null,
+    skipped > 0 ? skippedLine : null,
+    wrong === 0 && skipped === 0 ? "Each one comes back later, further apart." : null,
+  ].filter(Boolean);
+
+  return (
+    <div className="flex animate-pop-in flex-col items-center text-center">
+      <GuideMark size={72} />
+      <h2 className="mt-4 text-2xl">Review complete</h2>
+      <p className="mt-2 font-mono text-xs text-muted-foreground">
+        {right} right · {wrong} missed
+        {skipped > 0 && ` · ${skipped} skipped`}
+      </p>
+      <p className="mt-2 max-w-[17rem] text-sm text-muted-foreground">{next.join(" ")}</p>
+      <Button asChild className="mt-6 h-12 rounded-sm px-6 text-sm font-semibold">
+        <Link to="/">Back to home</Link>
+      </Button>
+    </div>
   );
 }
