@@ -290,8 +290,13 @@ export function nextStopAfter(
   return null;
 }
 
-/** The later of two day keys: a clock that is behind never moves the last active day back. */
-const laterDay = (day: string | null, today: string) => (day && day > today ? day : today);
+/**
+ * The later of two day keys: a clock that is behind never moves the last active day back. A day
+ * more than one ahead came from a wrong clock (the server refuses it too), so it gives way to
+ * today rather than freezing the streak until the calendar catches up.
+ */
+const laterDay = (day: string | null, today: string) =>
+  day && day > today && day <= shiftDay(today, 1) ? day : today;
 
 /**
  * Adds lessons the account has finished on another device. Returns `prev` when none are new.

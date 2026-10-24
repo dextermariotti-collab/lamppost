@@ -125,6 +125,19 @@ describe("applyReview", () => {
     expect(right.streak).toBe(1);
     expect(right.history["2026-09-23"]).toBe(1);
   });
+
+  it("lets the streak resume after one review on a clock that was months ahead", () => {
+    let state = applyReview(DEFAULT_STATE, true, "2027-01-01");
+    const days = ["2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24"];
+    for (const day of days) state = applyReview(state, true, day);
+    expect(state.lastActiveDay).toBe("2026-10-24");
+    expect(state.streak).toBe(4);
+  });
+
+  it("keeps a last active day one ahead, as after flying east and back", () => {
+    const state = applyReview(applyReview(DEFAULT_STATE, true, "2026-10-22"), true, "2026-10-21");
+    expect(state.lastActiveDay).toBe("2026-10-22");
+  });
 });
 
 describe("applyCase", () => {
