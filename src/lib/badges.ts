@@ -82,7 +82,7 @@ export const BADGES: BadgeDef[] = [
   {
     code: "early_bird",
     name: "Early Bird",
-    description: "Days you practiced before 9am",
+    description: "Days you practiced between 5 and 9 a.m.",
     icon: "sunrise",
     unit: "early days",
     tiers: [1, 5, 15],
@@ -96,6 +96,11 @@ export const BADGES: BadgeDef[] = [
     tiers: [1, 3, 10],
   },
 ];
+
+/** The early-morning window, in local hours: from 5:00 up to, not including, 9:00. */
+const EARLY_FROM_HOUR = 5;
+const EARLY_UNTIL_HOUR = 9;
+const isEarly = (at: Date) => at.getHours() >= EARLY_FROM_HOUR && at.getHours() < EARLY_UNTIL_HOUR;
 
 const FALLACY_LESSONS = new Set(
   LESSONS.filter((lesson) => lesson.unitId === "fallacies").map((lesson) => lesson.id),
@@ -141,8 +146,9 @@ export function computeBadges(state: ProgressState): BadgeState[] {
       if ((confidence >= 70 && correct) || (confidence <= 30 && !correct)) calibrated += 1;
     }
 
+    // Late at night isn't early: 1:40 a.m. belongs to the night before, not to the morning.
     const at = new Date(attempt.at);
-    if (at.getHours() < 9) earlyDays.add(dayKey(at));
+    if (isEarly(at)) earlyDays.add(dayKey(at));
   }
 
   const finished = new Set([
@@ -182,33 +188,52 @@ export function computeBadges(state: ProgressState): BadgeState[] {
 
 /* ------------------------------ unlock memory ------------------------------ */
 
-function readSeen(): Record<string, BadgeTier> {
+const RANK: Record<BadgeTier, number> = { bronze: 1, silver: 2, gold: 3 };
+
+/** The highest tier shown for a badge and when it was earned. Older saves kept only the tier. */
+type Seen = { tier: BadgeTier; at: number | null };
+type StoredSeen = Record<string, BadgeTier | { tier: BadgeTier; at?: number | null }>;
+
+const isTier = (value: unknown): value is BadgeTier =>
+  value === "bronze" || value === "silver" || value === "gold";
+
+function readStoredSeen(): StoredSeen {
   if (typeof window === "undefined") return {};
   try {
     const raw = window.localStorage.getItem(SEEN_KEY);
-    const parsed = raw ? (JSON.parse(raw) as Record<string, BadgeTier>) : {};
+    const parsed = raw ? (JSON.parse(raw) as StoredSeen) : {};
     return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
     return {};
   }
 }
 
-const RANK: Record<BadgeTier, number> = { bronze: 1, silver: 2, gold: 3 };
+function readSeen(): Record<string, Seen> {
+  const seen: Record<string, Seen> = {};
+  for (const [code, entry] of Object.entries(readStoredSeen())) {
+    if (isTier(entry)) seen[code] = { tier: entry, at: null };
+    else if (entry && typeof entry === "object" && isTier(entry.tier)) {
+      seen[code] = { tier: entry.tier, at: typeof entry.at === "number" ? entry.at : null };
+    }
+  }
+  return seen;
+}
 
 /**
  * Returns badges whose tier is higher than the last tier the learner was shown,
- * and records the new tiers so a toast fires exactly once per unlock.
+ * and records the new tiers, and when, so a toast fires exactly once per unlock.
  */
-export function drainNewUnlocks(badges: BadgeState[]): BadgeState[] {
+export function drainNewUnlocks(badges: BadgeState[], now = Date.now()): BadgeState[] {
   if (typeof window === "undefined") return [];
   const seen = readSeen();
   const fresh = badges.filter(
     (badge) =>
-      badge.tier !== null && RANK[badge.tier] > (seen[badge.code] ? RANK[seen[badge.code]!] : 0),
+      badge.tier !== null &&
+      RANK[badge.tier] > (seen[badge.code] ? RANK[seen[badge.code]!.tier] : 0),
   );
   if (fresh.length === 0) return [];
-  const next = { ...seen };
-  for (const badge of fresh) if (badge.tier) next[badge.code] = badge.tier;
+  const next = { ...readStoredSeen() };
+  for (const badge of fresh) if (badge.tier) next[badge.code] = { tier: badge.tier, at: now };
   try {
     window.localStorage.setItem(SEEN_KEY, JSON.stringify(next));
     window.dispatchEvent(new Event(BADGE_EVENT));
@@ -216,6 +241,25 @@ export function drainNewUnlocks(badges: BadgeState[]): BadgeState[] {
     /* ignore */
   }
   return fresh;
+}
+
+/**
+ * The shelf order: earned badges first, the most recently earned (or raised a tier) first, then
+ * the ones still to earn in their usual order. A tier earned since the last unlock was recorded
+ * counts as the newest; one recorded before times were kept counts as the oldest.
+ */
+export function earnedFirst(badges: readonly BadgeState[], seen = readSeen()): BadgeState[] {
+  const earnedAt = (badge: BadgeState) => {
+    const entry = seen[badge.code];
+    if (!entry || !badge.tier || RANK[entry.tier] < RANK[badge.tier]) return Infinity;
+    return entry.at ?? -Infinity;
+  };
+  const earned = badges
+    .map((badge, i) => ({ badge, i, at: earnedAt(badge) }))
+    .filter(({ badge }) => badge.tier !== null)
+    .sort((a, b) => (a.at === b.at ? a.i - b.i : b.at > a.at ? 1 : -1))
+    .map(({ badge }) => badge);
+  return [...earned, ...badges.filter((badge) => badge.tier === null)];
 }
 
 /** Marks every currently-earned tier as already seen, without firing toasts. */

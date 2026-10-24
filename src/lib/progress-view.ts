@@ -60,41 +60,57 @@ export function upNextIndex(done: ReadonlySet<number>, doneIds: readonly string[
 
 // ---------- Calibration ----------
 
-type Band = { stated: number; actual: number; count: number };
+/** `said` is the average confidence really stated in the band; without it, `stated` (its mid-point). */
+type Band = { stated: number; said?: number; actual: number; count: number };
 
 export type CalibrationSummary = {
   count: number;
-  /** Average stated confidence, 0..100, weighted by how many drills were in each band. */
+  /** Average stated confidence, 0..100: the percentages actually given, not their bands' mid-points. */
   stated: number;
-  /** Share actually right, 0..100, on the same weighting. */
+  /** Share actually right, 0..100, over the same answers. */
   actual: number;
-  verdict: "close" | "over" | "under";
+  /** Which way the gap leans; null until there are `CALIBRATION_MIN_ANSWERS` answers to go on. */
+  verdict: "close" | "over" | "under" | null;
 };
 
 /** Ten points or more apart counts as leaning one way. */
 const CALIBRATION_GAP = 10;
+/** Fewer answers than this and over- or underconfidence can't be told from luck. */
+export const CALIBRATION_MIN_ANSWERS = 5;
 
 export function calibrationSummary(bands: readonly Band[]): CalibrationSummary | null {
   const count = bands.reduce((n, b) => n + b.count, 0);
   if (count === 0) return null;
-  const stated = Math.round(bands.reduce((n, b) => n + b.stated * b.count, 0) / count);
+  const stated = Math.round(bands.reduce((n, b) => n + (b.said ?? b.stated) * b.count, 0) / count);
   const actual = Math.round(bands.reduce((n, b) => n + b.actual * b.count, 0) / count);
   const gap = stated - actual;
   return {
     count,
     stated,
     actual,
-    verdict: gap >= CALIBRATION_GAP ? "over" : gap <= -CALIBRATION_GAP ? "under" : "close",
+    verdict:
+      count < CALIBRATION_MIN_ANSWERS
+        ? null
+        : gap >= CALIBRATION_GAP
+          ? "over"
+          : gap <= -CALIBRATION_GAP
+            ? "under"
+            : "close",
   };
 }
 
 export function calibrationLine(summary: CalibrationSummary): string {
+  const { count, stated, actual, verdict } = summary;
+  if (verdict === null) {
+    const answers = `${count} answer${count === 1 ? "" : "s"}`;
+    return `From ${answers} so far, you said ${stated}% sure${count === 1 ? "" : " on average"}. It needs a few more: after ${CALIBRATION_MIN_ANSWERS}, this shows which way you lean, as a rough signal.`;
+  }
   const ending = {
     close: "That is well matched.",
     over: "You lean a little overconfident.",
     under: "You lean a little underconfident.",
-  }[summary.verdict];
-  return `On average you said ${summary.stated}% sure and were right ${summary.actual}% of the time. ${ending}`;
+  }[verdict];
+  return `On average you said ${stated}% sure and were right ${actual}% of the time, over ${count} answers. ${ending}`;
 }
 
 // ---------- The last seven days ----------

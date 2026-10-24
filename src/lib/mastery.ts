@@ -24,6 +24,11 @@ export type CalibrationBand = {
   label: string;
   /** Mid-point of the stated-confidence band, 0..100. */
   stated: number;
+  /**
+   * The average confidence actually stated by the answers in the band, 0..100. A band without it
+   * (built before it existed) is read at its mid-point.
+   */
+  said?: number;
   /** Share actually correct in that band, 0..100. */
   actual: number;
   count: number;
@@ -80,17 +85,24 @@ export function calibration(): { bands: CalibrationBand[]; answered: number } {
   const store = readAttemptStore();
   const rows = Object.values(store).flatMap((attempt) => {
     const answer = attempt.answer as { confidence?: number } | null;
-    const confidence = answer && typeof answer.confidence === "number" ? answer.confidence : null;
+    const confidence =
+      answer && typeof answer.confidence === "number" && Number.isFinite(answer.confidence)
+        ? Math.min(Math.max(answer.confidence, 0), 100)
+        : null;
     return confidence === null ? [] : [{ confidence, correct: attempt.score >= 1 }];
   });
 
   const bands = BANDS.flatMap((band) => {
-    const inBand = rows.filter((r) => r.confidence >= band.min && r.confidence <= band.max);
+    // Bands meet at whole numbers; a fractional confidence belongs to the band it rounds into.
+    const inBand = rows.filter(
+      (r) => Math.round(r.confidence) >= band.min && Math.round(r.confidence) <= band.max,
+    );
     if (inBand.length === 0) return [];
     return [
       {
         label: band.label,
         stated: band.stated,
+        said: inBand.reduce((sum, r) => sum + r.confidence, 0) / inBand.length,
         actual: Math.round((inBand.filter((r) => r.correct).length / inBand.length) * 100),
         count: inBand.length,
       },

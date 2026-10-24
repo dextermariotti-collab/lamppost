@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  CALIBRATION_MIN_ANSWERS,
   calendarRange,
   calibrationLine,
   calibrationSummary,
@@ -69,7 +70,36 @@ describe("calibrationSummary", () => {
     const line = calibrationLine(calibrationSummary([{ stated: 80, actual: 64, count: 5 }])!);
     expect(line).toContain("said 80% sure");
     expect(line).toContain("right 64% of the time");
+    expect(line).toContain("over 5 answers");
     expect(line).toContain("overconfident");
+  });
+
+  it("averages the percentages actually given, not the bands' mid-points", () => {
+    const summary = calibrationSummary([
+      { stated: 50, said: 60, actual: 100, count: 1 },
+      { stated: 90, said: 85, actual: 100, count: 3 },
+    ])!;
+    expect(summary.stated).toBe(Math.round((60 + 85 * 3) / 4));
+  });
+
+  it("reads a band without the real figure (as older code built it) at its mid-point", () => {
+    expect(calibrationSummary([{ stated: 50, actual: 100, count: 1 }])!.stated).toBe(50);
+  });
+
+  it("gives no verdict before the minimum, and says how many it has", () => {
+    expect(CALIBRATION_MIN_ANSWERS).toBe(5);
+    const one = calibrationSummary([{ stated: 50, said: 60, actual: 100, count: 1 }])!;
+    expect(one.verdict).toBeNull();
+    const line = calibrationLine(one);
+    expect(line).toBe(
+      "From 1 answer so far, you said 60% sure. It needs a few more: after 5, this shows which way you lean, as a rough signal.",
+    );
+    expect(line).not.toMatch(/overconfident|underconfident|well matched/);
+
+    const four = calibrationSummary([{ stated: 90, actual: 25, count: 4 }])!;
+    expect(four.verdict).toBeNull();
+    expect(calibrationLine(four)).toContain("From 4 answers so far, you said 90% sure on average.");
+    expect(calibrationSummary([{ stated: 90, actual: 20, count: 5 }])!.verdict).toBe("over");
   });
 });
 

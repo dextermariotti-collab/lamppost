@@ -29,7 +29,7 @@ vi.mock("@/lib/unit-checks", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/unit-checks")>()),
   useUnitChecks: () => ({ checks: h.checks, hydrated: true }),
 }));
-vi.mock("@/lib/badges", () => ({ useBadges: () => [] }));
+vi.mock("@/lib/badges", () => ({ useBadges: () => [], earnedFirst: (b: unknown[]) => b }));
 vi.mock("@/lib/companion-store", () => ({ useCompanion: () => ({ companion: null }) }));
 vi.mock("@/lib/mastery", () => ({ useMasteryAnalytics: () => null }));
 vi.mock("@/lib/review-drills", () => ({ useDueDrills: () => ({ total: 0 }) }));

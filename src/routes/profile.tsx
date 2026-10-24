@@ -11,7 +11,7 @@ import {
   UserPlus,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BadgeIcon, TIER_STYLE } from "@/components/BadgeIcon";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { displayNameFor, useAccount, useFriends } from "@/lib/account";
-import { useBadges, type BadgeState } from "@/lib/badges";
+import { earnedFirst, useBadges, type BadgeState } from "@/lib/badges";
 import { useCompanion } from "@/lib/companion-store";
 import { companionName } from "@/lib/companions";
 import { monthYear } from "@/lib/days";
@@ -57,6 +57,8 @@ function ProfileScreen() {
   // The same achievements, counted the same way, as Progress and the unlock toasts.
   const badges = useBadges(state);
   const earned = badges?.filter((badge) => badge.tier).length ?? 0;
+  // What has been earned leads the shelf, newest first, so it is never scrolled out of view.
+  const shelf = useMemo(() => (badges ? earnedFirst(badges) : null), [badges]);
 
   const name = displayNameFor(account ?? null);
   const friendCount = friends?.friends.length ?? 0;
@@ -142,7 +144,7 @@ function ProfileScreen() {
             </p>
           )}
           <div className="-mx-5 mt-3 flex gap-4 overflow-x-auto px-5 pb-1">
-            {badges?.map((badge) => (
+            {shelf?.map((badge) => (
               <button
                 key={badge.code}
                 type="button"

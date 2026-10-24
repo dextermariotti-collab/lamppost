@@ -99,6 +99,47 @@ describe("Profile", () => {
     expect(document.querySelector(".animate-pulse")).toBeNull();
   });
 
+  const shelf = () =>
+    [
+      ...screen
+        .getByRole("heading", { name: "Achievements" })
+        .closest("section")!
+        .querySelectorAll("button"),
+    ].map((button) => button.textContent ?? "");
+
+  it("puts the one earned badge first, in view, then the ones still to earn", async () => {
+    render(<Screen />);
+    await screen.findByText(`1 of ${BADGES.length} earned.`);
+    const names = shelf();
+    expect(names[0]).toMatch(/^Iron Streak, Bronze/);
+    expect(names.slice(1).map((n) => n.split(",")[0])).toEqual(
+      BADGES.filter((b) => b.code !== "iron_streak").map((b) => b.name),
+    );
+  });
+
+  it("orders earned badges newest first", async () => {
+    // Early Bird earned after Iron Streak: an answer at 7:30 in the morning, local time.
+    const morning = new Date(2026, 9, 21, 7, 30).getTime();
+    window.localStorage.setItem(
+      "lamppost-exercises-v1",
+      JSON.stringify({ "claims-the-actual-claim#100": { answer: 0, score: 1, at: morning } }),
+    );
+    window.localStorage.setItem(
+      "lamppost-badges-v1",
+      JSON.stringify({
+        iron_streak: { tier: "bronze", at: morning - 86_400_000 },
+        early_bird: { tier: "bronze", at: morning },
+      }),
+    );
+    render(<Screen />);
+    await screen.findByText(`2 of ${BADGES.length} earned.`);
+    expect(
+      shelf()
+        .slice(0, 2)
+        .map((n) => n.split(",")[0]),
+    ).toEqual(["Early Bird", "Iron Streak"]);
+  });
+
   it("opens an achievement with its real requirement and progress", async () => {
     render(<Screen />);
     fireEvent.click(await screen.findByRole("button", { name: /Iron Streak/ }));

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Target, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BadgeShelf } from "@/components/BadgeShelf";
 import { BeforeAfterTable } from "@/components/BeforeAfterTable";
 import { DisclosureRow, LinkRow } from "@/components/DisclosureRow";
@@ -19,7 +19,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { useBadges } from "@/lib/badges";
+import { earnedFirst, useBadges } from "@/lib/badges";
 import { useCompanion } from "@/lib/companion-store";
 import { CURRICULUM_SLUG, UNITS } from "@/lib/curriculum";
 import { useMasteryAnalytics } from "@/lib/mastery";
@@ -55,6 +55,8 @@ function ProgressScreen() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const analytics = useMasteryAnalytics();
   const badges = useBadges(state);
+  // Earned first, newest first, as on Profile, so the shelf doesn't open on locked badges.
+  const shelf = useMemo(() => (badges ? earnedFirst(badges) : []), [badges]);
   const { companion } = useCompanion();
 
   // Consume any queued celebration from a just-finished lesson or quiz.
@@ -230,7 +232,7 @@ function ProgressScreen() {
                       </p>
                     </div>
                     <div className="mt-1.5 space-y-1">
-                      <Bar pct={band.stated} tone="muted" label="stated" />
+                      <Bar pct={band.said ?? band.stated} tone="muted" label="stated" />
                       <Bar pct={band.actual} tone="primary" label="actual" />
                     </div>
                   </li>
@@ -250,7 +252,7 @@ function ProgressScreen() {
                   : `${earned} of ${badges.length} earned.`
             }
           >
-            <BadgeShelf badges={badges ?? []} />
+            <BadgeShelf badges={shelf} />
           </DisclosureRow>
 
           {/* Written response trend */}
