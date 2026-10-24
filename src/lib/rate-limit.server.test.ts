@@ -230,8 +230,14 @@ describe("guardedGeneration", () => {
   it("releases with the same holder it took the lease with, fresh for each run", async () => {
     const first = fake();
     const second = fake();
-    await guardedGeneration(opts(async () => "a"), first);
-    await guardedGeneration(opts(async () => "b"), second);
+    await guardedGeneration(
+      opts(async () => "a"),
+      first,
+    );
+    await guardedGeneration(
+      opts(async () => "b"),
+      second,
+    );
     const holderOf = (limiter: ReturnType<typeof fake>) => {
       const taken = vi.mocked(limiter.acquireLock).mock.calls[0]?.[2];
       expect(vi.mocked(limiter.releaseLock).mock.calls[0]?.[1]).toBe(taken);
