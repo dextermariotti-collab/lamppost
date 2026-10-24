@@ -8,6 +8,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { DeviceDataSection, YourDataSection } from "@/components/YourDataSection";
 import { Switch } from "@/components/ui/switch";
 import { displayNameFor, useAccount, useRefreshAccount } from "@/lib/account";
+import { AI_PROVIDER_NAME, useAiConsentAgreedAt, withdrawAiConsent } from "@/lib/ai-consent";
 import { updateMyProfile } from "@/lib/profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
@@ -95,7 +96,7 @@ function SettingsScreen() {
             <SettingsGroup label="Practice">
               <SegmentedRow
                 label="Daily goal"
-                sub="Lessons a day. Hitting it every day for a week earns the perfect week badge."
+                sub="Lessons a day. Reviews and the daily case keep your streak going but don't count toward it."
                 options={goals.map((goal) => ({ value: goal, label: String(goal) }))}
                 value={state.dailyGoal}
                 onChange={(goal) => {
@@ -234,6 +235,7 @@ function SettingsScreen() {
                   />
                 </SettingsGroup>
 
+                <AiConsentGroup />
                 <PrivacySafetySection />
                 <YourDataSection />
               </>
@@ -247,6 +249,7 @@ function SettingsScreen() {
                     value="Sign in"
                   />
                 </SettingsGroup>
+                <AiConsentGroup />
                 <DeviceDataSection />
               </>
             )}
@@ -269,5 +272,54 @@ function SettingsScreen() {
         }}
       />
     </PhoneFrame>
+  );
+}
+
+const agreedOn = (iso: string) => {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime())
+    ? null
+    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+
+/** Whether this device agreed to send typed text to the AI service, and a way to take it back. */
+function AiConsentGroup() {
+  const agreedAt = useAiConsentAgreedAt();
+  const [withdrawn, setWithdrawn] = useState(false);
+  const day = agreedAt ? agreedOn(agreedAt) : null;
+
+  return (
+    <SettingsGroup label="AI service">
+      <SettingsRow
+        title="Sending what you type"
+        sub={
+          agreedAt
+            ? `You agreed${day ? ` on ${day}` : ""} to send it to ${AI_PROVIDER_NAME}. Withdraw and you're asked again before anything more is sent.`
+            : withdrawn
+              ? "Withdrawn. Nothing more is sent until you agree again."
+              : `Not agreed on this device. You're asked before anything you type goes to ${AI_PROVIDER_NAME}.`
+        }
+        control={
+          agreedAt ? (
+            <Button
+              type="button"
+              variant="secondary"
+              aria-label="Withdraw AI agreement"
+              onClick={() => {
+                withdrawAiConsent();
+                setWithdrawn(true);
+              }}
+              className="h-11 shrink-0 rounded-sm px-3 text-sm font-bold"
+            >
+              Withdraw
+            </Button>
+          ) : undefined
+        }
+      />
+      {/* The button goes once it's used, so the change is announced. */}
+      <p role="status" className="sr-only">
+        {withdrawn && !agreedAt ? "AI agreement withdrawn." : ""}
+      </p>
+    </SettingsGroup>
   );
 }

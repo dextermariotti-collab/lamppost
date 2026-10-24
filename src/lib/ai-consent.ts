@@ -19,11 +19,14 @@ export type AiConsent = {
   provider: string;
 };
 
-/** Held for this visit when the device won't save it, so a private window asks only once. */
-let unsaved: AiConsent | null = null;
+/**
+ * This visit's answer when the device won't save it, so a private window asks only once and a
+ * withdrawal holds even if the saved agreement couldn't be removed.
+ */
+let unsaved: AiConsent | "withdrawn" | null = null;
 
 export function readAiConsent(): AiConsent | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || unsaved === "withdrawn") return null;
   try {
     const raw = window.localStorage.getItem(KEY);
     const parsed = raw ? (JSON.parse(raw) as Partial<AiConsent> | null) : null;
@@ -44,8 +47,24 @@ export function recordAiConsent(now = new Date()) {
   const consent: AiConsent = { agreedAt: now.toISOString(), provider: AI_PROVIDER_NAME };
   try {
     window.localStorage.setItem(KEY, JSON.stringify(consent));
+    unsaved = null;
   } catch {
     unsaved = consent;
+  }
+  window.dispatchEvent(new Event(EVENT));
+}
+
+/**
+ * Takes the agreement back on this device: nothing more is sent until they agree again, and the
+ * next feature that would send their text asks first. What was already sent isn't recalled.
+ */
+export function withdrawAiConsent() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(KEY);
+    unsaved = null;
+  } catch {
+    unsaved = "withdrawn";
   }
   window.dispatchEvent(new Event(EVENT));
 }
@@ -64,6 +83,13 @@ function subscribe(listener: () => void) {
 
 export function useAiConsent(): boolean {
   return useSyncExternalStore(subscribe, hasAiConsent, () => false);
+}
+
+/** When they agreed to the current provider (an ISO timestamp), or null if they haven't. */
+const agreedAt = () => (hasAiConsent() ? readAiConsent()!.agreedAt : null);
+
+export function useAiConsentAgreedAt(): string | null {
+  return useSyncExternalStore(subscribe, agreedAt, () => null);
 }
 
 /**

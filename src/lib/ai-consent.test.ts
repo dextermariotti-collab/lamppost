@@ -7,7 +7,9 @@ import {
   readAiConsent,
   recordAiConsent,
   useAiConsent,
+  useAiConsentAgreedAt,
   useAiConsentGate,
+  withdrawAiConsent,
 } from "./ai-consent";
 
 const KEY = "lamppost-ai-consent-v1";
@@ -69,6 +71,71 @@ describe("the AI consent store", () => {
     expect(result.current).toBe(false);
     act(() => recordAiConsent());
     expect(result.current).toBe(true);
+  });
+});
+
+describe("withdrawing the agreement", () => {
+  it("forgets it on this device and tells every screen", () => {
+    recordAiConsent(new Date("2026-10-20T14:30:00Z"));
+    const agreed = renderHook(() => useAiConsent());
+    const since = renderHook(() => useAiConsentAgreedAt());
+    expect(since.result.current).toBe("2026-10-20T14:30:00.000Z");
+
+    act(() => withdrawAiConsent());
+    expect(window.localStorage.getItem(KEY)).toBeNull();
+    expect(hasAiConsent()).toBe(false);
+    expect(agreed.result.current).toBe(false);
+    expect(since.result.current).toBeNull();
+  });
+
+  it("makes the next feature that sends text ask again, and agreeing again works", () => {
+    recordAiConsent();
+    withdrawAiConsent();
+    const action = vi.fn();
+    const { result } = renderHook(() => useAiConsentGate());
+    act(() => result.current.ask(action));
+    expect(action).not.toHaveBeenCalled();
+    expect(result.current.sheet.open).toBe(true);
+    act(() => result.current.sheet.onContinue());
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(hasAiConsent()).toBe(true);
+  });
+
+  it("shows no date for an agreement given to another provider", () => {
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify({ agreedAt: "2026-01-01T00:00:00.000Z", provider: "Another AI" }),
+    );
+    expect(renderHook(() => useAiConsentAgreedAt()).result.current).toBeNull();
+  });
+
+  it("holds for this visit when the saved agreement can't be removed", async () => {
+    vi.resetModules();
+    const fresh = await import("./ai-consent");
+    fresh.recordAiConsent();
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    fresh.withdrawAiConsent();
+    expect(window.localStorage.getItem(KEY)).not.toBeNull();
+    expect(fresh.hasAiConsent()).toBe(false);
+    vi.restoreAllMocks();
+    fresh.recordAiConsent();
+    expect(fresh.hasAiConsent()).toBe(true);
+  });
+
+  it("holds when storage is blocked and the agreement lived only in memory", async () => {
+    vi.resetModules();
+    const fresh = await import("./ai-consent");
+    for (const method of ["getItem", "setItem", "removeItem"] as const) {
+      vi.spyOn(Storage.prototype, method).mockImplementation(() => {
+        throw new Error("blocked");
+      });
+    }
+    fresh.recordAiConsent();
+    expect(fresh.hasAiConsent()).toBe(true);
+    fresh.withdrawAiConsent();
+    expect(fresh.hasAiConsent()).toBe(false);
   });
 });
 
