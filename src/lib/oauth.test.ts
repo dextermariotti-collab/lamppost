@@ -22,9 +22,18 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 vi.mock("@capacitor/browser", () => ({ Browser: { open: h.open, close: h.close } }));
 
-const { completeNativeSignIn, startOAuth } = await import("./oauth");
+const { REDIRECT_MAX_AGE_MS, completeNativeSignIn, safeRedirect, startOAuth, takeHeldRedirect } =
+  await import("./oauth");
+
+const HELD = "lamppost-auth-redirect";
+const LESSON = "/course/critical-thinking/lesson/4?part=explain";
+const held = () => {
+  const raw = window.sessionStorage.getItem(HELD);
+  return raw ? (JSON.parse(raw) as { path: string; at: number }) : null;
+};
 
 beforeEach(() => {
+  window.sessionStorage.clear();
   vi.clearAllMocks();
   h.native = true;
   h.signInWithOAuth.mockResolvedValue({
@@ -76,6 +85,69 @@ describe("signing in on the web", () => {
       options: { redirectTo: `${window.location.origin}/auth` },
     });
     expect(h.open).not.toHaveBeenCalled();
+  });
+});
+
+describe("where to go after the provider sends them back", () => {
+  it("is held, with the time, only on the web, where the page really leaves", async () => {
+    h.native = false;
+    h.signInWithOAuth.mockResolvedValue({ data: {}, error: null });
+    const before = Date.now();
+    await startOAuth("google", LESSON);
+    expect(held()?.path).toBe(LESSON);
+    expect(held()!.at).toBeGreaterThanOrEqual(before);
+
+    // In the app /auth stays on screen, so its own query is used and a canceled sheet leaves
+    // nothing behind.
+    window.sessionStorage.clear();
+    h.native = true;
+    await startOAuth("apple", LESSON);
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+  });
+
+  it("isn't held when it isn't a path on this site, or when the provider can't be reached", async () => {
+    h.native = false;
+    h.signInWithOAuth.mockResolvedValue({ data: {}, error: null });
+    await startOAuth("google", "//evil.example");
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+
+    h.signInWithOAuth.mockResolvedValue({ data: {}, error: new Error("offline") });
+    expect((await startOAuth("google", LESSON)).error).toBeTruthy();
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+  });
+
+  it("is used for ten minutes, read once", () => {
+    const now = Date.UTC(2026, 9, 24, 12);
+    window.sessionStorage.setItem(HELD, JSON.stringify({ path: LESSON, at: now }));
+    expect(takeHeldRedirect(now + REDIRECT_MAX_AGE_MS)).toBe(LESSON);
+    expect(takeHeldRedirect(now)).toBeNull();
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+  });
+
+  it("is forgotten, unused, once it's older than that, or from an older build without a time", () => {
+    const now = Date.UTC(2026, 9, 24, 12);
+    for (const raw of [
+      JSON.stringify({ path: LESSON, at: now - REDIRECT_MAX_AGE_MS - 1 }),
+      JSON.stringify({ path: LESSON, at: now + 5 * 60 * 1000 }),
+      JSON.stringify({ path: LESSON }),
+      JSON.stringify({ path: LESSON, at: String(now) }),
+      LESSON,
+      "null",
+      "{not json",
+    ]) {
+      window.sessionStorage.setItem(HELD, raw);
+      expect(takeHeldRedirect(now), raw).toBeNull();
+      expect(window.sessionStorage.getItem(HELD)).toBeNull();
+    }
+  });
+
+  it("never leaves the site, even when the held value says to", () => {
+    const now = Date.now();
+    for (const path of ["//evil.example", "/\\evil.example", "https://evil.example", "/\t/x", 5]) {
+      window.sessionStorage.setItem(HELD, JSON.stringify({ path, at: now }));
+      expect(takeHeldRedirect(now), String(path)).toBeNull();
+    }
+    expect(safeRedirect("/progress")).toBe("/progress");
   });
 });
 

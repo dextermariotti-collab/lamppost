@@ -19,7 +19,9 @@ const h = vi.hoisted(() => {
     listeners,
     bump,
     userId: null as string | null,
+    // As the real store does, a lesson already finished changes nothing.
     completeLesson: vi.fn((_slug: string, _topic: string, index: number) => {
+      if (store.done.has(index)) return;
       store.done = new Set([...store.done, index]);
       store.xp += 50;
       bump();
@@ -50,6 +52,7 @@ vi.mock("@/lib/progress", async () => {
         streak: 1,
         hydrated: true,
         doneLessons: h.store.done,
+        doneToday: 0,
         completeLesson: h.completeLesson,
         recordExercise: h.recordExercise,
         recordPractice: h.recordPractice,
@@ -183,6 +186,7 @@ const toWriting = () => click("steps done");
 
 beforeEach(() => {
   window.localStorage.clear();
+  window.sessionStorage.clear();
   window.history.replaceState(null, "", "/");
   h.store.done = new Set();
   h.store.xp = 0;
@@ -254,6 +258,178 @@ describe("StepLesson records the lesson before Explain it back", () => {
     h.store.done = new Set([0]);
     mount();
     expect(screen.getByText("tutor card signed out")).toBeTruthy();
+  });
+});
+
+describe("StepLesson after leaving Explain it back to sign in", () => {
+  const RUN = "lamppost-lesson-run";
+  const held = () => JSON.parse(window.sessionStorage.getItem(RUN) ?? "null");
+  const allBut = (last: number) => new Set(Array.from({ length: last }, (_, i) => i));
+  const idsAt = (positions: Iterable<number>) => [...positions].map((i) => LESSONS[i]!.id);
+  const unitSpan = LESSONS.flatMap((lesson, i) =>
+    lesson.unitId === LESSONS[0]!.unitId ? [i] : [],
+  );
+
+  /** Signed out: the steps, skip the writing, and stop at the tutor card's "sign in". */
+  const leaveToSignIn = (lessonNumber: number) => {
+    mount(lessonNumber);
+    toWriting();
+    click("Skip the writing this time");
+    cleanup();
+  };
+  /** Signed in now, the redirect opens the lesson at Explain it back; finish it there. */
+  const comeBackAndFinish = (lessonNumber: number) => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    h.userId = "user-1";
+    window.history.replaceState(
+      null,
+      "",
+      `/course/${CURRICULUM_SLUG}/lesson/${lessonNumber}?part=explain`,
+    );
+    mount(lessonNumber);
+    expect(screen.getByText("tutor card signed in")).toBeTruthy();
+    click(/^Finish the (lesson|course)$/);
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+  };
+  const xpShown = () => screen.getByText("XP earned").nextElementSibling?.textContent;
+
+  it("holds the run for the way back: the lesson, what was done before it, what it earned", () => {
+    h.store.done = allBut(TOTAL_LESSONS - 1);
+    leaveToSignIn(TOTAL_LESSONS);
+    expect(held()).toMatchObject({
+      lessonId: LESSONS[TOTAL_LESSONS - 1]!.id,
+      doneBefore: idsAt(allBut(TOTAL_LESSONS - 1)),
+      xpEarned: 50,
+    });
+  });
+
+  it("speaks only for this lesson when signing in brought the account's map along", () => {
+    // Played lesson 1 on a new device; the account had finished all 35 elsewhere.
+    h.store.done = new Set();
+    leaveToSignIn(1);
+    h.store.done = allBut(TOTAL_LESSONS);
+    comeBackAndFinish(1);
+    expect(screen.queryByText("Map complete")).toBeNull();
+    expect(screen.getByText("Lesson complete")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /final check/i })).toBeNull();
+  });
+
+  it("and when it brought the rest of the line along", () => {
+    // Played lesson 2 on a new device; the account already had the rest of line 1.
+    h.store.done = new Set();
+    leaveToSignIn(2);
+    h.store.done = new Set(unitSpan);
+    comeBackAndFinish(2);
+    expect(screen.queryByText("Line complete")).toBeNull();
+    expect(screen.getByText("Lesson complete")).toBeTruthy();
+  });
+
+  it("shows the graduation board and the final check when that lesson finished the map", () => {
+    h.store.done = allBut(TOTAL_LESSONS - 1);
+    leaveToSignIn(TOTAL_LESSONS);
+    comeBackAndFinish(TOTAL_LESSONS);
+    expect(screen.getByText("Map complete")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Every line, every stop" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /final check/i }).getAttribute("href")).toBe(
+      "/final-check",
+    );
+    expect(xpShown()).toBe("+50");
+    expect(window.sessionStorage.getItem(RUN)).toBeNull();
+  });
+
+  it("shows the line complete when that lesson finished its line", () => {
+    h.store.done = new Set(unitSpan.slice(0, -1));
+    leaveToSignIn(unitSpan.at(-1)! + 1);
+    comeBackAndFinish(unitSpan.at(-1)! + 1);
+    expect(screen.getByText("Line complete")).toBeTruthy();
+    expect(screen.getByText("Line badge")).toBeTruthy();
+  });
+
+  it("is read once: opening the lesson there again is a replay", () => {
+    h.store.done = allBut(TOTAL_LESSONS - 1);
+    leaveToSignIn(TOTAL_LESSONS);
+    comeBackAndFinish(TOTAL_LESSONS);
+    cleanup();
+    comeBackAndFinish(TOTAL_LESSONS);
+    expect(screen.queryByText("Map complete")).toBeNull();
+    expect(screen.getByText("Lesson complete")).toBeTruthy();
+    expect(xpShown()).toBe("+0");
+  });
+
+  it("can't be faked by the address alone", () => {
+    h.store.done = allBut(TOTAL_LESSONS);
+    comeBackAndFinish(TOTAL_LESSONS);
+    expect(screen.queryByText("Map complete")).toBeNull();
+    expect(screen.getByText("Lesson complete")).toBeTruthy();
+  });
+
+  it("ignores a held run for another lesson, an old one, or one that doesn't fit this device", () => {
+    const now = Date.now();
+    const id = LESSONS[0]!.id;
+    const others = idsAt(allBut(TOTAL_LESSONS)).slice(1);
+    const finishWith = (run: unknown, done: Set<number>) => {
+      h.store.done = done;
+      h.store.xp = 500;
+      window.sessionStorage.setItem(RUN, JSON.stringify(run));
+      comeBackAndFinish(1);
+      const board = {
+        map: screen.queryByText("Map complete") !== null,
+        xp: xpShown(),
+        held: window.sessionStorage.getItem(RUN),
+      };
+      cleanup();
+      vi.useRealTimers();
+      return board;
+    };
+    const all = allBut(TOTAL_LESSONS);
+    // The run as this screen holds it: the board it would have shown.
+    expect(finishWith({ lessonId: id, doneBefore: others, xpEarned: 50, at: now }, all)).toEqual({
+      map: true,
+      xp: "+50",
+      held: null,
+    });
+    for (const [run, done] of [
+      [{ lessonId: LESSONS[1]!.id, doneBefore: others, xpEarned: 50, at: now }, all],
+      [{ lessonId: id, doneBefore: others, xpEarned: 50, at: now - 31 * 60_000 }, all],
+      [{ lessonId: id, doneBefore: [id, ...others], xpEarned: 50, at: now }, all],
+      [{ lessonId: id, doneBefore: others, xpEarned: 1e9, at: now }, all],
+      [{ lessonId: id, doneBefore: others, xpEarned: 50 }, all],
+      [{ lessonId: id, doneBefore: others, xpEarned: 50, at: now }, new Set([0])],
+      ["not a run", all],
+    ] as const) {
+      expect(finishWith(run, new Set(done)), JSON.stringify(run)).toEqual({
+        map: false,
+        xp: "+0",
+        held: null,
+      });
+    }
+  });
+
+  it("holds nothing for a signed-in learner or a replay, and lets go when the lesson ends", () => {
+    h.userId = "user-1";
+    mount(1);
+    toWriting();
+    click("Skip the writing this time");
+    expect(window.sessionStorage.getItem(RUN)).toBeNull();
+    cleanup();
+
+    h.userId = null;
+    h.store.done = new Set([1]);
+    mount(2);
+    toWriting();
+    click("Skip the writing this time");
+    expect(window.sessionStorage.getItem(RUN)).toBeNull();
+    cleanup();
+
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    mount(3);
+    toWriting();
+    click("Skip the writing this time");
+    expect(held()?.lessonId).toBe(LESSONS[2]!.id);
+    click("Card: finish the lesson");
+    expect(window.sessionStorage.getItem(RUN)).toBeNull();
   });
 });
 

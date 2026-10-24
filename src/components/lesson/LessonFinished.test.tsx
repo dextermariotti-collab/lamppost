@@ -40,7 +40,10 @@ import { LessonFinished } from "./LessonFinished";
 
 const unitSpan = LESSONS.flatMap((lesson, i) => (lesson.unitId === LESSONS[0]!.unitId ? [i] : []));
 
-function mount(lessonNumber: number, props: { replay?: boolean; accuracy?: number } = {}) {
+function mount(
+  lessonNumber: number,
+  props: { replay?: boolean; accuracy?: number; mapComplete?: boolean } = {},
+) {
   render(
     <LessonFinished
       meta={LESSONS[lessonNumber - 1]!}
@@ -52,6 +55,7 @@ function mount(lessonNumber: number, props: { replay?: boolean; accuracy?: numbe
       xpEarned={80}
       wrote={false}
       {...(props.replay !== undefined ? { replay: props.replay } : {})}
+      {...(props.mapComplete !== undefined ? { mapComplete: props.mapComplete } : {})}
     />,
   );
 }
@@ -91,6 +95,26 @@ describe("LessonFinished's line badge", () => {
     mount(unitSpan.at(-1)! + 1, { accuracy: 100 });
     fireEvent.click(screen.getByRole("button", { name: /Share this badge/ }));
     expect(h.share).toHaveBeenCalledWith(expect.objectContaining({ accuracy: 60 }));
+  });
+});
+
+describe("LessonFinished's graduation board", () => {
+  it("says the map is complete and points to the final check for the run that finished it", () => {
+    h.done = new Set(Array.from({ length: TOTAL_LESSONS }, (_, i) => i));
+    mount(TOTAL_LESSONS, { mapComplete: true });
+    expect(screen.getByText("Map complete")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Every line, every stop" })).toBeTruthy();
+    const link = screen.getByRole("link", { name: /Take the final check/ });
+    expect(link.getAttribute("href")).toBe("/final-check");
+    expect(screen.getByText("+80")).toBeTruthy();
+  });
+
+  it("isn't shown for a lesson that didn't finish the map", () => {
+    h.done = new Set(Array.from({ length: TOTAL_LESSONS }, (_, i) => i));
+    mount(TOTAL_LESSONS, { replay: true });
+    expect(screen.queryByText("Map complete")).toBeNull();
+    expect(screen.queryByRole("link", { name: /final check/ })).toBeNull();
+    expect(screen.getByText("Lesson complete")).toBeTruthy();
   });
 });
 

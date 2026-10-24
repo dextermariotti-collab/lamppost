@@ -240,3 +240,77 @@ describe("where signing in leads", () => {
     expect(window.sessionStorage.length).toBe(0);
   });
 });
+
+describe("a redirect held for a Google or Apple sign-in that didn't finish", () => {
+  const LESSON = "/course/critical-thinking/lesson/7?part=explain";
+  const HELD = "lamppost-auth-redirect";
+  const startGoogle = async () => {
+    h.search = { redirect: LESSON };
+    await load();
+    fireEvent.click(screen.getByRole("button", { name: /already have an account/i }));
+    await act(async () => fireEvent.click(googleButton()));
+    cleanup();
+    vi.clearAllMocks();
+  };
+  const signInLater = async (search: { redirect?: string } = {}) => {
+    h.search = search;
+    h.session = { userId: "user-1", ready: true };
+    await load();
+    await waitFor(() => expect(h.navigate).toHaveBeenCalled());
+    return h.navigate.mock.calls[0]![0];
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 24, 12, 0));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("doesn't send a sign-in from Profile ten minutes later to the old lesson", async () => {
+    await startGoogle();
+    vi.setSystemTime(new Date(2026, 9, 24, 12, 10, 1));
+    expect(await signInLater()).toEqual({ to: "/", replace: true });
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+  });
+
+  it("still finishes a sign-in that comes back within those ten minutes", async () => {
+    await startGoogle();
+    vi.setSystemTime(new Date(2026, 9, 24, 12, 9));
+    expect(await signInLater()).toEqual({ href: LESSON, replace: true });
+  });
+
+  it("gives way to a redirect in the address", async () => {
+    await startGoogle();
+    expect(await signInLater({ redirect: "/progress" })).toEqual({
+      href: "/progress",
+      replace: true,
+    });
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+  });
+
+  it("is ignored when it was held by an older build, without a time", async () => {
+    window.sessionStorage.setItem(HELD, LESSON);
+    expect(await signInLater()).toEqual({ to: "/", replace: true });
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+  });
+
+  it("is dropped when they choose to keep exploring instead", async () => {
+    await startGoogle();
+    expect(window.sessionStorage.getItem(HELD)).not.toBeNull();
+    h.search = {};
+    await load();
+    fireEvent.click(screen.getByRole("button", { name: /Keep exploring without an account/ }));
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+    expect(h.navigate).toHaveBeenCalledWith({ to: "/" });
+  });
+
+  it("is dropped when Google can't be reached, and says so", async () => {
+    h.google.mockResolvedValue({ data: {}, error: new Error("offline") });
+    h.search = { redirect: LESSON };
+    await load();
+    fireEvent.click(screen.getByRole("button", { name: /already have an account/i }));
+    await act(async () => fireEvent.click(googleButton()));
+    expect(window.sessionStorage.getItem(HELD)).toBeNull();
+    expect(screen.getByText(/Google sign-in didn't complete/)).toBeTruthy();
+  });
+});

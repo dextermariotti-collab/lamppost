@@ -11,6 +11,7 @@ import { WrittenArgument } from "@/components/exercises/WrittenArgument";
 import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import {
   CURRICULUM_SLUG,
+  LESSONS,
   TOTAL_LESSONS,
   lessonPlace,
   unitById,
@@ -45,6 +46,70 @@ const resumingAtExplain = () => {
     return false;
   }
 };
+
+/**
+ * The run a signed-out learner leaves at "Explain it back" to sign in: the lesson, which were
+ * done before it, and the XP it earned. Held for the round trip so the finish afterward is the
+ * one they would have seen anyway (the line or the map completed, what it earned), not a replay.
+ * Only this, read back once, can say so: the address alone never can.
+ */
+const RUN_KEY = "lamppost-lesson-run";
+/** Older than this, a held run is from another visit and is ignored. */
+const RUN_MAX_AGE_MS = 30 * 60 * 1000;
+/** More than any one lesson pays; a bigger number wasn't written by this screen. */
+const RUN_MAX_XP = 2000;
+
+type HeldRun = { lessonId: string; doneBefore: string[]; xpEarned: number; at: number };
+
+const KNOWN_IDS = new Set(LESSONS.map((lesson) => lesson.id));
+const idsOf = (done: ReadonlySet<number>) =>
+  [...done].flatMap((i) => (LESSONS[i] ? [LESSONS[i].id] : []));
+
+function holdRun(run: HeldRun) {
+  try {
+    window.sessionStorage.setItem(RUN_KEY, JSON.stringify(run));
+  } catch {
+    /* they see a replay's finish instead */
+  }
+}
+
+function dropRun() {
+  try {
+    window.sessionStorage.removeItem(RUN_KEY);
+  } catch {
+    /* nothing held */
+  }
+}
+
+/** The held run if it is this lesson's and recent. Whatever is held is forgotten either way. */
+function takeRun(lessonId: string, now = Date.now()): HeldRun | null {
+  let raw: string | null = null;
+  try {
+    raw = window.sessionStorage.getItem(RUN_KEY);
+    window.sessionStorage.removeItem(RUN_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const run = JSON.parse(raw) as Partial<HeldRun> | null;
+    const whole = (n: unknown, max: number): n is number =>
+      typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= max;
+    if (run?.lessonId !== lessonId) return null;
+    const before = run.doneBefore;
+    const known =
+      Array.isArray(before) &&
+      before.length < TOTAL_LESSONS &&
+      before.every((id) => typeof id === "string" && id !== lessonId && KNOWN_IDS.has(id));
+    if (!known || !whole(run.xpEarned, RUN_MAX_XP)) return null;
+    if (typeof run.at !== "number" || now - run.at > RUN_MAX_AGE_MS || run.at > now + 60_000) {
+      return null;
+    }
+    return { lessonId, doneBefore: [...new Set(before)], xpEarned: run.xpEarned, at: run.at };
+  } catch {
+    return null;
+  }
+}
 
 /** What each kind of step is listed as on the finished screen. */
 const PRACTICED: Record<StepKind, string> = {
@@ -109,22 +174,57 @@ export function StepLesson({
   // whether it was the last stop on the whole map, and whether this was a replay.
   const xpAtStart = useRef<number | null>(null);
   const doneAtStart = useRef<number | null>(null);
+  const idsAtStart = useRef<ReadonlySet<string> | null>(null);
   const wasDone = useRef(false);
   const xpNow = useRef(state.xp);
   const doneNow = useRef(doneLessons);
   xpNow.current = state.xp;
   doneNow.current = doneLessons;
-  useEffect(() => {
-    if (!hydrated) return;
-    xpAtStart.current = xpNow.current;
-    doneAtStart.current = doneNow.current.size;
-    wasDone.current = doneNow.current.has(position);
-    if (wasDone.current && resumingAtExplain()) setPhase("explain");
-  }, [hydrated, meta.id, position]);
 
   // The lesson counts as soon as the writing is graded or skipped, so leaving at "Explain it
   // back" (to sign in, say) never loses it. Once, however many ways the learner gets there.
   const recorded = useRef(false);
+
+  /** What was held for this lesson when it opened, read once however often the effect runs. */
+  const heldRun = useRef<{ lessonId: string; run: HeldRun | null } | null>(null);
+  useEffect(() => {
+    if (!hydrated) return;
+    if (heldRun.current?.lessonId !== meta.id) {
+      heldRun.current = { lessonId: meta.id, run: takeRun(meta.id) };
+    }
+    const run = heldRun.current.run;
+    const done = doneNow.current.has(position);
+    if (run && done && resumingAtExplain() && run.doneBefore.length < doneNow.current.size) {
+      // Back from signing in, part way through the run that recorded this lesson: it finishes
+      // as that run, not as a replay.
+      xpAtStart.current = Math.max(xpNow.current - run.xpEarned, 0);
+      doneAtStart.current = run.doneBefore.length;
+      idsAtStart.current = new Set(run.doneBefore);
+      wasDone.current = false;
+      recorded.current = true;
+      setPhase("explain");
+      return;
+    }
+    xpAtStart.current = xpNow.current;
+    doneAtStart.current = doneNow.current.size;
+    idsAtStart.current = new Set(idsOf(doneNow.current));
+    wasDone.current = done;
+    if (wasDone.current && resumingAtExplain()) setPhase("explain");
+  }, [hydrated, meta.id, position]);
+
+  // Signed out at "Explain it back", the tutor card's way on may be signing in: hold this run
+  // for the way back, kept up to date with what it has earned.
+  useEffect(() => {
+    if (phase !== "explain" || userId || wasDone.current || !recorded.current) return;
+    if (xpAtStart.current === null || idsAtStart.current === null) return;
+    holdRun({
+      lessonId: meta.id,
+      doneBefore: [...idsAtStart.current],
+      xpEarned: Math.max(state.xp - xpAtStart.current, 0),
+      at: Date.now(),
+    });
+  }, [phase, userId, state.xp, meta.id]);
+
   const recordLesson = () => {
     if (recorded.current) return;
     recorded.current = true;
@@ -182,6 +282,7 @@ export function StepLesson({
   const finishLesson = () => {
     if (completing || phase === "finished") return;
     recordLesson();
+    dropRun();
     setCompleting(true);
     window.setTimeout(() => {
       setCompleting(false);
@@ -197,8 +298,16 @@ export function StepLesson({
     answered > 0
       ? Math.round((gradedResults.reduce((sum, r) => sum + r.score, 0) / answered) * 100)
       : 0;
+  // A lesson done now that wasn't when this run began, other than this one, came from the account
+  // (signing in brings the other devices' lessons): the finish then speaks for this lesson only,
+  // never for a line or a map this run didn't complete.
+  const before = idsAtStart.current;
+  const fromElsewhere =
+    before !== null && idsOf(doneLessons).some((id) => id !== meta.id && !before.has(id));
+
   /** This lesson is the last one left on the map, so finishing it finishes the course. */
   const lastStop =
+    !fromElsewhere &&
     (doneAtStart.current ?? TOTAL_LESSONS) < TOTAL_LESSONS &&
     Array.from({ length: TOTAL_LESSONS }, (_, i) => i).every(
       (i) => i === position || doneLessons.has(i),
@@ -225,9 +334,11 @@ export function StepLesson({
         takeaway={script.takeaway}
         tryIt={notes?.tryIt}
         mapComplete={
-          doneLessons.size >= TOTAL_LESSONS && (doneAtStart.current ?? 0) < TOTAL_LESSONS
+          !fromElsewhere &&
+          doneLessons.size >= TOTAL_LESSONS &&
+          (doneAtStart.current ?? 0) < TOTAL_LESSONS
         }
-        replay={wasDone.current}
+        replay={wasDone.current || fromElsewhere}
       />
     );
   }

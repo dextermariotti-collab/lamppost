@@ -10,7 +10,7 @@ import { readDraft, syncDraftAfterSignIn, useSessionUser } from "@/lib/companion
 import { DEFAULT_COMPANION, companionName } from "@/lib/companions";
 import { clearPendingConsent, stashPendingConsent } from "@/lib/consent";
 import { supabase } from "@/integrations/supabase/client";
-import { startOAuth, type OAuthProvider } from "@/lib/oauth";
+import { safeRedirect, startOAuth, takeHeldRedirect, type OAuthProvider } from "@/lib/oauth";
 import { publicUrl } from "@/lib/platform";
 
 export const Route = createFileRoute("/auth")({
@@ -33,32 +33,6 @@ export const Route = createFileRoute("/auth")({
   component: AuthScreen,
 });
 
-/** Held across the Google or Apple round trip, which comes back to /auth without the query. */
-const REDIRECT_KEY = "lamppost-auth-redirect";
-
-/**
- * Where to go once signed in: a path on this site, or home. "//host" and "/\host" are read by
- * browsers as another site, and stray control characters can turn a path into one, so anything
- * that isn't plainly a local path is ignored.
- */
-function safeRedirect(value: unknown): string | null {
-  if (typeof value !== "string" || !value.startsWith("/")) return null;
-  if (value.startsWith("//") || value.startsWith("/\\")) return null;
-  // eslint-disable-next-line no-control-regex
-  if (/[\\\u0000-\u001f\u007f\s]/.test(value)) return null;
-  return value;
-}
-
-function takeStashedRedirect(): string | null {
-  try {
-    const stashed = window.sessionStorage.getItem(REDIRECT_KEY);
-    window.sessionStorage.removeItem(REDIRECT_KEY);
-    return safeRedirect(stashed);
-  } catch {
-    return null;
-  }
-}
-
 function AuthScreen() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
@@ -79,7 +53,10 @@ function AuthScreen() {
   // Once a session exists, attach the onboarding pick to the account.
   useEffect(() => {
     if (!ready || !userId) return;
-    const target = takeStashedRedirect() ?? redirectTo;
+    // A redirect in the address is this visit's own; the held one is only for the web's return
+    // from Google or Apple, which drops the query. It is forgotten either way.
+    const held = takeHeldRedirect();
+    const target = redirectTo ?? held;
     void syncDraftAfterSignIn(userId)
       .catch(() => undefined)
       .then(() =>
@@ -128,17 +105,9 @@ function AuthScreen() {
       if (!consent.claim) return;
       stashPendingConsent(consent.claim);
     }
-    if (redirectTo) {
-      try {
-        window.sessionStorage.setItem(REDIRECT_KEY, redirectTo);
-      } catch {
-        /* they land on home instead */
-      }
-    }
-    const { error: err } = await startOAuth(provider);
+    const { error: err } = await startOAuth(provider, redirectTo);
     if (err) {
       clearPendingConsent();
-      takeStashedRedirect();
       setError(`${provider === "apple" ? "Apple" : "Google"} sign-in didn't complete. Try again.`);
     }
   };
@@ -286,7 +255,10 @@ function AuthScreen() {
         </p>
 
         <button
-          onClick={() => (redirectTo ? navigate({ href: redirectTo }) : navigate({ to: "/" }))}
+          onClick={() => {
+            takeHeldRedirect();
+            void (redirectTo ? navigate({ href: redirectTo }) : navigate({ to: "/" }));
+          }}
           className="mt-auto pt-6 text-xs font-bold text-muted-foreground"
         >
           Keep exploring without an account
