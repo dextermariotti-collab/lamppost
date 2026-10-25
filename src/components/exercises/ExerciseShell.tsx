@@ -26,7 +26,7 @@ export function ExerciseShell({
   footer?: ReactNode | undefined;
 }) {
   return (
-    <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card">
+    <section className="mt-5 animate-rise-in rounded-3xl bg-card p-5 shadow-card [--sticky-fill:var(--card)]">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[11px] font-semibold text-primary-text">{EXERCISE_LABEL[kind]}</p>
         {showCount && total > 1 ? (

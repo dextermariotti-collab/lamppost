@@ -741,12 +741,24 @@
   --inset-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
 
-/* Primary action stays reachable on long passages (lessons, reviews, challenge). */
+/*
+ * The one action pinned to the bottom of a screen (Continue, Submit, Next drill), so it stays in
+ * reach on long passages. It stops above the home indicator, and the color behind it fills the
+ * space around it out to the screen's side margins and down to the bottom edge, so nothing that
+ * scrolls underneath shows beside or below it. The fill is solid box-shadows, not a visible
+ * shadow, so it works on a wrapper or on the button itself; inside a card, the card sets
+ * --sticky-fill to its own color.
+ */
 .sticky-action {
+  --fill: var(--sticky-fill, var(--background));
   position: sticky;
   bottom: calc(var(--inset-bottom) + 12px);
   z-index: 20;
-  box-shadow: none;
+  box-shadow:
+    0 0 0 12px var(--fill),
+    -8px 0 0 12px var(--fill),
+    8px 0 0 12px var(--fill),
+    0 var(--inset-bottom) 0 12px var(--fill);
 }
 
 /*
