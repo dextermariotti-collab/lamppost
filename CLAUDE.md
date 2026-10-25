@@ -4,9 +4,8 @@ Lamppost is a critical-thinking trainer: a fixed 7-unit / 35-lesson curriculum, 
 interactive steps (ending on a harder real-world case) → the idea in full (the lesson's notes) → a
 graded written argument → an "explain it back" tutor chat. It is a **mobile app for iOS and Android**
 (Capacitor, `docs/mobile.md`) and a website, from one codebase: the screens are a 420px "phone frame"
-that also runs on desktop. It was started in Lovable and moved off it in October 2026: it builds with
-plain Vite, the backend deploys to Cloudflare Workers, and it uses a Supabase project and a Gemini
-API key of its own (`docs/deploy.md`).
+that also runs on desktop. It builds with plain Vite, the backend deploys to Cloudflare Workers, and it
+uses a Supabase project and a Gemini API key of its own (`docs/deploy.md`).
 
 ## Read this first
 
@@ -24,7 +23,7 @@ API key of its own (`docs/deploy.md`).
 - **Migrations** live in `supabase/migrations/` only. The Supabase workflow (`.github/workflows/supabase.yml`)
   applies new ones in order when they are pushed, and `npm run db:push` does the same by hand. Add
   new SQL there with a later timestamp than the newest file. The four `20260920…` files are the
-  former `drizzle/migrations`, folded in at the point Lovable used to apply them.
+  former `drizzle/migrations`, folded in at the point they were first applied.
 
 ## Commands
 

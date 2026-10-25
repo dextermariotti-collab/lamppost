@@ -127,8 +127,8 @@ real schema once the migrations are applied (`docs/deploy.md`).
 
 **Can't verify from here:**
 - [x] `src/assets/fox-mascot.png` and `src/assets/ai-bot.png` (unused, of unknown origin) were deleted, and
-      `public/favicon.ico` (Lovable's logo) was replaced by the app's own lamp mark, when the app moved
-      off Lovable. The companions, badges and illustrations in the app are drawn in code.
+      `public/favicon.ico` (a placeholder logo) was replaced by the app's own lamp mark, when the app moved
+      to its own build and hosting. The companions, badges and illustrations in the app are drawn in code.
 - [ ] The lessons were drafted with AI assistance and checked by tests, not by a person. Have someone read them
       for facts and tone; the worked figures (base rates, expected value) were checked by hand.
 
@@ -378,29 +378,29 @@ The full write-up, with the roadmap in order, is `docs/architecture.md`. In shor
   - Decide on roadmap 1 (reviews served from the authored steps, retiring the old AI drill pipeline).
     It's the biggest simplification left, and it removes most of the AI cost.
 
-## Follow-up: off Lovable
+## Follow-up: its own build and hosting
 
-The app no longer depends on Lovable for anything. It builds with an ordinary Vite config, deploys
+The app no longer depends on a hosted builder for anything. It builds with an ordinary Vite config, deploys
 to Cloudflare Workers, and uses a Supabase project and a Gemini API key that you own. The step-by-step
 setup is in `docs/deploy.md`.
 
-- **Build.** Lovable's Vite wrapper is replaced by an explicit `vite.config.ts`. The production
+- **Build.** The builder's Vite wrapper is replaced by an explicit `vite.config.ts`. The production
   build came out the same as before: the same files and the same main bundle, to the byte. The built
   worker was run in Cloudflare's local runtime: every page rendered and hydrated in a browser, and
   secrets reached the server code.
-- **Sign-in.** "Continue with Google" used Lovable's sign-in broker; it now uses Supabase's own
+- **Sign-in.** "Continue with Google" used a hosted sign-in broker; it now uses Supabase's own
   Google sign-in, which needs a Google OAuth client set up in your Supabase project (`docs/deploy.md`,
   step 2). Checked in a browser: the button goes straight to the Supabase project and back to `/auth`.
   Email sign-up is unchanged.
-- **AI.** The Lovable AI Gateway is replaced by Google's Gemini API directly, with the same models.
+- **AI.** The hosted AI gateway is replaced by Google's Gemini API directly, with the same models.
   The key is now `AI_API_KEY`, and `AI_BASE_URL` switches to any OpenAI-compatible service. I couldn't
   call Google from here, so a test checks the exact request instead.
-- **Database.** The two migration folders are now one: the four drizzle migrations Lovable applied
+- **Database.** The two migration folders are now one: the four drizzle migrations that were applied
   separately are in `supabase/migrations`, in the same order, so `npm run db:push` builds the whole
   database. All the database tests pass against it.
 - **Removed:**
-  - Lovable's packages, its preview login storage and error reporting.
-  - `bun.lock` (it pointed at Lovable's private package mirror), the stale `package-lock.json` and
+  - The builder's packages, its preview login storage and error reporting.
+  - `bun.lock` (it pointed at a private package mirror), the stale `package-lock.json` and
     drizzle.
 - **Added:**
   - A fresh `package-lock.json` from the public npm registry, so CI now runs `npm ci`.
@@ -409,15 +409,15 @@ setup is in `docs/deploy.md`.
 - **Fixed on the way:**
   - The server functions used a validator call that newer TanStack Start deprecates (33 places).
   - Lint now passes on the whole project, and CI runs it.
-- **The privacy policy** now names Supabase, Cloudflare and Google's Gemini API instead of Lovable.
-- **Icon.** The browser-tab icon was Lovable's logo; it is now the app's own lamp mark
+- **The privacy policy** now names Supabase, Cloudflare and Google's Gemini API instead of the previous host.
+- **Icon.** The browser-tab icon was a placeholder logo; it is now the app's own lamp mark
   (`public/favicon.svg`, with a matching `favicon.ico`). Two unused images of unknown origin are gone.
 - **Needs you:**
   - Create the Supabase project, Google OAuth client, Gemini key and Cloudflare account, then follow
     `docs/deploy.md`.
-  - Decide how people move over. If the app was on a `lovable.app` address, a new address starts
+  - Decide how people move over. If the app was on the old hosted address, a new address starts
     every browser fresh. Signed-in learners get XP, streak and finished lessons back; reviews and
-    ratings stay on the old address. If Lovable can give you a database export, accounts can come
+    ratings stay on the old address. If the previous host can give you a database export, accounts can come
     across too (`docs/deploy.md`, "Moving people over").
   - The processors in the privacy policy changed. Decide whether that's something people should be
     asked to accept again (bump `PRIVACY_VERSION`). Settle the Gemini `[CONFIRM]` note: use a key from
@@ -477,7 +477,7 @@ Not legal advice; check against the live app before submitting.
 | User content: other user content | Yes (written arguments, tutor chat, debate answers) | Yes | App functionality (sent to an AI provider to reply) |
 | Usage data: product interaction | Yes (lessons, XP, streak, daily activity) | Yes | App functionality |
 | Other: age band (13-17 / 18+) | Yes | Yes | App functionality, legal compliance |
-| Diagnostics | No (Lovable's error reporting was removed with the move off Lovable) | n/a | n/a |
+| Diagnostics | No (the old error reporting was removed when the app moved to its own hosting) | n/a | n/a |
 | Purchases | No (payments not live) | n/a | n/a |
 | Location, contacts, health, financial, browsing or search history, sensitive info | No | n/a | n/a |
 

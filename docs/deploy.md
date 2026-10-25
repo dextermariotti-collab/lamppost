@@ -1,7 +1,6 @@
 # Running Lamppost yourself
 
-Lamppost used to be hosted, built and given its database by Lovable. It now runs on three services
-you own the accounts for:
+Lamppost runs on three services you own the accounts for:
 
 | Part | Service | What it needs from you |
 | --- | --- | --- |
@@ -65,7 +64,7 @@ ignored by git: never commit it.
    - `https://YOUR-DOMAIN`
    - `https://YOUR-DOMAIN/auth`
    - `http://localhost:8080` and `http://localhost:8080/auth` for local development
-4. **Google sign-in** (Lovable used to broker this). In Google Cloud Console create an OAuth client
+4. **Google sign-in.** In Google Cloud Console create an OAuth client
    (type "Web application") with the authorized redirect URI
    `https://YOUR-PROJECT-REF.supabase.co/auth/v1/callback`. Then paste its client ID and secret
    into **Authentication → Sign In / Providers → Google** and turn the provider on. Until you do,
@@ -142,19 +141,19 @@ Each call writes up to `limit` lessons (3 if you leave it out, 6 at most) and an
 `failed`, the worker's logs say why (`docs/incident.md`). Without `WARM_TOKEN` set on the worker, the
 endpoint answers 503.
 
-## Moving people over from Lovable Cloud
+## Moving people over from a previous host
 
 - **Keep the same web address if you can.** Lamppost is local-first: a learner's progress lives in
   their browser's storage for the site's address. If the app was on your own domain, point that
-  domain at Cloudflare and nothing on anyone's device is lost. If it was on a `lovable.app`
+  domain at Cloudflare and nothing on anyone's device is lost. If it was on the previous host's
   address, a new address starts every browser fresh, and only signed-in learners get their
   numbers back (XP, streak and finished lessons sync; reviews and skill ratings are device-only).
 - **Accounts and data.** The new Supabase project starts empty. If you can get a database export
-  from Lovable (including the `auth` schema), restore it into the new project instead of running
+  from the previous host (including the `auth` schema), restore it into the new project instead of running
   `db:push`, then mark the migrations as applied so later ones run on top:
   `npx supabase@2.118.0 migration repair --status applied <version> …` for every file in
   `supabase/migrations`. The four `20260920…` files are the former `drizzle/migrations`, which
-  Lovable applied separately; they are already in any export. Without an export, people sign up
+  were applied separately; they are already in any export. Without an export, people sign up
   again. A device's own progress carries into the new account on its first sync.
-- The previous Lovable Cloud project's public URL and key are still in the git history
+- The previous project's public URL and key are still in the git history
   (`.env` before October 2026), in case you need them during the move.

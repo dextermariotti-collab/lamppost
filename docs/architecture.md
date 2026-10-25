@@ -98,5 +98,5 @@ the learning state. None of it blocks new features, but each gets more expensive
 8. **Decide on the retired economy.** Gems, carry-over and hint tokens still travel in every sync so
    that accounts stay consistent. If they are not coming back, one migration (with a rollback) can
    drop the columns and tables and shrink the sync payload.
-9. ~~**Lint in CI.**~~ Done when the app moved off Lovable: generated files are ignored, the rest is
+9. ~~**Lint in CI.**~~ Done when the app moved to its own build: generated files are ignored, the rest is
    formatted, and CI runs `npm run lint`.

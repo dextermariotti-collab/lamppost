@@ -1,4 +1,4 @@
--- Formerly drizzle/migrations/0001_create_argument_attempts.sql, which Lovable applied with drizzle-kit between the
+-- Formerly drizzle/migrations/0001_create_argument_attempts.sql, which was applied with drizzle-kit between the
 -- 2026-09-07 and 2026-09-28 Supabase migrations. Kept unchanged, in that same order.
 
 CREATE TABLE public.argument_attempts (

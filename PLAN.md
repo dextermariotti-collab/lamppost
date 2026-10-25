@@ -1,6 +1,6 @@
 # PLAN — revamp/interactive-legal
 
-> This is the October 2026 revamp plan, kept for history. Parts of it (the Lovable AI Gateway,
+> This is the October 2026 revamp plan, kept for history. Parts of it (the hosted AI gateway,
 > the open PR chain) no longer describe the app: see `SUMMARY.md` and `docs/architecture.md`.
 
 Written before any code was changed. It says what exists, what I will change, and the calls I am
@@ -22,8 +22,8 @@ actually happened and where it differs from this.
 ## 1. What exists today
 
 **Stack.** TanStack Start (React 19, file routes, `createServerFn`), Tailwind v4 tokens in
-`src/styles.css`, shadcn/Radix primitives, Supabase (auth + Postgres + RLS), Vercel AI SDK to the
-Lovable AI Gateway. Local-first: everything works signed out from `localStorage`; signed-in accounts
+`src/styles.css`, shadcn/Radix primitives, Supabase (auth + Postgres + RLS), Vercel AI SDK to a
+hosted AI gateway. Local-first: everything works signed out from `localStorage`; signed-in accounts
 sync through server functions that use the service-role client (never shipped to the browser).
 
 **Curriculum.** `src/lib/curriculum.ts`: 7 units, 35 lessons, each with `keyIdea`, `trap`, a drill
@@ -52,8 +52,8 @@ Problems found:
 - Contact addresses (`privacy@lamppost.app`, `legal@…`, `safety@…`) are invented facts.
 - Terms has no age requirement, no governing-law placeholder, no change-notification clause.
 - No third-party list beyond "our backend provider"; Google Fonts is loaded from Google's servers
-  (IP address shared) and is not disclosed; Lovable Cloud auth, the Lovable AI Gateway and Lovable's
-  editor error reporting are not named.
+  (IP address shared) and is not disclosed; the hosted sign-in, the hosted AI gateway and the editor's
+  error reporting are not named.
 - `auth.tsx` says "By continuing you agree…" (no checkbox, nothing stored), has no age gate.
 - `settings.tsx` already has "Export my data" and "Delete my account" with a typed confirmation, backed
   by `account-data.functions.ts` (`exportMyData`, `deleteMyAccount`; server-side, service role, ten
@@ -75,7 +75,7 @@ public table" as a test, which I will add.
 
 **Assets/licences.** Fonts: Caveat, DM Sans, Lora, Nunito Sans, Space Grotesk via Google Fonts (all
 SIL OFL). Icons: `lucide-react` (ISC). Images: `src/assets/fox-mascot.png`, `ai-bot.png` (unused by
-any code; committed by Lovable's AI bot, so AI-generated; provenance/licence unverifiable),
+any code; committed by an AI tool, so AI-generated; provenance/licence unverifiable),
 `public/favicon.ico` (unknown origin). The companion mascots are drawn in code (`CompanionAvatar`),
 which is original.
 
@@ -95,8 +95,8 @@ then the rest.
    document reads from it. Invented contact addresses go away.
 2. **Privacy Policy** rewritten in plain English against the code as it is: data by category (account,
    profile, learning progress, friends, what is sent to AI, technical/security data), why, the real
-   processors (Supabase/Lovable Cloud for database and sign-in, Lovable AI Gateway and the model
-   providers behind it, Google Sign-In, Google Fonts, Lovable's editor error reporting), retention,
+   processors (Supabase for database and sign-in, the hosted AI gateway and the model
+   providers behind it, Google Sign-In, Google Fonts, the editor's error reporting), retention,
    deletion, children, rights, contact. Analytics: none exists, and it says so.
 3. **Terms of Service** rewritten: acceptable use, age requirements, AI disclaimer, educational-use-only,
    no warranty, limitation of liability, termination, how changes are communicated, governing law

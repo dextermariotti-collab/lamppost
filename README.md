@@ -22,8 +22,7 @@ and adds friends.
   signed out, and progress is kept in the browser. Sign-in, sync, friends and the AI features need
   the real services described in `docs/deploy.md`, and won't work until they're set up.
 - **Run the tests:** `npm test` (CI also runs `npm run typecheck` and `npm run lint`).
-- **How it was built:** with AI coding tools, under the author's direction: Lovable for the first
-  prototype, then Claude Code.
+- **How it was built:** with AI coding tools, under the author's direction.
 
 ## Run it
 
