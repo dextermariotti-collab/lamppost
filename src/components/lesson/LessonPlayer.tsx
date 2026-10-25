@@ -20,12 +20,15 @@ export function LessonPlayer({
   onComplete,
   finalLabel = "Continue",
   intro,
+  aboveAction,
   unitId,
   stopUnits,
 }: {
   steps: readonly LessonStep[];
   /** Shown above the first step only. */
   intro?: ReactNode;
+  /** Shown under the step and above Continue, which stays the last thing on the screen. */
+  aboveAction?: ReactNode;
   /** The unit, so progress is drawn in its line color. */
   unitId?: string;
   /** For steps from different units (a daily case): each step's unit, for its stop's color. */
@@ -89,6 +92,7 @@ export function LessonPlayer({
           />
         </div>
 
+        {aboveAction}
         <div className="sticky-action mt-6">
           <Button
             ref={continueRef}

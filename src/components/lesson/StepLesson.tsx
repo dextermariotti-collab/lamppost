@@ -313,6 +313,19 @@ export function StepLesson({
       (i) => i === position || doneLessons.has(i),
     );
 
+  // Above the pinned Continue where a part has one, so nothing sits below that bar.
+  const report = (
+    <ReportContentButton
+      context={{
+        courseSlug: CURRICULUM_SLUG,
+        courseTopic: course.topic,
+        lessonIndex: lessonNumber,
+        lessonTitle: meta.title,
+        excerpt: meta.keyIdea,
+      }}
+    />
+  );
+
   if (phase === "finished") {
     const practiced = Array.from(
       new Set(
@@ -376,6 +389,7 @@ export function StepLesson({
             onStepResolved={handleStepResolved}
             onComplete={() => setPhase(notes ? "notes" : "write")}
             finalLabel={notes ? "Read the idea in full" : "On to the writing"}
+            aboveAction={<div className="mt-4">{report}</div>}
             intro={
               notes && (
                 <p className="-mt-1 px-5 pb-3 text-sm leading-relaxed text-muted-foreground">
@@ -401,7 +415,8 @@ export function StepLesson({
                   ? "These notes stay on My Path, next to the lesson, for whenever you want them again."
                   : "Finish the lesson and these notes stay on My Path, next to it, for whenever you want them again."}
               </p>
-              <div className="sticky-action mt-4">
+              <div className="mt-4">{report}</div>
+              <div className="sticky-action mt-2">
                 <Button
                   onClick={() => setPhase("write")}
                   className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
@@ -490,17 +505,7 @@ export function StepLesson({
         </div>
       )}
 
-      <div className="px-5 pb-6">
-        <ReportContentButton
-          context={{
-            courseSlug: CURRICULUM_SLUG,
-            courseTopic: course.topic,
-            lessonIndex: lessonNumber,
-            lessonTitle: meta.title,
-            excerpt: meta.keyIdea,
-          }}
-        />
-      </div>
+      {(phase === "write" || phase === "explain") && <div className="px-5 pb-6">{report}</div>}
 
       {completing && (
         <div

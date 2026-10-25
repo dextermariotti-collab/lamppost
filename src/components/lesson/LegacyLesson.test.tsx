@@ -389,6 +389,19 @@ describe("LegacyLesson's answer banner", () => {
   });
 });
 
+describe("LegacyLesson's pinned bar", () => {
+  it("pins only Continue, once there is something to continue to, as the last thing on screen", () => {
+    const { container } = render(<LegacyLesson lessonNumber={1} />);
+    click(/Start training/);
+    expect(container.querySelector(".sticky-action")).toBeNull();
+    click("Answer the drill");
+    const bars = container.querySelectorAll(".sticky-action");
+    expect(bars).toHaveLength(1);
+    expect(bars[0]!.querySelectorAll("button")).toHaveLength(1);
+    expect(bars[0]!.nextElementSibling).toBeNull();
+  });
+});
+
 describe("LegacyLesson's rewards", () => {
   it("holds badges and level-ups back until the finish board, as the authored lessons do", () => {
     vi.useFakeTimers();

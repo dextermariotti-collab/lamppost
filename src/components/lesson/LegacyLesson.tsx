@@ -673,25 +673,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           </div>
         )}
 
-        {/* On the writing page the Submit button is the one pinned bar, so this one scrolls. */}
-        <div className={onWritten ? "mt-6" : "sticky-action mt-6"}>
-          {/* Hidden until the drill is answered, so the card isn't cluttered. Signed out, the
-              tutor card's own "Finish the lesson" is the way on from the summary. */}
-          {canContinue && !(onSummary && !userId) && (
-            <Button
-              onClick={() => {
-                if (onSummary) return finishLesson();
-                if (page + 1 === summaryPage) recordLesson();
-                setPage((p) => p + 1);
-              }}
-              disabled={completing}
-              className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
-            >
-              {nextLabel}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
-
+        <div className="mt-6">
           {onExercise &&
             hasWrittenPage &&
             exercises.length > 3 &&
@@ -700,7 +682,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
               <button
                 type="button"
                 onClick={() => setPage(writtenPage)}
-                className="mt-3 h-10 w-full rounded-sm text-sm font-bold text-primary-text"
+                className="h-10 w-full rounded-sm text-sm font-bold text-primary-text"
               >
                 You've got this — skip ahead to the written task
               </button>
@@ -730,6 +712,26 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
             </button>
           )}
         </div>
+
+        {/* Hidden until the drill is answered, so the card isn't cluttered. Signed out, the tutor
+            card's own "Finish the lesson" is the way on from the summary. It is the last thing on
+            the screen; on the writing page the Submit button is the pinned one, so this scrolls. */}
+        {canContinue && !(onSummary && !userId) && (
+          <div className={onWritten ? "mt-4" : "sticky-action mt-4"}>
+            <Button
+              onClick={() => {
+                if (onSummary) return finishLesson();
+                if (page + 1 === summaryPage) recordLesson();
+                setPage((p) => p + 1);
+              }}
+              disabled={completing}
+              className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
+            >
+              {nextLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {completing && (

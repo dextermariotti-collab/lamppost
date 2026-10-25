@@ -83,7 +83,9 @@ vi.mock("@/components/PhoneFrame", () => ({
 vi.mock("@/components/ScreenHeader", () => ({
   ScreenHeader: ({ right }: { right?: ReactNode }) => <header>{right}</header>,
 }));
-vi.mock("@/components/ReportContentButton", () => ({ ReportContentButton: () => null }));
+vi.mock("@/components/ReportContentButton", () => ({
+  ReportContentButton: () => <span>Report this content</span>,
+}));
 vi.mock("./NotesView", () => ({
   NotesView: () => <div>The idea in full, written out.</div>,
   TryItCard: () => null,
@@ -106,12 +108,15 @@ vi.mock("./LessonPlayer", () => ({
     steps,
     onStepResolved,
     onComplete,
+    aboveAction,
   }: {
     steps: LessonStep[];
     onStepResolved: (index: number, step: LessonStep, result: StepResult) => void;
     onComplete: () => void;
+    aboveAction?: ReactNode;
   }) => (
     <div>
+      <div data-testid="above-continue">{aboveAction}</div>
       {steps.map((step, i) => (
         <span key={step.id}>
           <button onClick={() => onStepResolved(i, step, result(1))}>first try {i}</button>
@@ -430,6 +435,24 @@ describe("StepLesson after leaving Explain it back to sign in", () => {
     expect(held()?.lessonId).toBe(LESSONS[2]!.id);
     click("Card: finish the lesson");
     expect(window.sessionStorage.getItem(RUN)).toBeNull();
+  });
+});
+
+describe("StepLesson's pinned bars", () => {
+  it("puts the report link above Continue during the steps, not below it", () => {
+    mount(1);
+    expect(screen.getByTestId("above-continue").textContent).toBe("Report this content");
+    expect(screen.getAllByText("Report this content")).toHaveLength(1);
+  });
+
+  it("keeps the notes' pinned bar the last thing on the screen", () => {
+    mount(1, notes);
+    toWriting();
+    const bar = screen.getByRole("button", { name: /On to the writing/ }).parentElement!;
+    expect(bar.classList.contains("sticky-action")).toBe(true);
+    expect(bar.nextElementSibling).toBeNull();
+    expect(bar.previousElementSibling?.textContent).toBe("Report this content");
+    expect(screen.getAllByText("Report this content")).toHaveLength(1);
   });
 });
 

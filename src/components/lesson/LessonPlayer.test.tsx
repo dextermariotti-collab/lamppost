@@ -25,6 +25,20 @@ describe("LessonPlayer", () => {
     expect(bar.className).not.toMatch(/\bbottom-\d/);
   });
 
+  it("keeps Continue the last thing on the screen, with anything else above it", () => {
+    render(
+      <LessonPlayer
+        steps={steps}
+        aboveAction={<p>Report this content</p>}
+        onStepResolved={vi.fn()}
+        onComplete={vi.fn()}
+      />,
+    );
+    const bar = screen.getByRole("button", { name: /continue/i }).parentElement!;
+    expect(bar.nextElementSibling).toBeNull();
+    expect(bar.previousElementSibling?.textContent).toBe("Report this content");
+  });
+
   it("moves the keyboard to Continue when answering leaves focus on a control that just closed", () => {
     render(<LessonPlayer steps={[choiceSample]} onStepResolved={vi.fn()} onComplete={vi.fn()} />);
     const answer = screen.getByRole("button", { name: /^The pool should open later/ });
