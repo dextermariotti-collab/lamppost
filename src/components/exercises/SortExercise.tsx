@@ -95,20 +95,22 @@ export function SortExerciseCard({
       </div>
 
       {!answered ? (
-        <Button
-          type="button"
-          disabled={!allPicked}
-          onClick={() =>
-            onAnswer(
-              picks,
-              exercise.statements.filter((s, i) => picks[String(i)] === s.bucket).length /
-                exercise.statements.length,
-            )
-          }
-          className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
-        >
-          Check my sort
-        </Button>
+        <div className="sticky-action mt-4">
+          <Button
+            type="button"
+            disabled={!allPicked}
+            onClick={() =>
+              onAnswer(
+                picks,
+                exercise.statements.filter((s, i) => picks[String(i)] === s.bucket).length /
+                  exercise.statements.length,
+              )
+            }
+            className="h-11 w-full rounded-sm font-semibold"
+          >
+            Check my sort
+          </Button>
+        </div>
       ) : (
         <ExerciseFeedback
           correct={correctCount === exercise.statements.length}

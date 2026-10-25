@@ -389,7 +389,7 @@ export function StepLesson({
             onStepResolved={handleStepResolved}
             onComplete={() => setPhase(notes ? "notes" : "write")}
             finalLabel={notes ? "Read the idea in full" : "On to the writing"}
-            aboveAction={<div className="mt-4">{report}</div>}
+            aboveAction={report}
             intro={
               notes && (
                 <p className="-mt-1 px-5 pb-3 text-sm leading-relaxed text-muted-foreground">
@@ -415,7 +415,7 @@ export function StepLesson({
                   ? "These notes stay on My Path, next to the lesson, for whenever you want them again."
                   : "Finish the lesson and these notes stay on My Path, next to it, for whenever you want them again."}
               </p>
-              <div className="mt-4">{report}</div>
+              {report}
               <div className="sticky-action mt-2">
                 <Button
                   onClick={() => setPhase("write")}

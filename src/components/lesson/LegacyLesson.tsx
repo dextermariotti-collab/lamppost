@@ -471,6 +471,26 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
     );
   }
 
+  // Hidden until the drill is answered, so the card isn't cluttered. Signed out, the tutor card's
+  // own "Finish the lesson" is the way on from the summary. Pinned, it is the last thing on the
+  // screen; on the writing page Submit is the pinned one, so this scrolls and comes first.
+  const continueBar = canContinue && !(onSummary && !userId) && (
+    <div className={onWritten ? "mt-4" : "sticky-action mt-4"}>
+      <Button
+        onClick={() => {
+          if (onSummary) return finishLesson();
+          if (page + 1 === summaryPage) recordLesson();
+          setPage((p) => p + 1);
+        }}
+        disabled={completing}
+        className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
+      >
+        {nextLabel}
+        <ArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
   return (
     <PhoneFrame showNav={false}>
       <ScreenHeader
@@ -673,6 +693,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           </div>
         )}
 
+        {onWritten && continueBar}
         <div className="mt-6">
           {onExercise &&
             hasWrittenPage &&
@@ -713,25 +734,7 @@ export function LegacyLesson({ lessonNumber }: { lessonNumber: number }) {
           )}
         </div>
 
-        {/* Hidden until the drill is answered, so the card isn't cluttered. Signed out, the tutor
-            card's own "Finish the lesson" is the way on from the summary. It is the last thing on
-            the screen; on the writing page the Submit button is the pinned one, so this scrolls. */}
-        {canContinue && !(onSummary && !userId) && (
-          <div className={onWritten ? "mt-4" : "sticky-action mt-4"}>
-            <Button
-              onClick={() => {
-                if (onSummary) return finishLesson();
-                if (page + 1 === summaryPage) recordLesson();
-                setPage((p) => p + 1);
-              }}
-              disabled={completing}
-              className="h-12 w-full animate-pop-in rounded-sm bg-hero-gradient text-base font-semibold shadow-card transition-transform enabled:hover:scale-[1.02] enabled:active:scale-95"
-            >
-              {nextLabel}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {!onWritten && continueBar}
       </div>
 
       {completing && (

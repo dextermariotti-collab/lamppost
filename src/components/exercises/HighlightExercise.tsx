@@ -82,24 +82,26 @@ export function HighlightExerciseCard({
       </div>
 
       {!answered ? (
-        <Button
-          type="button"
-          disabled={picked.length === 0}
-          onClick={() =>
-            onAnswer(
-              picked,
-              Math.max(
-                0,
-                (picked.filter((i) => targets.has(i)).length -
-                  picked.filter((i) => !targets.has(i)).length) /
-                  exercise.targets.length,
-              ),
-            )
-          }
-          className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
-        >
-          Check my picks
-        </Button>
+        <div className="sticky-action mt-4">
+          <Button
+            type="button"
+            disabled={picked.length === 0}
+            onClick={() =>
+              onAnswer(
+                picked,
+                Math.max(
+                  0,
+                  (picked.filter((i) => targets.has(i)).length -
+                    picked.filter((i) => !targets.has(i)).length) /
+                    exercise.targets.length,
+                ),
+              )
+            }
+            className="h-11 w-full rounded-sm font-semibold"
+          >
+            Check my picks
+          </Button>
+        </div>
       ) : (
         <ExerciseFeedback
           correct={score >= 1}

@@ -249,9 +249,12 @@ the cross-site check in `start.ts`; Vite's own CORS is off so dev matches produc
   so the WebView's storage isn't copied to Google's backup. `/premium` redirects to Progress in the
   apps (`isNativeApp()`).
 - **Edge to edge:** anything pinned to the top or bottom of the screen pads with `var(--inset-top)` /
-  `var(--inset-bottom)` (status bar, notch, home indicator). A screen's one pinned action uses
-  `sticky-action`, which fills the space around it down to the bottom edge so nothing scrolling
-  underneath shows beside or below it; inside a card, the card sets `[--sticky-fill:var(--card)]`.
+  `var(--inset-bottom)` (status bar, notch, home indicator). A screen's one pinned action sits in a
+  `sticky-action` wrapper (never on the button itself; `styles.sticky.test.ts` checks): a band in the
+  color behind it, out to the container's edges and down past the home indicator, so nothing scrolling
+  underneath shows beside or below it. Inside a card the card sets `[--sticky-fill:var(--card)]`; a
+  container whose side padding isn't 1.25rem sets `--sticky-gutter`. Keep the pinned action the last
+  thing in its part of the screen.
 - **Files** go through `saveTextFile` (a download on the web, the share sheet in the app).
 - Fonts are bundled (`@fontsource`), so the app works offline and contacts no font service.
 - The app id `com.lamppost.app` appears in six places; `oauth.test.ts` keeps them the same.

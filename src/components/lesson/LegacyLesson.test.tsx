@@ -402,6 +402,20 @@ describe("LegacyLesson's pinned bar", () => {
   });
 });
 
+describe("LegacyLesson's writing page", () => {
+  it("puts Continue before the secondary links, since it isn't pinned there", () => {
+    render(<LegacyLesson lessonNumber={1} />);
+    click(/Start training/);
+    click("Answer the drill");
+    click(/Write your argument/);
+    click("Skip the writing this time");
+    const next = screen.getByRole("button", { name: /See the summary/ });
+    expect(next.parentElement!.classList.contains("sticky-action")).toBe(false);
+    const back = screen.getByRole("button", { name: "Back a step" });
+    expect(next.compareDocumentPosition(back) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
 describe("LegacyLesson's rewards", () => {
   it("holds badges and level-ups back until the finish board, as the authored lessons do", () => {
     vi.useFakeTimers();

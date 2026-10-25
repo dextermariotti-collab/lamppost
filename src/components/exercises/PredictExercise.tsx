@@ -83,17 +83,19 @@ export function PredictExerciseCard({
             onChange={(event) => setConfidence(Number(event.target.value))}
             className="range-touch mt-1"
           />
-          <Button
-            type="button"
-            disabled={choice === null}
-            onClick={() =>
-              choice !== null &&
-              onAnswer({ choice, confidence }, choice === exercise.correct ? 1 : 0)
-            }
-            className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
-          >
-            Lock in my call
-          </Button>
+          <div className="sticky-action mt-4">
+            <Button
+              type="button"
+              disabled={choice === null}
+              onClick={() =>
+                choice !== null &&
+                onAnswer({ choice, confidence }, choice === exercise.correct ? 1 : 0)
+              }
+              className="h-11 w-full rounded-sm font-semibold"
+            >
+              Lock in my call
+            </Button>
+          </div>
         </div>
       )}
 

@@ -173,17 +173,19 @@ function ReviewQueue() {
             )}
 
             {answered && (
-              <Button
-                onClick={() => {
-                  setAnswered(false);
-                  setShown(null);
-                  setStep((s) => s + 1);
-                }}
-                className="sticky-action mt-5 h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
-              >
-                {step + 1 >= session!.length ? "Finish review" : "Next drill"}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              <div className="sticky-action mt-5">
+                <Button
+                  onClick={() => {
+                    setAnswered(false);
+                    setShown(null);
+                    setStep((s) => s + 1);
+                  }}
+                  className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
+                >
+                  {step + 1 >= session!.length ? "Finish review" : "Next drill"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </>
         )}

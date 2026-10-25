@@ -77,14 +77,16 @@ export function NumericExerciseCard({
               {problem}
             </p>
           )}
-          <Button
-            type="button"
-            disabled={value.trim() === ""}
-            onClick={submit}
-            className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
-          >
-            Check my number
-          </Button>
+          <div className="sticky-action mt-4">
+            <Button
+              type="button"
+              disabled={value.trim() === ""}
+              onClick={submit}
+              className="h-11 w-full rounded-sm font-semibold"
+            >
+              Check my number
+            </Button>
+          </div>
         </div>
       ) : (
         <ExerciseFeedback

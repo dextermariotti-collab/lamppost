@@ -64,16 +64,18 @@ export function SliderExerciseCard({
             onChange={(event) => setBefore(Number(event.target.value))}
             className="range-touch mt-1"
           />
-          <Button
-            type="button"
-            onClick={() => {
-              setAfter(before);
-              setLocked(true);
-            }}
-            className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
-          >
-            Lock that in
-          </Button>
+          <div className="sticky-action mt-4">
+            <Button
+              type="button"
+              onClick={() => {
+                setAfter(before);
+                setLocked(true);
+              }}
+              className="h-11 w-full rounded-sm font-semibold"
+            >
+              Lock that in
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="mt-4">
@@ -102,13 +104,15 @@ export function SliderExerciseCard({
             You started at {answered ? answer.before : before}%.
           </p>
           {!answered && (
-            <Button
-              type="button"
-              onClick={() => onAnswer({ before, after }, scoreFor({ before, after }))}
-              className="sticky-action mt-4 h-11 w-full rounded-sm font-semibold"
-            >
-              Commit to that
-            </Button>
+            <div className="sticky-action mt-4">
+              <Button
+                type="button"
+                onClick={() => onAnswer({ before, after }, scoreFor({ before, after }))}
+                className="h-11 w-full rounded-sm font-semibold"
+              >
+                Commit to that
+              </Button>
+            </div>
           )}
         </div>
       )}

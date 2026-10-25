@@ -195,19 +195,25 @@ export function WrittenArgument({
             </p>
           )}
           {busy && <GradingProgress companion={companion} elapsed={elapsed} />}
-          <Button
-            type="button"
-            onClick={() => consent.ask(submit)}
-            disabled={
-              busy ||
-              text.trim().length <
-                (written.type === "restate" || written.type === "testable" ? 12 : 20)
-            }
-            className="sticky-action mt-3 h-12 w-full rounded-sm text-base font-semibold"
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />}
-            {busy ? "Grading…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
-          </Button>
+          <div className="sticky-action mt-3">
+            <Button
+              type="button"
+              onClick={() => consent.ask(submit)}
+              disabled={
+                busy ||
+                text.trim().length <
+                  (written.type === "restate" || written.type === "testable" ? 12 : 20)
+              }
+              className="h-12 w-full rounded-sm text-base font-semibold"
+            >
+              {busy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <PenLine className="h-4 w-4" />
+              )}
+              {busy ? "Grading…" : attempt === 2 ? "Resubmit" : "Submit for feedback"}
+            </Button>
+          </div>
         </>
       )}
 
