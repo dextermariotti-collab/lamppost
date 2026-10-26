@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { loadSupabase, mayHaveSession, whenSupabaseLoaded } from "@/integrations/supabase/lazy";
 import { DEFAULT_COMPANION, normalizeCompanion, type Companion } from "./companions";
 
 const DRAFT_KEY = "lamppost-companion-draft";
@@ -56,6 +56,7 @@ const toRow = (c: Companion) => ({
 /** Writes the companion onto the signed-in user's profile row. */
 async function saveCompanionForUser(userId: string, companion: Companion) {
   // The row is created by the signup trigger (which also mints handle + invite code).
+  const supabase = await loadSupabase();
   const { error } = await supabase
     .from("profiles")
     .update({ onboarding_completed: true, ...toRow(companion) })
@@ -96,11 +97,16 @@ function subscribeSession(fn: () => void) {
   sessionListeners.add(fn);
   if (!watching) {
     watching = true;
-    supabase.auth.getSession().then(
-      ({ data }) => setSessionUser(data.session?.user.id ?? null),
-      () => setSessionUser(null),
-    );
-    supabase.auth.onAuthStateChange((_event, next) => setSessionUser(next?.user.id ?? null));
+    // Whenever the client is loaded (here, or by the sign-in screen), follow its session.
+    whenSupabaseLoaded((client) => {
+      client.auth.getSession().then(
+        ({ data }) => setSessionUser(data.session?.user.id ?? null),
+        () => setSessionUser(null),
+      );
+      client.auth.onAuthStateChange((_event, next) => setSessionUser(next?.user.id ?? null));
+    });
+    if (mayHaveSession()) void loadSupabase().catch(() => setSessionUser(null));
+    else setSessionUser(null);
   }
   return () => {
     sessionListeners.delete(fn);
@@ -131,6 +137,7 @@ export function useCompanion() {
       setLoaded(true);
       return;
     }
+    const supabase = await loadSupabase();
     const { data } = await supabase
       .from("profiles")
       .select("companion_preset, companion_palette, companion_accessory, companion_expression")

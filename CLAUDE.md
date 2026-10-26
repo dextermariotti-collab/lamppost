@@ -89,7 +89,10 @@ sync (progress, reviews and skills) first asks `mayShareDeviceWith(userId)`: the
 account's or nobody's yet (a guest's, carried into the account). `DeviceOwnerGuard` claims the
 device when someone signs in, and when the data belongs to a different account it clears the device
 and reloads before anything syncs. Who is signed in comes from one shared listener
-(`useSessionUser` in `lib/companion-store.ts`), not one per mounted hook.
+(`useSessionUser` in `lib/companion-store.ts`), not one per mounted hook. The Supabase client is its
+own download: code that runs on every screen reaches it only through `integrations/supabase/lazy.ts`
+(`loadSupabase`, `whenSupabaseLoaded`, `mayHaveSession`), so a signed-out visitor never fetches it.
+Don't import `integrations/supabase/client` from anything every screen loads; routes may.
 Because lessons are completed in the browser, **the server can bound and record progress but cannot
 prove a lesson was done** — see "Security model".
 

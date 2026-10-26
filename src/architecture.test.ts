@@ -20,6 +20,34 @@ const generated = (file: string) =>
   file.startsWith(join("src", "integrations", "supabase")) || file.endsWith("routeTree.gen.ts");
 
 describe("what reaches the browser", () => {
+  it("keeps the Supabase client out of what every visitor downloads", () => {
+    // These load on every screen. A static import of the client (or of lib/oauth, which imports
+    // it) would put it back in the first download for signed-out visitors; they go through
+    // integrations/supabase/lazy.ts instead.
+    const everyScreen = [
+      "src/start.ts",
+      "src/router.tsx",
+      "src/routes/__root.tsx",
+      "src/components/PhoneFrame.tsx",
+      "src/components/NativeShell.tsx",
+      "src/components/ConsentGate.tsx",
+      "src/integrations/supabase/auth-attacher.ts",
+      "src/lib/companion-store.ts",
+      "src/lib/progress.ts",
+      "src/lib/account.ts",
+      "src/lib/learning-sync.ts",
+    ].map((file) => join(...file.split("/")));
+    const found = source
+      .filter(({ file }) => everyScreen.includes(file))
+      .flatMap(({ file, text }) =>
+        [...text.matchAll(/^import(?!\s+type)[^;]*?from\s+["']([^"']+)["']/gms)]
+          .map((match) => match[1]!)
+          .filter((spec) => /supabase\/client$|^\.\/client$|lib\/oauth$/.test(spec))
+          .map((spec) => `${file} → ${spec}`),
+      );
+    expect(found).toEqual([]);
+  });
+
   it("imports a server-only module only from another one, or lazily inside a handler", () => {
     // A static import from a file the browser loads would ship the service-role client or a
     // prompt to every visitor. `await import()` inside a server handler is how they're reached.

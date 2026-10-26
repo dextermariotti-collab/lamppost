@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { isNativeApp } from "@/lib/platform";
+import { announceSupabase } from "./lazy";
 import { requireEnv, supabaseFetch } from "./shared";
 import type { Database } from "./types";
 
@@ -26,10 +27,18 @@ function createSupabaseClient() {
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
+/** The one client, made on first use and announced to code waiting for it (`lazy.ts`). */
+export function getSupabase() {
+  if (!_supabase) {
+    _supabase = createSupabaseClient();
+    if (typeof window !== "undefined") announceSupabase(_supabase);
+  }
+  return _supabase;
+}
+
 /** The browser's Supabase client, signed in as the learner (RLS applies). Created on first use. */
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
-    if (!_supabase) _supabase = createSupabaseClient();
-    return Reflect.get(_supabase, prop, receiver);
+    return Reflect.get(getSupabase(), prop, receiver);
   },
 });

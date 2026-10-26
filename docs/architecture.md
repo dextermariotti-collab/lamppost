@@ -85,9 +85,9 @@ the learning state. None of it blocks new features, but each gets more expensive
 5. **One way to call the server.** Social screens use TanStack Query, while learning screens call
    server functions in effects with their own loading and error state. Route every call through
    Query (or route loaders) so retries, caching and errors behave the same everywhere.
-6. **Bundle.** The entry chunk is about 188 KB gzipped, mostly React, the router and the Supabase
-   client, which loads even for signed-out visitors. Load Supabase on first sign-in or sync, and
-   add a size budget to CI.
+6. ~~**Bundle.**~~ Done (October 26): the Supabase client is its own download, loaded only when a
+   session could exist or the sign-in screen opens (`integrations/supabase/lazy.ts`). The entry chunk
+   went from about 191 KB to 130 KB gzipped. A size budget in CI is still worth adding.
 7. **Regenerate the database types.** `generated_cases` and `profiles.done_lessons` are reached
    through small untyped accessors (`casesTable`, `doneLessonsOf`), because `types.ts` predates them.
    The social safety migration (October 19) changed `search_profiles` to take a viewer, so it is

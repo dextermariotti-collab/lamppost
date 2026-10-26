@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { completeNativeSignIn } from "@/lib/oauth";
 import { isNativeApp } from "@/lib/platform";
 import { useTheme } from "@/lib/theme";
 
@@ -17,6 +16,8 @@ export function NativeShell() {
     const removers: Array<() => Promise<void>> = [];
     void (async () => {
       const { App } = await import("@capacitor/app");
+      // Loaded here, in the app only, so the website's first download doesn't carry the sign-in client.
+      const { completeNativeSignIn } = await import("@/lib/oauth");
       const opened = await App.addListener("appUrlOpen", ({ url }) => {
         void completeNativeSignIn(url);
       });
