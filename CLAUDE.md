@@ -47,7 +47,8 @@ Nitro with the `cloudflare-module` preset; set `NITRO_PRESET` to build for anoth
 ## Stack
 
 TanStack Start (React 19, file routes in `src/routes`, server functions via `createServerFn`),
-Tailwind v4 (tokens in `src/styles.css`), shadcn/Radix primitives in `src/components/ui`,
+Tailwind v4 (tokens in `src/styles.css`), shadcn/Radix primitives in `src/components/ui` (only the
+ones in use are kept: add a primitive, and its package, when a screen needs it),
 Supabase (auth + Postgres + RLS) via `@supabase/supabase-js`, Vercel AI SDK talking to Google's
 Gemini API through its OpenAI-compatible endpoint (`AI_API_KEY`; `AI_BASE_URL` points it at another
 OpenAI-compatible service; `lib/ai-gateway.server.ts`). Google sign-in is Supabase's own OAuth. TypeScript is `strict` with `noUncheckedIndexedAccess` and
@@ -70,6 +71,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 | `lamppost-rating-v1`, `-written-v1`, `-levels-v1`, `-badges-v1`, … | `rating.ts`, `mastery.ts`, … | skill ratings, rubric scores, level-ups, badges (ratings and rubric scores also sync, with the review queue and drill attempts: `learning_state`) |
 | `lamppost-unit-checks-v1` | `lib/unit-checks.ts` | before/after/three-months-later unit check results (first result kept, never overwritten; device only) |
 | `lamppost-ai-consent-v1` | `lib/ai-consent.ts` | when the learner agreed to their text going to the AI provider, and which provider (device only) |
+| `lamppost-device-owner-v1` | `lib/device-owner.ts` | the account this device's data belongs to (see below) |
 
 Signed-in users additionally get a Supabase account: `useProgress` pulls the account's numbers once
 per account per page load (`getMyProfile`) and pushes changes through **one module-level sync**
@@ -82,6 +84,12 @@ after the first sync of a page load, then once syncs have been quiet for 30 s. `
 and ignores replies to requests sent before it; `clearDeviceData()` calls it, and clearing device
 data or deleting the account then reloads the app (`window.location.replace("/")`) so no screen still
 open can save the old numbers back.
+**One account's progress never reaches another's.** Signing out keeps the device's data, so every
+sync (progress, reviews and skills) first asks `mayShareDeviceWith(userId)`: the data must be that
+account's or nobody's yet (a guest's, carried into the account). `DeviceOwnerGuard` claims the
+device when someone signs in, and when the data belongs to a different account it clears the device
+and reloads before anything syncs. Who is signed in comes from one shared listener
+(`useSessionUser` in `lib/companion-store.ts`), not one per mounted hook.
 Because lessons are completed in the browser, **the server can bound and record progress but cannot
 prove a lesson was done** — see "Security model".
 

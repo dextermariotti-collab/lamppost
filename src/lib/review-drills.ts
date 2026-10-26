@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { LESSONS, lessonIndexOf, unitById, unitProgress } from "./curriculum";
 import { dayKey, daysBetween, shiftDay } from "./days";
-import { skillRating } from "./rating";
+import { START_RATING, readRatingStore } from "./rating";
 import type { ExerciseKind } from "./exercises";
 
 /**
@@ -319,10 +319,13 @@ export function useDrillSchedule() {
 /** Only what is due now, capped so a session stays short. */
 export function useDueDrills(limit = 8) {
   const { store, hydrated } = useDrillStore();
-  // Due first, then weakest and least-recently-practiced skills at the front.
+  // Due first, then weakest and least-recently-practiced skills at the front. The ratings are
+  // read once: reading them per comparison parsed the whole store thousands of times a render.
+  const ratings = readRatingStore();
+  const ratingOf = (lessonId: string) => ratings[lessonId]?.rating ?? START_RATING;
   const due = decorate(store)
     .filter((item) => item.dueInDays <= 0)
-    .sort((a, b) => skillRating(a.lessonId).rating - skillRating(b.lessonId).rating);
+    .sort((a, b) => ratingOf(a.lessonId) - ratingOf(b.lessonId));
   // Interleave drill kinds so one session isn't three of the same exercise.
   const items: typeof due = [];
   const pool = [...due];

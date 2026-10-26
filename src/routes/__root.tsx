@@ -17,6 +17,7 @@ import { ConsentGate } from "../components/ConsentGate";
 import { NativeShell } from "../components/NativeShell";
 import { PhoneFrame } from "../components/PhoneFrame";
 import { RewardHost } from "../components/RewardHost";
+import { DeviceOwnerGuard } from "../components/DeviceOwnerGuard";
 import { LearningSyncWatcher } from "../components/LearningSyncWatcher";
 import { UpkeepWatcher } from "../components/UpkeepWatcher";
 import { Button } from "../components/ui/button";
@@ -151,6 +152,7 @@ function RootComponent() {
         <Outlet />
         <AnswerFeedbackHost />
         <RewardHost />
+        <DeviceOwnerGuard />
         <UpkeepWatcher />
         <LearningSyncWatcher />
         <ConsentGate />

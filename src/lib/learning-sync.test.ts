@@ -127,3 +127,14 @@ describe("syncing", () => {
     expect(h.sync).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("someone else's device", () => {
+  it("sends nothing to an account the device's data doesn't belong to", async () => {
+    localStorage.setItem("lamppost-device-owner-v1", "someone-else");
+    localStorage.setItem("lamppost-rating-v1", JSON.stringify({ [A]: rating(1100, now - 1) }));
+    h.sync.mockImplementation(async ({ data }: { data: unknown }) => data);
+    requestLearningSync(USER);
+    await flush();
+    expect(h.sync).not.toHaveBeenCalled();
+  });
+});

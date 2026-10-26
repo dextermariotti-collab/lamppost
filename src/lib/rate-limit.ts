@@ -161,6 +161,17 @@ export const POLICIES = {
     ip: [],
     global: [t("day", 20_000)],
   },
+  /**
+   * Syncing reviews and skills with the account (syncLearningState). Signed-in only, and loose:
+   * a lesson syncs every few answers. It bounds how much database work one account can cause.
+   */
+  learningSync: {
+    label: "syncs",
+    guest: [],
+    user: [t("minute", 30), t("hour", 600)],
+    ip: [],
+    global: [],
+  },
 } as const satisfies Record<string, LimitPolicy>;
 
 export type PolicyName = keyof typeof POLICIES;

@@ -255,6 +255,26 @@ describe("guest (signed-out) mode", () => {
       screen.result.current.state.gems + screen.result.current.state.gemsSpent,
     );
   });
+
+  it("never sends one account's progress to another, or folds another's in", async () => {
+    window.localStorage.setItem("lamppost-device-owner-v1", "user-1");
+    const { useProgress } = await loadStore();
+    const screen = renderHook(() => useProgress());
+    act(() =>
+      screen.result.current.completeLesson("critical-thinking", "Critical thinking", 0, 35),
+    );
+    mocks.session.userId = "user-2";
+    mocks.getMyProfile.mockResolvedValue(null);
+    screen.rerender();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(mocks.syncProgress).not.toHaveBeenCalled();
+    expect(mocks.getMyProfile).not.toHaveBeenCalled();
+
+    // The person whose progress it is still syncs it.
+    mocks.session.userId = "user-1";
+    screen.rerender();
+    await waitFor(() => expect(mocks.syncProgress).toHaveBeenCalledTimes(1));
+  });
 });
 
 /**

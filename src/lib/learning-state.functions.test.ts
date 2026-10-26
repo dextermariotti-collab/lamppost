@@ -17,6 +17,19 @@ const db = vi.hoisted(() => ({
   readError: null as Err,
   filters: [] as [string, unknown][],
   updates: 0,
+  limited: false,
+  enforced: [] as string[],
+}));
+
+vi.mock("./rate-limit.server", () => ({
+  limiter: () => ({
+    enforce: async (policy: string) => {
+      db.enforced.push(policy);
+      return db.limited
+        ? { ok: false, scope: "user", retryAfterSeconds: 60, message: "Too many syncs." }
+        : { ok: true };
+    },
+  }),
 }));
 
 vi.mock("@/integrations/supabase/client.server", () => ({
@@ -88,6 +101,8 @@ beforeEach(() => {
   db.readError = null;
   db.filters = [];
   db.updates = 0;
+  db.limited = false;
+  db.enforced = [];
 });
 
 describe("syncLearningState", () => {
@@ -149,6 +164,14 @@ describe("syncLearningState", () => {
     db.readError = { message: "timeout" };
     await expect(sync({})).rejects.toThrow("timeout");
     expect(db.rows.size).toBe(0);
+  });
+
+  it("counts every sync against the account's limit, and stores nothing once it is reached", async () => {
+    await sync({ ratings: { [A]: rating(1020) } });
+    expect(db.enforced).toEqual(["learningSync"]);
+    db.limited = true;
+    await expect(sync({ ratings: { [B]: rating(990) } })).rejects.toThrow("Too many syncs.");
+    expect(Object.keys((db.rows.get(ME)!.state as { ratings: object }).ratings)).toEqual([A]);
   });
 
   it("refuses a request too large to be a real device's", async () => {

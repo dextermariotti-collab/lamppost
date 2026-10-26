@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_COMPANION, normalizeCompanion, type Companion } from "./companions";
 
@@ -76,28 +76,43 @@ export async function syncDraftAfterSignIn(userId: string) {
   window.dispatchEvent(new Event(EVENT));
 }
 
-export function useSessionUser() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+type SessionUser = { userId: string | null; ready: boolean };
 
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setUserId(data.session?.user.id ?? null);
-      setReady(true);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user.id ?? null);
-      setReady(true);
-    });
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
+const NO_SESSION: SessionUser = { userId: null, ready: false };
 
-  return { userId, ready };
+// One listener for the whole page, not one per mounted hook: a screen that mounts after the
+// session is known reads it straight away instead of starting out signed out.
+let session: SessionUser = NO_SESSION;
+let watching = false;
+const sessionListeners = new Set<() => void>();
+
+function setSessionUser(userId: string | null) {
+  if (session.ready && session.userId === userId) return;
+  session = { userId, ready: true };
+  sessionListeners.forEach((fn) => fn());
+}
+
+function subscribeSession(fn: () => void) {
+  sessionListeners.add(fn);
+  if (!watching) {
+    watching = true;
+    supabase.auth.getSession().then(
+      ({ data }) => setSessionUser(data.session?.user.id ?? null),
+      () => setSessionUser(null),
+    );
+    supabase.auth.onAuthStateChange((_event, next) => setSessionUser(next?.user.id ?? null));
+  }
+  return () => {
+    sessionListeners.delete(fn);
+  };
+}
+
+export function useSessionUser(): SessionUser {
+  return useSyncExternalStore(
+    subscribeSession,
+    () => session,
+    () => NO_SESSION,
+  );
 }
 
 /**

@@ -63,50 +63,8 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "https://fontsource.org/fonts/overpass-mono"
   },
   {
-    "name": "@hookform/resolvers",
-    "version": "5.9.1",
-    "license": "MIT",
-    "url": "https://react-hook-form.com"
-  },
-  {
-    "name": "@radix-ui/react-accordion",
-    "version": "1.3.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
     "name": "@radix-ui/react-alert-dialog",
     "version": "1.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-aspect-ratio",
-    "version": "1.2.0",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-avatar",
-    "version": "1.3.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-checkbox",
-    "version": "1.4.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-collapsible",
-    "version": "1.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-context-menu",
-    "version": "2.4.1",
     "license": "MIT",
     "url": "https://radix-ui.com/primitives"
   },
@@ -117,44 +75,8 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "https://radix-ui.com/primitives"
   },
   {
-    "name": "@radix-ui/react-dropdown-menu",
-    "version": "2.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-hover-card",
-    "version": "1.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
     "name": "@radix-ui/react-label",
     "version": "2.1.17",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-menubar",
-    "version": "1.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-navigation-menu",
-    "version": "1.4.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-popover",
-    "version": "1.3.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-progress",
-    "version": "1.2.1",
     "license": "MIT",
     "url": "https://radix-ui.com/primitives"
   },
@@ -165,26 +87,8 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "https://radix-ui.com/primitives"
   },
   {
-    "name": "@radix-ui/react-scroll-area",
-    "version": "1.4.0",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-select",
-    "version": "2.4.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
     "name": "@radix-ui/react-separator",
     "version": "1.2.0",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-slider",
-    "version": "1.6.1",
     "license": "MIT",
     "url": "https://radix-ui.com/primitives"
   },
@@ -201,19 +105,7 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "https://radix-ui.com/primitives"
   },
   {
-    "name": "@radix-ui/react-tabs",
-    "version": "1.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
     "name": "@radix-ui/react-toggle",
-    "version": "1.2.1",
-    "license": "MIT",
-    "url": "https://radix-ui.com/primitives"
-  },
-  {
-    "name": "@radix-ui/react-toggle-group",
     "version": "1.2.1",
     "license": "MIT",
     "url": "https://radix-ui.com/primitives"
@@ -279,30 +171,6 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "lukeed/clsx"
   },
   {
-    "name": "cmdk",
-    "version": "1.1.1",
-    "license": "MIT",
-    "url": "https://github.com/pacocoursey/cmdk"
-  },
-  {
-    "name": "date-fns",
-    "version": "4.4.0",
-    "license": "MIT",
-    "url": "https://github.com/date-fns/date-fns"
-  },
-  {
-    "name": "embla-carousel-react",
-    "version": "8.6.0",
-    "license": "MIT",
-    "url": "https://www.embla-carousel.com"
-  },
-  {
-    "name": "input-otp",
-    "version": "1.5.0",
-    "license": "MIT",
-    "url": "https://input-otp.rodz.dev/"
-  },
-  {
     "name": "lucide-react",
     "version": "0.575.0",
     "license": "ISC",
@@ -315,40 +183,10 @@ export const PACKAGES: readonly PackageLicence[] = [
     "url": "https://react.dev/"
   },
   {
-    "name": "react-day-picker",
-    "version": "9.14.0",
-    "license": "MIT",
-    "url": "https://daypicker.dev"
-  },
-  {
     "name": "react-dom",
     "version": "19.3.0",
     "license": "MIT",
     "url": "https://react.dev/"
-  },
-  {
-    "name": "react-hook-form",
-    "version": "7.90.0",
-    "license": "MIT",
-    "url": "https://react-hook-form.com"
-  },
-  {
-    "name": "react-resizable-panels",
-    "version": "4.14.5",
-    "license": "MIT",
-    "url": "https://react-resizable-panels.vercel.app/"
-  },
-  {
-    "name": "recharts",
-    "version": "2.15.4",
-    "license": "MIT",
-    "url": "https://github.com/recharts/recharts"
-  },
-  {
-    "name": "sonner",
-    "version": "2.0.8",
-    "license": "MIT",
-    "url": "https://sonner.emilkowal.ski/"
   },
   {
     "name": "tailwind-merge",

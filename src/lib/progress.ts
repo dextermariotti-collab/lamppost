@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 import { cancelBadgeCheck, scheduleBadgeCheck, setBadgeAccount } from "./badge-award";
 import { useSessionUser } from "./companion-store";
+import { mayShareDeviceWith } from "./device-owner";
 import { getMyProfile, syncProgress } from "./profile.functions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS } from "./curriculum";
 import { dayKey, shiftDay } from "./days";
@@ -213,6 +214,8 @@ let syncing = false;
 let syncAgainFor: string | null = null;
 
 function requestSync(userId: string) {
+  // Someone else's progress on this device never reaches this account (DeviceOwnerGuard).
+  if (!mayShareDeviceWith(userId)) return;
   if (syncing) {
     syncAgainFor = userId;
     return;
@@ -280,7 +283,7 @@ export function useProgress() {
   // On sign-in, pull the account's numbers down so a new device isn't blank.
   // Once per account per page load, not once per screen that mounts this hook.
   useEffect(() => {
-    if (!hydrated || !userId || pulledAccounts.has(userId)) return;
+    if (!hydrated || !userId || pulledAccounts.has(userId) || !mayShareDeviceWith(userId)) return;
     pulledAccounts.add(userId);
     const sentIn = generation;
     void getMyProfile()

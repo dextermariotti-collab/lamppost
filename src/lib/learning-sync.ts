@@ -1,4 +1,5 @@
 import { LESSONS } from "./curriculum";
+import { mayShareDeviceWith } from "./device-owner";
 import { ATTEMPTS_EVENT, readAttemptStore, writeAttemptStore } from "./exercise-store";
 import {
   LEARNING_STATE_VERSION,
@@ -67,6 +68,8 @@ let syncAgainFor: string | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 export function requestLearningSync(userId: string) {
+  // Someone else's reviews on this device never reach this account (DeviceOwnerGuard).
+  if (!mayShareDeviceWith(userId)) return;
   if (syncing) {
     syncAgainFor = userId;
     return;

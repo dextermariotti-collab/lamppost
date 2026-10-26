@@ -59,8 +59,11 @@ export function MilestoneCard({
           <button
             onClick={() => {
               const text = `${celebration.title} — ${celebration.detail}`;
-              if (navigator.share) void navigator.share({ title: "Lamppost", text });
-              else void navigator.clipboard?.writeText(text);
+              // Closing the share sheet rejects; that isn't an error worth reporting.
+              const shared = navigator.share
+                ? navigator.share({ title: "Lamppost", text })
+                : navigator.clipboard?.writeText(text);
+              void shared?.catch(() => undefined);
             }}
             className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-sm bg-card px-4 text-sm font-bold shadow-card"
           >

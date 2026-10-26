@@ -72,6 +72,9 @@ export const syncLearningState = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }): Promise<{ state: Json | null }> => {
     const { userId } = context;
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("learningSync");
+    if (!verdict.ok) throw new Error(verdict.message);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const table = () => learningStateOf(supabaseAdmin);
     const bounds = { known: KNOWN_LESSONS, now: Date.now() };
