@@ -8,7 +8,7 @@
 
 const KEY = "lamppost-device-owner-v1";
 
-export function deviceOwner(): string | null {
+function deviceOwner(): string | null {
   if (typeof window === "undefined") return null;
   try {
     return window.localStorage.getItem(KEY);

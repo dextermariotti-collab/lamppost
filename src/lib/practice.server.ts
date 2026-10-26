@@ -20,7 +20,7 @@ export type PracticeContext = {
 };
 
 /** The most lesson material the tutor is given. */
-export const MAX_LESSON_TEXT = 6000;
+const MAX_LESSON_TEXT = 6000;
 
 /**
  * What the tutor knows about a lesson, built here from the lesson's own content and never taken

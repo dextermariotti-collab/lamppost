@@ -17,8 +17,6 @@ export const AI_MODELS = {
   look: FLASH,
   /** The explain-it-back tutor, a longer back-and-forth. */
   tutor: "gemini-3.8-flash",
-  /** The allow/refuse screen on free text before anything is generated: small and fast. */
-  screen: "gemini-3.5-flash-lite",
 } as const;
 
 /**
@@ -38,8 +36,6 @@ export const AI_REPLY_TOKENS = {
   look: 1000,
   /** One tutor turn: a few sentences, and the close when it ends. */
   tutor: 800,
-  /** The allow/refuse classifier's one line of JSON. */
-  screen: 60,
 } as const;
 
 export type AiJob = keyof typeof AI_REPLY_TOKENS;

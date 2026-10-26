@@ -79,13 +79,3 @@ export function readAttemptStore(): Record<string, ExerciseAttempt> {
 export function writeAttemptStore(store: Record<string, ExerciseAttempt>) {
   writeStore(store);
 }
-
-/** Share of a lesson's flaw drills the learner got right — feeds review timing. */
-export function flawAccuracyFor(lessonId: string): number | null {
-  const store = readStore();
-  const scores = Object.entries(store)
-    .filter(([key]) => key.startsWith(`${lessonId}#`))
-    .map(([, value]) => value.score);
-  if (scores.length === 0) return null;
-  return scores.reduce((a, b) => a + b, 0) / scores.length;
-}

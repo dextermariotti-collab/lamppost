@@ -15,9 +15,9 @@ export type FeedbackPrefs = { sound: boolean; haptics: boolean };
 const KEY = "lamppost-feedback-v1";
 const EVENT = "lamppost-feedback-change";
 
-export const DEFAULT_PREFS: FeedbackPrefs = { sound: true, haptics: true };
+const DEFAULT_PREFS: FeedbackPrefs = { sound: true, haptics: true };
 
-export function readFeedbackPrefs(): FeedbackPrefs {
+function readFeedbackPrefs(): FeedbackPrefs {
   if (typeof window === "undefined") return DEFAULT_PREFS;
   try {
     const raw = window.localStorage.getItem(KEY);
@@ -32,7 +32,7 @@ export function readFeedbackPrefs(): FeedbackPrefs {
   }
 }
 
-export function saveFeedbackPrefs(prefs: FeedbackPrefs) {
+function saveFeedbackPrefs(prefs: FeedbackPrefs) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(KEY, JSON.stringify(prefs));

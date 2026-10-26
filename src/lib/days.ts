@@ -49,10 +49,6 @@ export function utcDay(date = new Date()) {
   return date.toISOString().slice(0, 10);
 }
 
-export function shiftUtcDay(key: string, days: number) {
-  return shiftDay(key, days);
-}
-
 /**
  * Whether a client-supplied "today" could be a real local date right now.
  * Every timezone on Earth (UTC-12 … UTC+14) is within one calendar day of the

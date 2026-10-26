@@ -25,12 +25,12 @@ import { REVIEW_DRILLS_EVENT, readDrillStore, writeDrillStore } from "./review-d
 export const LEARNING_EVENTS = [REVIEW_DRILLS_EVENT, RATING_EVENT, ATTEMPTS_EVENT, WRITTEN_EVENT];
 
 /** How long the stores stay quiet before a change is sent (a lesson writes several at once). */
-export const LEARNING_SYNC_DELAY_MS = 2000;
+const LEARNING_SYNC_DELAY_MS = 2000;
 
 const KNOWN_LESSONS: ReadonlySet<string> = new Set(LESSONS.map((lesson) => lesson.id));
 const bounds = () => ({ known: KNOWN_LESSONS, now: Date.now() });
 
-export function readLocalLearningState(): LearningState {
+function readLocalLearningState(): LearningState {
   return boundLearningState(
     {
       v: LEARNING_STATE_VERSION,

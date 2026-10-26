@@ -31,7 +31,6 @@ describe("guardrails", () => {
 
 /**
  * The guarantee that matters: no code path calls a model with a prompt that skips the rules.
- * The topic classifier is the one exception, because it has to reply in its own JSON shape.
  */
 describe("every model call carries the guardrails", () => {
   const files: string[] = [];
@@ -48,7 +47,6 @@ describe("every model call carries the guardrails", () => {
     const bare: string[] = [];
     let calls = 0;
     for (const file of files) {
-      if (file.endsWith("moderation.server.ts")) continue;
       const source = readFileSync(file, "utf8");
       for (const match of source.matchAll(/\b(streamText|generateText)\(\{/g)) {
         calls += 1;
@@ -81,7 +79,7 @@ describe("every model call carries the guardrails", () => {
         if (!/\.\.\.aiOutput\(|\bmaxOutputTokens:/.test(body)) uncapped.push(`${file}: ${body}`);
       }
     }
-    expect(calls).toBeGreaterThanOrEqual(8);
+    expect(calls).toBeGreaterThanOrEqual(7);
     expect(uncapped).toEqual([]);
   });
 });

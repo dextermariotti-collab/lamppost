@@ -42,7 +42,7 @@ export function clearAnswerFeedback() {
 }
 
 /** Combo pays from the third correct answer on, and is capped to stay fair. */
-export const COMBO_BONUS_CAP = 25;
+const COMBO_BONUS_CAP = 25;
 export const comboBonus = (combo: number) =>
   combo >= 3 ? Math.min((combo - 2) * 5, COMBO_BONUS_CAP) : 0;
 

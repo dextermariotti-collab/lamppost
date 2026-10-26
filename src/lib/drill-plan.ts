@@ -15,7 +15,7 @@ export const MAX_DRILLS = 5;
  * not contain both. (Lesson 6 shipped "rank the evidence" and "order the
  * evidence" — one drill twice.)
  */
-export const NEAR_DUPLICATE_KINDS: readonly (readonly [ExerciseKind, ExerciseKind])[] = [
+const NEAR_DUPLICATE_KINDS: readonly (readonly [ExerciseKind, ExerciseKind])[] = [
   ["rank", "order"],
 ];
 

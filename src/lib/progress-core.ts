@@ -126,7 +126,7 @@ export { MAX_FREEZES, effectiveStreak };
 const STREAK_MILESTONES = [3, 7, 30, 100, 365];
 
 /** XP for a finished lesson. */
-export const LESSON_XP = 50;
+const LESSON_XP = 50;
 
 /** XP for one graded review answer. */
 export const REVIEW_XP = { correct: 20, wrong: 5 } as const;

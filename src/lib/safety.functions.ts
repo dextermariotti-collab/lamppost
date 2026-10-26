@@ -5,7 +5,7 @@ import { consentIsCurrent } from "./consent";
 import { limitedFailure, type LimitedFailure } from "./rate-limit";
 import { MAX_REPORT_DETAILS, USER_REPORT_REASONS, VISIBILITIES, type Visibility } from "./safety";
 
-export const FINISH_SIGNUP =
+const FINISH_SIGNUP =
   "Finish signing up first: accept the terms and confirm your age. Then you can connect with people.";
 const UNAVAILABLE = "That couldn't be done just now. Try again in a moment.";
 

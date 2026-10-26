@@ -40,7 +40,7 @@ export const lessonNotesSchema = z.object({
 export type LessonNotes = z.infer<typeof lessonNotesSchema>;
 
 /** Word limits, so a page of notes reads in about two minutes. */
-export const NOTE_WORDS = {
+const NOTE_WORDS = {
   hook: 35,
   paragraph: 80,
   idea: 180,

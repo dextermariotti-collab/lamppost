@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { StepResult } from "@/lib/steps/scoring";
 import { builderSample, sortSample } from "@/test/steps";
 import { ArgumentBuilder } from "./ArgumentBuilder";

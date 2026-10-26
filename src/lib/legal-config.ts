@@ -23,7 +23,7 @@ export const PRIVACY_VERSION = "2026-09-30";
 export const MIN_ACCOUNT_AGE = 13;
 export const ADULT_AGE = 18;
 
-export const isPlaceholder = (value: string) => value.startsWith("[") && value.endsWith("]");
+const isPlaceholder = (value: string) => value.startsWith("[") && value.endsWith("]");
 
 /** True while any fact only the owner can supply is still a [PLACEHOLDER]. */
 export const hasOpenPlaceholders = () =>

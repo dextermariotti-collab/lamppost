@@ -40,11 +40,8 @@ export type LegalDoc = {
   sections: LegalSection[];
 };
 
-/** Kept as names other files already import; they all point at the one configured address. */
-export const LEGAL_CONTACT = CONTACT_EMAIL;
 export const PRIVACY_CONTACT = CONTACT_EMAIL;
-export const SAFETY_CONTACT = CONTACT_EMAIL;
-export const LEGAL_UPDATED = EFFECTIVE_DATE;
+const LEGAL_UPDATED = EFFECTIVE_DATE;
 
 export const PRIVACY: LegalDoc = {
   slug: "privacy",

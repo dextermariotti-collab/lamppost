@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import type { LessonStep } from "./steps/types";
 
 /**
@@ -61,9 +60,6 @@ export const TIME_OPTIONS: { minutes: number; goal: number; label: string; react
   { minutes: 30, goal: 3, label: "About 30 minutes", reaction: "Three lessons a day." },
 ];
 
-/** The time picked until the learner chooses another. */
-export const DEFAULT_MINUTES = TIME_OPTIONS[0]!.minutes;
-
 /** The daily goals on offer, in lessons: the same in onboarding and in Settings. */
 export const GOAL_OPTIONS = TIME_OPTIONS.map((option) => option.goal);
 
@@ -124,21 +120,4 @@ export function saveIntent(patch: Partial<Intent>) {
   } catch {
     /* ignore */
   }
-}
-
-export function useIntent() {
-  const [intent, setIntent] = useState<Intent>(DEFAULT);
-  useEffect(() => setIntent(readIntent()), []);
-  return intent;
-}
-
-/**
- * How many unit-1 lessons a placement result unlocks. Only a near-perfect run
- * skips ahead — being wrongly skipped past a skill is worse than repeating it.
- */
-export function placementSkip(correct: number, total: number) {
-  if (total === 0) return 0;
-  if (correct >= total) return 4;
-  if (correct >= total - 1) return 2;
-  return 0;
 }

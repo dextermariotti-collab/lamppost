@@ -103,17 +103,3 @@ export function screenLocally(text: string): ModerationVerdict {
 export function isModerationCategory(value: string): value is ModerationCategory {
   return value in REFUSAL_COPY;
 }
-
-/** Topics that need a heightened, feature-specific disclaimer rather than a refusal. */
-export function needsFitnessDisclaimer(topic: string): boolean {
-  return /\b(workout|work ?out|training|train for|exercise|fitness|gym|lift(ing)?|strength|weights?|cardio|run(ning)?|sprint|marathon|5k|10k|hiit|crossfit|calisthenic\w*|yoga|pilates|stretch\w*|mobility|bodybuild\w*|physique|hypertroph\w*|nutrition|diet|macro\w*|cut(ting)? weight|bulk(ing)?|fasting|rehab|physical therapy)\b/i.test(
-    topic,
-  );
-}
-
-/** Topics where the "not professional advice" line should be extra prominent. */
-export function needsHighStakesDisclaimer(topic: string): boolean {
-  return /\b(medic\w*|health|nurs\w*|doctor|diagnos\w*|symptom\w*|drug\w*|medication|mental health|therapy|depression|anxiety|law|legal|attorney|contract\w*|tax\w*|invest\w*|stock\w*|crypto|trading|retirement|insurance|immigration|visa)\b/i.test(
-    topic,
-  );
-}

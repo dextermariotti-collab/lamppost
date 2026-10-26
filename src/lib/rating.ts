@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-
 /**
- * Adaptivity.
+ * Skill ratings.
  *
- * Every drill answered nudges a simple Elo-style rating for that lesson's skill.
- * The rating decides which difficulty band (1-3) of pooled drill gets served
- * next, two right in a row steps up, two misses step down and offer a hint, and
- * the weakest / least-recently-practiced skills are what reviews reach for first.
+ * Every question answered nudges a simple Elo-style rating for that lesson's skill, weighted by the
+ * question's difficulty and the confidence stated. The weakest skills are what reviews reach for
+ * first.
  */
 
 const KEY = "lamppost-rating-v1";
@@ -24,7 +21,7 @@ export type SkillRating = {
   /** Consecutive correct (positive) or missed (negative) run. */
   run: number;
   lastAt: number;
-  /** Pooled drill variants already served to this learner. */
+  /** Drill variants served by the retired AI pool; kept so older saves and syncs still read. */
   seen: number[];
 };
 
@@ -69,18 +66,6 @@ export function writeRatingStore(store: Store) {
   writeStore(store);
 }
 
-export function skillRating(lessonId: string): SkillRating {
-  return readStore()[lessonId] ?? blank();
-}
-
-/** The difficulty band to serve next for this skill. */
-export function targetDifficulty(lessonId: string): 1 | 2 | 3 {
-  const { rating } = skillRating(lessonId);
-  if (rating < 990) return 1;
-  if (rating < 1110) return 2;
-  return 3;
-}
-
 /**
  * Records one drill outcome. Confidence, when the drill asked for it, makes a
  * confident miss cost more and a hesitant win pay less.
@@ -112,46 +97,4 @@ export function recordDrillOutcome(
   });
 }
 
-/** Two misses in a row: the learner has earned an easier drill and a hint. */
-export function needsHelp(lessonId: string) {
-  return skillRating(lessonId).run <= -2;
-}
-
-/** Two right in a row: step the difficulty up. */
-export function readyToStepUp(lessonId: string) {
-  return skillRating(lessonId).run >= 2;
-}
-
 /* ------------------------- pooled drills already seen ------------------------- */
-
-export function seenVariants(lessonId: string): number[] {
-  return skillRating(lessonId).seen;
-}
-
-export function markPoolVariantSeen(lessonId: string, variant: number) {
-  const store = readStore();
-  const current = store[lessonId] ?? blank();
-  if (current.seen.includes(variant)) return;
-  writeStore({ ...store, [lessonId]: { ...current, seen: [...current.seen, variant].slice(-60) } });
-}
-
-/** Live view of the rating store, for screens that show mastery. */
-export function useSkillRatings() {
-  const [store, setStore] = useState<Store>({});
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const sync = () => setStore(readStore());
-    sync();
-    setHydrated(true);
-    window.addEventListener(EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  const record = useCallback(recordDrillOutcome, []);
-  return { store, hydrated, record };
-}

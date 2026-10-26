@@ -20,7 +20,7 @@ import { CASE_SOURCES, CASE_TEXT_WORDS, type DailyCase } from "./daily-case";
 export const CASE_MODEL = AI_MODELS.cases;
 const ROUNDS = 2;
 
-export const CASE_WRITER_SYSTEM = `You write the daily case for Lamppost, a critical-thinking trainer.
+const CASE_WRITER_SYSTEM = `You write the daily case for Lamppost, a critical-thinking trainer.
 A case is one short, realistic piece of everyday text (an ad, a post, an email, a notice, a chatbot answer...) and three multiple-choice questions about it. Each question practices one named lesson, using that lesson's idea on this text.
 Rules:
 - Every person, company, product, place and organization is made up. Never use real brands, public figures or news events.
@@ -32,7 +32,7 @@ Rules:
 - Plain, calm English. No exclamation points outside the case text itself. No emoji.
 Reply with ONLY minified JSON in the shape of the example, and nothing else.`;
 
-export const CASE_REVIEW_SYSTEM = `You are a strict reviewer of multiple-choice reasoning questions. You do not rewrite anything; you judge.
+const CASE_REVIEW_SYSTEM = `You are a strict reviewer of multiple-choice reasoning questions. You do not rewrite anything; you judge.
 For each question, pass it only if: it can be answered from the case text; the keyed option is clearly the best; no other option is also defensible; it really practices the named lesson; and nothing in the case uses a real brand or person or takes a side on a contested public issue.
 Reply with ONLY minified JSON: {"questions":[{"pass":true|false,"problem":"<short reason or empty>"}, ... one per question, in order]}`;
 
@@ -41,7 +41,7 @@ function lessonLine(lessonId: string) {
   return `- ${lesson.id}: "${lesson.title}" (${unitById(lesson.unitId).title}). Idea: ${lesson.keyIdea}`;
 }
 
-export function casePrompt(plan: CasePlan): string {
+function casePrompt(plan: CasePlan): string {
   const example = asReplyExample(DAILY_CASES[0]!);
   return `Write today's case.
 Kind of text: ${CASE_SOURCES[plan.source].toLowerCase()} (use "source": "${plan.source}").
@@ -53,7 +53,7 @@ Example of the exact JSON shape (a different case; don't reuse its topic, names 
 ${JSON.stringify(example)}`;
 }
 
-export function reviewPrompt(c: DailyCase): string {
+function reviewPrompt(c: DailyCase): string {
   return `Case text:
 ${c.text}
 

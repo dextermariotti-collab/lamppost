@@ -102,7 +102,7 @@ export type RoutedEdge = {
  * EDGE_CLEARANCE away from every node it isn't attached to. Bends are tried from
  * gentle to strong, on both sides, and the gentlest clear one wins.
  */
-export function routeEdge(
+function routeEdge(
   fromId: string,
   toId: string,
   positions: Record<string, Point> = NODE_POSITIONS,

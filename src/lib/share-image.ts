@@ -17,7 +17,7 @@ export type ShareCard = {
   lessons: number;
 };
 
-export async function renderShareImage(card: ShareCard): Promise<Blob | null> {
+async function renderShareImage(card: ShareCard): Promise<Blob | null> {
   if (typeof document === "undefined") return null;
   const W = 1080;
   const H = 1350;

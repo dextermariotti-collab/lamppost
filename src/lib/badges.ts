@@ -13,7 +13,7 @@ import { doneLessonIndexes, type ProgressState } from "./progress-core";
  */
 
 const SEEN_KEY = "lamppost-badges-v1";
-export const BADGE_EVENT = "lamppost-badge-change";
+const BADGE_EVENT = "lamppost-badge-change";
 
 export type BadgeTier = "bronze" | "silver" | "gold";
 
@@ -260,11 +260,6 @@ export function earnedFirst(badges: readonly BadgeState[], seen = readSeen()): B
     .sort((a, b) => (a.at === b.at ? a.i - b.i : b.at > a.at ? 1 : -1))
     .map(({ badge }) => badge);
   return [...earned, ...badges.filter((badge) => badge.tier === null)];
-}
-
-/** Marks every currently-earned tier as already seen, without firing toasts. */
-export function primeUnlocks(badges: BadgeState[]) {
-  drainNewUnlocks(badges);
 }
 
 /** Badge list for the profile/progress screens, refreshed after hydration. */

@@ -10,9 +10,9 @@ import { shiftDay } from "./days";
 // ---------- Skills ----------
 
 /** Fewer answered drills than this and a unit's accuracy is too thin to compare. */
-export const MIN_ANSWERED = 3;
+const MIN_ANSWERED = 3;
 /** Below this share right, a unit is worth another look. */
-export const REVIEW_BELOW = 0.65;
+const REVIEW_BELOW = 0.65;
 
 export type SkillNote = "strongest" | "review";
 
@@ -126,7 +126,7 @@ export type StripDay = {
 const WEEKDAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"] as const;
 
 /** The weekday (0 = Sunday) of a YYYY-MM-DD key, read as that calendar date wherever you are. */
-export function weekdayOf(key: string): number {
+function weekdayOf(key: string): number {
   return new Date(`${key}T00:00:00Z`).getUTCDay();
 }
 

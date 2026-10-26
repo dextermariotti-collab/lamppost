@@ -91,7 +91,7 @@ export function StatTiles({
 }
 
 /** `value` is null until the learner's real numbers have loaded. */
-export function StatTile({
+function StatTile({
   label,
   value,
   icon: Icon,

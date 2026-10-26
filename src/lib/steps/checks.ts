@@ -28,13 +28,13 @@ export function checkFlawTap(step: FlawStep, index: number): FlawTap | null {
 // ---------- Argument builder ----------
 
 /** Plain-English meanings, used when a piece is put in the wrong kind of place. */
-export const ROLE_MEANING: Record<ArgumentRole, string> = {
+const ROLE_MEANING: Record<ArgumentRole, string> = {
   conclusion: "the claim the argument wants you to accept",
   premise: "a reason offered for the conclusion",
   evidence: "something you could check that backs a reason up",
 };
 
-export const ROLE_NAME: Record<ArgumentRole, string> = {
+const ROLE_NAME: Record<ArgumentRole, string> = {
   conclusion: "conclusion",
   premise: "premise",
   evidence: "evidence",
@@ -152,8 +152,8 @@ export const confidenceLabel = (value: number) =>
 
 // ---------- Evidence updater ----------
 
-export const MIN_PROB = 2;
-export const MAX_PROB = 98;
+const MIN_PROB = 2;
+const MAX_PROB = 98;
 export const clampProbability = (value: number) =>
   Math.min(Math.max(Math.round(value), MIN_PROB), MAX_PROB);
 

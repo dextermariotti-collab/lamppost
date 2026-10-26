@@ -1,9 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { AI_MODELS, aiOutput } from "./ai-models";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
 import { screenLocally } from "./moderation";
 import { limitedFailure } from "./rate-limit";
 import { parseGrade } from "./argument.functions";

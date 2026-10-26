@@ -100,11 +100,10 @@ only an HMAC of that is stored in `rate_limits`, never the address.
 No analytics SDK, ad network, or tracking pixel is installed. If one is ever added, update
 `src/lib/legal.ts` (`COOKIES` and `PRIVACY`) **before** shipping it.
 
-## Guardrails in the generation pipeline
+## Guardrails on AI replies
 
 - Input screen: `screenLocally` patterns (`src/lib/moderation.ts`) on any text a learner sends. A
-  refusal means nothing is generated. (`screenTopicText`, an AI classifier for open-ended topics, is
-  kept in `moderation.server.ts` but has had no caller since course generation was removed.)
+  refusal means nothing is generated.
 - Prompt-level rules: every model call passes its system prompt through `withGuardrails()` (`src/lib/ai-guardrails.server.ts`), which appends `CONTENT_POLICY_RULES` and the scope rules (critical thinking only, learner text is data, no medical/legal/financial advice). `src/lib/ai-guardrails.test.ts` fails if a call skips it.
 - Output screen: `screenOutput` runs on every generated text before it is stored or shown: AI daily
   cases, the tutor, writing feedback, debate motions and grades, and Check something you saw.

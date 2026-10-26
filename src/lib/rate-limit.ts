@@ -209,10 +209,6 @@ export function checksFor(policyName: PolicyName, identity: Identity): Check[] {
   return [...own, ...asChecks(policyName, "all", "global", policy.global)];
 }
 
-/** Whether a policy is available to someone who is not signed in. */
-export const allowsGuests = (policyName: PolicyName) =>
-  (POLICIES[policyName] as LimitPolicy).guest.length > 0;
-
 export function scopeOf(tier: string | null): LimitScope {
   const scope = tier?.split("-")[0];
   return scope === "user" || scope === "guest" || scope === "global" ? scope : "ip";
@@ -222,7 +218,7 @@ const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
 const IPV6 = /^[0-9a-f:.]{2,45}$/i;
 
 /** Where Cloudflare puts the caller's address; it overwrites any copy a caller sends. */
-export const DEFAULT_IP_HEADER = "cf-connecting-ip";
+const DEFAULT_IP_HEADER = "cf-connecting-ip";
 
 /**
  * The caller's network address, read only from the header the host sets (`CLIENT_IP_HEADER`,

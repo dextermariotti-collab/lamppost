@@ -4,7 +4,7 @@
  * (asking to be shown the answer) nothing. A hint halves whatever was earned, as it always has.
  */
 
-export const TRIES_BEFORE_SHOW_ME = 2;
+const TRIES_BEFORE_SHOW_ME = 2;
 
 export function scoreFor(input: {
   wrongAttempts: number;

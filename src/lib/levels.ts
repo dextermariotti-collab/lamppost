@@ -17,7 +17,7 @@ export type SkillLevel = {
   minAnswered: number;
 };
 
-export const SKILL_LEVELS: SkillLevel[] = [
+const SKILL_LEVELS: SkillLevel[] = [
   { name: "Novice", min: 0, minAnswered: 0 },
   { name: "Proficient", min: 55, minAnswered: 5 },
   { name: "Sharp", min: 72, minAnswered: 10 },
@@ -36,7 +36,7 @@ export type UnitLevel = {
   next: SkillLevel | null;
 };
 
-export function levelFor(accuracy: number, answered: number): { level: SkillLevel; rank: number } {
+function levelFor(accuracy: number, answered: number): { level: SkillLevel; rank: number } {
   let rank = 0;
   SKILL_LEVELS.forEach((level, i) => {
     if (accuracy >= level.min && answered >= level.minAnswered) rank = i;

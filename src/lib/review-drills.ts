@@ -21,7 +21,7 @@ export const REVIEW_DRILLS_EVENT = "lamppost-review-drills-change";
 const EVENT = REVIEW_DRILLS_EVENT;
 
 /** Below this stated confidence, a correct answer still earns a review. */
-export const LOW_CONFIDENCE = 60;
+const LOW_CONFIDENCE = 60;
 
 export const DRILL_INTERVALS = [1, 3, 7, 14, 30, 60, 120];
 /** Where a finished unit's lessons join the queue: the 30-day rung. */
@@ -251,13 +251,6 @@ export function gradeDrillReview(key: string, correct: boolean, variant?: number
       at: Date.now(),
     },
   });
-}
-
-export function markVariantSeen(key: string, variant: number) {
-  const store = readStore();
-  const item = store[key];
-  if (!item || item.seen.includes(variant)) return;
-  writeStore({ ...store, [key]: { ...item, seen: [...item.seen, variant].slice(-20) } });
 }
 
 export type ScheduledDrill = DrillItem & {

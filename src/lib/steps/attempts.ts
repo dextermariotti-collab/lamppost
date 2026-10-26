@@ -6,7 +6,7 @@ import type { LessonStep } from "./types";
  * thinking map, badges and the calibration chart all see them. Steps take indexes from 100 so
  * they can never collide with the numbered drills of an older, generated version of a lesson.
  */
-export const STEP_ATTEMPT_BASE = 100;
+const STEP_ATTEMPT_BASE = 100;
 export const stepAttemptIndex = (stepIndex: number) => STEP_ATTEMPT_BASE + stepIndex;
 
 /**

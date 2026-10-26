@@ -17,7 +17,7 @@ export function readDraft(): Companion | null {
   }
 }
 
-export function writeDraft(companion: Companion) {
+function writeDraft(companion: Companion) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(companion));
@@ -54,7 +54,7 @@ const toRow = (c: Companion) => ({
 });
 
 /** Writes the companion onto the signed-in user's profile row. */
-export async function saveCompanionForUser(userId: string, companion: Companion) {
+async function saveCompanionForUser(userId: string, companion: Companion) {
   // The row is created by the signup trigger (which also mints handle + invite code).
   const { error } = await supabase
     .from("profiles")

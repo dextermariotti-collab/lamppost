@@ -19,7 +19,7 @@ import { wordCount } from "./steps/types";
  */
 
 /** Everyday settings the cases rotate through, so a run of days doesn't repeat one topic. */
-export const CASE_SETTINGS = [
+const CASE_SETTINGS = [
   "a local council decision",
   "a small shop or café",
   "a school or college",
@@ -85,7 +85,7 @@ export function casePlanForDay(day: string): CasePlan {
 }
 
 /** Problems with the made-up-names and no-party-line rules, for any text a case contains. */
-export function contentRuleProblems(text: string): string[] {
+function contentRuleProblems(text: string): string[] {
   const problems: string[] = [];
   for (const name of REAL_NAMES)
     if (new RegExp(`\\b${name}\\b`, "i").test(text)) problems.push(`mentions ${name}`);

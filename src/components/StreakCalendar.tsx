@@ -6,9 +6,9 @@ import { calendarRange, weekdayLetter } from "@/lib/progress-view";
 import { useToday } from "@/lib/use-today";
 
 /** Streak milestones. The flame grows visibly at each one. */
-export const STREAK_TIERS = [3, 7, 30, 100];
+const STREAK_TIERS = [3, 7, 30, 100];
 
-export function streakTier(streak: number) {
+function streakTier(streak: number) {
   return STREAK_TIERS.filter((tier) => streak >= tier).length;
 }
 

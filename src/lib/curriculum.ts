@@ -27,19 +27,15 @@ export type CurriculumLesson = {
   prerequisites: string[];
   emoji: string;
   /**
-   * The lesson spine. `keyIdea` is the one thing the lesson teaches and `trap`
-   * is the specific mistake every drill must actually test. Both are fed into
-   * generation AND validation, so drills stop drifting into generic
-   * "find the claim" territory.
+   * The lesson spine. `keyIdea` is the one thing the lesson teaches and `trap` is the specific
+   * mistake its steps are written to catch: the brief each authored lesson was written to.
    */
   keyIdea: string;
   trap: string;
   /**
-   * The only drill types that fit this objective, in the order they are shown:
-   * 4–5 of them, all different (see drill-plan.ts). Generation never invents a
-   * drill type outside this list — a lesson about naming claims must not be asked
-   * to rank evidence, and rank-the-evidence only appears where there is real
-   * evidence for a stated claim.
+   * The drill types that fit this objective, in order: 4–5 of them, all different (see
+   * drill-plan.ts). The lesson's graded steps borrow them in turn, and each names a review
+   * queue item (`reviewKindFor`).
    */
   drills: ExerciseKind[];
   /** Which closing written task this objective calls for. */
@@ -56,8 +52,6 @@ export type CurriculumLink = {
 
 export const CURRICULUM_SLUG = "critical-thinking";
 export const CURRICULUM_TITLE = "Critical thinking";
-export const CURRICULUM_TAGLINE = "Seven skills for thinking clearly under pressure.";
-
 export const UNITS: CurriculumUnit[] = [
   {
     id: "claims",
@@ -533,7 +527,7 @@ export const LESSONS: CurriculumLesson[] = UNITS.flatMap((unit, unitIndex) => {
  * Explicit cross-unit links between related skills. These are curriculum facts,
  * never inferred at runtime — the home graph draws exactly these edges.
  */
-export const CROSS_LINKS: CurriculumLink[] = [
+const CROSS_LINKS: CurriculumLink[] = [
   {
     from: "evidence-correlation-causation",
     to: "probability-base-rates",
@@ -712,7 +706,3 @@ export function unitLinks(): UnitLink[] {
     return [{ ...link, fromUnit, toUnit }];
   });
 }
-
-/** Links that touch a given lesson, for lesson-level context. */
-export const linksForLesson = (id: string) =>
-  CROSS_LINKS.filter((link) => link.from === id || link.to === id);

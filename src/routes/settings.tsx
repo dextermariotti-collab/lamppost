@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { displayNameFor, useAccount, useRefreshAccount } from "@/lib/account";
 import { AI_PROVIDER_NAME, useAiConsentAgreedAt, withdrawAiConsent } from "@/lib/ai-consent";
 import { updateMyProfile } from "@/lib/profile.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "@/lib/progress";
 import {
   GOAL_OPTIONS,
