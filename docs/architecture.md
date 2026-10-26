@@ -73,11 +73,11 @@ the learning state. None of it blocks new features, but each gets more expensive
    due and the Skills screen. Still device-only: unit-check results, badges, levels and daily
    cases. Move them into the same document, each with its own merge rule and test, before many
    people use two devices.
-3. **One local-store primitive.** About twenty `lamppost-` stores are each read through hand-written
-   parse/write/event code, and most trust `JSON.parse(raw) as T`, so an old or corrupt save flows
-   straight into rendering. Write `createLocalStore({ key, version, schema, migrate, initial })` on
-   the shared-snapshot pattern `progress.ts` already uses, with a zod schema and migrations. Move
-   stores across one at a time as they're touched.
+3. ~~**Read saves defensively.**~~ Done (October 26): every `lamppost-` store reads its save through
+   `lib/local-store.ts` and keeps only what has the type it expects. The progress save is read field
+   by field (`readProgressState`), and the four synced stores use the same bounds the server applies
+   (`boundLearningState`), so one damaged field can't break every screen. A shared
+   `createLocalStore` (one snapshot and event per store) is still worth doing as stores are touched.
 4. **Feature folders.** `src/lib` holds 100 modules: domain logic, server code, hooks and storage
    sit side by side. Group by feature (`features/lessons`, `reviews`, `cases`, `social`, `account`)
    with `lib/` kept for shared building blocks. Do it as files are touched. Once it exists, extend

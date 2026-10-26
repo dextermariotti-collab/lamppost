@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { LESSONS } from "./curriculum";
-import { dayKey } from "./days";
+import { dayKey, isDayKey } from "./days";
 import { choiceStep, confidenceStep, stepProblems, wordCount } from "./steps/types";
 import { useToday } from "./use-today";
+import { arrayOf, isRecord, recordOf } from "./local-store";
 
 /**
  * The daily case: one real-world text (an ad, a post, an email, a chatbot answer...) and three
@@ -144,8 +145,16 @@ export function readCaseStore(): CaseStore {
       if (c && isAiCase(c)) generated[c.id] = c;
     }
     return {
-      history: parsed.history && typeof parsed.history === "object" ? parsed.history : {},
-      results: Array.isArray(parsed.results) ? parsed.results : [],
+      history: recordOf(parsed.history, (day) => (isDayKey(day) ? day : null)),
+      results: arrayOf(parsed.results, (r) =>
+        isRecord(r) &&
+        isDayKey(r["day"]) &&
+        typeof r["caseId"] === "string" &&
+        typeof r["right"] === "number" &&
+        typeof r["total"] === "number"
+          ? { day: r["day"], caseId: r["caseId"], right: r["right"], total: r["total"] }
+          : null,
+      ),
       generated,
     };
   } catch {

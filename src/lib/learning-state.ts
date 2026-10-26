@@ -1,3 +1,4 @@
+import { LESSONS } from "./curriculum";
 import { isDayKey } from "./days";
 import type { ExerciseAttempt } from "./exercise-store";
 import {
@@ -60,6 +61,11 @@ const KINDS: ReadonlySet<string> = new Set(EXERCISE_KINDS);
 const CRITERIA: ReadonlySet<string> = new Set(RUBRIC_CRITERIA);
 
 type Bounds = { known: ReadonlySet<string>; now: number };
+
+const KNOWN_LESSONS: ReadonlySet<string> = new Set(LESSONS.map((lesson) => lesson.id));
+
+/** The bounds for this moment: today's lessons and the clock now. */
+export const boundsNow = (): Bounds => ({ known: KNOWN_LESSONS, now: Date.now() });
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

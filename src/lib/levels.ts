@@ -1,5 +1,6 @@
 import { UNITS } from "./curriculum";
 import { unitMastery } from "./mastery";
+import { numberOrNull, readJson, recordOf } from "./local-store";
 
 /**
  * Skill levels per curriculum unit, derived from real drill accuracy. A unit
@@ -66,14 +67,7 @@ export function unitLevels(): UnitLevel[] {
 }
 
 function readSeen(): Record<string, number> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(SEEN_KEY);
-    const parsed = raw ? (JSON.parse(raw) as Record<string, number>) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
+  return recordOf(readJson(SEEN_KEY), numberOrNull);
 }
 
 /**

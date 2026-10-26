@@ -1,4 +1,5 @@
 import type { LessonStep } from "./steps/types";
+import { isRecord, numberOrNull, readJson } from "./local-store";
 
 /**
  * What the learner told us during onboarding: why they're here and how much time
@@ -104,13 +105,15 @@ const DEFAULT: Intent = {
 };
 
 export function readIntent(): Intent {
-  if (typeof window === "undefined") return DEFAULT;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? { ...DEFAULT, ...(JSON.parse(raw) as Intent) } : DEFAULT;
-  } catch {
-    return DEFAULT;
-  }
+  const saved = readJson(KEY);
+  if (!isRecord(saved)) return DEFAULT;
+  const motivation = MOTIVATION_IDS.find((id) => id === saved["motivation"]) ?? null;
+  return {
+    motivation,
+    minutesPerDay: numberOrNull(saved["minutesPerDay"]),
+    placementScore: numberOrNull(saved["placementScore"]),
+    placementSkipped: saved["placementSkipped"] === true,
+  };
 }
 
 export function saveIntent(patch: Partial<Intent>) {

@@ -1,11 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
-import { LESSONS } from "./curriculum";
 import {
   EMPTY_LEARNING_STATE,
   LEARNING_LIMITS,
   boundLearningState,
+  boundsNow,
   learningSignature,
   mergeLearningState,
   type LearningState,
@@ -34,8 +34,6 @@ type LearningStateTable = {
 /** `learning_state` isn't in the generated client types until its migration is applied there. */
 const learningStateOf = (client: unknown) =>
   (client as { from(name: "learning_state"): LearningStateTable }).from("learning_state");
-
-const KNOWN_LESSONS: ReadonlySet<string> = new Set(LESSONS.map((lesson) => lesson.id));
 
 /** A table that isn't there yet: an unmigrated database stores nothing and enforces nothing. */
 const missingTable = (error: { message: string; code?: string }) =>
@@ -77,7 +75,7 @@ export const syncLearningState = createServerFn({ method: "POST" })
     if (!verdict.ok) throw new Error(verdict.message);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const table = () => learningStateOf(supabaseAdmin);
-    const bounds = { known: KNOWN_LESSONS, now: Date.now() };
+    const bounds = boundsNow();
     const incoming = boundLearningState(data.state, bounds);
 
     for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {

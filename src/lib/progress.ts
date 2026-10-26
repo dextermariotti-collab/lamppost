@@ -25,6 +25,7 @@ import {
   gemsEarned,
   loadLessons,
   mergeAccountProgress,
+  readProgressState,
   saveLessons,
   studiedLessonIndexes,
   type ProgressState,
@@ -62,12 +63,7 @@ const COURSE = { slug: CURRICULUM_SLUG, topic: CURRICULUM_TITLE };
 let keepSave = false;
 
 function parse(raw: string): ProgressState {
-  const parsed = JSON.parse(raw) as Partial<ProgressState>;
-  const loaded: ProgressState = {
-    ...DEFAULT_STATE,
-    ...parsed,
-    dayKeyVersion: typeof parsed.dayKeyVersion === "number" ? parsed.dayKeyVersion : 1,
-  };
+  const loaded = readProgressState(JSON.parse(raw) as unknown);
   if (loaded.dayKeyVersion >= DAY_KEY_VERSION) return loadLessons(loaded, LESSON_ORDER, COURSE);
   const migrated = migrateHistoryToLocalDays(loaded, readActivityTimes(window.localStorage));
   try {

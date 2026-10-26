@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { LESSONS, UNITS } from "./curriculum";
 import { ATTEMPTS_EVENT, readAttemptStore } from "./exercise-store";
+import { boundLearningState, boundsNow } from "./learning-state";
+import { readJson } from "./local-store";
 import type { RubricCriterion } from "./exercises";
 
 /**
@@ -116,14 +118,7 @@ export function calibration(): { bands: CalibrationBand[]; answered: number } {
 /* --------------------------- written responses --------------------------- */
 
 export function readWritten(): WrittenScore[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(WRITTEN_KEY);
-    const parsed = raw ? (JSON.parse(raw) as WrittenScore[]) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  return boundLearningState({ written: readJson(WRITTEN_KEY) }, boundsNow()).written;
 }
 
 /** Stores one graded written response so the trend line has real history. */

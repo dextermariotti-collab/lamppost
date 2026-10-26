@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { LESSONS, lessonIndexOf, unitById, unitProgress } from "./curriculum";
 import { dayKey, daysBetween, shiftDay } from "./days";
+import { boundLearningState, boundsNow } from "./learning-state";
+import { readJson } from "./local-store";
 import { START_RATING, readRatingStore } from "./rating";
 import type { ExerciseKind } from "./exercises";
 
@@ -55,13 +57,7 @@ export function readDrillStore(): Store {
 }
 
 function readStore(): Store {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Store) : {};
-  } catch {
-    return {};
-  }
+  return boundLearningState({ reviews: readJson(KEY) }, boundsNow()).reviews;
 }
 
 /** Replaces the whole queue: used when the account's copy is merged in. */

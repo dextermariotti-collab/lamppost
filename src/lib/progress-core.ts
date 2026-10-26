@@ -1,6 +1,7 @@
 import { argumentXpFor } from "./exercises";
 import { dayKey, isDayKey, shiftDay } from "./days";
 import { MAX_FREEZES, advanceStreak, effectiveStreak } from "./streak";
+import { arrayOf, finite, isRecord, numberOrNull, recordOf, stringOrNull } from "./local-store";
 import type { ChestRecord } from "./rewards";
 
 /**
@@ -122,6 +123,89 @@ export const DEFAULT_STATE: ProgressState = {
 };
 
 export { MAX_FREEZES, effectiveStreak };
+
+const CELEBRATION_KINDS: readonly Celebration["kind"][] = ["lesson", "streak", "mastery"];
+const CHEST_SOURCES = new Set(["lesson", "review", "challenge"]);
+
+/**
+ * A saved progress state, read field by field: a field of the wrong type takes its default, so one
+ * damaged field can't break every screen. Anything that isn't a saved state at all throws, so the
+ * caller keeps the save aside rather than writing over it.
+ */
+export function readProgressState(raw: unknown): ProgressState {
+  if (!isRecord(raw)) throw new Error("Not a saved progress state");
+  const d = DEFAULT_STATE;
+  const count = (value: unknown, fallback: number) => Math.max(0, finite(value, fallback));
+  const counts = (value: unknown) => recordOf(value, (n) => numberOrNull(n));
+  const ids = (value: unknown) => arrayOf(value, stringOrNull);
+  const chests = isRecord(raw["chests"]) ? raw["chests"] : {};
+  const celebration = isRecord(raw["celebration"]) ? raw["celebration"] : null;
+  const freezeSaved = isRecord(raw["freezeSaved"]) ? raw["freezeSaved"] : null;
+  return {
+    streak: count(raw["streak"], d.streak),
+    longestStreak: count(raw["longestStreak"], d.longestStreak),
+    gems: count(raw["gems"], d.gems),
+    gemsSpent: count(raw["gemsSpent"], d.gemsSpent),
+    gemsGranted: count(raw["gemsGranted"], d.gemsGranted),
+    hintTokens: count(raw["hintTokens"], d.hintTokens),
+    cosmetics: ids(raw["cosmetics"]),
+    chests: { day: stringOrNull(chests["day"]), opened: count(chests["opened"], 0) },
+    chestHistory: arrayOf(raw["chestHistory"], (item) =>
+      isRecord(item) &&
+      typeof item["day"] === "string" &&
+      CHEST_SOURCES.has(item["source"] as string) &&
+      (item["kind"] === "gems" || item["kind"] === "hint")
+        ? ({
+            day: item["day"],
+            source: item["source"],
+            kind: item["kind"],
+            amount: count(item["amount"], 0),
+            converted: item["converted"] === true,
+          } as ChestRecord)
+        : null,
+    ),
+    weeklyXp: counts(raw["weeklyXp"]),
+    xp: count(raw["xp"], d.xp),
+    lastActiveDay: isDayKey(raw["lastActiveDay"]) ? raw["lastActiveDay"] : null,
+    history: counts(raw["history"]),
+    lessonsByDay: counts(raw["lessonsByDay"]),
+    dailyGoal: Math.min(10, Math.max(1, Math.round(finite(raw["dailyGoal"], d.dailyGoal)))),
+    celebration:
+      celebration &&
+      CELEBRATION_KINDS.includes(celebration["kind"] as Celebration["kind"]) &&
+      typeof celebration["title"] === "string" &&
+      typeof celebration["detail"] === "string" &&
+      typeof celebration["emoji"] === "string"
+        ? (celebration as Celebration)
+        : null,
+    courses: recordOf(raw["courses"], (course) =>
+      isRecord(course) && typeof course["topic"] === "string"
+        ? {
+            topic: course["topic"],
+            completed: count(course["completed"], 0),
+            total: count(course["total"], 0),
+            ...(typeof course["lastActivityAt"] === "number"
+              ? { lastActivityAt: course["lastActivityAt"] }
+              : {}),
+          }
+        : null,
+    ),
+    doneLessons: Array.isArray(raw["doneLessons"])
+      ? arrayOf(raw["doneLessons"], (n) =>
+          typeof n === "number" && Number.isInteger(n) && n >= 0 ? n : null,
+        )
+      : null,
+    doneLessonIds: Array.isArray(raw["doneLessonIds"]) ? ids(raw["doneLessonIds"]) : null,
+    placedLessonIds: ids(raw["placedLessonIds"]),
+    freezes: count(raw["freezes"], d.freezes),
+    freezeLog: arrayOf(raw["freezeLog"], (day) => (isDayKey(day) ? day : null)),
+    freezeSaved:
+      freezeSaved && isDayKey(freezeSaved["day"])
+        ? { days: count(freezeSaved["days"], 0), day: freezeSaved["day"] }
+        : null,
+    dayKeyVersion: finite(raw["dayKeyVersion"], 1),
+  };
+}
 
 const STREAK_MILESTONES = [3, 7, 30, 100, 365];
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { dayKey, daysBetween } from "./days";
+import { dayKey, daysBetween, isDayKey } from "./days";
+import { isRecord, readJson, recordOf } from "./local-store";
 
 /**
  * Results of the three-question checks taken before and after each unit (content in
@@ -22,15 +23,24 @@ export type CheckStore = Record<string, UnitCheckResults>;
 export const isCheckPhase = (value: string): value is CheckPhase =>
   value === "before" || value === "after" || value === "later";
 
+const readResult = (value: unknown): CheckResult | null =>
+  isRecord(value) &&
+  typeof value["right"] === "number" &&
+  typeof value["total"] === "number" &&
+  isDayKey(value["day"])
+    ? { right: value["right"], total: value["total"], day: value["day"] }
+    : null;
+
+/** Every check taken, as far as the save can be read: a damaged entry is left out. */
 export function readChecks(): CheckStore {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : {};
-    return parsed && typeof parsed === "object" ? (parsed as CheckStore) : {};
-  } catch {
-    return {};
-  }
+  return recordOf(readJson(KEY), (unit) => {
+    const phases: UnitCheckResults = {};
+    for (const [phase, result] of Object.entries(isRecord(unit) ? unit : {})) {
+      const read = readResult(result);
+      if (isCheckPhase(phase) && read) phases[phase] = read;
+    }
+    return Object.keys(phases).length > 0 ? phases : null;
+  });
 }
 
 /** Saves a finished check. Returns false, and changes nothing, if that check was already taken. */

@@ -1,9 +1,9 @@
-import { LESSONS } from "./curriculum";
 import { mayShareDeviceWith } from "./device-owner";
 import { ATTEMPTS_EVENT, readAttemptStore, writeAttemptStore } from "./exercise-store";
 import {
   LEARNING_STATE_VERSION,
   boundLearningState,
+  boundsNow,
   learningSignature,
   mergeLearningState,
   type LearningState,
@@ -27,8 +27,7 @@ export const LEARNING_EVENTS = [REVIEW_DRILLS_EVENT, RATING_EVENT, ATTEMPTS_EVEN
 /** How long the stores stay quiet before a change is sent (a lesson writes several at once). */
 const LEARNING_SYNC_DELAY_MS = 2000;
 
-const KNOWN_LESSONS: ReadonlySet<string> = new Set(LESSONS.map((lesson) => lesson.id));
-const bounds = () => ({ known: KNOWN_LESSONS, now: Date.now() });
+const bounds = boundsNow;
 
 function readLocalLearningState(): LearningState {
   return boundLearningState(

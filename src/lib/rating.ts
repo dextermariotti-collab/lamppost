@@ -1,3 +1,6 @@
+import { boundLearningState, boundsNow } from "./learning-state";
+import { readJson } from "./local-store";
+
 /**
  * Skill ratings.
  *
@@ -37,14 +40,7 @@ const blank = (): SkillRating => ({
 });
 
 function readStore(): Store {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    const parsed = raw ? (JSON.parse(raw) as Store) : {};
-    return typeof parsed === "object" && parsed !== null ? parsed : {};
-  } catch {
-    return {};
-  }
+  return boundLearningState({ ratings: readJson(KEY) }, boundsNow()).ratings;
 }
 
 function writeStore(store: Store) {

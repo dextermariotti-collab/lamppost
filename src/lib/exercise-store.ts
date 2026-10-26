@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { boundLearningState, boundsNow } from "./learning-state";
+import { readJson } from "./local-store";
 
 /**
  * Local record of exercise attempts, keyed by lesson + exercise index, so a
@@ -21,13 +23,7 @@ type Store = Record<string, ExerciseAttempt>;
 const idFor = (lessonId: string, index: number) => `${lessonId}#${index}`;
 
 function readStore(): Store {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Store) : {};
-  } catch {
-    return {};
-  }
+  return boundLearningState({ attempts: readJson(KEY) }, boundsNow()).attempts;
 }
 
 function writeStore(store: Store) {

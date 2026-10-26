@@ -1,5 +1,6 @@
 import { CURRICULUM_SLUG, LESSONS } from "./curriculum";
 import { reviewLessonWithin } from "./review-drills";
+import { isRecord, readJson, recordOf } from "./local-store";
 
 /**
  * "Explain it back" active practice — client-safe types and local signal store.
@@ -79,11 +80,25 @@ function byLessonId(store: Store): Store {
   return next;
 }
 
+const VERDICTS: readonly PracticeVerdict[] = ["solid", "shaky", "revisit"];
+
+const readStored = (value: unknown): Stored | null =>
+  isRecord(value) &&
+  VERDICTS.includes(value["verdict"] as PracticeVerdict) &&
+  typeof value["remembered"] === "string" &&
+  typeof value["at"] === "number"
+    ? {
+        verdict: value["verdict"] as PracticeVerdict,
+        remembered: value["remembered"],
+        connectionMade: value["connectionMade"] === true,
+        at: value["at"],
+      }
+    : null;
+
 function readStore(): Store {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem(KEY);
-    const parsed = raw ? (JSON.parse(raw) as Store) : {};
+    const parsed = recordOf(readJson(KEY), readStored);
     const store = byLessonId(parsed);
     if (store !== parsed) {
       try {
