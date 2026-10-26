@@ -423,6 +423,8 @@ describe("syncing progress", () => {
             progress_synced_at: lastSyncedAt.toISOString(),
             done_lessons: [],
           },
+          // The update matched the row it read (no other sync got there first).
+          rows: [{ id: ME }],
         },
       }),
     );
@@ -447,6 +449,97 @@ describe("syncing progress", () => {
     expect(written.total_xp - 1000).toBeGreaterThan(4000 * 0.49);
     // The burst is used up: the account is credited up to half a day ahead.
     expect(new Date(written.progress_synced_at).getTime()).toBeGreaterThan(now + 0.49 * 86_400_000);
+  });
+
+  it("writes only over the total it read, and credits the week once when two syncs race", async () => {
+    const fake = fakeAdmin({
+      profiles: {
+        single: {
+          current_streak: 0,
+          longest_streak: 0,
+          total_xp: 1000,
+          gems_earned: 0,
+          gems_granted: 0,
+          gems_spent: 0,
+          hint_tokens: 0,
+          last_active_day: null,
+          day_key_version: 2,
+          progress_synced_at: new Date(Date.now() - 86_400_000).toISOString(),
+          done_lessons: [],
+        },
+      },
+    });
+    // The first write finds the total already changed by another sync; the second goes through.
+    const base = fake.client.from;
+    let updates = 0;
+    fake.client.from = (table: string) => {
+      const chain = base(table) as Record<string, unknown>;
+      if (table !== "profiles") return chain;
+      const update = chain["update"] as (payload: unknown) => Record<string, unknown>;
+      chain["update"] = (payload: unknown) => {
+        updates += 1;
+        const won = updates > 1;
+        update(payload);
+        const filtered = {
+          eq: () => filtered,
+          select: async () => ({ data: won ? [{ id: ME }] : [], error: null }),
+        };
+        return filtered;
+      };
+      return chain;
+    };
+    withAdmin(fake);
+    fake.rpc.mockResolvedValue({ data: null, error: null });
+    await call("profile", "syncProgress", {
+      totalXp: 1200,
+      history: {},
+      today: TODAY,
+      dayKeyVersion: 2,
+    });
+    expect(updates).toBe(2);
+    // It read the account again before the write that went through.
+    const progressReads = fake.calls.filter(
+      (c) =>
+        c.table === "profiles" &&
+        c.steps.some(
+          ([name, columns]) => name === "select" && String(columns).includes("total_xp"),
+        ),
+    );
+    expect(progressReads).toHaveLength(2);
+    const credits = fake.rpc.mock.calls.filter(([fn]) => fn === "record_weekly_xp");
+    expect(credits).toHaveLength(1);
+  });
+
+  it("gives up rather than write over another sync it keeps losing to", async () => {
+    const fake = fakeAdmin({
+      profiles: {
+        single: {
+          current_streak: 0,
+          longest_streak: 0,
+          total_xp: 1000,
+          gems_earned: 0,
+          gems_granted: 0,
+          gems_spent: 0,
+          hint_tokens: 0,
+          last_active_day: null,
+          day_key_version: 2,
+          progress_synced_at: null,
+          done_lessons: [],
+        },
+        rows: [],
+      },
+    });
+    withAdmin(fake);
+    fake.rpc.mockResolvedValue({ data: null, error: null });
+    await expect(
+      call("profile", "syncProgress", {
+        totalXp: 1200,
+        history: {},
+        today: TODAY,
+        dayKeyVersion: 2,
+      }),
+    ).rejects.toThrow(/didn't sync/);
+    expect(fake.rpc.mock.calls.filter(([fn]) => fn === "record_weekly_xp")).toHaveLength(0);
   });
 
   it("refuses a history no device could have, and caps the freeze days", async () => {

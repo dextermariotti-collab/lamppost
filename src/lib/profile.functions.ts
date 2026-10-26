@@ -289,6 +289,162 @@ const SyncInput = z.object({
     .optional(),
 });
 
+type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
+
+/** How many times a sync that lost a race with another one reads the account again. */
+const SYNC_ATTEMPTS = 3;
+
+/**
+ * One read-and-write of the account's progress (see syncProgress). Null when another sync wrote in
+ * between, so nothing was written and it should be tried again from a fresh read.
+ */
+async function writeProgress(
+  admin: Admin,
+  userId: string,
+  data: z.infer<typeof SyncInput>,
+  today: string,
+  now: Date,
+) {
+  const { data: current, error: readError } = await admin
+    .from("profiles")
+    .select(
+      "current_streak, longest_streak, total_xp, gems_earned, gems_granted, gems_spent, hint_tokens, last_active_day, day_key_version, progress_synced_at",
+    )
+    .eq("id", userId)
+    .maybeSingle();
+  if (readError) throw new Error(readError.message);
+  if (!current) throw new Error("Your profile hasn't been created yet.");
+
+  const lastSyncedAt = current.progress_synced_at ? new Date(current.progress_synced_at) : null;
+  const days = activityToStore(data.history, { today, firstSync: lastSyncedAt === null, now });
+
+  // First sync from a client whose history is on local days: the account's
+  // UTC-keyed rows are replaced once, then the account is marked as migrated.
+  const upgrading = data.dayKeyVersion === 2 && (current.day_key_version ?? 1) < 2;
+  if (upgrading && days.length > 0) {
+    const oldest = days[days.length - 1]![0];
+    const keep = new Set(days.map(([day]) => day));
+    const { data: stale } = await admin
+      .from("daily_activity")
+      .select("day")
+      .eq("user_id", userId)
+      .gte("day", oldest);
+    const drop = (stale ?? []).map((row) => row.day).filter((day) => !keep.has(day));
+    if (drop.length > 0) {
+      await admin.from("daily_activity").delete().eq("user_id", userId).in("day", drop);
+    }
+  }
+
+  if (days.length > 0) {
+    const { data: existing } = await admin
+      .from("daily_activity")
+      .select("day, lessons_completed")
+      .eq("user_id", userId)
+      .in(
+        "day",
+        days.map(([day]) => day),
+      );
+    const byDay = new Map((existing ?? []).map((row) => [row.day, row.lessons_completed]));
+    const rows = days
+      .filter(([day, count]) => count > (byDay.get(day) ?? 0))
+      .map(([day, count]) => ({ user_id: userId, day, lessons_completed: count }));
+    if (rows.length > 0) {
+      const { error } = await admin
+        .from("daily_activity")
+        .upsert(rows, { onConflict: "user_id,day" });
+      if (error) throw new Error(error.message);
+    }
+  }
+
+  // The streak comes from what is stored, not from what was claimed.
+  const { data: stored, error: activityError } = await admin
+    .from("daily_activity")
+    .select("day, lessons_completed")
+    .eq("user_id", userId)
+    .gte("day", shiftDay(today, -STREAK_WINDOW_DAYS))
+    .lte("day", shiftDay(utcDay(now), 1));
+  if (activityError) throw new Error(activityError.message);
+  const activeDays = (stored ?? []).filter((r) => r.lessons_completed > 0).map((r) => r.day);
+  const freezeDays = freezeDaysToUse(data.freezeLog, today);
+  const { streak, lastActiveDay } = streakEndingAtLatest(activeDays, freezeDays);
+
+  const xpCap = growthAllowance({
+    perDay: MAX_XP_PER_DAY,
+    lastSyncedAt,
+    activeDays: days.length,
+    now,
+  });
+  const gemCap = growthAllowance({
+    perDay: MAX_GEMS_PER_DAY,
+    lastSyncedAt,
+    activeDays: days.length,
+    now,
+  });
+  const firstSync = lastSyncedAt === null;
+  const earned = boundedTotal(current.gems_earned, data.gemsEarned ?? data.gems ?? 0, gemCap);
+  const carry = firstSync
+    ? firstSyncCarryOver({
+        claim: data.carryOver,
+        earnedPlusGranted: earned + current.gems_granted,
+        maxHintTokens: MAX_HINT_TOKENS,
+        isCosmetic,
+      })
+    : null;
+  const totalXp = boundedTotal(current.total_xp, data.totalXp, xpCap);
+  const syncedUntil = creditedUntil({
+    lastSyncedAt,
+    growth: [
+      { gained: totalXp - current.total_xp, perDay: MAX_XP_PER_DAY },
+      { gained: earned - current.gems_earned, perDay: MAX_GEMS_PER_DAY },
+    ],
+    now,
+  });
+  const next = {
+    current_streak: streak,
+    longest_streak: Math.max(current.longest_streak, streak),
+    total_xp: totalXp,
+    gems_earned: earned,
+    last_active_day: lastActiveDay,
+    progress_synced_at: syncedUntil.toISOString(),
+    ...(upgrading ? { day_key_version: 2 } : {}),
+    // Only the account's first sync may bring across what was spent before it existed.
+    ...(carry
+      ? {
+          gems_spent: Math.max(current.gems_spent, carry.gemsSpent),
+          hint_tokens: Math.max(current.hint_tokens, carry.hintTokens),
+        }
+      : {}),
+  };
+  // Only over the total that was read: two syncs at once (two tabs, two devices) would otherwise
+  // both raise it from the same number and both credit the gain to the week.
+  const { data: won, error: updateError } = await admin
+    .from("profiles")
+    .update(next)
+    .eq("id", userId)
+    .eq("total_xp", current.total_xp)
+    .select("id");
+  if (updateError) throw new Error(updateError.message);
+  if (!won || won.length === 0) return null;
+
+  if (carry && carry.cosmetics.length > 0) {
+    await admin.from("user_cosmetics").upsert(
+      carry.cosmetics.map((item) => ({ user_id: userId, item })),
+      { onConflict: "user_id,item", ignoreDuplicates: true },
+    );
+  }
+
+  const credit = weeklyXpCredit({ firstSync, before: current.total_xp, after: next.total_xp });
+  if (credit > 0) {
+    await admin.rpc("record_weekly_xp", {
+      _user: userId,
+      _week: weekStartOf(today),
+      _delta: credit,
+    });
+  }
+
+  return { current, next };
+}
+
 /** How many days of activity are read back to recompute the streak. */
 const STREAK_WINDOW_DAYS = 400;
 
@@ -327,134 +483,12 @@ export const syncProgress = createServerFn({ method: "POST" })
     const now = new Date();
     const today = resolveToday(data, now);
 
-    const { data: current, error: readError } = await admin
-      .from("profiles")
-      .select(
-        "current_streak, longest_streak, total_xp, gems_earned, gems_granted, gems_spent, hint_tokens, last_active_day, day_key_version, progress_synced_at",
-      )
-      .eq("id", userId)
-      .maybeSingle();
-    if (readError) throw new Error(readError.message);
-    if (!current) throw new Error("Your profile hasn't been created yet.");
-
-    const lastSyncedAt = current.progress_synced_at ? new Date(current.progress_synced_at) : null;
-    const days = activityToStore(data.history, { today, firstSync: lastSyncedAt === null, now });
-
-    // First sync from a client whose history is on local days: the account's
-    // UTC-keyed rows are replaced once, then the account is marked as migrated.
-    const upgrading = data.dayKeyVersion === 2 && (current.day_key_version ?? 1) < 2;
-    if (upgrading && days.length > 0) {
-      const oldest = days[days.length - 1]![0];
-      const keep = new Set(days.map(([day]) => day));
-      const { data: stale } = await admin
-        .from("daily_activity")
-        .select("day")
-        .eq("user_id", userId)
-        .gte("day", oldest);
-      const drop = (stale ?? []).map((row) => row.day).filter((day) => !keep.has(day));
-      if (drop.length > 0) {
-        await admin.from("daily_activity").delete().eq("user_id", userId).in("day", drop);
-      }
+    let written: Awaited<ReturnType<typeof writeProgress>> = null;
+    for (let attempt = 0; attempt < SYNC_ATTEMPTS && !written; attempt += 1) {
+      written = await writeProgress(admin, userId, data, today, now);
     }
-
-    if (days.length > 0) {
-      const { data: existing } = await admin
-        .from("daily_activity")
-        .select("day, lessons_completed")
-        .eq("user_id", userId)
-        .in(
-          "day",
-          days.map(([day]) => day),
-        );
-      const byDay = new Map((existing ?? []).map((row) => [row.day, row.lessons_completed]));
-      const rows = days
-        .filter(([day, count]) => count > (byDay.get(day) ?? 0))
-        .map(([day, count]) => ({ user_id: userId, day, lessons_completed: count }));
-      if (rows.length > 0) {
-        const { error } = await admin
-          .from("daily_activity")
-          .upsert(rows, { onConflict: "user_id,day" });
-        if (error) throw new Error(error.message);
-      }
-    }
-
-    // The streak comes from what is stored, not from what was claimed.
-    const { data: stored, error: activityError } = await admin
-      .from("daily_activity")
-      .select("day, lessons_completed")
-      .eq("user_id", userId)
-      .gte("day", shiftDay(today, -STREAK_WINDOW_DAYS))
-      .lte("day", shiftDay(utcDay(now), 1));
-    if (activityError) throw new Error(activityError.message);
-    const activeDays = (stored ?? []).filter((r) => r.lessons_completed > 0).map((r) => r.day);
-    const freezeDays = freezeDaysToUse(data.freezeLog, today);
-    const { streak, lastActiveDay } = streakEndingAtLatest(activeDays, freezeDays);
-
-    const xpCap = growthAllowance({
-      perDay: MAX_XP_PER_DAY,
-      lastSyncedAt,
-      activeDays: days.length,
-      now,
-    });
-    const gemCap = growthAllowance({
-      perDay: MAX_GEMS_PER_DAY,
-      lastSyncedAt,
-      activeDays: days.length,
-      now,
-    });
-    const firstSync = lastSyncedAt === null;
-    const earned = boundedTotal(current.gems_earned, data.gemsEarned ?? data.gems ?? 0, gemCap);
-    const carry = firstSync
-      ? firstSyncCarryOver({
-          claim: data.carryOver,
-          earnedPlusGranted: earned + current.gems_granted,
-          maxHintTokens: MAX_HINT_TOKENS,
-          isCosmetic,
-        })
-      : null;
-    const totalXp = boundedTotal(current.total_xp, data.totalXp, xpCap);
-    const syncedUntil = creditedUntil({
-      lastSyncedAt,
-      growth: [
-        { gained: totalXp - current.total_xp, perDay: MAX_XP_PER_DAY },
-        { gained: earned - current.gems_earned, perDay: MAX_GEMS_PER_DAY },
-      ],
-      now,
-    });
-    const next = {
-      current_streak: streak,
-      longest_streak: Math.max(current.longest_streak, streak),
-      total_xp: totalXp,
-      gems_earned: earned,
-      last_active_day: lastActiveDay,
-      progress_synced_at: syncedUntil.toISOString(),
-      ...(upgrading ? { day_key_version: 2 } : {}),
-      // Only the account's first sync may bring across what was spent before it existed.
-      ...(carry
-        ? {
-            gems_spent: Math.max(current.gems_spent, carry.gemsSpent),
-            hint_tokens: Math.max(current.hint_tokens, carry.hintTokens),
-          }
-        : {}),
-    };
-    const { error: updateError } = await admin.from("profiles").update(next).eq("id", userId);
-    if (updateError) throw new Error(updateError.message);
-
-    if (carry && carry.cosmetics.length > 0) {
-      await admin.from("user_cosmetics").upsert(
-        carry.cosmetics.map((item) => ({ user_id: userId, item })),
-        { onConflict: "user_id,item", ignoreDuplicates: true },
-      );
-    }
-
-    const credit = weeklyXpCredit({ firstSync, before: current.total_xp, after: next.total_xp });
-    if (credit > 0) {
-      await admin.rpc("record_weekly_xp", {
-        _user: userId,
-        _week: weekStartOf(today),
-        _delta: credit,
-      });
-    }
+    if (!written) throw new Error("That didn't sync. Try again in a moment.");
+    const { current, next } = written;
 
     // Kept apart from the update above so an account still syncs before this column exists.
     let doneLessons = await readDoneLessons(admin, userId);
