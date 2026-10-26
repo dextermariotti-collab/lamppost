@@ -69,12 +69,13 @@ the learning state. None of it blocks new features, but each gets more expensive
    review queue already knows the lesson. Add new review variants in the step format, written by
    hand or by AI. Then retire the legacy pipeline, its tables and its rate limits. This is the
    biggest simplification available, and it removes the main source of AI cost.
-2. **Sync the learning state, not just the numbers.** The review queue, skill ratings, unit-check
-   results, badges and drill attempts are still device-only (about ten stores). A new phone gets
-   XP, streak, lessons and the streak's recent days (`getMyProfile` returns the last 60 active
-   days), but not the reviews that are due. Store one versioned, server-bounded
-   `learning_state` document per account, merged the way progress is. Decide this before many
-   people use two devices, because merging two histories later is harder than syncing from the start.
+2. **Sync the learning state, not just the numbers.** *Started October 26.* The review queue,
+   skill ratings, drill attempts and graded writing now follow the account as one bounded,
+   versioned `learning_state` document per account, merged the same way on the device and the
+   server (`lib/learning-state.ts`, `syncLearningState`), so a new phone gets the reviews that are
+   due and the Skills screen. Still device-only: unit-check results, badges, levels and daily
+   cases. Move them into the same document, each with its own merge rule and test, before many
+   people use two devices.
 3. **One local-store primitive.** About twenty `lamppost-` stores are each read through hand-written
    parse/write/event code, and most trust `JSON.parse(raw) as T`, so an old or corrupt save flows
    straight into rendering. Write `createLocalStore({ key, version, schema, migrate, initial })` on

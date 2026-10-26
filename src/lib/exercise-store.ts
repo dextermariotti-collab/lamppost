@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
  */
 
 const KEY = "lamppost-exercises-v1";
+export const ATTEMPTS_EVENT = "lamppost-exercises-change";
 
 export type ExerciseAttempt = {
   /** Serialized answer: option index, bucket map or ordering, per exercise kind. */
@@ -33,6 +34,7 @@ function writeStore(store: Store) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(KEY, JSON.stringify(store));
+    window.dispatchEvent(new Event(ATTEMPTS_EVENT));
   } catch {
     /* ignore */
   }
@@ -71,6 +73,11 @@ export function useLessonAttempts(lessonId: string) {
 /** Every attempt, keyed `lessonId#index` — read by the progress analytics. */
 export function readAttemptStore(): Record<string, ExerciseAttempt> {
   return readStore();
+}
+
+/** Replaces every attempt: used when the account's copy is merged in. */
+export function writeAttemptStore(store: Record<string, ExerciseAttempt>) {
+  writeStore(store);
 }
 
 /** Share of a lesson's flaw drills the learner got right — feeds review timing. */

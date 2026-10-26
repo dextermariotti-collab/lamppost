@@ -2,7 +2,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const reset = vi.hoisted(() => vi.fn());
+const resetLearning = vi.hoisted(() => vi.fn());
 vi.mock("./progress", () => ({ resetProgressStore: reset }));
+vi.mock("./learning-sync", () => ({ resetLearningSync: resetLearning }));
 
 import { clearDeviceData } from "./device-data";
 
@@ -10,6 +12,7 @@ beforeEach(() => {
   window.localStorage.clear();
   window.sessionStorage.clear();
   reset.mockClear();
+  resetLearning.mockClear();
 });
 
 describe("clearDeviceData", () => {
@@ -25,6 +28,8 @@ describe("clearDeviceData", () => {
     expect(Object.keys(window.localStorage)).toEqual(["other-app"]);
     expect(Object.keys(window.sessionStorage)).toEqual(["other-tab"]);
     expect(reset).toHaveBeenCalledTimes(1);
+    // A sync reply still on its way can't write the old reviews back.
+    expect(resetLearning).toHaveBeenCalledTimes(1);
   });
 
   it("still clears local storage and resets when session storage can't be read", () => {

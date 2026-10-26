@@ -10,7 +10,8 @@ import { useCallback, useEffect, useState } from "react";
  */
 
 const KEY = "lamppost-rating-v1";
-const EVENT = "lamppost-rating-change";
+export const RATING_EVENT = "lamppost-rating-change";
+const EVENT = RATING_EVENT;
 
 /** Rating a learner starts at, and the rating each difficulty band represents. */
 export const START_RATING = 1000;
@@ -27,7 +28,8 @@ export type SkillRating = {
   seen: number[];
 };
 
-type Store = Record<string, SkillRating>;
+export type RatingStore = Record<string, SkillRating>;
+type Store = RatingStore;
 
 const blank = (): SkillRating => ({
   rating: START_RATING,
@@ -56,6 +58,15 @@ function writeStore(store: Store) {
   } catch {
     /* ignore */
   }
+}
+
+export function readRatingStore(): Store {
+  return readStore();
+}
+
+/** Replaces every rating: used when the account's copy is merged in. */
+export function writeRatingStore(store: Store) {
+  writeStore(store);
 }
 
 export function skillRating(lessonId: string): SkillRating {

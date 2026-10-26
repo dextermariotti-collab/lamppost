@@ -42,6 +42,7 @@ const SHIPPED = [
   "src/lib/friends.functions.ts#sendFriendRequest",
   "src/lib/friends.functions.ts#sendNudge",
   "src/lib/league.functions.ts#getLeague",
+  "src/lib/learning-state.functions.ts#syncLearningState",
   "src/lib/look-closer.functions.ts#lookCloser",
   "src/lib/practice.functions.ts#getPracticeAccess",
   "src/lib/practice.functions.ts#listPracticeSessions",

@@ -17,6 +17,7 @@ import { ConsentGate } from "../components/ConsentGate";
 import { NativeShell } from "../components/NativeShell";
 import { PhoneFrame } from "../components/PhoneFrame";
 import { RewardHost } from "../components/RewardHost";
+import { LearningSyncWatcher } from "../components/LearningSyncWatcher";
 import { UpkeepWatcher } from "../components/UpkeepWatcher";
 import { Button } from "../components/ui/button";
 import { THEME_SCRIPT, ThemeProvider } from "../lib/theme";
@@ -151,6 +152,7 @@ function RootComponent() {
         <AnswerFeedbackHost />
         <RewardHost />
         <UpkeepWatcher />
+        <LearningSyncWatcher />
         <ConsentGate />
         <NativeShell />
       </ThemeProvider>

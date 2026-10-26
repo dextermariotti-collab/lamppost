@@ -67,7 +67,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
 | `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d → 30d → 60d → 120d), including the upkeep of finished units |
 | `lamppost-case-v1` | `lib/daily-case.ts` | daily cases read: case id → local day, and each day's result (device only) |
-| `lamppost-rating-v1`, `-written-v1`, `-levels-v1`, `-badges-v1`, … | `rating.ts`, `mastery.ts`, … | skill ratings, rubric scores, level-ups, badges |
+| `lamppost-rating-v1`, `-written-v1`, `-levels-v1`, `-badges-v1`, … | `rating.ts`, `mastery.ts`, … | skill ratings, rubric scores, level-ups, badges (ratings and rubric scores also sync, with the review queue and drill attempts: `learning_state`) |
 | `lamppost-unit-checks-v1` | `lib/unit-checks.ts` | before/after/three-months-later unit check results (first result kept, never overwritten; device only) |
 | `lamppost-ai-consent-v1` | `lib/ai-consent.ts` | when the learner agreed to their text going to the AI provider, and which provider (device only) |
 
@@ -108,8 +108,17 @@ prove a lesson was done** — see "Security model".
   unit and "stop n of m", and `unitProgress` works out each unit's span from `LESSONS`.
 - **Finished lessons follow the account.** `syncProgress` adds the device's ids to `profiles.done_lessons`
   (server-only, known ids only, never removes one) and returns the list; `getMyProfile` returns it on
-  sign-in and the device unions it in (`adoptLessons`). The rest of the learning state (reviews,
-  ratings, checks) is still device-only — see `docs/architecture.md`, roadmap 2.
+  sign-in and the device unions it in (`adoptLessons`).
+- **Reviews and skills follow the account too.** The review queue, skill ratings, drill attempts and
+  graded writing are one document per account (`learning_state`, server-only). `LearningSyncWatcher`
+  sends the device's copy when the account is known and after each change (`lib/learning-sync.ts`:
+  one call in flight, unchanged state not sent), `syncLearningState` merges it into the stored copy and
+  returns the result, and the device adopts that. Both sides use the same pure rules
+  (`lib/learning-state.ts`): `boundLearningState` keeps known lessons and in-range values, capped;
+  `mergeLearningState` keeps the review or rating changed last, a drill's first answer and every
+  graded score, and gives the same answer in either order. A sync never removes anything. A new
+  field that should follow the learner goes in that document with its own merge rule and test. Unit
+  checks, badges, levels and daily cases are still device-only (`docs/architecture.md`, roadmap 2).
 - **The day boundary is the device's local calendar day**, as a `YYYY-MM-DD` key. Use
   `dayKey()` / `shiftDay()` from `lib/days.ts` (never `toISOString().slice(0, 10)`, which is UTC).
   History keys, `lastActiveDay`, freeze logs, review due dates and the daily case all use it. A

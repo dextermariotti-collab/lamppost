@@ -115,6 +115,7 @@ describe("the policies on people's data", () => {
     const serverOnly = [
       "consent_records",
       "generated_cases",
+      "learning_state",
       "league_results",
       "lesson_parts",
       "rate_limits",

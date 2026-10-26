@@ -84,6 +84,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       leagueResults,
       blocks,
       peopleReports,
+      learningState,
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("daily_activity").select("*").eq("user_id", userId),
@@ -118,6 +119,12 @@ export const exportMyData = createServerFn({ method: "POST" })
         .from("user_reports")
         .select("id, reported_user_id, reason, details, status, created_at")
         .eq("reporter_id", userId),
+      // Reviews, skill ratings, drill attempts and graded writing, kept for every device.
+      supabaseAdmin
+        .from("learning_state" as never)
+        .select("state, updated_at")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
 
     return {
@@ -144,7 +151,8 @@ export const exportMyData = createServerFn({ method: "POST" })
       leagueResults: leagueResults.data ?? [],
       blockedPeople: blocks.data ?? [],
       reportsYouSent: peopleReports.data ?? [],
-      note: "Courses, lesson progress and the review schedule are also stored locally on each device you use.",
+      learningState: learningState.data ?? null,
+      note: "Courses, lesson progress, reviews and skills are also stored locally on each device you use.",
     };
   });
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { LESSONS, UNITS } from "./curriculum";
-import { readAttemptStore } from "./exercise-store";
+import { ATTEMPTS_EVENT, readAttemptStore } from "./exercise-store";
 import type { RubricCriterion } from "./exercises";
 
 /**
@@ -10,6 +10,7 @@ import type { RubricCriterion } from "./exercises";
  */
 
 const WRITTEN_KEY = "lamppost-written-v1";
+export const WRITTEN_EVENT = "lamppost-written-change";
 
 export type UnitMastery = {
   unitId: string;
@@ -114,7 +115,7 @@ export function calibration(): { bands: CalibrationBand[]; answered: number } {
 
 /* --------------------------- written responses --------------------------- */
 
-function readWritten(): WrittenScore[] {
+export function readWritten(): WrittenScore[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(WRITTEN_KEY);
@@ -141,9 +142,18 @@ export function recordWrittenScore(
       at: Date.now(),
       ...(scores ? { scores } : {}),
     };
-    const next = [...readWritten(), entry].slice(-40);
-    window.localStorage.setItem(WRITTEN_KEY, JSON.stringify(next));
-    window.dispatchEvent(new Event("lamppost-written-change"));
+    writeWritten([...readWritten(), entry].slice(-40));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Replaces the written scores: used when the account's copy is merged in. */
+export function writeWritten(scores: WrittenScore[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(WRITTEN_KEY, JSON.stringify(scores));
+    window.dispatchEvent(new Event(WRITTEN_EVENT));
   } catch {
     /* ignore */
   }
@@ -197,10 +207,12 @@ export function useMasteryAnalytics() {
     const sync = () =>
       setData({ units: unitMastery(), calibration: calibration(), written: writtenTrend() });
     sync();
-    window.addEventListener("lamppost-written-change", sync);
+    window.addEventListener(WRITTEN_EVENT, sync);
+    window.addEventListener(ATTEMPTS_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
-      window.removeEventListener("lamppost-written-change", sync);
+      window.removeEventListener(WRITTEN_EVENT, sync);
+      window.removeEventListener(ATTEMPTS_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
   }, []);

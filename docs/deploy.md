@@ -147,7 +147,7 @@ endpoint answers 503.
   their browser's storage for the site's address. If the app was on your own domain, point that
   domain at Cloudflare and nothing on anyone's device is lost. If it was on the previous host's
   address, a new address starts every browser fresh, and only signed-in learners get their
-  numbers back (XP, streak and finished lessons sync; reviews and skill ratings are device-only).
+  numbers back (XP, streak, finished lessons, reviews and skills sync; unit checks and badges are device-only).
 - **Accounts and data.** The new Supabase project starts empty. If you can get a database export
   from the previous host (including the `auth` schema), restore it into the new project instead of running
   `db:push`, then mark the migrations as applied so later ones run on top:

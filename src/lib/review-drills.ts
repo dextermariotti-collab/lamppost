@@ -17,7 +17,8 @@ import type { ExerciseKind } from "./exercises";
  */
 
 const KEY = "lamppost-review-drills-v1";
-const EVENT = "lamppost-review-drills-change";
+export const REVIEW_DRILLS_EVENT = "lamppost-review-drills-change";
+const EVENT = REVIEW_DRILLS_EVENT;
 
 /** Below this stated confidence, a correct answer still earns a review. */
 export const LOW_CONFIDENCE = 60;
@@ -40,12 +41,17 @@ export type DrillItem = {
   at: number;
 };
 
-type Store = Record<string, DrillItem>;
+export type DrillStore = Record<string, DrillItem>;
+type Store = DrillStore;
 
 export const drillKey = (lessonId: string, kind: ExerciseKind) => `${lessonId}#${kind}`;
 
 function daysUntil(due: string, today = dayKey()) {
   return daysBetween(today, due);
+}
+
+export function readDrillStore(): Store {
+  return readStore();
 }
 
 function readStore(): Store {
@@ -56,6 +62,11 @@ function readStore(): Store {
   } catch {
     return {};
   }
+}
+
+/** Replaces the whole queue: used when the account's copy is merged in. */
+export function writeDrillStore(store: Store) {
+  writeStore(store);
 }
 
 function writeStore(store: Store) {

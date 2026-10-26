@@ -9,6 +9,7 @@ const h = vi.hoisted(() => ({
   navigate: vi.fn(),
   contactHref: vi.fn(),
   resetProgress: vi.fn(),
+  resetLearning: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-start", () => ({
@@ -21,6 +22,7 @@ vi.mock("@/lib/account-data.functions", () => ({
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut: h.signOut } } }));
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => h.navigate }));
 vi.mock("@/lib/progress", () => ({ resetProgressStore: h.resetProgress }));
+vi.mock("@/lib/learning-sync", () => ({ resetLearningSync: h.resetLearning }));
 vi.mock("@/lib/legal-config", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/legal-config")>()),
   contactHref: h.contactHref,
@@ -173,6 +175,7 @@ describe("Data on this device (no account)", () => {
     expect(window.localStorage.getItem("other-app")).toBe("keep");
     expect(screen.getByRole("status").textContent).toMatch(/Cleared/);
     expect(h.resetProgress).toHaveBeenCalledTimes(1);
+    expect(h.resetLearning).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenCalledWith("/");
   });
 });

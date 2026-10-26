@@ -1,3 +1,4 @@
+import { resetLearningSync } from "./learning-sync";
 import { resetProgressStore } from "./progress";
 
 /**
@@ -13,6 +14,7 @@ export function clearDeviceData() {
     /* storage blocked: nothing can be held there either */
   }
   resetProgressStore();
+  resetLearningSync();
 }
 
 function clearPrefixed(storage: Storage) {
