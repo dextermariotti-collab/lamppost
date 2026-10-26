@@ -1,10 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BookOpen,
   ChevronRight,
   Flame,
   LogIn,
-  LogOut,
   Repeat,
   Settings,
   Sparkles,
@@ -15,9 +14,9 @@ import { useMemo, useState } from "react";
 import { BadgeIcon, TIER_STYLE } from "@/components/BadgeIcon";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { SignOutChoice } from "@/components/SignOutChoice";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
 import { displayNameFor, useAccount, useFriends } from "@/lib/account";
 import { earnedFirst, useBadges, type BadgeState } from "@/lib/badges";
 import { useCompanion } from "@/lib/companion-store";
@@ -52,7 +51,6 @@ function ProfileScreen() {
   const { companion, signedIn } = useCompanion();
   const { data: account, isError: accountFailed, refetch: refetchAccount } = useAccount();
   const { data: friends, isError: friendsFailed, refetch: refetchFriends } = useFriends();
-  const navigate = useNavigate();
   const [openBadge, setOpenBadge] = useState<BadgeState | null>(null);
   // The same achievements, counted the same way, as Progress and the unlock toasts.
   const badges = useBadges(state);
@@ -219,16 +217,7 @@ function ProfileScreen() {
         </ul>
 
         {signedIn ? (
-          <button
-            onClick={async () => {
-              await supabase.auth.signOut();
-              navigate({ to: "/auth", replace: true });
-            }}
-            className="mt-8 flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            Sign out
-          </button>
+          <SignOutChoice />
         ) : (
           <Link
             to="/auth"
