@@ -42,7 +42,7 @@ describe("createLimiter.enforce", () => {
       data: [{ allowed: false, retry_after: 3000, tier: "global-day" }],
       error: null,
     });
-    const result = await createLimiter({ rpc, identity: async () => member }).enforce("socratic");
+    const result = await createLimiter({ rpc, identity: async () => member }).enforce("grading");
     expect(result.ok === false && result.scope).toBe("global");
     expect(result.ok === false && result.message).toMatch(/very busy/i);
   });
@@ -173,8 +173,8 @@ describe("guardedGeneration", () => {
     };
   };
   const opts = (run: () => Promise<string>) => ({
-    policy: "lessonGeneration" as const,
-    lockKey: "gen:lesson:evidence-types",
+    policy: "caseGeneration" as const,
+    lockKey: "gen:case:2026-11-02",
     lockTtlSeconds: 120,
     run,
   });

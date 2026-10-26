@@ -202,7 +202,7 @@ function Summary({
             <li className="py-3">
               <span className="block font-bold">Each line comes back</span>
               <span className="text-muted-foreground">
-                Every lesson returns as a fresh drill after 30, 60 and 120 days.
+                Every lesson comes back in your reviews after 30, 60 and 120 days.
               </span>
             </li>
             <li className="py-3">

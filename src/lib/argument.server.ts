@@ -17,38 +17,13 @@ const asTask = (value: unknown): WrittenTaskText | null => {
 };
 
 /**
- * The writing task a lesson set, read on the server so the grader never takes the passage or
- * the task from the request. An authored lesson has one. A generated lesson's task is in the
- * cache, or still in its parts while the lesson is being written; when there is more than one,
- * `shown` (the passage the browser says it showed) picks between them and is never forwarded.
+ * The writing task a lesson set, read from its authored script on the server, so the grader
+ * never takes the passage or the task from the request.
  */
-export async function writtenTaskFor(
-  meta: CurriculumLesson,
-  shown?: string,
-): Promise<WrittenTaskText | null> {
+export async function writtenTaskFor(meta: CurriculumLesson): Promise<WrittenTaskText | null> {
   const { loadLessonScript } = await import("@/content/lessons");
   const script = await loadLessonScript(meta.unitId, meta.id);
-  if (script.ok) return asTask(script.script.written);
-
-  const generate = await import("./curriculum-generate.server");
-  const cached = await generate.readCachedLesson(meta.id).catch(() => undefined);
-  const part = await generate
-    .admin()
-    .then((db) =>
-      db
-        .from("lesson_parts")
-        .select("content")
-        .eq("lesson_id", meta.id)
-        .eq("part", "written")
-        .eq("content_version", generate.CONTENT_VERSION)
-        .maybeSingle(),
-    )
-    .then(({ data }) => data?.content)
-    .catch(() => undefined);
-  const found = [asTask(part), asTask(cached?.written)].filter(
-    (task): task is WrittenTaskText => task !== null,
-  );
-  return found.find((task) => task.passage === shown) ?? found[0] ?? null;
+  return script.ok ? asTask(script.script.written) : null;
 }
 
 /**

@@ -34,7 +34,7 @@ describe("what reaches the browser", () => {
   });
 
   it("reads server secrets only in server code, and never ships them to the browser", () => {
-    const secret = /SUPABASE_SERVICE_ROLE_KEY|AI_API_KEY|WARM_TOKEN/;
+    const secret = /SUPABASE_SERVICE_ROLE_KEY|AI_API_KEY|RATE_LIMIT_SECRET/;
     const serverSide = (file: string) =>
       /\.(server|functions)\.ts$/.test(file) || file.startsWith(join("src", "routes", "api"));
     const found = source

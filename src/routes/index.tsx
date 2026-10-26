@@ -19,7 +19,6 @@ import {
   unitById,
   unitProgress,
 } from "@/lib/curriculum";
-import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { CASE_SOURCES, caseUnits, isAiCase, useDailyCase, type CasePick } from "@/lib/daily-case";
 import { useAiCaseTopUp } from "@/lib/daily-case-ai";
 import { readAttemptStore } from "@/lib/exercise-store";
@@ -63,7 +62,6 @@ function Home() {
   // Re-renders Home at local midnight and on coming back, so the goal, reviews and case move on.
   const today = useToday();
   // Makes sure the curriculum exists locally with its lesson titles.
-  useCurriculumCourse();
 
   // First run: introduce the app. Nothing renders until that check has run, so a new
   // visitor never sees home flash first.
@@ -202,7 +200,7 @@ function Home() {
                 <span className="block text-xs leading-relaxed text-muted-foreground">
                   {urgency === "piling" && maxOverdue >= 2
                     ? `Oldest is ${maxOverdue} days overdue.`
-                    : "New scenarios, same skills."}
+                    : "The skills that slipped, back before they fade."}
                 </span>
               </span>
               <ArrowRight aria-hidden className="h-5 w-5 shrink-0 text-foreground" />

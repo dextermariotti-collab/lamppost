@@ -64,8 +64,8 @@ describe("checksFor", () => {
 });
 
 describe("policies protect the expensive paths", () => {
-  it("caps lesson generation globally, per hour", () => {
-    expect(POLICIES.lessonGeneration.global.some((t) => t.name === "hour")).toBe(true);
+  it("caps AI case writing globally, per day", () => {
+    expect(POLICIES.caseGeneration.global.some((t) => t.name === "day")).toBe(true);
   });
 
   it("does not offer guests a policy for signed-in-only actions", () => {

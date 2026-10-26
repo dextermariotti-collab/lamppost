@@ -5,11 +5,11 @@ import { START_RATING, readRatingStore } from "./rating";
 import type { ExerciseKind } from "./exercises";
 
 /**
- * Spaced repetition over reasoning drills, not over lesson text.
+ * Spaced repetition over the lessons' questions, not over lesson text.
  *
- * An item is created when a drill actually went badly — wrong, partly wrong, or
- * right but with low stated confidence. It comes back as a FRESH variant of the
- * same skill and drill type, so the learner can't memorize an answer.
+ * An item is created when a question actually went badly — wrong, partly wrong, or
+ * right but with low stated confidence. It comes back as one of that lesson's steps
+ * (`pickReviewStep`), the one missed first, and then the others in turn.
  *
  * Intervals: 1d → 3d → 7d → 14d → 30d → 60d → 120d. A miss resets to the first box. A finished
  * unit also puts each of its lessons on the 30-day rung, so skills that never went wrong still
@@ -352,7 +352,7 @@ export function reviewUrgencyFor(due: number, maxOverdue: number) {
 /** One calm line about when the next review is, for when nothing is due. */
 export function nextReviewLine(items: readonly { dueInDays: number }[]): string {
   const upcoming = items.map((item) => item.dueInDays).filter((days) => days > 0);
-  if (upcoming.length === 0) return "Drills you miss come back here as new scenarios.";
+  if (upcoming.length === 0) return "Questions you miss come back here.";
   const soonest = Math.min(...upcoming);
   return soonest === 1
     ? "Your next review is tomorrow."

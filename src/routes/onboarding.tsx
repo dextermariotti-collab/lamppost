@@ -4,7 +4,6 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LegalFooter } from "@/components/LegalFooter";
 import { PhoneFrame } from "@/components/PhoneFrame";
-import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { StepView } from "@/components/steps/StepView";
 import { Button } from "@/components/ui/button";
@@ -12,10 +11,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { markOnboardingSeen } from "@/lib/companion-store";
 import { companionFromPreset, type Companion } from "@/lib/companions";
 import { CURRICULUM_SLUG, CURRICULUM_TITLE, LESSONS, TOTAL_LESSONS, UNITS } from "@/lib/curriculum";
-import { describeExercise, type Exercise, type ExerciseKind } from "@/lib/exercises";
 import { playCue } from "@/lib/feedback";
 import { FIRST_QUESTION, TIME_OPTIONS, saveIntent } from "@/lib/onboarding";
 import { useProgress } from "@/lib/progress";
+import { placementStep, stepExcerpt } from "@/lib/review-steps";
+import { useLessonScript } from "@/lib/steps/use-lesson-script";
 import { holdRewards } from "@/lib/reward-hold";
 import { cn } from "@/lib/utils";
 
@@ -169,17 +169,18 @@ function QuestionStep({ onNext }: { onNext: () => void }) {
 }
 
 /**
- * The placement check: a ladder across all seven units, two easy drills to start, then one drill
- * from each unit in order. It climbs while the learner keeps up and stops as soon as two in a row
- * go wrong, so few people see every question.
+ * The placement check: a ladder across all seven units, two early lessons to start, then one
+ * lesson from each unit in order, each asked through its closing case (`placementStep`). It climbs
+ * while the learner keeps up and stops as soon as two in a row go wrong, so few people see every
+ * question.
  */
 const PLACEMENT_LADDER = (() => {
-  const picks: { lessonId: string; kind: ExerciseKind; lessonIndex: number }[] = [];
+  const picks: { lessonId: string; unitId: string; lessonIndex: number }[] = [];
   const add = (lesson: (typeof LESSONS)[number] | undefined) => {
-    if (!lesson || !lesson.drills[0]) return;
+    if (!lesson) return;
     picks.push({
       lessonId: lesson.id,
-      kind: lesson.drills[0] as ExerciseKind,
+      unitId: lesson.unitId,
       lessonIndex: LESSONS.findIndex((l) => l.id === lesson.id) + 1,
     });
   };
@@ -308,12 +309,9 @@ function PlacementStep({
   const [step, setStep] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [answered, setAnswered] = useState(false);
-  /** The drill on screen, once answered: what a report about it quotes. */
-  const [shown, setShown] = useState<Exercise | null>(null);
   const [missRun, setMissRun] = useState(0);
   /** Highest lesson number answered correctly — what gets marked as known. */
   const [reached, setReached] = useState(0);
-  const seen = useMemo<number[]>(() => [], []);
 
   // Badges and level-ups wait until the check is over.
   useEffect(() => holdRewards(), []);
@@ -322,6 +320,13 @@ function PlacementStep({
   const stopped = missRun >= 2;
   const pair = stopped ? undefined : pairs[step];
   const asked = Math.min(step + (answered ? 1 : 0), pairs.length);
+  const script = useLessonScript(pair?.unitId, pair?.lessonId);
+  const question = script.status === "ready" ? placementStep(script.script) : null;
+
+  // A lesson that can't be loaded is passed over rather than counted either way.
+  useEffect(() => {
+    if (pair && script.status === "unavailable") setStep((s) => s + 1);
+  }, [pair, script.status]);
 
   if (!pair) {
     // Unlock everything below the hardest lesson they actually got right.
@@ -351,55 +356,62 @@ function PlacementStep({
 
   return (
     <div className="flex flex-1 flex-col">
-      <p className="mt-6 text-xs font-bold text-primary-text">Placement check · drill {step + 1}</p>
-      <DrillVariant
-        key={`${pair.lessonId}-${step}`}
-        lessonId={pair.lessonId}
-        kind={pair.kind}
-        seen={seen}
-        index={step}
-        total={pairs.length}
-        showCount={false}
-        skip={{
-          label: "Start at lesson 1",
-          onSkip: () => onDone(correct, Math.max(asked, 1), true, 0),
-        }}
-        onShown={setShown}
-        onAnswer={(score, _variant, _answer, exercise) => {
-          if (answered) return;
-          setAnswered(true);
-          setShown(exercise);
-          playCue(score >= 1 ? "correct" : "wrong");
-          if (score >= 1) {
-            setCorrect((n) => n + 1);
-            setMissRun(0);
-            setReached((n) => Math.max(n, pair.lessonIndex));
-          } else {
-            setMissRun((n) => n + 1);
-          }
-        }}
-      />
-      {shown && (
-        <ReportContentButton
-          className="mt-3"
-          context={{
-            courseTopic: "Placement drill",
-            lessonTitle: LESSONS[pair.lessonIndex - 1]?.title ?? "",
-            lessonIndex: pair.lessonIndex,
-            excerpt: describeExercise(shown),
-          }}
-        />
+      <p className="mt-6 text-xs font-bold text-primary-text">
+        Placement check · question {step + 1}
+      </p>
+      {question ? (
+        <div className="mt-3">
+          <StepView
+            key={`${pair.lessonId}-${step}`}
+            step={question}
+            onResolve={(result) => {
+              if (answered) return;
+              setAnswered(true);
+              // Known means right the first time, without a hint.
+              const right = result.score >= 1;
+              playCue(right ? "correct" : "wrong");
+              if (right) {
+                setCorrect((n) => n + 1);
+                setMissRun(0);
+                setReached((n) => Math.max(n, pair.lessonIndex));
+              } else {
+                setMissRun((n) => n + 1);
+              }
+            }}
+          />
+          <ReportContentButton
+            className="mt-3"
+            context={{
+              courseTopic: "Placement question",
+              lessonTitle: LESSONS[pair.lessonIndex - 1]?.title ?? "",
+              lessonIndex: pair.lessonIndex,
+              excerpt: stepExcerpt(question),
+            }}
+          />
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-muted-foreground" aria-busy="true">
+          Loading the question…
+        </p>
+      )}
+      {!answered && (
+        <button
+          type="button"
+          onClick={() => onDone(correct, Math.max(asked, 1), true, 0)}
+          className="mt-4 min-h-11 text-sm font-bold text-muted-foreground"
+        >
+          Start at lesson 1
+        </button>
       )}
       {answered && (
         <Button
           onClick={() => {
             setAnswered(false);
-            setShown(null);
             setStep((s) => s + 1);
           }}
           className="mt-auto h-14 w-full rounded-2xl bg-hero-gradient text-sm font-semibold shadow-card"
         >
-          {step + 1 >= pairs.length || missRun >= 2 ? "See my result" : "Next drill"}
+          {step + 1 >= pairs.length || missRun >= 2 ? "See my result" : "Next question"}
           <ArrowRight className="h-4 w-4" />
         </Button>
       )}

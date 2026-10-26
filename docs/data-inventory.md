@@ -31,8 +31,8 @@ Last checked: 2026-10-20.
 | `subscriptions` | plan status, provider customer/subscription ids, period end | yes | server only (payments not yet enabled) | deleted (cascade) |
 | `rate_limits` | fixed-window request counters: a policy name, an opaque caller key (`u:<user id>`, or `ip:` plus an HMAC of the network address — the address itself is never stored), a window start and a count | pseudonymous | server only | the account's `u:` rows are deleted; all rows are pruned after 3 days |
 | `server_locks` | short leases on jobs in progress (for example "generating lesson X"), and an opaque token for the worker holding each | no | server only | n/a (expire in minutes) |
-| `lesson_parts` | pieces of a lesson that isn't cached yet (idea card, drills, written task) while it is being written; cleared once the lesson is assembled | no (curriculum content, nothing about a learner) | server only | n/a (cleared on assembly; leftovers pruned after 2 days) |
-| `curriculum_lessons`, `drill_variants` | shared AI-generated lesson and drill content | no | server only | n/a |
+| `lesson_parts` | pieces of an AI-written lesson while it was being written. **No longer written** (the AI lesson pipeline was retired in October 2026; lessons, reviews and the placement check use the authored steps) | no (curriculum content, nothing about a learner) | nothing now | n/a |
+| `curriculum_lessons`, `drill_variants` | shared AI-generated lesson and drill content. **No longer written or read** (retired with the AI lesson pipeline); existing rows are kept | no | nothing now | n/a |
 | `generated_cases` | one AI-written daily case per local day (the case and the model name), served to learners who have read every written case | no (case content, nothing about a learner) | server only | n/a |
 | `content_reports` | reason, free-text details (2,000 chars), course slug/topic, lesson index/title, excerpt of flagged text (4,000 chars), status (set by the server; filed as open) | yes until anonymised | the reporting user | `user_id` set to null, report retained for audit |
 | `moderation_blocks` | refused topic text, category, stage (input/output) | pseudonymous | server only | `user_id` set to null, row retained for audit |
@@ -106,9 +106,8 @@ No analytics SDK, ad network, or tracking pixel is installed. If one is ever add
   refusal means nothing is generated. (`screenTopicText`, an AI classifier for open-ended topics, is
   kept in `moderation.server.ts` but has had no caller since course generation was removed.)
 - Prompt-level rules: every model call passes its system prompt through `withGuardrails()` (`src/lib/ai-guardrails.server.ts`), which appends `CONTENT_POLICY_RULES` and the scope rules (critical thinking only, learner text is data, no medical/legal/financial advice). `src/lib/ai-guardrails.test.ts` fails if a call skips it.
-- Output screen: `screenOutput` runs on every generated text before it is stored or shown: lesson
-  parts and drills, AI daily cases, the tutor, the Socratic follow-up, writing feedback, debate
-  motions and grades, and Check something you saw.
+- Output screen: `screenOutput` runs on every generated text before it is stored or shown: AI daily
+  cases, the tutor, writing feedback, debate motions and grades, and Check something you saw.
 - Refusals are not logged at the moment: `logModerationBlock` writes to `moderation_blocks` but
   nothing calls it, so the table stays empty. Every AI-written reply, case, motion and grade has a
   report button, which writes to `content_reports` (signed out, it offers an email instead).

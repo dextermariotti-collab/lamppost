@@ -9,7 +9,7 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AnswerFeedbackHost } from "../components/AnswerFeedback";
@@ -21,6 +21,7 @@ import { DeviceOwnerGuard } from "../components/DeviceOwnerGuard";
 import { LearningSyncWatcher } from "../components/LearningSyncWatcher";
 import { UpkeepWatcher } from "../components/UpkeepWatcher";
 import { Button } from "../components/ui/button";
+import { forgetRetiredData } from "../lib/device-data";
 import { THEME_SCRIPT, ThemeProvider } from "../lib/theme";
 
 function NotFoundComponent() {
@@ -144,6 +145,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => forgetRetiredData(), []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -22,3 +22,15 @@ function clearPrefixed(storage: Storage) {
     .filter((key) => key.startsWith("lamppost-"))
     .forEach((key) => storage.removeItem(key));
 }
+
+/** Stores nothing reads any more: the retired AI lesson pipeline's downloaded lessons. */
+const RETIRED_KEYS = ["lamppost-courses-v1"];
+
+/** Frees the space retired stores still take on devices that used them. */
+export function forgetRetiredData() {
+  try {
+    for (const key of RETIRED_KEYS) window.localStorage.removeItem(key);
+  } catch {
+    /* storage blocked: nothing to free */
+  }
+}

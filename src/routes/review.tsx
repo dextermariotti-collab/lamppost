@@ -1,25 +1,25 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { LESSONS } from "@/lib/curriculum";
 import { GuideMark } from "@/components/LineBullet";
-import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { celebrateAnswer } from "@/components/AnswerFeedback";
+import { LessonPlayer } from "@/components/lesson/LessonPlayer";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { ReportContentButton } from "@/components/ReportContentButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { Button } from "@/components/ui/button";
-import { useProgress } from "@/lib/progress";
-import { EXERCISE_LABEL, describeExercise, type Exercise } from "@/lib/exercises";
-import {
-  nextReviewLine,
-  useDrillSchedule,
-  useDueDrills,
-  type ScheduledDrill,
-} from "@/lib/review-drills";
-import { recordDrillOutcome } from "@/lib/rating";
-import { celebrateAnswer, clearAnswerFeedback } from "@/components/AnswerFeedback";
+import { loadLessonScript } from "@/content/lessons";
+import { readAttemptStore } from "@/lib/exercise-store";
 import { playCue } from "@/lib/feedback";
+import { useProgress } from "@/lib/progress";
 import { reviewXp } from "@/lib/progress-core";
+import { recordDrillOutcome } from "@/lib/rating";
+import { nextReviewLine, useDrillSchedule, useDueDrills } from "@/lib/review-drills";
+import { reviewSession, stepExcerpt, type ReviewQuestion } from "@/lib/review-steps";
 import { holdRewards } from "@/lib/reward-hold";
+import { statedConfidence } from "@/lib/steps/attempts";
+import type { StepResult } from "@/lib/steps/scoring";
+import type { LessonStep } from "@/lib/steps/types";
 
 export const Route = createFileRoute("/review")({
   head: () => ({
@@ -28,12 +28,12 @@ export const Route = createFileRoute("/review")({
       {
         name: "description",
         content:
-          "Run today's review queue: the reasoning drills you got wrong or weren't sure about, served as brand-new scenarios.",
+          "Run today's review queue: questions from the lessons you got wrong or weren't sure about, back just as they start to fade.",
       },
       { property: "og:title", content: "Daily review — Lamppost" },
       {
         property: "og:description",
-        content: "Fresh drills on the skills you found shaky — same skill, new scenario.",
+        content: "The skills you found shaky, asked again at the right moment.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,155 +42,103 @@ export const Route = createFileRoute("/review")({
   component: ReviewQueue,
 });
 
+const REASON: Record<ReviewQuestion["item"]["reason"], string> = {
+  missed: "missed last time",
+  unsure: "unsure last time",
+  practice: "coming back",
+  keep: "keeping it fresh",
+};
+
 function ReviewQueue() {
   const { recordReview } = useProgress();
   const { items, hydrated, grade } = useDueDrills();
   const { items: scheduled } = useDrillSchedule();
 
-  // Snapshot the queue once so grading doesn't reshuffle it mid-session.
-  const [session, setSession] = useState<ScheduledDrill[] | null>(null);
+  // The questions are picked once, so grading doesn't reshuffle the queue mid-session.
+  const [session, setSession] = useState<{ questions: ReviewQuestion[]; skipped: number } | null>(
+    null,
+  );
+  const started = useRef(false);
   useEffect(() => {
-    if (hydrated && session === null) setSession(items);
-  }, [hydrated, items, session]);
+    if (!hydrated || started.current) return;
+    started.current = true;
+    void reviewSession(items, loadLessonScript, readAttemptStore()).then(setSession);
+  }, [hydrated, items]);
 
-  const [step, setStep] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  /** The drill on screen, once answered: what a report about it quotes. */
-  const [shown, setShown] = useState<Exercise | null>(null);
-  const [right, setRight] = useState(0);
-  const [wrong, setWrong] = useState(0);
-  const [skipped, setSkipped] = useState(0);
+  const [tally, setTally] = useState({ right: 0, wrong: 0 });
+  const [finished, setFinished] = useState(false);
+  const answered = useRef(new Set<number>());
 
-  const item = session?.[step];
-  const done = session !== null && (session.length === 0 || step >= session.length);
-
-  // Badges and level-ups wait for the end of the review rather than landing on a drill.
-  const running = session !== null && !done;
+  const questions = session?.questions ?? [];
+  const running = session !== null && questions.length > 0 && !finished;
+  // Badges and level-ups wait for the end of the review rather than landing on a question.
   useEffect(() => (running ? holdRewards() : undefined), [running]);
 
-  // Moving on takes the last verdict down, so it never sits over the next drill.
-  useEffect(() => clearAnswerFeedback, [step]);
+  const steps = questions.map<LessonStep>((q) => ({
+    ...q.step,
+    label: `${q.item.lessonTitle} · ${REASON[q.item.reason]}`,
+  }));
 
-  const handleAnswer = (
-    score: number,
-    variant: number,
-    _answer: unknown,
-    exercise: Exercise,
-    difficulty: number,
-    xpScale: number,
-  ) => {
-    if (answered || !item) return;
-    setAnswered(true);
-    setShown(exercise);
-    const correct = score >= 1;
-    if (correct) setRight((n) => n + 1);
-    else setWrong((n) => n + 1);
-    grade(item.key, correct, variant);
+  const onStepResolved = (index: number, _step: LessonStep, result: StepResult) => {
+    const question = questions[index];
+    if (!question || answered.current.has(index)) return;
+    answered.current.add(index);
+    const { item } = question;
+    // Right means right the first time; a hint halves the XP, never the verdict.
+    const correct = result.wrongAttempts === 0 && !result.revealed;
+    const xpScale = result.hintUsed ? 0.5 : 1;
+    setTally((t) => (correct ? { ...t, right: t.right + 1 } : { ...t, wrong: t.wrong + 1 }));
+    grade(item.key, correct, question.variant);
     recordReview(correct, xpScale);
     playCue(correct ? "correct" : "wrong");
-    celebrateAnswer({
-      correct,
-      xp: reviewXp(correct, xpScale),
-      note: EXERCISE_LABEL[item.kind],
+    celebrateAnswer({ correct, xp: reviewXp(correct, xpScale) });
+    const confidence = statedConfidence(result.answer);
+    recordDrillOutcome(item.lessonId, {
+      score: correct ? 1 : 0,
+      difficulty: 2,
+      ...(confidence !== undefined ? { confidence } : {}),
     });
-    recordDrillOutcome(item.lessonId, { score, difficulty });
   };
 
-  // A drill that can't be fetched is left in the queue, ungraded, for next time.
-  const skipDrill = () => {
-    if (answered) return;
-    setSkipped((n) => n + 1);
-    setStep((s) => s + 1);
-  };
+  const empty = session !== null && questions.length === 0 && session.skipped === 0;
+  const done = session !== null && (finished || (questions.length === 0 && session.skipped > 0));
 
   return (
     <PhoneFrame>
-      {done ? (
-        <ScreenHeader title="Daily review" backTo="/" />
-      ) : (
-        <ScreenHeader
-          backTo="/"
-          right={<span className="text-xs font-bold text-muted-foreground">Daily review</span>}
-        />
+      <ScreenHeader title="Daily review" backTo="/" />
+      {running && (
+        <div className="-mt-2">
+          <LessonPlayer
+            steps={steps}
+            stopUnits={questions.map((q) => unitOf(q))}
+            intro={
+              <p className="px-5 pb-1 text-xs text-muted-foreground">
+                Questions from lessons you missed or weren&apos;t sure about, back just as they
+                start to fade.
+              </p>
+            }
+            aboveAction={(index) => {
+              const q = questions[index];
+              return q ? (
+                <ReportContentButton
+                  className="mt-4"
+                  context={{
+                    courseTopic: "Review question",
+                    lessonTitle: q.item.lessonTitle,
+                    ...(q.item.lessonIndex >= 0 ? { lessonIndex: q.item.lessonIndex + 1 } : {}),
+                    excerpt: stepExcerpt(q.step),
+                  }}
+                />
+              ) : null;
+            }}
+            onStepResolved={onStepResolved}
+            onComplete={() => setFinished(true)}
+            finalLabel="Finish review"
+          />
+        </div>
       )}
       <div className="px-5 pb-8">
-        {!done && item && (
-          <>
-            <div
-              role="progressbar"
-              aria-label="Review progress"
-              aria-valuemin={0}
-              aria-valuemax={session!.length}
-              aria-valuenow={step}
-              aria-valuetext={`${step} of ${session!.length} done`}
-              className="mt-1 h-2 overflow-hidden bg-muted"
-            >
-              <div
-                className="h-full bg-primary transition-[width] duration-300 ease-out"
-                style={{ width: `${(step / session!.length) * 100}%` }}
-              />
-            </div>
-            <p className="mt-2 text-[11px] font-bold text-muted-foreground">
-              {step + 1} of {session!.length} · {item.unitTitle}
-            </p>
-
-            <div className="mt-4">
-              <p className="text-[11px] font-bold text-primary-text">
-                {item.lessonTitle} · {EXERCISE_LABEL[item.kind]}
-                {item.overdueDays > 0 && ` · ${item.overdueDays}d overdue`}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {item.reason === "missed"
-                  ? "You missed this one before. New scenario, same skill."
-                  : item.reason === "unsure"
-                    ? "You weren't sure last time. Here's a fresh one."
-                    : "Keeping this skill fresh. New scenario, same skill."}
-              </p>
-            </div>
-
-            <DrillVariant
-              key={`${item.key}-${step}`}
-              lessonId={item.lessonId}
-              kind={item.kind}
-              seen={item.seen}
-              index={step}
-              total={session!.length}
-              skip={{ label: "Skip this drill", onSkip: skipDrill }}
-              onShown={setShown}
-              onAnswer={handleAnswer}
-            />
-
-            {shown && (
-              <ReportContentButton
-                className="mt-3"
-                context={{
-                  courseTopic: "Review drill",
-                  lessonTitle: item.lessonTitle,
-                  ...(item.lessonIndex >= 0 ? { lessonIndex: item.lessonIndex + 1 } : {}),
-                  excerpt: describeExercise(shown),
-                }}
-              />
-            )}
-
-            {answered && (
-              <div className="sticky-action mt-5">
-                <Button
-                  onClick={() => {
-                    setAnswered(false);
-                    setShown(null);
-                    setStep((s) => s + 1);
-                  }}
-                  className="h-12 w-full rounded-sm bg-hero-gradient text-base font-semibold shadow-card"
-                >
-                  {step + 1 >= session!.length ? "Finish review" : "Next drill"}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-
-        {done && session!.length === 0 && (
+        {empty && (
           <div className="rounded-2xl border border-border bg-card p-5">
             <h2 className="text-lg">Nothing due right now</h2>
             <p className="mt-1 text-sm text-muted-foreground">{nextReviewLine(scheduled)}</p>
@@ -206,17 +154,20 @@ function ReviewQueue() {
           </div>
         )}
 
-        {done && session!.length > 0 && (
-          <ReviewSummary right={right} wrong={wrong} skipped={skipped} />
+        {done && (
+          <ReviewSummary right={tally.right} wrong={tally.wrong} skipped={session.skipped} />
         )}
       </div>
     </PhoneFrame>
   );
 }
 
+const unitOf = (q: ReviewQuestion) =>
+  LESSONS.find((lesson) => lesson.id === q.item.lessonId)?.unitId ?? "";
+
 /**
  * The end of a review, telling right, missed and skipped apart and saying what happens to each:
- * a miss comes back tomorrow as a new scenario, a skipped drill was never graded so it stays due,
+ * a miss comes back tomorrow, a question that couldn't be loaded was never graded so it stays due,
  * and a right answer comes back later, further apart. A review where nothing was answered says
  * so plainly rather than calling itself complete.
  */
@@ -231,17 +182,17 @@ function ReviewSummary({
 }) {
   const skippedLine =
     skipped === 1
-      ? "The one you skipped is still due and comes back in a later review."
-      : `The ${skipped} you skipped are still due and come back in a later review.`;
+      ? "One question couldn't be loaded. It's still due and comes back in a later review."
+      : `${skipped} questions couldn't be loaded. They're still due and come back in a later review.`;
 
   if (right + wrong === 0) {
     return (
       <div className="sign p-5">
-        <h2 className="text-lg">No drills answered</h2>
+        <h2 className="text-lg">No questions answered</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {skipped === 1
-            ? "The drill was skipped, so nothing was graded. It's still due and comes back in a later review."
-            : `All ${skipped} drills were skipped, so nothing was graded. They're still due and come back in a later review.`}
+            ? "Today's question couldn't be loaded, so nothing was graded. It's still due and comes back in a later review."
+            : `Today's ${skipped} questions couldn't be loaded, so nothing was graded. They're still due and come back in a later review.`}
         </p>
         <Button asChild className="mt-4 h-12 w-full rounded-sm text-sm font-semibold">
           <Link to="/">Back to home</Link>
@@ -252,9 +203,9 @@ function ReviewSummary({
 
   const next = [
     wrong === 1
-      ? "The one you missed comes back tomorrow as a new scenario."
+      ? "The one you missed comes back tomorrow."
       : wrong > 1
-        ? `The ${wrong} you missed come back tomorrow as new scenarios.`
+        ? `The ${wrong} you missed come back tomorrow.`
         : null,
     skipped > 0 ? skippedLine : null,
     wrong === 0 && skipped === 0 ? "Each one comes back later, further apart." : null,

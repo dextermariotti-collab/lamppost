@@ -259,7 +259,7 @@ function CaseFinished({ item, results }: { item: DailyCase; results: StepResult[
       </ul>
       {right < results.length && (
         <p className="mt-2 text-xs text-muted-foreground">
-          What you missed comes back in your reviews as a fresh drill.
+          What you missed comes back in your reviews.
         </p>
       )}
       <section className="sign mt-5 p-4">

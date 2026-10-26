@@ -46,7 +46,6 @@ import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as NotesIndexRouteImport } from './routes/notes.index'
 import { Route as NotesLessonIdRouteImport } from './routes/notes.$lessonId'
-import { Route as ApiPublicWarmCurriculumRouteImport } from './routes/api/public/warm-curriculum'
 import { Route as CheckUnitIdPhaseRouteImport } from './routes/check.$unitId.$phase'
 import { Route as CourseSlugIndexRouteImport } from './routes/course.$slug.index'
 import { Route as CourseSlugLessonIndexRouteImport } from './routes/course.$slug.lesson.$index'
@@ -236,11 +235,6 @@ const NotesLessonIdRoute = NotesLessonIdRouteImport.update({
   path: '/notes/$lessonId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWarmCurriculumRoute = ApiPublicWarmCurriculumRouteImport.update({
-  id: '/api/public/warm-curriculum',
-  path: '/api/public/warm-curriculum',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CheckUnitIdPhaseRoute = CheckUnitIdPhaseRouteImport.update({
   id: '/check/$unitId/$phase',
   path: '/check/$unitId/$phase',
@@ -295,7 +289,6 @@ export interface FileRoutesByFullPath {
   '/friends/': typeof FriendsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/notes/': typeof NotesIndexRoute
-  '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
   '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
@@ -338,7 +331,6 @@ export interface FileRoutesByTo {
   '/friends': typeof FriendsIndexRoute
   '/legal': typeof LegalIndexRoute
   '/notes': typeof NotesIndexRoute
-  '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
   '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
@@ -382,7 +374,6 @@ export interface FileRoutesById {
   '/friends/': typeof FriendsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/notes/': typeof NotesIndexRoute
-  '/api/public/warm-curriculum': typeof ApiPublicWarmCurriculumRoute
   '/check/$unitId/$phase': typeof CheckUnitIdPhaseRoute
   '/course/$slug/': typeof CourseSlugIndexRoute
   '/course/$slug/lesson/$index': typeof CourseSlugLessonIndexRoute
@@ -427,7 +418,6 @@ export interface FileRouteTypes {
     | '/friends/'
     | '/legal/'
     | '/notes/'
-    | '/api/public/warm-curriculum'
     | '/check/$unitId/$phase'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
@@ -470,7 +460,6 @@ export interface FileRouteTypes {
     | '/friends'
     | '/legal'
     | '/notes'
-    | '/api/public/warm-curriculum'
     | '/check/$unitId/$phase'
     | '/course/$slug'
     | '/course/$slug/lesson/$index'
@@ -513,7 +502,6 @@ export interface FileRouteTypes {
     | '/friends/'
     | '/legal/'
     | '/notes/'
-    | '/api/public/warm-curriculum'
     | '/check/$unitId/$phase'
     | '/course/$slug/'
     | '/course/$slug/lesson/$index'
@@ -557,7 +545,6 @@ export interface RootRouteChildren {
   FriendsIndexRoute: typeof FriendsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
   NotesIndexRoute: typeof NotesIndexRoute
-  ApiPublicWarmCurriculumRoute: typeof ApiPublicWarmCurriculumRoute
   CheckUnitIdPhaseRoute: typeof CheckUnitIdPhaseRoute
   CourseSlugIndexRoute: typeof CourseSlugIndexRoute
   CourseSlugLessonIndexRoute: typeof CourseSlugLessonIndexRoute
@@ -824,13 +811,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotesLessonIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/warm-curriculum': {
-      id: '/api/public/warm-curriculum'
-      path: '/api/public/warm-curriculum'
-      fullPath: '/api/public/warm-curriculum'
-      preLoaderRoute: typeof ApiPublicWarmCurriculumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/check/$unitId/$phase': {
       id: '/check/$unitId/$phase'
       path: '/check/$unitId/$phase'
@@ -893,7 +873,6 @@ const rootRouteChildren: RootRouteChildren = {
   FriendsIndexRoute: FriendsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
   NotesIndexRoute: NotesIndexRoute,
-  ApiPublicWarmCurriculumRoute: ApiPublicWarmCurriculumRoute,
   CheckUnitIdPhaseRoute: CheckUnitIdPhaseRoute,
   CourseSlugIndexRoute: CourseSlugIndexRoute,
   CourseSlugLessonIndexRoute: CourseSlugLessonIndexRoute,

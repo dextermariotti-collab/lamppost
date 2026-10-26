@@ -27,8 +27,11 @@ export function LessonPlayer({
   steps: readonly LessonStep[];
   /** Shown above the first step only. */
   intro?: ReactNode;
-  /** Shown under the step and above Continue, which stays the last thing on the screen. */
-  aboveAction?: ReactNode;
+  /**
+   * Shown under the step and above Continue, which stays the last thing on the screen. A function
+   * is given the step on screen (a review's report quotes the question it is about).
+   */
+  aboveAction?: ReactNode | ((index: number) => ReactNode);
   /** The unit, so progress is drawn in its line color. */
   unitId?: string;
   /** For steps from different units (a daily case): each step's unit, for its stop's color. */
@@ -92,7 +95,7 @@ export function LessonPlayer({
           />
         </div>
 
-        {aboveAction}
+        {typeof aboveAction === "function" ? aboveAction(index) : aboveAction}
         <div className="sticky-action mt-6">
           <Button
             ref={continueRef}

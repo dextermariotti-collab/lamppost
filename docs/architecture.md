@@ -61,14 +61,11 @@ the learning state. None of it blocks new features, but each gets more expensive
 
 ## Roadmap, in order
 
-1. **One exercise model.** Lessons use authored steps (`lib/steps`), but reviews and the placement
-   check still serve AI-written drills in the older `Exercise` format. That format comes with the
-   generation pipeline (`curriculum-generate.server.ts`, `exercise-ai.server.ts`, `lesson-parts`,
-   `drill_variants`, `CONTENT_VERSION`, `LegacyLesson`), which every lesson has now outgrown. Serve
-   reviews from the authored steps instead: each lesson has eight or more, plus its case, and the
-   review queue already knows the lesson. Add new review variants in the step format, written by
-   hand or by AI. Then retire the legacy pipeline, its tables and its rate limits. This is the
-   biggest simplification available, and it removes the main source of AI cost.
+1. ~~**One exercise model.**~~ Done (October 26): reviews and the placement check are served from
+   the lessons' authored steps (`lib/review-steps.ts`), and the AI lesson pipeline is gone with its
+   server functions, rate limits, warm-up endpoint and `LegacyLesson`. Its tables
+   (`curriculum_lessons`, `lesson_parts`, `drill_variants`) are kept but no longer written; one
+   migration with a rollback can drop them.
 2. **Sync the learning state, not just the numbers.** *Started October 26.* The review queue,
    skill ratings, drill attempts and graded writing now follow the account as one bounded,
    versioned `learning_state` document per account, merged the same way on the device and the

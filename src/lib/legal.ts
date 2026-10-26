@@ -96,7 +96,7 @@ export const PRIVACY: LegalDoc = {
       heading: "What is sent to AI",
       review: true,
       body: [
-        `Some ${APP_NAME} features are powered by an AI model: follow-up questions after some practice drills, the explain-it-back chat, feedback on your written arguments, debates, Check something you saw, and the extra practice drills used in reviews. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
+        `Some ${APP_NAME} features are powered by an AI model: the explain-it-back chat, feedback on your written arguments, debates and Check something you saw. When you use one, the text you typed or pasted for it and the small amount of lesson context it needs are sent to an AI service, which sends a reply back. Text you paste into Check something you saw is used for that one reply and is not saved by Lamppost. Once you've read every daily case written for the app, new daily cases are written by an AI too; nothing about you is sent to write them.`,
         `We send it to Google's Gemini API, which runs a Google Gemini model. We don't send your email, name, handle, friends or account history. The first time you send something you typed to one of these features, the app asks you, and remembers your answer and when you gave it on that device. Please don't type anything private into these features (for example a full name, an address, or a health detail): what you type there leaves the app.`,
         "The lessons themselves are written in advance and are not generated for you. AI-written replies are labeled in the app.",
         "[CONFIRM: Google's terms for the Gemini API differ between unpaid use, where requests may be used to improve Google's products, and paid use, where they are not. Use a key from a billing-enabled project, check the current terms, and update this paragraph.]",
@@ -216,7 +216,7 @@ export const TERMS: LegalDoc = {
     {
       heading: "AI-written content",
       body: [
-        "Some replies in Lamppost are written by an AI model, including follow-up questions after some drills, feedback on your writing, debates, Check something you saw, and some practice drills and daily cases. These are labeled. AI can be wrong, can sound sure when it isn't, and can miss things. The scores it gives are practice feedback, not an official assessment or qualification.",
+        "Some replies in Lamppost are written by an AI model, including the explain-it-back chat, feedback on your writing, debates, Check something you saw and some daily cases. These are labeled. AI can be wrong, can sound sure when it isn't, and can miss things. The scores it gives are practice feedback, not an official assessment or qualification.",
         "The lessons are written in advance and checked by automated tests, but they can still contain mistakes. If you spot one, use the report button.",
         "Check anything important against a reliable source.",
       ],
@@ -349,11 +349,9 @@ export const AI_CONTENT: LegalDoc = {
       body: [
         {
           list: [
-            "Short follow-up questions and comments after some practice drills.",
             "The explain-it-back chat after a lesson.",
             "Feedback and scores on the short arguments you write.",
             "Debate topics and the scoring of both sides.",
-            "Extra practice drills in reviews and the placement check.",
             "Check something you saw: the questions about a text you paste in.",
             "Daily cases, once you've read every case written for the app.",
           ],

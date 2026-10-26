@@ -10,9 +10,9 @@ export const STEP_ATTEMPT_BASE = 100;
 export const stepAttemptIndex = (stepIndex: number) => STEP_ATTEMPT_BASE + stepIndex;
 
 /**
- * The review queue re-serves a fresh drill of a kind planned for the lesson. A step doesn't have
- * a drill kind of its own, so it borrows the lesson's planned kinds in turn: the review is about
- * the lesson's skill, and any planned kind is a valid way to test it.
+ * A review queue item is keyed by a drill kind planned for the lesson. A step doesn't have a
+ * drill kind of its own, so it borrows the lesson's planned kinds in turn; a review asks one of
+ * the steps that share its kind again (`pickReviewStep`).
  */
 export function reviewKindFor(
   plan: readonly ExerciseKind[],

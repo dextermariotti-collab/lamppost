@@ -21,14 +21,11 @@ const SHIPPED = [
   "src/lib/argument.functions.ts#gradeArgument",
   "src/lib/cases.functions.ts#getGeneratedCase",
   "src/lib/consent.functions.ts#recordConsent",
-  "src/lib/curriculum.functions.ts#getCurriculumLesson",
-  "src/lib/curriculum.functions.ts#getLessonPart",
   "src/lib/debate.functions.ts#challengeToDebate",
   "src/lib/debate.functions.ts#getDebate",
   "src/lib/debate.functions.ts#listDebates",
   "src/lib/debate.functions.ts#markDebateSeen",
   "src/lib/debate.functions.ts#submitDebateResponse",
-  "src/lib/drills.functions.ts#getDrillVariant",
   "src/lib/friends.functions.ts#getFriendProfile",
   "src/lib/friends.functions.ts#listFriends",
   "src/lib/friends.functions.ts#listNudges",
@@ -56,7 +53,6 @@ const SHIPPED = [
   "src/lib/safety.functions.ts#reportUser",
   "src/lib/safety.functions.ts#setProfileVisibility",
   "src/lib/safety.functions.ts#unblockUser",
-  "src/lib/socratic.functions.ts#socraticLine",
 ];
 
 const ROOT = process.cwd();

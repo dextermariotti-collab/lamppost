@@ -44,8 +44,8 @@ Legend: **RLS** enabled on every one. *Browser* = what the `authenticated` role 
 | `user_blocks` | who blocked whom | none | the blocker's own rows (read only) | server (`block_user`) |
 | `user_reports` | reports about people | none | **none** | server |
 | `reward_chests`, `user_cosmetics`, `xp_weekly`, `league_results` | rewards and league | none | none | server |
-| `rate_limits`, `server_locks`, `lesson_parts` | abuse counters, leases, in-progress lessons | none | none | server |
-| `achievements`, `curriculum_lessons`, `drill_variants` | shared content, nothing personal | read | read | server |
+| `rate_limits`, `server_locks`, `lesson_parts` | abuse counters, leases, retired in-progress lessons | none | none | server |
+| `achievements`, `curriculum_lessons`, `drill_variants` | shared content, nothing personal (the last two retired) | read | read | server |
 
 ## Who can see what of a person (tested)
 

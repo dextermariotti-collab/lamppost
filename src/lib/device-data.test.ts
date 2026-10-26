@@ -45,3 +45,14 @@ describe("clearDeviceData", () => {
     expect(reset).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("forgetRetiredData", () => {
+  it("removes the retired lesson cache and nothing else", async () => {
+    const { forgetRetiredData } = await import("./device-data");
+    window.localStorage.setItem("lamppost-courses-v1", '{"big":"lessons"}');
+    window.localStorage.setItem("lamppost-progress-v1", "{}");
+    forgetRetiredData();
+    expect(window.localStorage.getItem("lamppost-courses-v1")).toBeNull();
+    expect(window.localStorage.getItem("lamppost-progress-v1")).toBe("{}");
+  });
+});

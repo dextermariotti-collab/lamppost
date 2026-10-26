@@ -68,12 +68,12 @@ describe("the models and their caps", () => {
   it("name models the AI service still serves", () => {
     expect(AI_MODELS.tutor).toBe("gemini-3.8-flash");
     expect(AI_MODELS.screen).toBe("gemini-3.5-flash-lite");
-    expect(AI_MODELS.lessons).toBe("gemini-3.6-flash");
+    expect(AI_MODELS.grading).toBe("gemini-3.6-flash");
   });
 
   it("give the longer jobs more room than the one-liners", () => {
-    expect(AI_REPLY_TOKENS.lesson).toBeGreaterThan(AI_REPLY_TOKENS.lessonPart);
-    expect(AI_REPLY_TOKENS.socratic).toBeLessThan(AI_REPLY_TOKENS.tutor);
+    expect(AI_REPLY_TOKENS.caseWriter).toBeGreaterThan(AI_REPLY_TOKENS.caseReview);
+    expect(AI_REPLY_TOKENS.screen).toBeLessThan(AI_REPLY_TOKENS.tutor);
     for (const tokens of Object.values(AI_REPLY_TOKENS)) {
       expect(tokens).toBeGreaterThan(0);
       expect(tokens + THINKING_TOKENS).toBeLessThanOrEqual(10_000);

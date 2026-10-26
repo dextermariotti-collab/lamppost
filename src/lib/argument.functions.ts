@@ -20,7 +20,7 @@ export const MAX_ANSWER_CHARS = 3000;
  * The grader can only be asked about a lesson that exists, and everything it is told about that
  * lesson (title, skill, task type, passage, task) is read on the server from the lesson id — so it
  * can't be used as a free general-purpose model. Older apps also send those fields; they are
- * accepted and ignored, except the passage, which only picks between the lesson's own tasks.
+ * accepted and ignored.
  */
 export const GradeInput = z.object({
   lessonId: z
@@ -115,7 +115,7 @@ export const gradeArgument = createServerFn({ method: "POST" })
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
 
     const { graderSystem, graderPrompt, writtenTaskFor } = await import("./argument.server");
-    const written = await writtenTaskFor(meta, data.passage);
+    const written = await writtenTaskFor(meta);
     if (!written)
       return { ok: false, reason: "Grading couldn't run just now. Try again in a moment." };
     const focus = task.criteria

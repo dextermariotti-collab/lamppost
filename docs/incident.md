@@ -27,7 +27,6 @@ shared machine. Each one lives in two places, the Cloudflare worker's secrets an
 | --- | --- | --- |
 | `SUPABASE_SERVICE_ROLE_KEY` (Supabase's secret key, `sb_secret_…`; it bypasses RLS) | Supabase → **Project Settings → API Keys**: create a new secret key | Put it in Cloudflare and `.env`, check the app works, then delete the old key there. If `RATE_LIMIT_SECRET` isn't set, the per-address limits start fresh, because their key comes from this one |
 | `AI_API_KEY` | Google AI Studio → **API keys**: a new key in the same billing-enabled project | Put it in Cloudflare and `.env`, then delete the old key |
-| `WARM_TOKEN` | Any long random string (`openssl rand -hex 32`) | Put it in Cloudflare, `.env` and anything that calls the warm-up. The old one stops working at once |
 | `RATE_LIMIT_SECRET` (optional) | Any long random string | Put it in Cloudflare. Per-address limits start fresh; nothing else changes |
 | `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` (GitHub Actions) | supabase.com → **Account → Access Tokens** (revoke the old token); **Project Settings → Database** to reset the password | Update both under **GitHub → Settings → Secrets and variables → Actions** |
 

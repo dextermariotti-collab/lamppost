@@ -101,7 +101,6 @@ npx wrangler secret put SUPABASE_URL --name lamppost
 npx wrangler secret put SUPABASE_PUBLISHABLE_KEY --name lamppost
 npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY --name lamppost
 npx wrangler secret put AI_API_KEY --name lamppost
-npx wrangler secret put WARM_TOKEN --name lamppost
 # Optional, the same way: RATE_LIMIT_SECRET, APP_ORIGINS, CLIENT_IP_HEADER (.env.example says
 # what each does).
 # Build (with the VITE_ values in .env) and upload:
@@ -122,24 +121,6 @@ To build for a different host, set `NITRO_PRESET` (for example `node-server` or 
 running `npm run build`. Nitro supports most hosts. Set `CLIENT_IP_HEADER` there too, to the header
 that host overwrites with the caller's address: a header the caller can set themselves would let
 anyone take a fresh limit with every request.
-
-## 5. Fill the lesson cache
-
-Authored lessons don't need it. The older AI-written drills that reviews and the placement check
-use are written on demand, and warming the cache writes them all ahead of time. Run it after the
-first deploy and **after every deploy that bumps `CONTENT_VERSION`** (in
-`src/lib/curriculum-generate.server.ts`; it is 8 now): a bump makes every cached lesson stale, and
-until the warm-up runs, each one is rewritten in parts the first time someone needs it.
-
-```sh
-curl -X POST https://YOUR-DOMAIN/api/public/warm-curriculum \
-  -H "x-warm-token: $WARM_TOKEN" -H "content-type: application/json" -d '{"limit": 6}'
-```
-
-Each call writes up to `limit` lessons (3 if you leave it out, 6 at most) and answers with `done`,
-`failed` and `remaining`. Run it again until `remaining` is 0. If the same lessons keep coming back in
-`failed`, the worker's logs say why (`docs/incident.md`). Without `WARM_TOKEN` set on the worker, the
-endpoint answers 503.
 
 ## Moving people over from a previous host
 

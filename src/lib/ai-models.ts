@@ -7,12 +7,8 @@
 const FLASH = "gemini-3.6-flash";
 
 export const AI_MODELS = {
-  /** Lesson content and its validation pass (also stored with each cached lesson). */
-  lessons: FLASH,
   /** Grading a written argument. */
   grading: FLASH,
-  /** The guide's follow-up question after a drill. */
-  socratic: FLASH,
   /** Debates with a friend: the opening and the judging. */
   debate: FLASH,
   /** AI-written daily cases: the writer and the reviewer. */
@@ -30,16 +26,8 @@ export const AI_MODELS = {
  * spare. The limits in `rate-limit.ts` count calls; these bound what one call can cost.
  */
 export const AI_REPLY_TOKENS = {
-  /** A whole lesson (idea card, four or five drills, the written task), or a repair of its drills. */
-  lesson: 6000,
-  /** One part of a lesson: a drill, the idea card or the written task. */
-  lessonPart: 1500,
-  /** The reviewer's verdict on up to five drills. */
-  lessonReview: 1000,
   /** A rubric grade: a score and a sentence per criterion, and a tip. */
   grading: 1000,
-  /** One line from the guide. */
-  socratic: 120,
   /** A debate motion: a topic, a short passage and a prompt. */
   debateMotion: 600,
   /** A daily case: the text and three questions with their explanations. */

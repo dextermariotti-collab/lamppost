@@ -12,12 +12,12 @@ import { useCompanion, useSessionUser } from "@/lib/companion-store";
 import {
   CURRICULUM_SLUG,
   LESSONS,
+  CURRICULUM_TITLE,
   TOTAL_LESSONS,
   lessonPlace,
   unitById,
   type CurriculumLesson,
 } from "@/lib/curriculum";
-import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useLessonAttempts } from "@/lib/exercise-store";
 import { recordWrittenScore } from "@/lib/mastery";
 import type { PracticeClose } from "@/lib/practice";
@@ -146,7 +146,6 @@ export function StepLesson({
   meta: CurriculumLesson;
   lessonNumber: number;
 }) {
-  const course = useCurriculumCourse();
   const { companion } = useCompanion();
   const { userId } = useSessionUser();
   const {
@@ -228,7 +227,7 @@ export function StepLesson({
   const recordLesson = () => {
     if (recorded.current) return;
     recorded.current = true;
-    completeLesson(CURRICULUM_SLUG, course.topic, position, course.lessons.length);
+    completeLesson(CURRICULUM_SLUG, CURRICULUM_TITLE, position, TOTAL_LESSONS);
   };
 
   // Level-ups and badges wait until the lesson is over rather than interrupting a step.
@@ -318,7 +317,7 @@ export function StepLesson({
     <ReportContentButton
       context={{
         courseSlug: CURRICULUM_SLUG,
-        courseTopic: course.topic,
+        courseTopic: CURRICULUM_TITLE,
         lessonIndex: lessonNumber,
         lessonTitle: meta.title,
         excerpt: meta.keyIdea,
@@ -338,7 +337,7 @@ export function StepLesson({
       <LessonFinished
         meta={meta}
         lessonNumber={lessonNumber}
-        totalLessons={course.lessons.length || TOTAL_LESSONS}
+        totalLessons={TOTAL_LESSONS}
         accuracy={accuracy}
         answered={answered}
         practiced={practiced}
@@ -368,7 +367,7 @@ export function StepLesson({
             </span>
           ) : (
             <span className="text-xs font-bold text-muted-foreground">
-              Lesson {lessonNumber} of {course.lessons.length || TOTAL_LESSONS}
+              Lesson {lessonNumber} of {TOTAL_LESSONS}
             </span>
           )
         }

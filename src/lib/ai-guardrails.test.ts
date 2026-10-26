@@ -56,7 +56,7 @@ describe("every model call carries the guardrails", () => {
         if (!/system:\s*withGuardrails\(/.test(body)) bare.push(`${file}: ${match[0]}`);
       }
     }
-    expect(calls).toBeGreaterThanOrEqual(10);
+    expect(calls).toBeGreaterThanOrEqual(7);
     expect(bare).toEqual([]);
   });
 
@@ -81,7 +81,7 @@ describe("every model call carries the guardrails", () => {
         if (!/\.\.\.aiOutput\(|\bmaxOutputTokens:/.test(body)) uncapped.push(`${file}: ${body}`);
       }
     }
-    expect(calls).toBeGreaterThanOrEqual(11);
+    expect(calls).toBeGreaterThanOrEqual(8);
     expect(uncapped).toEqual([]);
   });
 });

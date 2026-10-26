@@ -64,7 +64,7 @@ and is read through small external stores (`useSyncExternalStore` or event-liste
 | Key | Module | Holds |
 | --- | --- | --- |
 | `lamppost-progress-v1` | `lib/progress.ts` | XP, gems, streak, freezes, hint tokens, unlocked cosmetics, chests opened today + history, weekly XP, per-day `history` (activity) and `lessonsByDay` (lessons), per-course lesson counts, the finished lessons (`doneLessonIds`, with `doneLessons` positions derived from them) and those only placed out of (`placedLessonIds`). A save that can't be read is copied to `lamppost-progress-v1-unreadable` (the first one is kept) before anything overwrites it |
-| `lamppost-courses-v1` | `lib/course-store.ts`, `lib/curriculum-store.ts` | the curriculum course + downloaded lesson content |
+| `lamppost-courses-v1` | (retired) | AI-written lesson content from the retired pipeline; removed from devices on load |
 | `lamppost-exercises-v1` | `lib/exercise-store.ts` | every drill attempt (`lessonId#index`) |
 | `lamppost-review-drills-v1` | `lib/review-drills.ts` | spaced-repetition queue (1d → 3d → 7d → 14d → 30d → 60d → 120d), including the upkeep of finished units |
 | `lamppost-case-v1` | `lib/daily-case.ts` | daily cases read: case id → local day, and each day's result (device only) |
@@ -214,29 +214,19 @@ the lesson, the ids finished before it, its XP) so the finish after signing in i
 have seen; a lesson done now that wasn't when the run began came from the account, and the board then
 speaks for this lesson only, never for a line or map the run didn't complete. `lessons.test.ts` and `notes.test.ts` hold both to their word limits,
 answer-position balance and the content rules in `content/content-rules.ts` (made-up names, no party
-line). The generated pipeline below is the fallback (`LegacyLesson`) and still feeds reviews and the
-placement check.
+line). A lesson whose script can't be loaded shows a "try again" screen; there is no other version.
 
-### Lesson content pipeline
-`lib/curriculum.ts` is the single source of truth for the 35 lessons (objective, key idea, the trap
-each drill must test, the ordered **drill plan**, and the written task type). Content is generated
-once per lesson by the AI gateway, validated by a second AI pass, and cached in
-`curriculum_lessons`; validated drills also seed the shared `drill_variants` pool that reviews and the
-placement check draw from. Relevant files: `curriculum-generate.server.ts`,
-`exercise-ai.server.ts` (prompts + normalisers), `exercise-validate.server.ts`, `drills.functions.ts`,
-and `routes/api/public/warm-curriculum.ts` (token-protected warm-up endpoint). Bump
-`CONTENT_VERSION` in `curriculum-generate.server.ts` (now 8) whenever prompts, drill plans, key ideas
-or validators change so stale cached lessons are regenerated, and run the warm-up after that deploy
-(`docs/deploy.md`).
-
-**A cold cache must not block a learner.** The warm-up writes whole lessons ahead of time, but a
-lesson that is missing (a `CONTENT_VERSION` bump before the warm-up has run) is written in parts on
-demand (`lib/lesson-parts.ts`, `lesson-parts.server.ts`, table `lesson_parts`): `getCurriculumLesson`
-returns as soon as the idea card exists, the browser then asks `getLessonPart` for each drill and the
-written task in parallel, and the request that stores the last part assembles the lesson into
-`curriculum_lessons`. `lib/lesson-loader.ts` drives this in the browser and the lesson screen shows
-the idea card and fills drills in as they arrive. Every part is generated under a per-part lease and
-the `lessonPart` rate limit; parts already written are read, never counted.
+### Reviews and the placement check
+Both are served from the lessons' own authored steps (`lib/review-steps.ts`); nothing is generated.
+`lib/curriculum.ts` is the single source of truth for the 35 lessons and each one's ordered **drill
+plan**: a lesson's graded steps borrow the planned kinds in turn (`reviewKindFor`), so a queued review
+`lessonId#kind` comes back as one of the steps that share its kind (`pickReviewStep`): the one the
+learner missed first, then the others in turn, recorded as served (`stepAttemptIndex`) so the next
+review asks another. The review screen plays them through `LessonPlayer` like the daily case; right
+means right the first time, and a hint halves the XP, never the verdict. The placement check asks each
+ladder lesson's closing case (`placementStep`). The AI lesson pipeline these replaced was retired
+(October 2026); its tables (`curriculum_lessons`, `lesson_parts`, `drill_variants`) are kept but
+nothing writes or reads them.
 
 ### The phone apps
 `vite build --mode app` (`npm run build:app`) builds the same screens as a single-page app (TanStack
@@ -296,7 +286,7 @@ The look is **Wayfinding** (October 2026): transit signage by day, a lit street 
   it apart from `--primary` and at 3:1 on background, card and muted). Dialogs, sheets and drawers dim
   the page with `--overlay`, which is dark in both sets.
 - The guide is a lamp (`GuideMark`), not a mascot: it stands beside feedback, in the tutor chat and on the
-  sign-up screens. The tutor and the Socratic follow-up speak as the guide, never as the learner's
+  sign-up screens. The tutor speaks as the guide, never as the learner's
   companion. A person's chosen companion only identifies them (profile, friends, league, invites).
 
 **Answer feedback.** `celebrateAnswer` (`AnswerFeedback.tsx`) shows the right/wrong banner and makes no
@@ -409,29 +399,27 @@ against the `lookCloser` limit (guests included, tightly), and stores nothing.
 - Migrations that tighten access ship **in the same PR as the code that needs them**, with a
   tested rollback in `docs/rollback/` (never in `supabase/migrations/`, which is auto-applied).
 - `requireSupabaseAuth` verifies the bearer token and gives handlers a per-user client that
-  respects RLS. Use it on every mutating server function. Public server functions (lesson fetch,
-  drill pool, grader) call the AI gateway with server-held credentials — keep inputs bounded.
-- **Prompts never take lesson text from the request.** The grader, the tutor and the Socratic follow-up
-  are given a lesson id and build its context on the server (`writtenTaskFor` in `argument.server.ts`,
-  `practiceLesson` and `lessonContext` for the tutor), screen what the learner wrote, and accept but
-  ignore the fields older installed apps still send. The tutor reads the conversation from its stored
-  session, so the browser can't reset the turn cap. The one exception is the Socratic follow-up's
-  drill and its own earlier question (`socratic.functions.ts`), which still come from the browser:
-  capped (1,200 and 300 characters), screened and rate limited, and its reply is cut to one short line.
+  respects RLS. Use it on every mutating server function. Public server functions (the grader, Look,
+  AI cases) call the AI gateway with server-held credentials — keep inputs bounded.
+- **Prompts never take lesson text from the request.** The grader and the tutor are given a lesson
+  id and build its context on the server (`writtenTaskFor` in `argument.server.ts`, `practiceLesson`
+  and `lessonContext` for the tutor), screen what the learner wrote, and accept but ignore the fields
+  older installed apps still send. The tutor reads the conversation from its stored session, so the
+  browser can't reset the turn cap.
 - Secrets: only `SUPABASE_URL` and the publishable key reach the browser (as `VITE_` values); those
-  are public by design. `SUPABASE_SERVICE_ROLE_KEY`, `AI_API_KEY`, `WARM_TOKEN` and the optional
+  are public by design. `SUPABASE_SERVICE_ROLE_KEY`, `AI_API_KEY` and the optional
   `RATE_LIMIT_SECRET` are server-only: in the local `.env` (never committed) and as Cloudflare
   secrets. Never give them a `VITE_` name or read them in client code. Rotating them is in
   `docs/incident.md`.
 - User-generated text goes through `lib/moderation.ts` (`screenLocally`) before it reaches a model,
   and generated text through `screenOutput`.
 - **Asked before, reportable after.** The first time a learner's text would go to the AI provider (the
-  tutor, writing feedback, a reply to the guide, Check something you saw, debates), `useAiConsentGate`
+  tutor, writing feedback, Check something you saw, debates), `useAiConsentGate`
   (`lib/ai-consent.ts`) shows `AiConsentSheet` first: what is sent, to whom (`AI_PROVIDER_NAME`, named
   only there) and that replies can be wrong. "Not now" sends nothing. The agreement is kept on the
   device and covers that provider only, so a new provider asks again; Settings can withdraw it
   (`withdrawAiConsent`). A new feature that sends typed
-  text goes through the gate. The tutor, the guide's follow-up, writing feedback, Look, an AI-written
+  text goes through the gate. The tutor, writing feedback, Look, an AI-written
   case, debates and lessons carry `ReportContentButton`, which files a `content_reports` row (signed
   out, it opens an email to `CONTACT_EMAIL` instead).
 - When the schema changes, update `docs/data-inventory.md` and `src/lib/legal.ts` (privacy policy).

@@ -34,12 +34,33 @@ vi.mock("@/components/LegalFooter", () => ({ LegalFooter: () => null }));
 vi.mock("@/components/PhoneFrame", () => ({
   PhoneFrame: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
+/**
+ * The first question is answered right; a placement question can be answered either way. Each
+ * shows its prompt, so a test can see which lesson's question is on screen.
+ */
 vi.mock("@/components/steps/StepView", () => ({
-  StepView: ({ onResolve }: { onResolve: (r: { score: number }) => void }) => (
-    <button type="button" onClick={() => onResolve({ score: 1 })}>
-      Answer the first question
-    </button>
-  ),
+  StepView: ({
+    step,
+    onResolve,
+  }: {
+    step: { id: string; prompt: string };
+    onResolve: (r: { score: number }) => void;
+  }) =>
+    step.id.startsWith("placement-") ? (
+      <div>
+        <p>{step.prompt}</p>
+        <button type="button" onClick={() => onResolve({ score: 1 })}>
+          Right
+        </button>
+        <button type="button" onClick={() => onResolve({ score: 0 })}>
+          Wrong
+        </button>
+      </div>
+    ) : (
+      <button type="button" onClick={() => onResolve({ score: 1 })}>
+        Answer the first question
+      </button>
+    ),
 }));
 vi.mock("@/components/ReportContentButton", () => ({
   ReportContentButton: ({ context }: { context: (typeof h.reports)[number] }) => {
@@ -47,48 +68,22 @@ vi.mock("@/components/ReportContentButton", () => ({
     return <button type="button">Report this content</button>;
   },
 }));
-/** The AI-written drill the stand-in serves. */
-const claimDrill = {
-  kind: "claim",
-  passage: "The Linden pool should open an hour earlier. Most swimmers arrive before work.",
-  options: ["The pool should open earlier", "Most swimmers arrive before work", "Pools are busy"],
-  correct: 0,
-  explanation: "Everything else supports the first sentence.",
-};
-vi.mock("@/components/exercises/DrillVariant", async () => {
-  const { useEffect } = await import("react");
-  return {
-    DrillVariant: ({
-      onAnswer,
-      onShown,
-      skip,
-    }: {
-      onAnswer: (...args: unknown[]) => void;
-      onShown?: (exercise: unknown) => void;
-      skip?: { label: string; onSkip: () => void };
-    }) => {
-      // Loads as the real one does once the server answers, unless a test holds it back.
-      useEffect(() => {
-        if (h.drillsLoad) onShown?.(claimDrill);
-      }, [onShown]);
-      return (
-        <div>
-          <button type="button" onClick={() => onAnswer(1, 3, "a", claimDrill, 2, 0.5)}>
-            Right, with the nudge
-          </button>
-          <button type="button" onClick={() => onAnswer(0, 3, "b", claimDrill, 2, 1)}>
-            Wrong
-          </button>
-          {skip && (
-            <button type="button" onClick={skip.onSkip}>
-              {skip.label}
-            </button>
-          )}
-        </div>
-      );
-    },
-  };
-});
+/** Each lesson's script: a note, then its closing case, which is what placement asks. */
+vi.mock("@/lib/steps/use-lesson-script", () => ({
+  useLessonScript: (_unitId: string | undefined, lessonId: string | undefined) =>
+    !lessonId || !h.drillsLoad
+      ? { status: "loading" }
+      : {
+          status: "ready",
+          script: {
+            lessonId,
+            steps: [
+              { id: "intro", kind: "note", prompt: "A note." },
+              { id: `placement-${lessonId}`, kind: "choice", prompt: `The case for ${lessonId}` },
+            ],
+          },
+        },
+}));
 
 import { Route } from "./onboarding";
 import { LESSONS } from "@/lib/curriculum";
@@ -137,14 +132,16 @@ describe("Onboarding", () => {
     expect(screen.getByText(/up to 9 quick questions/i)).toBeTruthy();
   });
 
-  it("counts a right answer after the nudge as right, and holds rewards until it ends", () => {
+  it("asks each lesson's closing case, stops after two misses, and holds rewards until it ends", () => {
     toPlacement();
     expect(rewardsHeld()).toBe(true);
-    click("Right, with the nudge");
+    expect(screen.getByText(`The case for ${LESSONS[0]!.id}`)).toBeTruthy();
+    click("Right");
     expect(h.playCue).toHaveBeenLastCalledWith("correct");
-    click(/next drill/i);
+    click(/next question/i);
+    expect(screen.getByText(`The case for ${LESSONS[2]!.id}`)).toBeTruthy();
     click("Wrong");
-    click(/next drill/i);
+    click(/next question/i);
     click("Wrong");
     expect(screen.getByRole("heading", { name: "1 of 3" })).toBeTruthy();
     click(/continue/i);
@@ -156,7 +153,7 @@ describe("Onboarding", () => {
     expect(rewardsHeld()).toBe(false);
   });
 
-  it("offers Start at lesson 1 when a drill can't be fetched", () => {
+  it("offers Start at lesson 1 instead of the check", () => {
     toPlacement();
     click("Start at lesson 1");
     expect(h.saveIntent).toHaveBeenLastCalledWith({ placementScore: null, placementSkipped: true });
@@ -165,28 +162,26 @@ describe("Onboarding", () => {
   });
 });
 
-describe("Onboarding: reporting a placement drill", () => {
-  it("offers a report under a drill as soon as it is shown, quoting its prompt and options", () => {
+describe("Onboarding: reporting a placement question", () => {
+  it("offers a report under a question, quoting it and naming its lesson", () => {
     h.reports = [];
     toPlacement();
     expect(screen.getByRole("button", { name: "Report this content" })).toBeTruthy();
     expect(h.reports.at(-1)).toEqual({
-      courseTopic: "Placement drill",
+      courseTopic: "Placement question",
       lessonTitle: LESSONS[0]!.title,
       lessonIndex: 1,
-      excerpt: expect.stringContaining(claimDrill.passage),
+      excerpt: expect.stringContaining(`The case for ${LESSONS[0]!.id}`),
     });
-    for (const option of claimDrill.options) expect(h.reports.at(-1)!.excerpt).toContain(option);
   });
 
-  it("names the drill's own lesson, and puts the report away when moving on", () => {
+  it("offers nothing to report while a question is loading, and names the next one's lesson", () => {
     h.reports = [];
     toPlacement();
-    click("Right, with the nudge");
+    click("Right");
     h.drillsLoad = false;
-    click(/next drill/i);
+    click(/next question/i);
     expect(screen.queryByRole("button", { name: "Report this content" })).toBeNull();
-    click("Right, with the nudge");
-    expect(h.reports.at(-1)).toMatchObject({ lessonTitle: LESSONS[2]!.title, lessonIndex: 3 });
+    expect(screen.getByText(/loading the question/i)).toBeTruthy();
   });
 });

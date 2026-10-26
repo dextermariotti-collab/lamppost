@@ -78,7 +78,7 @@ export async function writeCaseForDay(day: string, apiKey: string): Promise<Writ
   const { createAiProvider } = await import("./ai-gateway.server");
   const { withGuardrails } = await import("./ai-guardrails.server");
   const { screenOutput } = await import("./moderation.server");
-  const { extractJson } = await import("./exercise-ai.server");
+  const { extractJson } = await import("./ai-json.server");
 
   const gateway = createAiProvider(apiKey);
   const plan = casePlanForDay(day);

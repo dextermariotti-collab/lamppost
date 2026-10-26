@@ -34,7 +34,7 @@ type Group = { label: string; note: string; items: ScheduledDrill[] };
 function groupItems(items: ScheduledDrill[]): Group[] {
   const groups: Group[] = [
     { label: "Overdue", note: "Waiting longer than planned", items: [] },
-    { label: "Due today", note: "Ready now, as a new scenario", items: [] },
+    { label: "Due today", note: "Ready now", items: [] },
     { label: "Tomorrow", note: "Coming back next", items: [] },
     { label: "This week", note: "Within the next 7 days", items: [] },
     { label: "Later", note: "Resting — this one is sticking", items: [] },
@@ -88,7 +88,7 @@ function ReviewSchedule() {
     <PhoneFrame>
       <ScreenHeader
         title="What comes back next"
-        description={`Every drill you miss, or answer without much confidence, gets a return date: ${DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when you don't. Each lesson of a finished line comes back after 30, 60 and 120 days too. Reviews always use a new scenario for the same skill.`}
+        description={`Every drill you miss, or answer without much confidence, gets a return date: ${DRILL_INTERVALS.join(", ")} days, stretching each time you get it right and resetting when you don't. Each lesson of a finished line comes back after 30, 60 and 120 days too.`}
         backTo="/"
       />
       <div className="min-h-full px-5 pb-10">

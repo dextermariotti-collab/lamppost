@@ -47,7 +47,7 @@ export const lookCloser = createServerFn({ method: "POST" })
       const { createAiProvider } = await import("./ai-gateway.server");
       const { withGuardrails } = await import("./ai-guardrails.server");
       const { screenOutput } = await import("./moderation.server");
-      const { extractJson } = await import("./exercise-ai.server");
+      const { extractJson } = await import("./ai-json.server");
       const { LOOK_MODEL, LOOK_SYSTEM, lookPrompt } = await import("./look-closer.server");
       const gateway = createAiProvider(key);
 

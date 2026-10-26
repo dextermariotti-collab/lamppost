@@ -1,8 +1,8 @@
-import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LegacyLesson } from "@/components/lesson/LegacyLesson";
 import { StepLesson } from "@/components/lesson/StepLesson";
 import { PhoneFrame } from "@/components/PhoneFrame";
+import { Button } from "@/components/ui/button";
 import { CURRICULUM_SLUG, LESSONS, lessonAt, unitById } from "@/lib/curriculum";
 import { useLessonScript } from "@/lib/steps/use-lesson-script";
 import { useLessonNotes } from "@/lib/use-lesson-notes";
@@ -46,8 +46,8 @@ export const Route = createFileRoute("/course/$slug/lesson/$index")({
 });
 
 /**
- * A lesson is played from its authored steps. If a lesson has none, or its script fails
- * validation, the generated version opens instead, so a learner is never locked out.
+ * A lesson is played from its authored steps. Every lesson has a script that the tests hold to
+ * its schema, so "unavailable" means its file failed to load (offline before it was cached, say).
  */
 function LessonRoute() {
   const { slug: slugParam, index } = Route.useParams();
@@ -69,7 +69,28 @@ function LessonRoute() {
     }
   }, [slugParam, lessonNumber, navigate]);
 
-  if (!meta || script.status === "unavailable") return <LegacyLesson lessonNumber={lessonNumber} />;
+  if (!meta || script.status === "unavailable") {
+    return (
+      <PhoneFrame showNav={false}>
+        <div className="px-5 py-8">
+          <h1 className="text-2xl leading-tight">{meta?.title ?? "This lesson"}</h1>
+          <p role="status" className="mt-2 text-sm text-muted-foreground">
+            This lesson couldn't be opened. Check your connection and try again.
+          </p>
+          <Button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 h-12 w-full rounded-sm text-base font-bold"
+          >
+            Try again
+          </Button>
+          <Button asChild variant="ghost" className="mt-2 h-12 w-full rounded-sm text-sm font-bold">
+            <Link to="/courses">Back to My Path</Link>
+          </Button>
+        </div>
+      </PhoneFrame>
+    );
+  }
 
   if (script.status === "loading" || notes.status === "loading") {
     return (

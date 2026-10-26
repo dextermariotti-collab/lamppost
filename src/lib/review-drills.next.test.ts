@@ -3,7 +3,7 @@ import { nextReviewLine } from "./review-drills";
 
 describe("nextReviewLine", () => {
   it("says what reviews are when none are scheduled", () => {
-    expect(nextReviewLine([])).toBe("Drills you miss come back here as new scenarios.");
+    expect(nextReviewLine([])).toBe("Questions you miss come back here.");
   });
 
   it("names tomorrow, or the number of days, for the soonest one that isn't due yet", () => {

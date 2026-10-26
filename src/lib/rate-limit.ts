@@ -42,42 +42,6 @@ export const POLICIES = {
     ip: [t("hour", 60)],
     global: [t("day", 4000)],
   },
-  /** The companion's Socratic follow-ups. */
-  socratic: {
-    label: "companion follow-ups",
-    guest: [t("minute", 6), t("hour", 40), t("day", 120)],
-    user: [t("minute", 10), t("hour", 80), t("day", 300)],
-    ip: [t("hour", 200)],
-    global: [t("day", 20_000)],
-  },
-  /** Generating a lesson that is not cached yet. Cached lessons are never limited. */
-  lessonGeneration: {
-    label: "new lesson preparation",
-    guest: [t("hour", 6), t("day", 12)],
-    user: [t("hour", 12), t("day", 30)],
-    ip: [t("hour", 30)],
-    global: [t("hour", 40), t("day", 150)],
-  },
-  /**
-   * Writing one part of a lesson that isn't cached yet (the idea card, a drill, the
-   * written task). A whole lesson is six or seven of these, so the numbers allow a
-   * few lessons an hour per caller. Parts already written are read, never counted.
-   */
-  lessonPart: {
-    label: "new lesson preparation",
-    guest: [t("hour", 40), t("day", 120)],
-    user: [t("hour", 80), t("day", 240)],
-    ip: [t("hour", 150)],
-    global: [t("hour", 300), t("day", 1500)],
-  },
-  /** Topping up the shared drill pool in the background. */
-  poolTopUp: {
-    label: "new practice drills",
-    guest: [t("hour", 6), t("day", 20)],
-    user: [t("hour", 12), t("day", 60)],
-    ip: [t("hour", 30)],
-    global: [t("hour", 60), t("day", 300)],
-  },
   /**
    * Writing the AI daily case for a day, for learners who have read every written case. A day's
    * case is written once and shared, so the global numbers are a handful a day.

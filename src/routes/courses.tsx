@@ -12,7 +12,6 @@ import {
   unitProgress,
   type UnitProgress,
 } from "@/lib/curriculum";
-import { useCurriculumCourse } from "@/lib/curriculum-store";
 import { useProgress } from "@/lib/progress";
 import { upNextIndex } from "@/lib/progress-view";
 import { useDueDrills } from "@/lib/review-drills";
@@ -50,7 +49,6 @@ type PathUnit = UnitProgress & { placed: number };
 
 function MyPath() {
   const { state, doneLessons, studiedLessons, registerCourse } = useProgress();
-  useCurriculumCourse();
 
   useEffect(() => {
     registerCourse(CURRICULUM_SLUG, CURRICULUM_TITLE, TOTAL_LESSONS);
