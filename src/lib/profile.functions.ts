@@ -25,7 +25,10 @@ export type AccountProfile = {
   currentStreak: number;
   longestStreak: number;
   totalXp: number;
+  /** Spendable gems: earned minus spent. */
   gems: number;
+  gemsEarned: number;
+  gemsSpent: number;
   lastActiveDay: string | null;
   companion: {
     preset: string;
@@ -36,7 +39,7 @@ export type AccountProfile = {
 };
 
 const SELECT =
-  "id, display_name, handle, invite_code, created_at, daily_goal, notify_nudges_inapp, notify_nudges_email, current_streak, longest_streak, total_xp, gems, last_active_day, companion_preset, companion_palette, companion_accessory, companion_expression";
+  "id, display_name, handle, invite_code, created_at, daily_goal, notify_nudges_inapp, notify_nudges_email, current_streak, longest_streak, total_xp, gems, gems_earned, gems_spent, last_active_day, companion_preset, companion_palette, companion_accessory, companion_expression";
 
 export const getMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -66,6 +69,8 @@ export const getMyProfile = createServerFn({ method: "POST" })
       longestStreak: data.longest_streak,
       totalXp: data.total_xp,
       gems: data.gems,
+      gemsEarned: data.gems_earned,
+      gemsSpent: data.gems_spent,
       lastActiveDay: data.last_active_day,
       companion: {
         preset: data.companion_preset,
@@ -121,7 +126,10 @@ export const updateMyProfile = createServerFn({ method: "POST" })
 
 const SyncInput = z.object({
   totalXp: z.number().int().min(0).max(10_000_000),
-  gems: z.number().int().min(0).max(10_000_000),
+  /** Lifetime gems the device has earned (its balance plus what it has spent). */
+  gemsEarned: z.number().int().min(0).max(10_000_000).optional(),
+  /** The device's balance. Only builds from before the server-side wallet send this instead. */
+  gems: z.number().int().min(0).max(10_000_000).optional(),
   /** Days (device-local) with activity, and how much. The server decides what it accepts. */
   history: z.record(z.string(), z.number()),
   /** Days a streak freeze covered on the device. */
@@ -147,8 +155,10 @@ const STREAK_WINDOW_DAYS = 400;
  * - the streak is recomputed here from the stored activity days, never taken from
  *   the request, so it can also go down (the old max-wins merge kept a broken
  *   streak forever);
- * - XP and gems only ever rise, by at most a generous per-day allowance for the
- *   time since the last sync.
+ * - XP and lifetime gems earned only ever rise, by at most a generous per-day
+ *   allowance for the time since the last sync. Gems SPENT are not accepted here at
+ *   all: they change only when the server sells something (wallet.functions.ts), and
+ *   the balance is earned minus spent.
  *
  * Lessons are completed in the browser, so this bounds a forged request rather
  * than proving a lesson was done.
@@ -165,7 +175,7 @@ export const syncProgress = createServerFn({ method: "POST" })
     const { data: current, error: readError } = await admin
       .from("profiles")
       .select(
-        "current_streak, longest_streak, total_xp, gems, last_active_day, day_key_version, progress_synced_at",
+        "current_streak, longest_streak, total_xp, gems_earned, gems_spent, last_active_day, day_key_version, progress_synced_at",
       )
       .eq("id", userId)
       .maybeSingle();
@@ -241,7 +251,7 @@ export const syncProgress = createServerFn({ method: "POST" })
       current_streak: streak,
       longest_streak: Math.max(current.longest_streak, streak),
       total_xp: boundedTotal(current.total_xp, data.totalXp, xpCap),
-      gems: boundedTotal(current.gems, data.gems, gemCap),
+      gems_earned: boundedTotal(current.gems_earned, data.gemsEarned ?? data.gems ?? 0, gemCap),
       last_active_day: lastActiveDay,
       progress_synced_at: now.toISOString(),
       ...(upgrading ? { day_key_version: 2 } : {}),
@@ -254,7 +264,8 @@ export const syncProgress = createServerFn({ method: "POST" })
       streak: next.current_streak,
       longestStreak: next.longest_streak,
       totalXp: next.total_xp,
-      gems: next.gems,
+      gems: next.gems_earned - current.gems_spent,
+      gemsSpent: current.gems_spent,
       lastActiveDay: next.last_active_day,
     };
   });

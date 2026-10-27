@@ -10,7 +10,7 @@ Last checked: 2026-09-28.
 
 | Table | Data categories | Personal? | Written by | Deleted on account deletion |
 | --- | --- | --- | --- | --- |
-| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems, last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
+| `profiles` | display name, handle, invite code, companion appearance, onboarding flag, daily goal, learning goal (free text, 40 chars), notification prefs, current/longest streak, total XP, gems (lifetime earned, lifetime spent and the balance between them), last active day, sync bookkeeping (`day_key_version`, `progress_synced_at`) | yes | settings and companion columns by the user; **progress columns by the server only** | deleted |
 | `daily_activity` | per-day lesson counts (device-local calendar days) | yes (behavioural) | server only | deleted |
 | `user_achievements` | achievement codes + unlock timestamps | yes | server only | deleted |
 | `achievements` | achievement catalogue (name, description, icon, criteria) | no | migrations | n/a |
@@ -21,6 +21,9 @@ Last checked: 2026-09-28.
 | `argument_attempts` | lesson id, the learner's written answer, rubric scores, tip | yes (user-written text) | server only (the grader stores it) | deleted (cascade) |
 | `practice_sessions` | course/lesson, the tutor chat transcript, verdict, "remembered" sentence | yes (user-written text) | server only | deleted (cascade) |
 | `subscriptions` | plan status, provider customer/subscription ids, period end | yes | server only (payments not yet enabled) | deleted (cascade) |
+| `rate_limits` | fixed-window request counters: a policy name, an opaque caller key (`u:<user id>`, or `ip:` plus an HMAC of the network address — the address itself is never stored), a window start and a count | pseudonymous | server only | the account's `u:` rows are deleted; all rows are pruned after 3 days |
+| `server_locks` | short leases on jobs in progress (for example "generating lesson X") | no | server only | n/a (expire in minutes) |
+| `lesson_parts` | pieces of a lesson that isn't cached yet (idea card, drills, written task) while it is being written; cleared once the lesson is assembled | no (curriculum content, nothing about a learner) | server only | n/a (cleared on assembly; leftovers pruned after 2 days) |
 | `curriculum_lessons`, `drill_variants` | shared AI-generated lesson and drill content | no | server only | n/a |
 | `content_reports` | reason, free-text details, course slug/topic, lesson index/title, excerpt of flagged text, status | yes until anonymised | the reporting user | `user_id` set to null, report retained for audit |
 | `moderation_blocks` | refused topic text, category, stage (input/output) | pseudonymous | server only | `user_id` set to null, row retained for audit |

@@ -1,19 +1,24 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { useSessionUser } from "./companion-store";
 import { getMyProfile, syncProgress } from "./profile.functions";
+import { buyStreakFreeze } from "./wallet.functions";
 import { dayKey, shiftDay } from "./days";
 import { migrateHistoryToLocalDays, readActivityTimes } from "./progress-migrate";
 import {
   DAY_KEY_VERSION,
   DEFAULT_STATE,
   applyArgument,
+  adoptWallet,
   applyBuyFreeze,
   applyExercise,
   applyLessonComplete,
   applyPractice,
   applyReview,
+  applyServerPurchase,
   applyUnlockLessons,
+  canBuyFreeze,
   effectiveStreak,
+  gemsEarned,
   mergeAccountProgress,
   type ProgressState,
 } from "./progress-core";
@@ -104,6 +109,21 @@ function subscribe(fn: () => void) {
   };
 }
 
+/** What a sync tells the account about this device. Gems are lifetime earnings; spending is the server's. */
+function syncPayload(state: ProgressState) {
+  return {
+    totalXp: state.xp,
+    gemsEarned: gemsEarned(state),
+    history: state.history,
+    freezeLog: state.freezeLog,
+    today: dayKey(),
+    dayKeyVersion: state.dayKeyVersion,
+  };
+}
+
+/** How a freeze purchase ended, in words the card can show. */
+export type BuyFreezeOutcome = { ok: true } | { ok: false; message: string };
+
 function writeState(next: ProgressState) {
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
@@ -147,19 +167,15 @@ export function useProgress() {
   // Write-through sync: the account is the source of truth friends can see.
   useEffect(() => {
     if (!hydrated || !userId) return;
-    const payload = {
-      totalXp: state.xp,
-      gems: state.gems,
-      history: state.history,
-      freezeLog: state.freezeLog,
-      today: dayKey(),
-      dayKeyVersion: state.dayKeyVersion,
-    };
+    const payload = syncPayload(state);
     const signature = JSON.stringify(payload);
     if (signature === lastSynced.current) return;
     lastSynced.current = signature;
-    void syncProgress({ data: payload }).catch(() => undefined);
-  }, [hydrated, userId, state]);
+    void syncProgress({ data: payload })
+      // The account is the truth for what has been spent, wherever it was spent.
+      .then((account) => update((prev) => adoptWallet(prev, { spent: account.gemsSpent })))
+      .catch(() => undefined);
+  }, [hydrated, userId, state, update]);
 
   const registerCourse = useCallback(
     (slug: string, topic: string, total: number) =>
@@ -209,7 +225,47 @@ export function useProgress() {
     [update],
   );
 
-  const buyFreeze = useCallback(() => update((prev) => applyBuyFreeze(prev)), [update]);
+  const buying = useRef(false);
+
+  /**
+   * Signed out, gems only exist on this device, so the purchase happens here. Signed
+   * in, the account owns the gems: it is brought up to date with what was just
+   * earned, then the server spends them in one atomic step, and the freeze is held
+   * only once it says yes.
+   */
+  const buyFreeze = useCallback(async (): Promise<BuyFreezeOutcome> => {
+    if (buying.current) return { ok: false, message: "One moment — that's still going through." };
+    if (!canBuyFreeze(getSnapshot())) {
+      return { ok: false, message: "You can't get a freeze right now." };
+    }
+    if (!userId) {
+      update((prev) => applyBuyFreeze(prev));
+      return { ok: true };
+    }
+
+    buying.current = true;
+    try {
+      const payload = syncPayload(getSnapshot());
+      const account = await syncProgress({ data: payload });
+      lastSynced.current = JSON.stringify(payload);
+      update((prev) => adoptWallet(prev, { spent: account.gemsSpent }));
+      if (!canBuyFreeze(getSnapshot())) {
+        return { ok: false, message: "You don't have enough gems for that yet." };
+      }
+
+      const result = await buyStreakFreeze();
+      if (result.ok) {
+        update((prev) => applyServerPurchase(prev, { spent: result.spent }));
+        return { ok: true };
+      }
+      if ("spent" in result) update((prev) => adoptWallet(prev, { spent: result.spent }));
+      return { ok: false, message: "message" in result ? result.message : result.reason };
+    } catch {
+      return { ok: false, message: "That couldn't go through just now. Your gems were not spent." };
+    } finally {
+      buying.current = false;
+    }
+  }, [update, userId]);
 
   const clearFreezeSaved = useCallback(
     () => update((prev) => (prev.freezeSaved ? { ...prev, freezeSaved: null } : prev)),

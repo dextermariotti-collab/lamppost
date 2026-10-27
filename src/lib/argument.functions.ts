@@ -1,18 +1,31 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { screenLocally } from "./moderation";
+import { LESSONS } from "./curriculum";
 import { WRITTEN_TASKS, type ArgumentGrade, type RubricCriterion } from "./exercises";
+import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
 const MODEL = "google/gemini-3.6-flash";
 
-const GradeInput = z.object({
-  lessonId: z.string().min(1),
-  lessonTitle: z.string().min(1),
-  objective: z.string().min(1),
+/** Longest answer the grader will read; matches the answer box in the lesson. */
+export const MAX_ANSWER_CHARS = 3000;
+
+/**
+ * Everything the grader is sent is bounded, and it can only be asked about a
+ * lesson that exists — so it can't be used as a free general-purpose model.
+ */
+export const GradeInput = z.object({
+  lessonId: z
+    .string()
+    .min(1)
+    .max(80)
+    .refine((id) => LESSONS.some((lesson) => lesson.id === id), "Unknown lesson"),
+  lessonTitle: z.string().min(1).max(160),
+  objective: z.string().min(1).max(400),
   taskType: z.enum(["restate", "case", "critique", "testable", "steelmanWrite"]),
-  passage: z.string().min(1).max(4000),
-  prompt: z.string().min(1),
-  answer: z.string().min(1).max(4000),
+  passage: z.string().min(1).max(2000),
+  prompt: z.string().min(1).max(600),
+  answer: z.string().min(1).max(MAX_ANSWER_CHARS),
   attempt: z.number().int().min(1).max(2),
   /** Rubric criterion this learner is weakest on, so feedback leans on it. */
   focus: z.string().max(40).nullish(),
@@ -20,7 +33,8 @@ const GradeInput = z.object({
 
 export type GradeResult =
   | { ok: true; grade: ArgumentGrade; onTopic: boolean }
-  | { ok: false; reason: string; blocked?: boolean };
+  | { ok: false; reason: string; blocked?: boolean }
+  | LimitedFailure;
 
 const clampScore = (value: unknown) =>
   Math.min(4, Math.max(1, Math.round(typeof value === "number" ? value : 1)));
@@ -97,6 +111,11 @@ export const gradeArgument = createServerFn({ method: "POST" })
 
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
+
+    // Everything above is free. Only a request that would really call the model is counted.
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("grading");
+    if (!verdict.ok) return limitedFailure(verdict);
 
     try {
       const { streamText } = await import("ai");

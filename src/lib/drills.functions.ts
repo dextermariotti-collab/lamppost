@@ -4,6 +4,7 @@ import { LESSONS } from "./curriculum";
 import { EXERCISE_KINDS, type Exercise, type ExerciseKind } from "./exercises";
 import { MOTIVATION_IDS } from "./onboarding";
 import { sayHypotheticalOnce } from "./hypothetical";
+import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
 /**
  * Serves ONE fresh drill of a skill + type for reviews, the daily challenge and
@@ -17,7 +18,7 @@ import { sayHypotheticalOnce } from "./hypothetical";
  */
 
 const Input = z.object({
-  lessonId: z.string().min(1),
+  lessonId: z.string().min(1).max(80),
   kind: z.enum(EXERCISE_KINDS),
   seen: z.array(z.number().int()).max(80).default([]),
   /** Difficulty band the learner's rating asks for. */
@@ -36,7 +37,8 @@ export type DrillVariantResult =
       kind: ExerciseKind;
       difficulty: number;
     }
-  | { ok: false; reason: string };
+  | { ok: false; reason: string }
+  | LimitedFailure;
 
 export const getDrillVariant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => Input.parse(input))
@@ -49,6 +51,7 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       const { seedPoolFromLesson, readCachedLesson, isUsableLesson, ensureLessonContent } =
         await import("./curriculum-generate.server");
       const { domainsFor } = await import("./domains");
+      const { guardedGeneration, limiterForRequest } = await import("./rate-limit.server");
 
       const readPool = async () =>
         (
@@ -67,9 +70,19 @@ export const getDrillVariant = createServerFn({ method: "POST" })
         if (isUsableLesson(cached, meta.drills)) {
           await seedPoolFromLesson(meta.id, cached!.exercises!);
         } else {
-          const generated = await ensureLessonContent(meta.id);
-          if (generated.ok && generated.lesson.exercises) {
-            if (generated.cached) await seedPoolFromLesson(meta.id, generated.lesson.exercises);
+          // Only a cache miss generates, and only under the same limits and lease
+          // as fetching the lesson itself.
+          const attempt = await guardedGeneration({
+            policy: "lessonGeneration",
+            lockKey: `gen:lesson:${meta.id}`,
+            lockTtlSeconds: 240,
+            run: () => ensureLessonContent(meta.id),
+          });
+          if (attempt.status === "limited") return limitedFailure(attempt);
+          if (attempt.status === "ran" && attempt.value.ok && attempt.value.lesson.exercises) {
+            if (attempt.value.cached) {
+              await seedPoolFromLesson(meta.id, attempt.value.lesson.exercises);
+            }
           }
         }
         rows = await readPool();
@@ -85,7 +98,9 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       // the lesson has seen those, so they never count as a "new scenario".
       const lesson = await readCachedLesson(meta.id).catch(() => null);
       const questionOf = (c: unknown) =>
-        String((c as { question?: string } | null)?.question ?? "").trim().toLowerCase();
+        String((c as { question?: string } | null)?.question ?? "")
+          .trim()
+          .toLowerCase();
       const lessonQuestions = new Set(
         ((lesson?.exercises ?? []) as unknown[]).map(questionOf).filter(Boolean),
       );
@@ -113,12 +128,24 @@ export const getDrillVariant = createServerFn({ method: "POST" })
       // Keep the pool healthy for next time, without making anyone wait for it.
       if ((exhausted || ofKind.length < POOL_TARGET) && meta.drills.includes(data.kind)) {
         const domain = wanted[Math.floor(Math.random() * wanted.length)];
+        // Best effort: if a limit or another top-up in flight says no, the pool
+        // simply stays as it is until a later answer tries again.
+        const using = limiterForRequest();
         void import("./curriculum-generate.server")
           .then(({ generatePoolDrill }) =>
-            generatePoolDrill(meta.id, data.kind, {
-              difficulty: data.difficulty,
-              ...(domain ? { domain } : {}),
-            }),
+            guardedGeneration(
+              {
+                policy: "poolTopUp",
+                lockKey: `pool:${meta.id}:${data.kind}`,
+                lockTtlSeconds: 120,
+                run: () =>
+                  generatePoolDrill(meta.id, data.kind, {
+                    difficulty: data.difficulty,
+                    ...(domain ? { domain } : {}),
+                  }),
+              },
+              using,
+            ),
           )
           .catch(() => undefined);
       }

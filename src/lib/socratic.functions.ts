@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { screenLocally } from "./moderation";
+import { limitedFailure, type LimitedFailure } from "./rate-limit";
 
 const MODEL = "google/gemini-3.6-flash";
 
@@ -18,7 +19,8 @@ const Input = z.object({
   reply: z.string().max(800).default(""),
 });
 
-export type SocraticResult = { ok: true; line: string } | { ok: false; reason: string };
+export type SocraticResult =
+  { ok: true; line: string } | { ok: false; reason: string } | LimitedFailure;
 
 /**
  * One line from the mascot: a Socratic follow-up after an exercise, or a short
@@ -36,6 +38,10 @@ export const socraticLine = createServerFn({ method: "POST" })
 
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, reason: "AI isn't configured for this project yet." };
+
+    const { limiter } = await import("./rate-limit.server");
+    const verdict = await limiter().enforce("socratic");
+    if (!verdict.ok) return limitedFailure(verdict);
 
     try {
       const { streamText } = await import("ai");

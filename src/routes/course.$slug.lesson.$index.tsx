@@ -11,6 +11,7 @@ import { SocraticPopup } from "@/components/SocraticPopup";
 import { ExerciseRunner } from "@/components/exercises/ExerciseRunner";
 import { DrillVariant } from "@/components/exercises/DrillVariant";
 import { WrittenArgument } from "@/components/exercises/WrittenArgument";
+import { PartsStatus, PendingPart } from "@/components/LessonParts";
 import { SuccessBurst } from "@/components/SuccessBurst";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
@@ -78,10 +79,19 @@ function LessonScreen() {
     recordArgument,
   } = useProgress();
   const completedLessons = state.courses[CURRICULUM_SLUG]?.completed ?? 0;
-  const { lesson, meta, loading, error, retry, ready } = useCurriculumLesson(
-    lessonNumber - 1,
-    completedLessons,
-  );
+  const {
+    lesson,
+    drills: exercises,
+    written,
+    complete,
+    meta,
+    loading,
+    error,
+    notice,
+    failed,
+    retry,
+    ready,
+  } = useCurriculumLesson(lessonNumber - 1, completedLessons);
   const { companion } = useCompanion();
   const { userId } = useSessionUser();
   const { attempts, record } = useLessonAttempts(meta?.id ?? `lesson-${lessonNumber}`);
@@ -145,17 +155,30 @@ function LessonScreen() {
           <p className="mt-2 text-sm text-muted-foreground">{meta?.objective}</p>
 
           {error ? (
-            <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft">
+            <div className="mt-6 rounded-3xl bg-card p-5 shadow-soft" role="alert">
               <p className="text-sm font-semibold text-foreground">{error}</p>
-              <Button onClick={retry} className="mt-4 w-full rounded-full">
+              <Button onClick={retry} className="mt-4 h-11 w-full rounded-full">
                 Try again
               </Button>
             </div>
           ) : (
             <div className="mt-6 space-y-4" aria-busy={loading}>
-              <p className="text-sm font-semibold text-muted-foreground">Opening your lesson…</p>
-              <div className="h-24 animate-pulse rounded-3xl bg-muted" />
-              <div className="h-52 animate-pulse rounded-3xl bg-muted" />
+              {/* The idea is ready at once: it comes from the curriculum, not the model. */}
+              {meta && (
+                <article className="rounded-3xl bg-card p-5 shadow-card">
+                  <p className="text-[11px] font-semibold text-primary-text">The idea</p>
+                  <p className="mt-3 text-[15px] font-semibold leading-relaxed text-foreground/85">
+                    {meta.keyIdea}
+                  </p>
+                  <div className="mt-4 space-y-2" aria-hidden>
+                    <div className="h-3 w-4/5 animate-pulse rounded-full bg-muted" />
+                    <div className="h-3 w-3/5 animate-pulse rounded-full bg-muted" />
+                  </div>
+                </article>
+              )}
+              <p role="status" className="text-sm font-semibold text-muted-foreground">
+                Writing your worked example…
+              </p>
             </div>
           )}
         </div>
@@ -163,20 +186,22 @@ function LessonScreen() {
     );
   }
 
-  const exercises = lesson.exercises ?? [];
-  const written = lesson.written;
+  // A lesson that is still being written has its written task on the way; a finished
+  // one without a written task simply has no such step.
+  const hasWrittenPage = written !== null || !complete;
+  const drillsReady = exercises.filter((drill) => drill !== null).length;
   const easierPage = easier ? exercises.length + 1 : null;
   const writtenPage = exercises.length + 1 + (easier ? 1 : 0);
-  const summaryPage = writtenPage + (written ? 1 : 0);
+  const summaryPage = writtenPage + (hasWrittenPage ? 1 : 0);
   const totalPages = summaryPage + 1;
 
   const onConcept = page === 0;
   const onExercise = page >= 1 && page <= exercises.length;
   const exerciseIndex = page - 1;
-  const currentExercise = onExercise ? exercises[exerciseIndex] : undefined;
+  const currentExercise = onExercise ? (exercises[exerciseIndex] ?? undefined) : undefined;
   const currentAttempt = onExercise ? attempts[exerciseIndex] : undefined;
   const onEasier = easierPage !== null && page === easierPage;
-  const onWritten = !!written && page === writtenPage;
+  const onWritten = hasWrittenPage && page === writtenPage;
   const onSummary = page === summaryPage;
 
   const stepPct = Math.round(
@@ -253,12 +278,12 @@ function LessonScreen() {
     ? "Start training"
     : onExercise
       ? exerciseIndex + 1 === exercises.length
-        ? written
+        ? hasWrittenPage
           ? "Write your argument"
           : "See the summary"
         : "Next drill"
       : onEasier
-        ? written
+        ? hasWrittenPage
           ? "Write your argument"
           : "See the summary"
         : onWritten
@@ -278,7 +303,9 @@ function LessonScreen() {
     // Only what was actually done gets listed.
     const practised = Array.from(
       new Set(
-        exercises.flatMap((e, i) => (attempts[i] !== undefined ? [EXERCISE_LABEL[e.kind]] : [])),
+        exercises.flatMap((e, i) =>
+          e && attempts[i] !== undefined ? [EXERCISE_LABEL[e.kind]] : [],
+        ),
       ),
     );
     const nextMeta = lessonAt(lessonNumber);
@@ -509,7 +536,23 @@ function LessonScreen() {
             <p className="mt-4 text-[13px] font-semibold text-muted-foreground">
               {exercises.length} drills ahead. You do the reasoning — I'll push back.
             </p>
+            <PartsStatus
+              ready={drillsReady}
+              total={exercises.length}
+              complete={complete}
+              problem={notice}
+              onRetry={retry}
+            />
           </article>
+        )}
+
+        {onExercise && !currentExercise && (
+          <PendingPart
+            what="this drill"
+            failed={failed.includes(`drill:${exerciseIndex}`)}
+            notice={notice}
+            onRetry={retry}
+          />
         )}
 
         {onExercise && currentExercise && (
@@ -545,7 +588,7 @@ function LessonScreen() {
             </div>
             <DrillVariant
               lessonId={meta.id}
-              kind={exercises[0]?.kind ?? meta.drills[0]!}
+              kind={meta.drills[0]!}
               seen={[]}
               index={0}
               total={1}
@@ -558,6 +601,24 @@ function LessonScreen() {
                 recordDrillOutcome(meta.id, { score, difficulty: 1 });
               }}
             />
+          </>
+        )}
+
+        {onWritten && !written && (
+          <>
+            <PendingPart
+              what="your writing task"
+              failed={failed.includes("written")}
+              notice={notice}
+              onRetry={retry}
+            />
+            <button
+              type="button"
+              onClick={() => setSkippedWriting(true)}
+              className="mt-3 h-11 w-full rounded-full text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Skip the writing this time
+            </button>
           </>
         )}
 
@@ -627,7 +688,7 @@ function LessonScreen() {
           )}
 
           {onExercise &&
-            written &&
+            hasWrittenPage &&
             exercises.length > 3 &&
             exerciseIndex < 3 &&
             [0, 1, 2].every((i) => attempts[i]?.score === 1) && (

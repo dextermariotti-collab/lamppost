@@ -265,7 +265,7 @@ export function variantPrompt(
   lesson: CurriculumLesson,
   kind: ExerciseKind,
   avoid: string[],
-  opts: { difficulty?: number; domain?: string } = {},
+  opts: { difficulty?: number; domain?: string; conceptBody?: string } = {},
 ) {
   const unit = UNITS.find((u) => u.id === lesson.unitId);
   return `Unit: ${unit?.title ?? lesson.unitId}
@@ -274,6 +274,11 @@ Key idea: ${lesson.keyIdea}
 The trap to test: ${lesson.trap}
 Drill type: ${kind} — ${EXERCISE_LABEL[kind]} (${EXERCISE_QUESTION[kind]})
 ${opts.domain ? `Setting for this drill: ${opts.domain}` : ""}
+${
+  opts.conceptBody
+    ? `The concept card the learner has just read (never reuse its wording in the keyed option):\n"${opts.conceptBody}"`
+    : ""
+}
 ${DIFFICULTY_NOTE[opts.difficulty ?? 2] ?? ""}
 
 Write ONE new drill of that type training exactly that skill, on fresh material.
@@ -285,6 +290,149 @@ ${
     : ""
 }
 Return the JSON for that one drill now.`;
+}
+
+/* ------------------- a lesson written in parts (cold cache) ------------------- */
+
+/**
+ * A lesson that isn't cached is written piece by piece so the learner can start on
+ * the idea card after a few seconds: the concept card first, then each drill and
+ * the written task on their own, in parallel. These are the prompts for the two
+ * pieces that are not a drill (the drills use the variant prompts above).
+ */
+export function conceptSystemPrompt() {
+  return `You write the opening concept card for a lesson in Lamppost, a critical-thinking trainer.
+The lesson is a workout, not a reading: the card is short and the learner does the reasoning afterwards.
+Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
+{"concept":{"title":string,"body":string,"example":string},"summary":[string,string,string]}
+
+"concept.title" is max 5 words. "concept.body" is AT MOST 80 words teaching the skill in plain language.
+"concept.example" is ONE concrete everyday example (max 40 words). Never present an invented study,
+statistic or named source as real fact; if the example is made up, begin it with "Hypothetical
+scenario: " and do not use the word "hypothetical" anywhere else in the card.
+"summary" is 3 takeaways, max 14 words each.
+
+${CONTENT_POLICY_RULES}`;
+}
+
+export function conceptPrompt(lesson: CurriculumLesson) {
+  const unit = UNITS.find((u) => u.id === lesson.unitId);
+  return `Unit: ${unit?.title ?? lesson.unitId} — ${unit?.blurb ?? ""}
+Lesson title: "${lesson.title}"
+Learning objective: ${lesson.objective}
+
+KEY IDEA the card must teach:
+${lesson.keyIdea}
+
+THE TRAP the drills after this card will test (do not give the answer away on the card):
+${lesson.trap}
+
+Return the JSON now.`;
+}
+
+export type ConceptPart = {
+  concept: { title: string; body: string; example?: string };
+  summary: string[];
+};
+
+/** The concept card and takeaways from one reply, or null if there is no usable card. */
+export function parseConcept(text: string, fallbackTitle: string): ConceptPart | null {
+  const root = extractJson(text);
+  if (!root) return null;
+  const raw = asObject(pick(root, ["concept", "conceptCard", "concept_card"]));
+  const body = str(pick(raw, ["body", "text", "explanation"]));
+  if (!body) return null;
+  const example = str(pick(raw, ["example", "illustration"]));
+  const summary = asArray(pick(root, ["summary", "takeaways", "keyPoints", "key_points"]))
+    .map((entry) => str(entry))
+    .filter(Boolean)
+    .slice(0, 4);
+  return {
+    concept: {
+      title: str(pick(raw, ["title", "heading"]), fallbackTitle),
+      body,
+      ...(example ? { example } : {}),
+    },
+    summary,
+  };
+}
+
+export function writtenSystemPrompt(written: WrittenTaskType) {
+  return `You write the closing written-argument task for a lesson in Lamppost, a critical-thinking trainer.
+Reply with ONLY minified JSON (no markdown fences, no commentary) in exactly this shape:
+{"written":{"passage":string,"prompt":string,"guidance":string}}
+
+${WRITTEN_SPEC[written]}
+Guidance is one sentence naming what a strong answer does. The passage is ALWAYS included in the JSON
+so the learner never has to leave the app.
+Never present an invented study, statistic, institution or named source as real fact; mark a made-up
+scenario once with the prefix "Hypothetical scenario: " and never use the word "hypothetical" again.
+
+${CONTENT_POLICY_RULES}`;
+}
+
+export function writtenPrompt(lesson: CurriculumLesson, opts: { domain?: string } = {}) {
+  const task = WRITTEN_TASKS[lesson.written];
+  return `Lesson title: "${lesson.title}"
+Learning objective (the task must train exactly this): ${lesson.objective}
+KEY IDEA: ${lesson.keyIdea}
+THE TRAP the task must actually test: ${lesson.trap}
+Closing written task: ${task.label} (${task.length}).
+${opts.domain ? `Setting: ${opts.domain}` : ""}
+Return the JSON now.`;
+}
+
+export function parseWritten(text: string, type: WrittenTaskType): WrittenPrompt | null {
+  const root = extractJson(text);
+  if (!root) return null;
+  const raw = asObject(
+    pick(root, ["written", "writtenArgument", "written_argument", "essay"]) ?? root,
+  );
+  const prompt = str(pick(raw, ["prompt", "question", "task"]));
+  const passage = str(pick(raw, ["passage", "text", "scenario", "argument", "excerpt"]));
+  const guidance = str(pick(raw, ["guidance", "hint", "criteria"]));
+  if (!prompt || !passage) return null;
+  return { type, prompt, passage, ...(guidance ? { guidance } : {}) };
+}
+
+/**
+ * A finished lesson from its pieces. The one-shot generator and the part-by-part
+ * one both end here, so a lesson has the same shape whichever way it was written.
+ */
+export function composeLesson(
+  meta: { title: string; objective: string; emoji: string },
+  pieces: {
+    concept: ConceptPart["concept"];
+    exercises: Exercise[];
+    written?: WrittenPrompt | null;
+    summary?: string[];
+  },
+): Lesson {
+  const { concept, exercises, written, summary } = pieces;
+  const flaw = exercises.find((e): e is FlawExercise => e.kind === "flaw");
+  return {
+    title: meta.title,
+    subtitle: meta.objective,
+    emoji: meta.emoji,
+    concept,
+    exercises,
+    ...(written ? { written } : {}),
+    ...(summary?.length ? { keyPoints: summary } : {}),
+    // Keep the legacy shapes populated so older screens keep working.
+    intro: concept.body,
+    parts: [{ title: concept.title, body: concept.body }],
+    ...(flaw
+      ? {
+          flaw: {
+            claim: flaw.claim,
+            options: flaw.options,
+            correct: flaw.correct,
+            ...(flaw.fallacy ? { fallacy: flaw.fallacy } : {}),
+            explanation: flaw.explanation,
+          },
+        }
+      : {}),
+  };
 }
 
 /* ------------------------------- parsing ------------------------------- */
@@ -659,12 +807,12 @@ export function parseExerciseLesson(
   const writtenRaw = asObject(
     pick(root, ["written", "writtenArgument", "written_argument", "essay"]),
   );
-  const writtenPrompt = str(pick(writtenRaw, ["prompt", "question", "task"]));
+  const taskPrompt = str(pick(writtenRaw, ["prompt", "question", "task"]));
   const passage = str(pick(writtenRaw, ["passage", "text", "scenario", "argument", "excerpt"]));
   const guidance = str(pick(writtenRaw, ["guidance", "hint", "criteria"]));
   const written: WrittenPrompt | null =
-    writtenPrompt && passage
-      ? { type: meta.written, prompt: writtenPrompt, passage, ...(guidance ? { guidance } : {}) }
+    taskPrompt && passage
+      ? { type: meta.written, prompt: taskPrompt, passage, ...(guidance ? { guidance } : {}) }
       : null;
 
   const summary = asArray(pick(root, ["summary", "takeaways", "keyPoints", "key_points"]))
@@ -672,33 +820,14 @@ export function parseExerciseLesson(
     .filter(Boolean)
     .slice(0, 4);
 
-  const flaw = exercises.find((e): e is FlawExercise => e.kind === "flaw");
-
-  return {
-    title: meta.title,
-    subtitle: meta.objective,
-    emoji: meta.emoji,
+  return composeLesson(meta, {
     concept: {
       title: str(pick(conceptRaw, ["title", "heading"]), meta.title),
       body,
       ...(example ? { example } : {}),
     },
     exercises,
-    ...(written ? { written } : {}),
-    ...(summary.length ? { keyPoints: summary } : {}),
-    // Keep the legacy shapes populated so older screens keep working.
-    intro: body,
-    parts: [{ title: str(pick(conceptRaw, ["title", "heading"]), meta.title), body }],
-    ...(flaw
-      ? {
-          flaw: {
-            claim: flaw.claim,
-            options: flaw.options,
-            correct: flaw.correct,
-            ...(flaw.fallacy ? { fallacy: flaw.fallacy } : {}),
-            explanation: flaw.explanation,
-          },
-        }
-      : {}),
-  };
+    written,
+    summary,
+  });
 }

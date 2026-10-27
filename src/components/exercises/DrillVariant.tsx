@@ -4,6 +4,7 @@ import { Button } from "./../ui/button";
 import { ExerciseRunner } from "./ExerciseRunner";
 import { getDrillVariant } from "@/lib/drills.functions";
 import { readIntent } from "@/lib/onboarding";
+import { isLimited } from "@/lib/rate-limit";
 import { markPoolVariantSeen, needsHelp, seenVariants, targetDifficulty } from "@/lib/rating";
 import type { Exercise, ExerciseKind } from "@/lib/exercises";
 
@@ -14,11 +15,16 @@ import type { Exercise, ExerciseKind } from "@/lib/exercises";
  * scenario setting follows their goal, and variants they have already seen are
  * skipped until the pool runs out.
  *
- * Failures are never shown: the fetch keeps retrying quietly behind the loading
- * state, because a "couldn't generate" message is not the learner's problem.
+ * A slow or failed fetch is retried quietly behind the loading state, because a
+ * "couldn't generate" message is not the learner's problem. Two things end the
+ * quiet retrying: the server saying a usage limit was reached (it says when to
+ * come back, and asking again sooner cannot help), and about half a minute of
+ * failures. Either way the learner gets a plain message and a button.
  */
 
 const RETRY_MS = [700, 1200, 2000, 3500, 6000];
+const QUIET_RETRIES = 8;
+const TAKING_LONG = "This drill is taking longer than usual to get ready.";
 
 export function DrillVariant({
   lessonId,
@@ -54,6 +60,8 @@ export function DrillVariant({
   const [answer, setAnswer] = useState<unknown>(undefined);
   const [hint, setHint] = useState(false);
   const [offerHint, setOfferHint] = useState(false);
+  const [pause, setPause] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
   const retries = useRef(0);
 
   useEffect(() => {
@@ -62,6 +70,7 @@ export function DrillVariant({
     setDrill(null);
     setAnswer(undefined);
     setHint(false);
+    setPause(null);
     retries.current = 0;
     setOfferHint(needsHelp(lessonId));
 
@@ -90,10 +99,18 @@ export function DrillVariant({
             });
             return;
           }
+          if (isLimited(result)) {
+            setPause(result.reason);
+            return;
+          }
           throw new Error(result.reason);
         })
         .catch(() => {
           if (cancelled) return;
+          if (retries.current >= QUIET_RETRIES) {
+            setPause(TAKING_LONG);
+            return;
+          }
           const wait = RETRY_MS[Math.min(retries.current, RETRY_MS.length - 1)]!;
           retries.current += 1;
           timer = window.setTimeout(load, wait);
@@ -107,7 +124,7 @@ export function DrillVariant({
     };
     // `seen` is a snapshot for this fetch; changing it mid-drill must not refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonId, kind, difficulty]);
+  }, [lessonId, kind, difficulty, round]);
 
   const handleAnswer = useCallback(
     (given: unknown, score: number) => {
@@ -125,6 +142,21 @@ export function DrillVariant({
     },
     [drill, hint, onAnswer],
   );
+
+  if (!drill && pause) {
+    return (
+      <div className="mt-5 rounded-3xl bg-card p-5 shadow-soft" role="status">
+        <p className="text-sm font-semibold text-foreground">{pause}</p>
+        <Button
+          type="button"
+          onClick={() => setRound((n) => n + 1)}
+          className="mt-4 h-11 w-full rounded-full"
+        >
+          Try again
+        </Button>
+      </div>
+    );
+  }
 
   if (!drill) {
     return (

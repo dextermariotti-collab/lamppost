@@ -31,7 +31,7 @@ export const isUsableLesson = (lesson: Lesson | undefined | null, plan: readonly
 
 type Admin = Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"];
 
-async function admin(): Promise<Admin> {
+export async function admin(): Promise<Admin> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
 }
@@ -236,6 +236,75 @@ export async function ensureLessonContent(
 }
 
 /**
+ * Writes one drill of `kind` for a lesson and has a second pass check it. Nothing
+ * is stored: the caller decides where it goes (the shared pool, or a lesson that
+ * is being written in parts). A drill the reviewer can't be heard on is rejected,
+ * not waved through.
+ */
+export async function generateValidatedDrill(
+  meta: CurriculumLesson,
+  kind: ExerciseKind,
+  opts: {
+    difficulty?: number;
+    domain?: string;
+    /** Scenarios already used, so the new one is clearly different. */
+    avoid?: string[];
+    /** The concept card the learner has read, so the drill doesn't echo it. */
+    conceptBody?: string;
+  } = {},
+): Promise<Exercise | null> {
+  const key = process.env["LOVABLE_API_KEY"];
+  if (!key) return null;
+
+  const { streamText } = await import("ai");
+  const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+  const { screenOutput } = await import("./moderation.server");
+  const { variantSystemPrompt, variantPrompt, normalizeExercise, extractJson } =
+    await import("./exercise-ai.server");
+  const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } =
+    await import("./exercise-validate.server");
+
+  const difficulty = opts.difficulty ?? 2;
+  const gateway = createLovableAiGatewayProvider(key);
+  const ask = async (system: string, prompt: string) =>
+    await streamText({ model: gateway(MODEL), system, prompt, maxRetries: 2 }).text;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const text = await ask(
+      variantSystemPrompt(kind),
+      variantPrompt(meta, kind, opts.avoid ?? [], {
+        difficulty,
+        ...(opts.domain ? { domain: opts.domain } : {}),
+        ...(opts.conceptBody ? { conceptBody: opts.conceptBody } : {}),
+      }),
+    );
+    if (!screenOutput(text).allowed) continue;
+    const root = extractJson(text);
+    const candidate = normalizeExercise(
+      root && Array.isArray(root["exercises"]) ? root["exercises"][0] : root,
+    );
+    if (!candidate || candidate.kind !== kind) continue;
+
+    const review = await ask(
+      VALIDATION_SYSTEM,
+      validationPrompt(meta, [candidate], opts.conceptBody),
+    );
+    const verdict = parseVerdicts(review, 1)?.[0];
+    if (!verdict) continue;
+    if (verdict.pass) return candidate;
+
+    const fixable =
+      verdict.betterCorrect !== null &&
+      "options" in candidate &&
+      Array.isArray(candidate.options) &&
+      verdict.betterCorrect >= 0 &&
+      verdict.betterCorrect < candidate.options.length;
+    if (fixable) return { ...candidate, correct: verdict.betterCorrect } as Exercise;
+  }
+  return null;
+}
+
+/**
  * Generates one extra vetted drill of a given kind for a lesson and adds it to
  * the pool. Used by the background top-up, never awaited by a learner.
  */
@@ -246,19 +315,9 @@ export async function generatePoolDrill(
 ): Promise<Exercise | null> {
   const meta = LESSONS.find((l) => l.id === lessonId);
   if (!meta) return null;
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) return null;
 
   try {
-    const { streamText } = await import("ai");
-    const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
-    const { screenOutput } = await import("./moderation.server");
-    const { variantSystemPrompt, variantPrompt, normalizeExercise, extractJson } =
-      await import("./exercise-ai.server");
-    const { VALIDATION_SYSTEM, validationPrompt, parseVerdicts } =
-      await import("./exercise-validate.server");
     const { describeExercise } = await import("./exercises");
-
     const db = await admin();
     const pool =
       (
@@ -270,61 +329,28 @@ export async function generatePoolDrill(
           .order("variant", { ascending: false })
           .limit(4)
       ).data ?? [];
-
-    const difficulty = opts.difficulty ?? 2;
-    const gateway = createLovableAiGatewayProvider(key);
-    const ask = async (system: string, prompt: string) =>
-      await streamText({ model: gateway(MODEL), system, prompt, maxRetries: 2 }).text;
-
     const avoid = pool.map((row) =>
       describeExercise(row.content as unknown as Exercise).slice(0, 200),
     );
 
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const text = await ask(
-        variantSystemPrompt(kind),
-        variantPrompt(meta, kind, avoid, {
-          difficulty,
-          ...(opts.domain ? { domain: opts.domain } : {}),
-        }),
-      );
-      if (!screenOutput(text).allowed) continue;
-      const root = extractJson(text);
-      const candidate = normalizeExercise(
-        root && Array.isArray(root["exercises"]) ? root["exercises"][0] : root,
-      );
-      if (!candidate || candidate.kind !== kind) continue;
+    const exercise = await generateValidatedDrill(meta, kind, { ...opts, avoid });
+    if (!exercise) return null;
 
-      const review = await ask(VALIDATION_SYSTEM, validationPrompt(meta, [candidate]));
-      const verdict = parseVerdicts(review, 1)?.[0];
-      let exercise = candidate;
-      if (verdict && !verdict.pass) {
-        const fixable =
-          verdict.betterCorrect !== null &&
-          "options" in candidate &&
-          Array.isArray(candidate.options) &&
-          verdict.betterCorrect >= 0 &&
-          verdict.betterCorrect < candidate.options.length;
-        if (!fixable) continue;
-        exercise = { ...candidate, correct: verdict.betterCorrect } as Exercise;
-      }
-
-      const max =
-        (await db.from("drill_variants").select("variant").eq("lesson_id", lessonId)).data?.reduce(
-          (m, row) => Math.max(m, row.variant),
-          0,
-        ) ?? 0;
-      await db.from("drill_variants").insert({
-        lesson_id: lessonId,
-        kind,
-        variant: max + 1,
-        difficulty,
-        domain: opts.domain ?? null,
-        content: JSON.parse(JSON.stringify(exercise)),
-        model: MODEL,
-      });
-      return exercise;
-    }
+    const max =
+      (await db.from("drill_variants").select("variant").eq("lesson_id", lessonId)).data?.reduce(
+        (m, row) => Math.max(m, row.variant),
+        0,
+      ) ?? 0;
+    await db.from("drill_variants").insert({
+      lesson_id: lessonId,
+      kind,
+      variant: max + 1,
+      difficulty: opts.difficulty ?? 2,
+      domain: opts.domain ?? null,
+      content: JSON.parse(JSON.stringify(exercise)),
+      model: MODEL,
+    });
+    return exercise;
   } catch (error) {
     console.error(`[pool] ${lessonId}/${kind} top-up failed`, error);
   }

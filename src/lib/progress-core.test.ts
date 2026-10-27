@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_STATE,
+  adoptWallet,
   applyBuyFreeze,
   applyLessonComplete,
   applyReview,
+  applyServerPurchase,
+  canBuyFreeze,
   deriveInsights,
+  gemsEarned,
   mergeAccountProgress,
   type ProgressState,
 } from "./progress-core";
@@ -53,9 +57,47 @@ describe("applyBuyFreeze", () => {
     const poor = { ...DEFAULT_STATE, gems: 59 };
     expect(applyBuyFreeze(poor)).toBe(poor);
     const rich = { ...DEFAULT_STATE, gems: 100 };
-    expect(applyBuyFreeze(rich)).toMatchObject({ gems: 40, freezes: 2 });
+    expect(applyBuyFreeze(rich)).toMatchObject({ gems: 40, gemsSpent: 60, freezes: 2 });
     const full = { ...DEFAULT_STATE, gems: 100, freezes: 2 };
     expect(applyBuyFreeze(full)).toBe(full);
+  });
+
+  it("moves gems from the balance to lifetime spent without changing lifetime earned", () => {
+    const rich = { ...DEFAULT_STATE, gems: 100, gemsSpent: 20 };
+    const bought = applyBuyFreeze(rich);
+    expect(gemsEarned(rich)).toBe(120);
+    expect(gemsEarned(bought)).toBe(120);
+    expect(canBuyFreeze(bought)).toBe(false);
+  });
+});
+
+describe("a purchase the server made", () => {
+  const rich = { ...DEFAULT_STATE, gems: 100, gemsSpent: 20 };
+
+  it("takes the account's lifetime spend and holds the freeze", () => {
+    const next = applyServerPurchase(rich, { spent: 80 });
+    expect(next).toMatchObject({ gems: 40, gemsSpent: 80, freezes: 2 });
+    expect(gemsEarned(next)).toBe(gemsEarned(rich));
+  });
+
+  it("also reflects gems another device spent, so the balance is what can really be spent", () => {
+    // 20 spent here, the account says 200: two other purchases happened elsewhere.
+    const next = applyServerPurchase({ ...rich, gems: 300 }, { spent: 200 });
+    expect(next.gems).toBe(300 + 20 - 200);
+  });
+
+  it("never holds more freezes than the cap", () => {
+    const full = { ...rich, freezes: 2 };
+    expect(applyServerPurchase(full, { spent: 80 }).freezes).toBe(2);
+  });
+
+  it("can't refund gems from an older reply, or go below zero", () => {
+    expect(adoptWallet(rich, { spent: 0 })).toBe(rich);
+    expect(adoptWallet(rich, { spent: 20 })).toBe(rich);
+    expect(adoptWallet({ ...DEFAULT_STATE, gems: 10 }, { spent: 500 }).gems).toBe(0);
+    // A reply without a usable number changes nothing.
+    expect(adoptWallet(rich, { spent: Number.NaN })).toBe(rich);
+    expect(adoptWallet(rich, {} as { spent: number })).toBe(rich);
   });
 });
 
@@ -78,6 +120,8 @@ describe("mergeAccountProgress", () => {
   const account = {
     totalXp: 500,
     gems: 30,
+    gemsEarned: 30,
+    gemsSpent: 0,
     currentStreak: 5,
     longestStreak: 9,
     lastActiveDay: "2026-09-23",
@@ -98,6 +142,25 @@ describe("mergeAccountProgress", () => {
     const local = { ...DEFAULT_STATE, xp: 900, gems: 80, longestStreak: 12 };
     const next = mergeAccountProgress(local, account, "2026-09-23");
     expect([next.xp, next.gems, next.longestStreak]).toEqual([900, 80, 12]);
+  });
+
+  it("brings a new device the account's balance: what it earned less what it spent", () => {
+    const spent = { ...account, gems: 140, gemsEarned: 200, gemsSpent: 60 };
+    expect(mergeAccountProgress(DEFAULT_STATE, spent, "2026-09-23")).toMatchObject({
+      gems: 140,
+      gemsSpent: 60,
+    });
+  });
+
+  it("keeps the larger earned and the larger spent from each side", () => {
+    const local = { ...DEFAULT_STATE, gems: 180, gemsSpent: 120 };
+    const next = mergeAccountProgress(
+      local,
+      { ...account, gems: 140, gemsEarned: 200, gemsSpent: 60 },
+      "2026-09-23",
+    );
+    expect(gemsEarned(next)).toBe(300);
+    expect(next).toMatchObject({ gems: 180, gemsSpent: 120 });
   });
 
   it("does not let a stale account streak overrule a fresher local one", () => {

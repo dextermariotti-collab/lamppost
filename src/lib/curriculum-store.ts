@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Course, Lesson } from "./courses";
 import { getStoredCourse, saveCourse } from "./course-store";
 import {
@@ -8,7 +8,8 @@ import {
   LESSONS,
   lessonAt,
 } from "./curriculum";
-import { getCurriculumLesson } from "./curriculum.functions";
+import { getCurriculumLesson, getLessonPart } from "./curriculum.functions";
+import { emptyState, loadLesson, type LoaderState } from "./lesson-loader";
 import { cleanLessonHypotheticals } from "./hypothetical";
 
 /**
@@ -76,65 +77,94 @@ function storeLesson(index: number, lesson: Lesson) {
  * their own drills and answers stay put. A lesson they have NOT finished always
  * refetches the current shared version — otherwise someone who started a lesson
  * before a content fix would keep seeing the broken drills forever.
+ *
+ * A lesson that isn't cached on the server yet is written in parts: `lesson` is
+ * usable as soon as its idea card exists (`ready`), and `drills` / `written` fill
+ * in as each is written. `complete` says everything has arrived. Nothing is stored
+ * locally until the lesson is complete.
  */
 export function useCurriculumLesson(index: number, completedLessons = 0) {
   const meta = lessonAt(index);
-  const [lesson, setLesson] = useState<Lesson | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const plan = meta?.drills ?? [];
+  const [held, setHeld] = useState<{ index: number; state: LoaderState } | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  /** The latest state of this lesson, so a retry picks up where the last run left off. */
+  const latest = useRef<{ index: number; state: LoaderState } | null>(null);
   const finished = index < completedLessons;
 
   useEffect(() => {
-    if (!meta) {
-      setLoading(false);
-      return;
-    }
+    if (!meta) return;
     let cancelled = false;
+    const kinds = meta.drills;
     const course = ensureCurriculumCourse();
     const local = course.lessons[index];
 
+    const withMeta = (lesson: Lesson): Lesson => ({
+      ...cleanLessonHypotheticals(lesson),
+      title: meta.title,
+      subtitle: meta.objective,
+      emoji: meta.emoji,
+    });
+
     if (finished && hasLessonContent(local)) {
-      setLesson(cleanLessonHypotheticals(local!));
-      setLoading(false);
+      const lesson = cleanLessonHypotheticals(local!);
+      setHeld({
+        index,
+        state: {
+          ...emptyState(kinds),
+          lesson,
+          drills: kinds.map((_, i) => lesson.exercises?.[i] ?? null),
+          written: lesson.written ?? null,
+          complete: true,
+        },
+      });
       return;
     }
 
-    setLesson(undefined);
-    setLoading(true);
-    setError(null);
-
-    void getCurriculumLesson({ data: { lessonId: meta.id } })
-      .then((result) => {
-        if (cancelled) return;
-        if (result.ok) {
-          const merged: Lesson = {
-            ...cleanLessonHypotheticals(result.lesson),
-            title: meta.title,
-            subtitle: meta.objective,
-            emoji: meta.emoji,
-          };
-          storeLesson(index, merged);
-          setLesson(merged);
-        } else {
-          setError(result.reason);
+    const previous = latest.current?.index === index ? latest.current.state : null;
+    const initial: LoaderState = previous?.lesson
+      ? { ...previous, error: null, notice: null, failed: [] }
+      : emptyState(kinds);
+    setHeld({ index, state: initial });
+    let stored = false;
+    void loadLesson(kinds, {
+      initial,
+      fetchLesson: () => getCurriculumLesson({ data: { lessonId: meta.id } }),
+      fetchPart: (part) => getLessonPart({ data: { lessonId: meta.id, part } }),
+      isCancelled: () => cancelled,
+      onChange: (next) => {
+        const lesson = next.lesson ? withMeta(next.lesson) : null;
+        if (next.complete && lesson && !stored) {
+          stored = true;
+          storeLesson(index, lesson);
         }
-      })
-      .catch(() => {
-        if (!cancelled) setError("This lesson couldn't be loaded. Try again in a moment.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+        latest.current = { index, state: { ...next, lesson } };
+        setHeld(latest.current);
+      },
+    });
 
     return () => {
       cancelled = true;
     };
   }, [index, meta, attempt, finished]);
 
-  return { lesson, meta, loading, error, retry, ready: hasLessonContent(lesson) };
+  const state = held && held.index === index ? held.state : emptyState(plan);
+  return {
+    lesson: state.lesson ?? undefined,
+    drills: state.drills,
+    written: state.written,
+    complete: state.complete,
+    meta,
+    loading: !state.lesson && !state.error,
+    error: state.error,
+    notice: state.notice,
+    failed: state.failed,
+    retry,
+    /** The idea card exists, so the lesson can open. */
+    ready: Boolean(state.lesson?.concept),
+  };
 }
 
 /** Reactive curriculum course (skeleton titles always available). */

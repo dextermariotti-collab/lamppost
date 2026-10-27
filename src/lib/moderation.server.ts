@@ -47,11 +47,54 @@ export function screenOutput(text: string): ModerationVerdict {
   return screenLocally(text);
 }
 
+/** What a learner is told when the topic check itself couldn't run. Not a judgement on their topic. */
+export const CHECK_UNAVAILABLE =
+  "Topic checks are temporarily unavailable, so nothing was created. Try again in a moment.";
+
+const unavailable = (): ModerationVerdict => ({
+  allowed: false,
+  category: "other",
+  message: CHECK_UNAVAILABLE,
+  unavailable: true,
+});
+
+/**
+ * Reads the classifier's reply. Only an explicit `"allowed": true` lets a topic
+ * through: a refusal names its category, and anything else — a garbled reply, a
+ * missing field, prose — is null, which the caller treats as "couldn't check".
+ */
+export function parseTopicVerdict(text: string): ModerationVerdict | null {
+  const match = /\{[\s\S]*\}/.exec(text);
+  let allowed: unknown;
+  let category: unknown;
+  if (match) {
+    try {
+      const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+      allowed = parsed["allowed"];
+      category = parsed["category"];
+    } catch {
+      /* fall through to the field-by-field read below */
+    }
+  }
+  if (allowed === undefined) {
+    const read = /"allowed"\s*:\s*(true|false)\b/i.exec(text)?.[1];
+    if (read !== undefined) allowed = read.toLowerCase() === "true";
+    category = /"category"\s*:\s*"([a-z-]+)"/i.exec(text)?.[1];
+  }
+  if (allowed === true) return { allowed: true };
+  if (allowed !== false) return null;
+  const name = typeof category === "string" ? category : "other";
+  return verdictFor(isModerationCategory(name) ? name : "other");
+}
+
 /**
  * Input pass: local patterns first (instant, free), then an AI classifier for
- * anything the patterns can't judge. Falls back to "allowed" only when the
- * classifier is unreachable, since the local pass already caught the explicit
- * cases and the generation prompt still carries CONTENT_POLICY_RULES.
+ * anything the patterns can't judge.
+ *
+ * It fails CLOSED. If the classifier can't be reached, has no key, or answers
+ * something unreadable, the topic is not let through on the strength of the
+ * prompt-level rules alone: the learner is told the check is unavailable and can
+ * try again. (Nothing is created and nothing is logged as a content block.)
  */
 export async function screenTopicText(
   topic: string,
@@ -60,7 +103,8 @@ export async function screenTopicText(
 ): Promise<ModerationVerdict> {
   const local = screenLocally(`${topic} ${extraContext}`);
   if (!local.allowed) return local;
-  if (!apiKey || !topic.trim()) return { allowed: true };
+  if (!topic.trim() && !extraContext.trim()) return { allowed: true };
+  if (!apiKey) return unavailable();
 
   try {
     const { generateText } = await import("ai");
@@ -71,14 +115,10 @@ export async function screenTopicText(
       system: SCREEN_SYSTEM,
       prompt: `Requested topic: "${topic}"\nLearner notes: "${extraContext}"\nClassify now.`,
     });
-    const text = result.text ?? "";
-    const allowed = !/"allowed"\s*:\s*false/i.test(text);
-    if (allowed) return { allowed: true };
-    const category = /"category"\s*:\s*"([a-z-]+)"/i.exec(text)?.[1] ?? "other";
-    return verdictFor(isModerationCategory(category) ? category : "other");
+    return parseTopicVerdict(result.text ?? "") ?? unavailable();
   } catch (error) {
-    console.error("Topic screening failed, falling back to prompt-level rules", error);
-    return { allowed: true };
+    console.error("Topic screening failed, refusing (fail closed)", error);
+    return unavailable();
   }
 }
 

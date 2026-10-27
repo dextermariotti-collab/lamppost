@@ -19,7 +19,14 @@ export type ModerationCategory =
   | "other";
 
 export type ModerationVerdict =
-  { allowed: true } | { allowed: false; category: ModerationCategory; message: string };
+  | { allowed: true }
+  | {
+      allowed: false;
+      category: ModerationCategory;
+      message: string;
+      /** Set when nothing was wrong with the text: the check itself couldn't run. */
+      unavailable?: true;
+    };
 
 /** Reasons a learner sees when a topic is refused. Kept calm and non-judgemental. */
 export const REFUSAL_COPY: Record<ModerationCategory, string> = {

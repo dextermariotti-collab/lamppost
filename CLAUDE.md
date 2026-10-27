@@ -93,6 +93,15 @@ and `routes/api/public/warm-curriculum.ts` (token-protected warm-up endpoint). B
 `CONTENT_VERSION` in `curriculum-generate.server.ts` whenever prompts, drill plans or validators
 change so stale cached lessons are regenerated.
 
+**A cold cache must not block a learner.** The warm-up writes whole lessons ahead of time, but a
+lesson that is missing (a `CONTENT_VERSION` bump before the warm-up has run) is written in parts on
+demand (`lib/lesson-parts.ts`, `lesson-parts.server.ts`, table `lesson_parts`): `getCurriculumLesson`
+returns as soon as the idea card exists, the browser then asks `getLessonPart` for each drill and the
+written task in parallel, and the request that stores the last part assembles the lesson into
+`curriculum_lessons`. `lib/lesson-loader.ts` drives this in the browser and the lesson screen shows
+the idea card and fills drills in as they arrive. Every part is generated under a per-part lease and
+the `lessonPart` rate limit; parts already written are read, never counted.
+
 ### UI shell
 Every screen renders inside `components/PhoneFrame.tsx` (bottom nav on phones, sidebar layout at
 ≥1024px). Design tokens are CSS variables in `src/styles.css`; `.graph-home` and
@@ -113,6 +122,16 @@ WCAG AA (4.5:1 body, 3:1 large/graphics) — check any token you change.
   if the allowlist grows. `syncProgress` (`profile.functions.ts`) is the only way progress reaches
   the account: it recomputes the streak from stored activity and bounds XP/gems and back-dating
   (`lib/progress-limits.ts`) — it cannot prove a lesson was done.
+- **Gems are spent on the server for a signed-in learner.** The account keeps `gems_earned`
+  (reported by devices in each sync, bounded, only rises) and `gems_spent` (changed only by the
+  `spend_gems()` function, which checks and updates in one atomic statement); the balance is the
+  difference. Signed-out learners spend locally. Any new thing gems can buy goes through
+  `spendGems` in `wallet.functions.ts` with a server-held price, never a price from the request.
+- **Public AI endpoints are rate limited in the database** (`lib/rate-limit.ts` holds the numbers,
+  `rate-limit.server.ts` enforces them and **fails closed**). Cached content is served without
+  touching the limiter; only a cache miss that would call the model is counted, under a per-job
+  lease (`guardedGeneration`). Cap the length of every field a public function forwards to a model.
+  Network addresses are only ever stored as an HMAC.
 - Migrations that tighten access ship **in the same PR as the code that needs them**, with a
   tested rollback in `docs/rollback/` (never in `supabase/migrations/`, which is auto-applied).
 - `requireSupabaseAuth` verifies the bearer token and gives handlers a per-user client that
